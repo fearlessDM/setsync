@@ -2752,11 +2752,6 @@ function Cancionero({mode,onOpenSong,userRole='superadmin'}){
   );
 }
 
-
-    </div>
-  );
-}
-
 function EquiposView({onToast,onGestionar}){
   return(
     <div>
