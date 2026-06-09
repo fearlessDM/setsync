@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#07070f" />
+  <title>SetSync</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #07070f; color: #ede9ff; font-family: 'Lato', sans-serif; }
+    #root { min-height: 100vh; }
+    #loading {
+      position: fixed; inset: 0; background: #07070f;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-family: 'Lato', sans-serif; color: rgba(237,233,255,.4);
+      font-size: 13px; gap: 16px;
+    }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid rgba(200,169,126,.2);
+      border-top-color: #c8a97e;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <span>Cargando SetSync...</span>
+  </div>
+  <div id="root"></div>
+
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" src="App.jsx" data-type="module"></script>
+
+  <script>
+    // Ocultar loading cuando la app esté lista
+    window.__hideLoading = function() {
+      const el = document.getElementById('loading');
+      if (el) el.style.display = 'none';
+    };
+    setTimeout(window.__hideLoading, 3000);
+  </script>
+</body>
+</html>
