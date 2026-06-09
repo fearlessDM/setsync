@@ -470,15 +470,58 @@ radial-gradient(ellipse 65% 45% at 85% 105%,rgba(200,169,126,.12) 0%,transparent
 /* ── TOAST ── */
 .toast{position:fixed;bottom:74px;right:15px;background:rgba(8,8,20,.93);backdrop-filter:blur(20px);border:1px solid var(--bd2);border-radius:13px;padding:10px 14px;display:flex;align-items:center;gap:9px;z-index:300;min-width:180px;max-width:255px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:ti .3s cubic-bezier(.34,1.56,.64,1);}
 @keyframes ti{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@media(min-width:769px){.toast{bottom:22px;right:22px;}}
-.t-ic{width:21px;height:21px;border-radius:5px;background:rgba(94,206,160,.1);border:1px solid rgba(94,206,160,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.t-ic svg{width:10px;height:10px;stroke:var(--gn);fill:none;stroke-width:2.5;}
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:10px;}
-/* ── MOBILE ── */
-@media(max-width:768px){
+
+/* ── TABLET VERTICAL (768-1023px) ───────────────────── */
+@media(min-width:768px) and (max-width:1023px){
+.sb{display:none;}
+.main{margin-left:0!important;}
+.bot{display:flex;}
+.two{grid-template-columns:1fr 1fr;}
+.pw{padding:16px 20px 90px;}
+.sc-n{font-size:32px;}
+.title{font-size:32px;}
+.ph{flex-direction:row;align-items:center;}
+.bn-lb{font-size:10px;}
+.bn svg{width:24px;height:24px;}
+.bot{padding:10px 0 16px;}
+.modal{width:80vw;}
+.stats{gap:10px;}
+}
+
+/* ── TABLET HORIZONTAL + ESCRITORIO (>=1024px) ──────── */
+@media(min-width:1024px){
+.sb{display:flex;width:240px;}
+.sb.col{width:68px;}
+.main{margin-left:240px;}
+.main.col{margin-left:68px;}
+.bot{display:none;}
+.pw{padding:24px 28px 40px;}
+.sc-n{font-size:42px;}
+.title{font-size:36px;}
+.two{grid-template-columns:1fr 1fr;}
+.stats{gap:16px;}
+.ph{flex-direction:row;align-items:center;}
+.modal{width:600px;}
+/* Sidebar textos más grandes en escritorio */
+.ni-lb{font-size:13px;}
+.u-name{font-size:15px;}
+.logo-txt h1{font-size:20px;}
+/* Íconos sidebar más grandes */
+.ni-ic svg{width:20px;height:20px;}
+}
+
+/* ── ESCRITORIO GRANDE (>=1440px) ───────────────────── */
+@media(min-width:1440px){
+.sb{width:260px;}
+.main{margin-left:260px;}
+.pw{padding:28px 36px 40px;}
+.sc-n{font-size:48px;}
+.title{font-size:40px;}
+.modal{width:680px;}
+}
+
+/* ── MÓVIL (<768px) ─────────────────────────────────── */
+@media(max-width:767px){
 .sb{display:none;}
 .main{margin-left:0!important;}
 .bot{display:flex;}
@@ -501,6 +544,7 @@ radial-gradient(ellipse 65% 45% at 85% 105%,rgba(200,169,126,.12) 0%,transparent
 .bpm-sec::before{display:none;}
 .sc-row{gap:7px;}
 }
+
 `;
 
 // DIAMOND ICON
@@ -1278,6 +1322,7 @@ Maverick City Music
 [C]Nueva canción d[Em]e adoración, corre por mis venas [G] [D]
 [C]Exáltale, Y vas[Em] a ver, como rompe tinieblas [G] [D]
 `,
+
   'SANTO POR SIEMPRE': `
 SANTO POR SIEMPRE
 
@@ -1316,6 +1361,83 @@ SANTO POR SIEMPRE
 [Dm]por siempre se[G]rás, San - to
 [C]Santo po[Csus4]r siempr[C]e.
 `,
+
+  'YESHUA': `
+YESHUA
+Marcos Brunet
+
+===VERSO 1===
+[A]Mi[B] orgullo me sacó del jardín
+[C#m]Su h[B]umildad colocó el jardín en mí
+[A]Y [B]si vendiera todo lo que tengo
+[C#m]A ca[B]mbio de su amor, yo fallaría
+[A]Po[B]rque su amor no se compra Ni se merece
+[C#m]Su a[B]mor es un regalo De gracia se recibe
+===CORO===
+[A]Qu[B]iero conocer a Jesús
+[C#m]Quie[B]ro conocer a Jesús
+[A]Qu[B]iero conocer a Jesús
+[C#m]Quie[B]ro conocer a Jesús
+[A]Y ser hallado en él
+[B]Y ser hallado en él
+[C#m]Y ser hallado en él
+===PUENTE===
+[A]Mi[C#m] amado es el más bello entre millares
+[E]de[B] millares
+[A]Tu[B]yo es el reino, Tuyo es el poder
+[C#m]Tuya[B] es la gloria, Por siempre amén.
+`,
+
+  'GLORIA EN GLORIA': `
+GLORIA EN GLORIA
+Bethel Music
+
+===VERSO 1===
+[Bm]Vini[G]ste a habitar[D]
+[Bm]A vi[G]vir entre no[D]sotros
+[Bm]Sinti[G]endo el dolor[D], de la humanidad[Bm]
+[G]Y llevarnos ma[D]s alto
+[Bm]Infi[G]nito Dio[D]s
+[Bm]Tu v[G]ida rendist[D]e para mi culpa borrar
+[Bm]Mi ve[G]rguenza quitar y[D] llevarnos mas alto
+===CORO===
+[Bm]Vamos de gl[G]oria, en gl[D]oria, en gloria
+[Bm]Jamás seré igual
+[G]Jamás seré [D]igual
+[Bm]Vamos de gl[G]oria en gl[D]oria, en gloria
+[Bm]Gracia [G]que cambio[D] nuestro corazón
+===VERSO 2===
+[Bm]Tu amig[G]o yo so[D]y
+[Bm]A tu re[G]ino me ha[D]s traído
+[Bm]Éxclav[G]o fui yo,[D] ahora tu hijo soy[Bm]
+[G]Y me llevas[D] más alto
+===PUENTE===
+[G]Jesús queremos ver, [D]tu rostro y majestad
+[A]Por siempre cantaremos Sa[Bm]nto, sa[A]nto
+[G]Tu amor va más allá, [D]no alcanzo a comprender
+[A]Por siempre cantaremos, Di[Bm]gno, dig[A]no[G]
+`,
+
+  'HERMOSO NOMBRE': `
+HERMOSO NOMBRE
+Hillsong United
+
+===VERSO 1===
+[D]Tú fuiste el verbo en el principio - unigénito de Dios[A][Bm][G]
+[D]el misterio de tu gloria - revelado en tu Amor[A][Bm][G]
+[Bm]Dejaste el cielo por sa[A/C]lvarme - me [D]viniste a rescata[G]r[A][Bm]
+[Bm]mi transgresión tú Perdona[A/C]ste, nada nos [D]separará[A][Bm][G]
+===CORO===
+[D]cuan hermoso su nombre es
+[D/B]el nombre de[A] Jesús [G]mi rey
+[D/F]cuan hermoso su nombre es, na[A]da se iguala a él
+[D/B]cuan hermoso Su n[A]ombre es, no ha[G]y otro nombre
+===PUENTE===
+[G]La muerte venciste, el vel[A]o partiste, la tumba vac[Bm]ía ahora está.[F#m]
+[G]Los cielos declaran, tu gl[A]oria proclaman, resucita[Bm]ste en majestad[F#m].
+[G]inigualable, Incomparable,[A] hoy y por siempre reina[Bm]rás.[F#m]
+`,
+
   'LA BONDAD DE DIOS': `
 LA BONDAD DE DIOS
 Bethel Music
@@ -1353,31 +1475,24 @@ Bethel Music
 ===TAG===
 [C]Yo cantar[D]é de la bo[G]ndad de Dios
 `,
-  'YESHUA': `
-YESHUA
-Marcos Brunet
 
-===VERSO 1===
-[A]Mi[B] orgullo me sacó del jardín
-[C#m]Su h[B]umildad colocó el jardín en mí
-[A]Y [B]si vendiera todo lo que tengo
-[C#m]A ca[B]mbio de su amor, yo fallaría
-[A]Po[B]rque su amor no se compra Ni se merece
-[C#m]Su a[B]mor es un regalo De gracia se recibe
-===CORO===
-[A]Qu[B]iero conocer a Jesús
-[C#m]Quie[B]ro conocer a Jesús
-[A]Qu[B]iero conocer a Jesús
-[C#m]Quie[B]ro conocer a Jesús
-[A]Y ser hallado en él
-[B]Y ser hallado en él
-[C#m]Y ser hallado en él
-===PUENTE===
-[A]Mi[C#m] amado es el más bello entre millares
-[E]de[B] millares
-[A]Tu[B]yo es el reino, Tuyo es el poder
-[C#m]Tuya[B] es la gloria, Por siempre amén.
+  'AGNUS DEI': `
+AGNUS DEI
+Michael W. Smith
+
+Aleluya, Aleluya
+Reinas Tú, poderoso Dios
+Aleluya
+Santo, Santo
+Del Señor Dios poderoso
+Digno eres Tú,
+Digno eres Tú.
+Tú eres santo, santo
+El Señor Dios poderoso
+Digno eres Tú
+Digno eres Tú
 `,
+
   'ALABA (PRAISE)': `
 ALABA (PRAISE)
 Elevation Worship / Brandon Lake
@@ -1405,986 +1520,7 @@ Elevation Worship / Brandon Lake
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios,
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios.
 `,
-  'LEÓN': `
-LEÓN
-Elevation Worship
 
-===VERSO 1===
-[Dm]Dios de Jacob / El Gran y[Bbmaj7]o soy
-[Dm]Rey de Gloria / Hijo de D[Bbmaj7]ios
-[C]Voz de muchas aguas / Tu eres la Canción[Bbmaj7]
-[C]Más fuerte que un estruendo / Revela tu es[Bbmaj7]plendor
-===CORO===
-[Dm]Hoy se oye rugiend[C]o / Al León de Judá[Bb]
-[Dm]Hoy se oye rugiend[F]o / Al León de Judá[G][Bb]
-===VERSO 2===
-[Dm]La profecía / De S[Bbmaj7]ion
-[Dm]El Mesías / Desc[Bbmaj7]endió
-[C]Solo tu eres digno / De abrir el lib[Bbmaj7]ro
-[C]El cordero fue inmolado / Pero el Le[Bbmaj7]ón se levantó
-===PUENTE===
-[Bb]Prepara hoy / El camino d[Csus]e Dios
-[Gsus]Prepara hoy / El camino d[F6]e Dios
-[Bb]Oh valle,[Csus] se alzado oh mont[Gsus]e, derribado[F6]
-`,
-  'QUE SE ABRA EL CIELO': `
-QUE SE ABRA EL CIELO
-Christine D'Clario
-
-===VERSO===
-[A]Dios bienvenido a este lugar
-[F#m]Y en nuestro corazón
-[D/A]Ven y haz tu volunta[A]d
-[A]Dios te queremos conocer
-[F#m]Con tu fuego abrazador
-[D]Ven y muévete otra [A]vez[E]
-===PUENTE===
-[D]Esp[E]íri[F#m]tu, av[D]ívan[E]os[F#m]
-[D]Te an[E]helamo[F#m]s Dios[E]
-===CORO===
-[F#m]Que se abra el cielo
-[D]Muévete Señor
-[A]Venga aquí tu reino
-[E]Ohh Gran Dios
-[F#m]No hay cielo cerrado se abre
-[D]Tu reino se mueve aquí
-[A]En ti esta nuestra esperanza
-[E]Ohh Gran Dios
-`,
-  'NO SOY ESCLAVO': `
-NO SOY ESCLAVO
-Bethel Music
-
-===VERSO 1===
-[G]Me envuelves hoy con una canción,
-[C]melodía de tu a[D]mor.[G]
-[G]Cantas libertad, en mi adversidad
-[C]Hasta que huya el [D]temor[G]
-===CORO===
-[G]Ya no soy[D] esclavo del temor[G]
-[Em]Yo soy[D] hijo de Di[G]os
-===VERSO 2===
-[G]Desde el vientre fui, escogido [Bm]en ti
-[C]Me llamó el [D]amor[G]
-[G]De nuevo nací, recibido en ti[Bm]
-[C]Tu sangre en mí fluyó[G][D]
-===PUENTE===
-[Em]Estoy[D] rod[G]eado p[C]or los brazos del Padre
-[Em]Estoy[D] rod[G]eado p[C]or canciones de libertad
-[Em]Abriste el mar p[D]ara que yo camine[C][G]
-[Em]Tu amor ahogó todo e[D]l temor[C][G]
-[Em]Me rescataste[D] y hoy yo cantaré:[C][G]
-[Em]Yo soy hijo [D]de Dios[G]
-`,
-  'AMOR SIN CONDICIÓN': `
-AMOR SIN CONDICIÓN
-Bethel Music
-
-===VERSO 1===
-[Dm]Antes de hablar [C]Cantaste sobre mi [Bb]
-[Dm]Haz sido tan bueno pa[C]ra mi [Bb]
-[Dm]Antes de respirar sopla[C]ste vida en mi [Bb]
-[Dm]Haz sido tan bueno p[C]ara mi [Bb]
-===CORO===
-[Dm]Oh tu amor me envuelve Me sost[C]iene
-[Bb]Amor sin condición [F]
-[Dm]Me persigue y deja la[C]s noventa y nueve [Bb]
-[F]Y va por mi.
-[Dm]No puedo ganarlo ni me[C]recerlo
-[Bb]Tu amor se entrego por mi [F]
-===VERSO 2===
-[Dm]Aún lejos de[C] ti tu amor luchó por[Bb] mi
-[Dm]Haz sido tan Bueno[C] para mi [Bb]
-===PUENTE===
-[Dm]No hay sombra
-[C]que no alumbres
-[Bb]Monte que no escales
-[F]Para encontrarme a mi
-`,
-  'GLORIA EN GLORIA': `
-GLORIA EN GLORIA
-Bethel Music
-
-===VERSO 1===
-[Bm]Vini[G]ste a habitar[D]
-[Bm]A vi[G]vir entre no[D]sotros
-[Bm]Sinti[G]endo el dolor[D], de la humanidad[Bm]
-[G]Y llevarnos ma[D]s alto
-[Bm]Infi[G]nito Dio[D]s
-[Bm]Tu v[G]ida rendist[D]e para mi culpa borrar
-[Bm]Mi ve[G]rguenza quitar y[D] llevarnos mas alto
-===CORO===
-[Bm]Vamos de gl[G]oria, en gl[D]oria, en gloria
-[Bm]Jamás seré igual
-[G]Jamás seré [D]igual
-[Bm]Vamos de gl[G]oria en gl[D]oria, en gloria
-[Bm]Gracia [G]que cambio[D] nuestro corazón
-===VERSO 2===
-[Bm]Tu amig[G]o yo so[D]y
-[Bm]A tu re[G]ino me ha[D]s traído
-[Bm]Éxclav[G]o fui yo,[D] ahora tu hijo soy[Bm]
-[G]Y me llevas[D] más alto
-===PUENTE===
-[G]Jesús queremos ver, [D]tu rostro y majestad
-[A]Por siempre cantaremos Sa[Bm]nto, sa[A]nto
-[G]Tu amor va más allá, [D]no alcanzo a comprender
-[A]Por siempre cantaremos, Di[Bm]gno, dig[A]no[G]
-`,
-  'HERMOSO NOMBRE': `
-HERMOSO NOMBRE
-Hillsong United
-
-===VERSO 1===
-[D]Tú fuiste el verbo en el principio - unigénito de Dios[A][Bm][G]
-[D]el misterio de tu gloria - revelado en tu Amor[A][Bm][G]
-[Bm]Dejaste el cielo por sa[A/C]lvarme - me [D]viniste a rescata[G]r[A][Bm]
-[Bm]mi transgresión tú Perdona[A/C]ste, nada nos [D]separará[A][Bm][G]
-===CORO===
-[D]cuan hermoso su nombre es
-[D/B]el nombre de[A] Jesús [G]mi rey
-[D/F]cuan hermoso su nombre es, na[A]da se iguala a él
-[D/B]cuan hermoso Su n[A]ombre es, no ha[G]y otro nombre
-===PUENTE===
-[G]La muerte venciste, el vel[A]o partiste, la tumba vac[Bm]ía ahora está.[F#m]
-[G]Los cielos declaran, tu gl[A]oria proclaman, resucita[Bm]ste en majestad[F#m].
-[G]inigualable, Incomparable,[A] hoy y por siempre reina[Bm]rás.[F#m]
-`,
-  'ANCLADO': `
-ANCLADO
-Bethel Music
-
-===VERSO 1===
-[C#m]En todo tiempo
-[B]En[A] cada paso, eres fiel
-[C#m]En la tormenta
-[B]Er[A]es mi fuerza, eres fiel
-[C#m]En l[B]a [A]tempestad, Tu Paz me abraza
-[C#m]En d[B]eb[A]ilidad, Tu Amor me levanta
-===CORO===
-[E]En[B] ti esperaré, en Tu Gracia confiaré
-[C#m]Dejo[A] todo atrás, y me rindo a Tus pies
-[E]An[B]clado estoy en Ti, pues Tu Amor no fallará
-[F#m]Te a[A]mo, te amo
-===VERSO 2===
-[C#m]Mi Redentor
-[B]Mi[A] Salvador, eres fiel
-[C#m]Mi Padre Eterno
-[B]Er[A]es mi luz, eres fiel
-===PUENTE===
-[E]Y [B]en Tu promesa, pondré mi confianza
-[C#m]Tu e[A]res mi fuerza, yo confío en Ti
-[E]Mi[B] roca eterna, y mi esperanza
-[C#m]Tu a[A]mor es eterno, yo confío en Ti
-`,
-  'BARRO': `
-BARRO
-Kairo Worship
-
-===VERSO 1===
-[D]Mi[A] corazón hoy tiene sed de ti
-[G]Qu[Bm]ebr[A]anta todo mi ser, haz lo que tengas que hacer en mí.
-[D]Ba[A]rro yo soy, Tu el Alfarero, ven dame tu amor
-[G]Ll[Bm]ena[A] mi copa de aceite, mi alma sedienta te anhela a ti.
-===PRECORO===
-[G]Oh oh oh
-[Em]Sen[Bm]tar[A]me[G] a tu lado deseo
-[Em]Com[Bm]er [A]de tu mano Maestro
-===CORO===
-[D]Qu[A]iero servirte, por siempre adorarte
-[Bm]Qui[A]er[G]o servirte y hacer tu voluntad
-===PUENTE===
-[G]So[Em]y e[Bm]l b[A]arro en tu taller, ven y hazme otra vez
-`,
-  'GLORIA A CRISTO': `
-GLORIA A CRISTO
-Bethel Music
-
-===VERSO 1===
-[E]Hubo un momento en que la luz se fue
-[C#m]La muerte pareció vencer
-[B]El Rey de amor Su vida entregó
-[A]El día oscuro se tornó
-[E]En una cruz de pecadores
-[C#m]Por todos Su sangre pagó
-[B]En un suspiro todo terminó
-[A]Más no cómo el mundo esperó
-[F#m]pues[E] e[B]l velo se rasgó
-[E]Y [E/G]la ti[A]erra tem - bló
-===CORO===
-[E]Gloria a Cristo
-[E]Se[E/G]ñor de toda la creación
-[C#m]Glor[A]ia a Cristo
-[E/G]Aquel[B] q[E]ue al mundo rescató
-===PUENTE===
-[B]Qu[C#m]e to[A]do[E] ser se postre ante nuestro Rey
-[B]Co[C#m]nfes[A]ar[E]án que Cristo es El Señor
-[B]Y [C#m]a un[A]a [E]voz, nos unimos junto al Cielo a cantar
-[B]Sa[C#m]nto [A]ca[E]ntando
-`,
-  'OCEANOS': `
-OCEANOS
-Hillsong United
-
-===VERSO 1===
-[Bm]Tu [A]vo[D]z me llama a las aguas
-[A]Do[G]nde mis pies pueden fallar
-[Bm]Y a[A]hí[D] te encuentro en lo incierto
-[A]Ca[G]minaré sobre el mar
-===CORO===
-[G]A [D]tu[A] nombre clamaré
-[G]En[D] t[A]i mis ojos fijaré
-[G]En tempestad
-[D]De[A]scansaré en tu poder
-[G]Pu[Bm]es tuyo soy hasta el final
-===VERSO 2===
-[Bm]Tu [A]gr[D]acia abunda en la tormenta
-[A]Tu[G] mano Dios, me guiará
-[Bm]Cua[A]nd[D]o hay temor en mi camino
-[A]Tú[G] eres fiel y no cambiarás
-===PUENTE===
-[Bm]Que[G] tu Espíritu me guíe sin fronteras
-[D]Más allá de las barreras
-[A]A donde tú me llames
-[Bm]Tú [G]me llevas más allá de lo soñado
-[D]Donde puedo estar confiado
-[A]Al estar en tu presencia
-`,
-  'COMO EN EL CIELO': `
-COMO EN EL CIELO
-Elevation Worship
-
-===VERSO 1===
-[G]La[D] a[A]tmósfera cambiando está
-[G]Tu[D] E[A]spíritu está aquí
-[G]Es[D] e[A]vidente tu mover
-[G]Tu[D] E[A]spíritu está aquí
-===CORO===
-[G]Llena este lugar
-A Bm7
-Derramando Tu amor
-[G]He venido por Ti
-A Bm7
-A Tus brazos de amor
-===PUENTE===
-G A Bm7
-Que tu poder, descienda hoy
-[G]Venga Tu reino
-G A Bm7
-Que se haga aquí, Tu voluntad
-[G]Como en el cielo
-VERSO FINAL:
-[G]Mi[D]la[A]gros pueden suceder
-[G]Tu[D] E[A]spíritu está aquí
-[G]Es[D] e[A]vidente tu mover
-[G]Tu[D] E[A]spíritu está aquí
-`,
-  'SIEMPRE YHWH': `
-SIEMPRE YHWH
-Elevation Worship
-
-===VERSO 1===
-[B/F]Adona[G]i
-[Em]Elohim
-[Am]El [G]Gr[C]an Yo Soy
-[C]Vi[G]ve[D] en mí
-[B/F]El Sh[G]addai
-[Em]Príncipe de paz
-[Am]Emm[G]an[C]uel
-[C]Co[G]nm[D]igo está
-===CORO===
-[C]Tu nombre es grande
-[Em]Y d[G]ig[D]no de alabanza
-[C]Tu nombre es grande
-[Em]Y d[G]ig[D]no[C] de alabanza
-===PUENTE===
-[G]Digno eras tú
-[B/F]Digno eres tú
-[G]Di[B/F]gno serás para siempre Yahweh
-`,
-  'SIEMPRE A TIEMPO': `
-SIEMPRE A TIEMPO
-Elevation Worship
-
-===VERSO 1===
-[D]Yo[A] recuerdo cómo llegaste
-[Bm]En [G]medio de la oscuridad
-[D]Yo[A] recuerdo me abrazaste
-[Bm]Y m[G]e viniste a rescatar
-===CORO===
-[D]Cr[Am]isto Al pasar por las aguas
-[G]Tú nunca me soltaste
-[Em]Siempre a tiempo estás
-[D]Cr[Am]isto Al pasar por el fuego
-[G]Tú nunca me dejaste
-[Em]Siempre a tiempo estás
-===PUENTE===
-[D]Ni una sola vez, Ni un solo minuto
-[C]Nunca me dejaste, Ni por un segundo
-[G]No hay un solo día, Que tú llegaste tarde
-[Em]Te adoraré
-`,
-  'TODA LENGUA TODA NACIÓN': `
-TODA LENGUA TODA NACIÓN
-Marcos Brunet
-
-===VERSO 1===
-[D]Hasta que Él venga sonará
-[Bm]La [A]melodía del clamor de tu iglesia
-[D]Hasta que Él venga subirá
-[Bm]La [A]adoración de los que anhelan tu belleza
-[F#m]Y mientras te esperamos
-[E/G]El fu[A/C]ego n[D]o se apagará
-[F#m]Ábranse las puertas
-[E/G]El Re[A/C]y de [D]gloria viene ya
-[E]Y todo ojo lo verá
-===CORO===
-[D]Toda lengua y toda nación
-[Bm]Tod[E/G]a lengua y toda nación
-[A]Alabe tu nombre
-===PUENTE===
-[F#m]Sant[A]o [D]y [A]di[E]gno es el cordero
-[F#m]Que [A]mu[D]ri[A]ó [E]y resucitó
-`,
-  'HERMOSO DIOS': `
-HERMOSO DIOS
-Maverick City Music
-
-===VERSO 1===
-[Db]Una cosa anhelo Y esto buscaré
-[Ebm]Es m[Gb]ora[Db]r aquí para siempre
-Esta es mi postura Postrado a tus pies
-[Ebm]Quie[Gb]ro [Db]morar aquí para siempre
-===CORO===
-[Db]Padre amado, amigo fiel
-[Gb]Hermoso Dios
-[Ebm]Herm[Gb]oso Dios
-===PUENTE===
-[Ebm]No q[Db]ueda nada
-[Bbm]No h[Ab]ay palabras
-[Db]Te [Gb]can[Bbm]ta n[Ab]uestro amor
-`,
-  'TEN FE CORAZÓN': `
-TEN FE CORAZÓN
-Bethel Music
-
-===VERSO 1===
-[G]Toma tiempo
-[D]Respira, Él dice
-[Em]Él [C]mostrará lo que vendrá
-[G]Sus pensamientos
-[D]Son más altos que yo
-[Em]Él [C]mostrará lo que vendrá
-===CORO===
-[Em]Ten[D] fe corazón ten firmeza y valor
-[G]Está en la espera, Él está en la espera
-[Em]Con[D]fía en Él y el triunfo podrás ver
-[C]Él[D] nunca falla, Él nunca falla
-===VERSO 2===
-[G]Canta mi ser
-[D]Fortalécete
-[Em]Que[C] su voz te guiará
-[G]No olvides más
-[D]Su gran fidelidad
-[Em]Lo [C]que empezó acabara
-===PUENTE===
-[C]Y [Em]Tú [G]quien todo vio
-[C]Y [Em]cad[G]a estrella nombró
-[C]Va[Em]s a[G] c[D/F]umplir Tu promesa en mí
-[C]Qu[D]e viviré en Tu Victoria
-`,
-  'BUENO ERES TU': `
-BUENO ERES TU
-Elevation Worship
-
-===VERSO 1===
-[E]Tú[E/G] eres fiel Dios
-[A]Por cada promesa que
-[B]En mi vida pude ver
-[E]Te[E/G] agradezco
-[A]Por ser lámpara a mis pies
-[B]Y nunca olvidaré
-===PRECORO===
-[A]Cuando pienso en tus bondades
-[B]Qu[C#m]e tu mano nunca me dejó
-[A]Nu[B]nca me dejó
-===CORO===
-[A]Bu[B]eno eres Tú
-[E/G]No puedo creer cuánto me amas
-[C#m]Eres[B] m[A]i amigo fiel
-===PUENTE===
-[A]Po[B]r cada mañana, Por cada oportunidad
-[E/G]Tú er[C#m]es f[B]iel Dios, Quiero agradecerte hoy
-[A]Po[B]r cada montaña, Por cada valle que crucé
-[E/G]Tú er[C#m]es f[B]iel Dios, Quiero agradecerte hoy
-`,
-  'SOY AMADO': `
-SOY AMADO
-Maverick City Music
-
-===VERSO 1===
-[C]Todo lo que soy[G]
-[C]Y lo que tengo[G]
-[C]Fue creado perfect[G]o por ti.
-[C]No existe duda[G], no puedo negar
-que estás orgulloso de mí
-===PUENTE===
-[C]No te avergüenzas de l[D]o que soy.
-Te maravillas de tu creación
-===CORO===
-[Em]Soy [C]amad[G]o, amado por tí
-[C]Tu amor no se termin[D]a
-[Em]Un pozo que nunca se secará[G]
-Tu amor no se vacía
-Tu amor es dulce y más dulce será
-[Em]Dulc[C]e má[G]s d[D]ulce
-`,
-  'SEGURO ESTOY': `
-SEGURO ESTOY
-Daniel Miranda / Carlos Moya
-
-===VERSO 1===
-[E]Te veo frente a mi, puedo sentir tu llamado[B]
-[E]Tu me invitas a avanzar a ti[B]
-[E]Sobre toda oposición tus promesas permanecen[B]
-[E]Mis temores no son nada pues tu amor los sobrepasa[B]
-[G#m]Tu me pides que camin[E]e hacia ti[F]
-[G#m]Que te crea y c[E]amine hacia ti[F]
-[G#m]Mi mirada siga[E] puesta en ti[F]
-[G#m]Vamos más profund[E]o, más y más profundo[F]
-===CORO===
-[E]Segu[F]ro est[B]oy, T[G#m]u hijo soy
-===PUENTE===
-[E]Cristo me invitas a da[F]nzar en tu amor[G#m][D#m]
-[E]A caminar sobre el mar[F] sin temor[G#m][D#m]
-`,
-  'A TI ME RINDO': `
-A TI ME RINDO
-Hillsong United
-
-===VERSO 1===
-[Am]Ante ti postrado
-[C]Estoy aquí
-[G]Te rindo mi ser
-[F]Te rindo mi ser
-===VERSO 2===
-[Am]Con tu amor
-[C]Atraeme Señor
-[G]Vengo a tus pies
-[F]Vengo a tus pies
-===VERSO 3===
-[Am]Lléname, de
-[C]Gracia inúndame
-[G]Sacia mi sed
-[F]Sacia mi sed
-===VERSO 4===
-[Am]Mi corazón levanta
-[C]Un clamor
-[G]Háblame Dios
-[F]Háblame Dios
-===CORO===
-[Am]A ti me rindo
-[C]A ti me rindo
-[Dm]Te quiero conocer
-[F]Más de ti conocer
-===PUENTE===
-[F]Con tu aliento [C]Dios
-[G]Sopla en mi interior
-[Dm]Cumple Señor tu
-[Am]Voluntad en m[G]í
-[F]Con tu gran pod[C]er
-[G]Muévete en mi ser
-[Dm]Cumple Señor tu
-[Am]Voluntad en [G]mí
-`,
-  'COMUNIÓN': `
-COMUNIÓN
-Upper Room
-
-===VERSO 1===
-[F]Llévame al inicio
-[C/E]Cuando en el jardín escuché tu voz
-[Am]Quiero estar cara a cara
-[G]Guíame de regreso a la comunión
-[F]Todo era tan simple, era [C/E]fácil amar[G][Am]
-[F]Por siempre unidos, era f[C/E]ácil confiar[G][Am]
-===CORO===
-[C]Estás más cerca que mi prop[Dm]ia piel[F][C/E]
-[C]Y en cada respiro de mi ser[F][C/E][Dm]
-[C]Aquí lo muerto, vuelve a la vida[Dm]
-[Am]Mi corazón vive otra vez[F]
-[Dm]No hay duda eres[G] mi amigo fiel[C]
-===VERSO 2===
-[F]Este es el huerto
-[C/E]Es el lugar que cerca estás
-[Am]Estamos juntos
-[G]Aquí conoces quien soy yo
-[F]Todo es tan simple, es mu[C/E]y fácil amar[G][Am]
-[F]Por siempre unidos, es t[C/E]an fácil confiar[G][Am]
-===PUENTE===
-[Dm]Para esto yo nac[C/E]í Tú en m[F]í y yo en ti
-Ya no hay nada que probar Tu ya me aprobaste a mi
-`,
-  'TUMBAS A JARDINES': `
-TUMBAS A JARDINES
-Brandon Lake / Elevation Worship
-
-===VERSO 1===
-[C/G]El m[G]un[C/G]do b[G]usqué y no pudo llenarme
-[Em]Nin[B/F]gún tesoro que pueda ganar
-[C]Me saciará
-===VERSO 2===
-[G]Mas llegaste tú Me diste vida nueva
-[Em]Y c[B/F]ada deseo se cumplirá
-[C]Aquí en tu amor
-===CORO===
-[G]Oh no hay nada, nada mejor
-[Em]No hay nada, nada mejor
-[C]No[G] hay nada, nada mejor que mi Dios
-===PUENTE 1===
-[G]Ca[C]mb[G]ias lamento en danza
-[C]De[G] cenizas traes vida
-Cambias culpa por gloria
-[Em]Sé [C]qu[G]e solo tú lo harás
-===PUENTE 2===
-[C]De[G] las ruinas y tumbas
-[C]Na[G]cen nuevos jardines
-Resucitas los huesos
-[Em]Sé [C]qu[G]e solo tú lo harás
-`,
-  'LO HARÁS OTRA VEZ': `
-LO HARÁS OTRA VEZ
-Elevation Worship
-
-===VERSO 1===
-[Eb]Muros rodeando estoy
-[Bb/D]Pensé que caerían hoy
-[Eb]Mas[Bb] nunca me has fallado Dios
-[Eb]La espera terminará
-[Bb/D]Sé que has vencido ya
-[Eb]Nun[Bb]ca me has fallado Dios
-===CORO===
-[Gm]En [F]Ti confiaré
-[Bb]Tu promesa sigue en pié
-[Eb]Tú eres fiel
-[Gm]Con[F]fiado andaré
-[Bb]En tus manos estaré
-[Eb]Sie[Bb/D]mpre has sido fiel
-===PUENTE===
-[Bb/D]Yo sé[Eb] qu[Bb/D]e Tú [Eb]mueves montañas
-[F/A]Yo c[Bb]reo[F/A] en [Bb]Ti, sé que lo harás otra vez
-[Bb/D]Abris[Eb]te [Bb/D]el ma[Eb]r en el desierto
-[F/A]Yo c[Bb]reo[F/A] en [Bb]Ti, sé que lo harás otra vez
-`,
-  'TU PROVEERÁS': `
-TU PROVEERÁS
-Majo y Dan / Christine D'Clario
-
-===VERSO 1===
-[G]En[C] m[G]edio del desierto, prosperaste a Abraham,
-[D]y [G]al pueblo que migraba, del cielo diste pan
-[Em]Si [C]en[G] fosa de leones Daniel pudo descansar,
-[C]¿p[D]or[G] qué me he de preocupar?
-===VERSO 2===
-[G]Mo[C]is[G]es golpeó la roca, y le diste de beber,
-[C]y [D]Ana siendo esteril, cargó en brazos a un bebe,
-[Em]Dav[C]id[G] frente al gigante por la fe pudo entender
-[C]qu[D]e [G]en ti consumado fue...
-===CORO===
-[G]Tú Proveerás
-[C]Tú Proveerás
-[Em]Cri[D]sto suples mi necesidad
-[G]no[C] temeré, todo va a estar bien
-[Em]pue[D]s tu promesa es siempre
-[G]si y amen.
-===PUENTE===
-[C]Co[G]razón, no te afanes, tu esperanza es firme.
-[C]Al[G]ma[D] mía, no calles, Él resucitó.
-[C]la[Em] vi[D]ct[C]or[D]ia está en el nombre del Señor
-`,
-  'MI ESPERANZA ESTÁ EN JESÚS': `
-MI ESPERANZA ESTÁ EN JESÚS
-Bethel Music
-
-===VERSO 1===
-[A]Cu[E]án[D] g[F#m]rand[E]e abismo entre nosotros, cuán alto monte fallé escalar
-[A]Co[E]n [D]de[E]se[A]spero volví al cielo y en la noche te hice llamar
-[D]Al[A]lí[F#m] en [E]lo oscuro tu amor profundo cruzó la sombra y me alcanzó
-[A]Ya[E] e[D]s [E]co[A]nsumado y el fin escrito, mi esperanza está en Jesús
-===VERSO 2===
-[A]Qu[E]ie[D]n [F#m]imag[E]ina piedad tan grande, tan plena gracia al corazón
-[A]El[E] D[D]io[E]s [A]eterno dejó su gloria, de mi pecado Él se vistió
-[D]La[A] c[F#m]ruz [E]ha hablado, soy perdonado, el Rey de Reyes me adoptó
-[A]Se[E]ño[D]r [E]he[A]rmoso, te pertenezco, mi esperanza está en Jesús
-===CORO===
-[D]Oh[A] A[E]le[F#m]luya sea al que me libertó
-[D]Al[A]el[E]uy[F#m]a, de la muerte me arrancó
-[D]La[A]s [E]ca[F#m]denas quebrantó y en su nombre hay salvación
-[D]Mi[E] e[A]speranza está en Jesús
-`,
-  'ME RINDO TODO A TI': `
-ME RINDO TODO A TI
-Hillsong
-
-===VERSO 1===
-Te doy mi corazón, todo lo que hay en él
-Lo entrego todo hoy, por amor a ti mi Rey.
-Mis sueños rindo a ti y mis derechos doy,
-Mi orgullo hago morir, me prometes vida en ti.
-Y yo me rindo todo a ti, todo a ti
-===VERSO 2===
-Te canto esta canción, te espero en la cruz
-Y lo que el mundo da, nada vale para mi.
-Por conocerte a ti, tu gloria ver Jesús,
-Tu gozo compartir, incluso hasta morir.
-Y yo me rindo todo a ti, todo a ti
-`,
-  'AGNUS DEI': `
-AGNUS DEI
-Michael W. Smith
-
-Aleluya, Aleluya
-Reinas Tú, poderoso Dios
-Aleluya
-Santo, Santo
-Del Señor Dios poderoso
-Digno eres Tú,
-Digno eres Tú.
-Tú eres santo, santo
-El Señor Dios poderoso
-Digno eres Tú
-Digno eres Tú
-`,
-  'GRACIAS (Majo y Dan)': `
-GRACIAS (Majo y Dan)
-Majo y Dan
-
-===VERSO 1===
-Sin merecer nada todo tú diste por mí
-Decidiste amarme sin pedir nada de mí
-Y cómo responder a tal inexplicable amor
-Con todo lo que siento y lo que llevo dentro
-===CORO===
-Yo te doy gracias
-Por tu misericordia te doy gracias
-Por todo lo que has hecho te doy gracias
-Pues nadie más me ha amado como tú
-===VERSO 2===
-Eres tú mi guía, mi salida
-Medicina para mis heridas
-Esperanza para el que confía
-Vivo agradecido, aquí está mi vida
-===PUENTE===
-Nadie que me ame, cuide, como lo haces tú
-`,
-  'ANHELO ESTAR EN TU PRESENCIA': `
-ANHELO ESTAR EN TU PRESENCIA
-Scott Underwood
-
-===VERSO 1===
-[C#m]Tu pre[B]senc[A]ia, y tu gloria
-Traen paz, a mi ser
-En tu amor, profundo
-Encontré, total paz
-===CORO===
-[E]An[B]he[F#m]lo e[A]star, en tu presencia
-Anhelo estar, en tu presencia
-Anhelo estar, contigo Cristo
-Anhelo estar, en tu presencia
-`,
-  'LLUVIA': `
-LLUVIA
-Carlos Moya / Daniel Miranda
-
-===VERSO 1===
-[Em]Tu [D]eres mi Dios,
-[Am]Yo se que estás atento a mi.
-[Em]Tod[D]o mi ser
-[Am]Te anhela y tiene sed de ti.
-Confiado en tu fidelidad estoy
-Descansaré en tus promesas Dios.
-[Em]Tie[F#m]rra [G]se[C]ca en mar
-[Em]Tu [F#m]conv[G]er[Am]tirás.
-[Em]Poz[F#m]os c[G]av[C]arás
-[D]que no se secarán
-===CORO===
-[G]Ll[C]uvia, lluvia de bendición
-[Bm/G]Es la lluvia de tu amor
-[C]Llueve en mi
-===PUENTE===
-[D]No[Am] tengo nada si no es junto a ti
-[D]Me[Am] has transformado en tierra fértil
-[D]To[Am]do [C]lo seco reviviste en mi
-[Em]Tu eres fiel.
-`,
-  'EL ESTÁ AQUÍ': `
-EL ESTÁ AQUÍ
-Maverick City Music
-
-===VERSO 1===
-[F]Di[C]os me sostiene, conmigo está
-[F]Y [C]au[G]nque en el cielo su trono está
-[Am]Su [G]ma[C]no siempre me cubrirá
-[F]Y [G]su[C] presencia está en mi hogar
-[F]Te[C]ngo un tesoro en mi corazón
-[F]Qu[C]e [G]permanece si débil soy
-[Am]Me [G]sa[C]lvará y jamás me soltará
-[F]En[G] m[C]í interior siempre habitará
-===PRECORO===
-[G]Pregúntale a Daniel,
-[Am]Él testificará
-[F]Cómo Dios lo cuido en
-[C]La fosa del león.
-===CORO===
-[Am]Oh [F]oh[C] oh Él está aquí
-===PUENTE===
-[Am]Si busco en el cielo, está
-[Dm]Si [Am]busco en la tierra, está
-[Am]Y aunque yo muera, está
-[F]A [C]donde vaya, está
-`,
-  'HERMOSO MOMENTO': `
-HERMOSO MOMENTO
-
-===VERSO 1===
-[Am]Qué[C] hermoso es cada momento
-[G]Qu[D]e me visitas y de mi haces un altar
-[Am]Qui[C]ero me lleves mas adentro
-[G]To[D]ma mi mano y no la sueltas nunca más
-===PRECORO===
-[Am]Llé[C]vame al lugar
-[G]Donde solos Tu y yo
-[D]Disfrutemos el momento
-[Am]Te [C]amo, mi Papa
-[G]Yo dependo de Tu amor
-[D]Y sin Ti yo se que muero
-===CORO===
-[Am]Tu me viste en mi tormenta
-[C]Me libraste de la prueba
-[G]Te llevaste mis tristezas
-[D]Me cambio la vida entera
-[Am]Me vistió con ropas nuevas
-[C]Puso aceite en mi cabeza
-[G]Me hizo un lugar en Su mesa
-[D]Como un Padre me desea
-`,
-  'SU VENIDA': `
-SU VENIDA
-Maverick City Music
-
-===VERSO 1===
-[E]El[C#m] Rey ascendió al cielo
-[G#m]Deja[F]ndo su Espíritu aquí
-[E]An[C#m]unciando esperanza al mundo
-[G#m]Él l[F]o hizo por ti y por mí
-===VERSO 2===
-[E]Su[C#m]s señales y maravillas
-[G#m]Test[F]ifican de su poder
-[E]Es[C#m]peramos en su venida
-[G#m]Su r[F]ostro anhelamos ver
-===PRECORO===
-[E]Oh[F] oh[E/G] oh t[B]od[F]os verán
-[E]Oh[F] oh[E/G] oh q[G#m]ue É[F]l viene ya
-===CORO===
-[E]Gl[B]oria, Gloria
-[G#m]Alel[F]uya
-[E]Je[B]sucristo
-[G#m]El R[F]ey está por llegar
-[E]Ab[B]ran paso
-[G#m]Se e[F]stá acercando
-[E]Je[B]sucristo
-[G#m]Rein[F]a por la eternidad
-===PUENTE===
-[B]Ho[C#m]sana[B/D], Hosana, Hosana
-[E]A nuestro Salvador
-`,
-  'TE CORONAMOS': `
-TE CORONAMOS
-Jeremy Riddle
-
-===VERSO 1===
-[D]Coronado con
-[F#m]Espi[E]nas
-[D]Al que recibió
-[F#m]Todo[E] mi dolor
-[D]Perforado fue
-[F#m]En m[E]anos y pies
-[D]Sacrificio que
-[F#m]El v[E]elo rasgó
-===CORO===
-[D]Te coronamos
-[A]Rendidos hoy, te adoramos
-[F#m]A una sola voz, eres digno Dios!
-[E]Eres digno Dios!
-===VERSO 2===
-[D]Al que obedeció
-[F#m]Y su[E] vida dió
-[D]A quien soportó
-[F#m]Toda[E] culpa en el
-[D]Colgado en la cruz
-[F#m]Al m[E]undo amó
-[D]Su sangre pagó
-[F#m]Y a [E]ti me unió.
-===PUENTE===
-[D]Para quien soportó la vergüenza en la cruz
-[F#m]Al cordero quien dió libertad por amor
-[D]A quien el poder de la muerte venció
-[E]Adorar!
-`,
-  'GRACIAS DIOS': `
-GRACIAS DIOS
-Maverick City / Elevation Worship
-
-===VERSO 1===
-[C]Vagando en oscuridad
-[C]Bu[F]scando dónde ocultar mi corazón
-[C]Cansado está.
-[C]Con mis fuerzas lo intenté
-[C]Pe[F]ro no pude vencer, Perdí mi rumbo
-[C]Perdí mi hogar.
-[G]Cu[Am]ando no había dónde ir
-[F]Je[C]sús se acercó a mí
-[G]Me[C/E] rec[F]ordó que Solo no estoy
-===CORO===
-[C]Me[Dm] levantó, me transformó
-[C/E]Ahor[F]a en tierra firme estoy
-[Am]Gra[F]cias al Padre, Gracias al Cristo
-[C]Sa[Dm]nó mi corazón, me redimió
-[C/E]Y pa[F]ra siempre libre soy
-[Am]Gra[F]ci[C]as al Padre, Gracias al Cristo, Gracias Dios.
-===PUENTE===
-[G]No[C/E] hab[F]rá otro dios que se compare
-[Am]No hay nadie más alto
-[G]Nadie a tu lado
-[C/E]Nadi[F]e como Tú
-`,
-  'NO HAY AMOR MAS GRANDE': `
-NO HAY AMOR MAS GRANDE
-Daniel Miranda
-
-===VERSO 1===
-[Em]Tu [Bm]cre[C]aste la perfección
-[Em]Tú [Bm]hab[C]laste y el sol nació
-[Em]Tú [D]so[C]plaste a la tierra Dios
-[Em]Y m[D]e [C]hiciste reflejo de tu amor
-===VERSO 2===
-[Em]Mi [Bm]pec[C]ado nos apartó
-[Em]Per[Bm]o h[C]iciste un hermoso plan
-[Em]Res[D]ca[C]taste mi corazón
-[Em]Te [D]en[C]tregaste para por mi luchar
-===CORO===
-[Am]No [Em]hay[D] amor mas grande,
-[Am]Te [Em]sac[D]rificaste.
-[C]Di[Em]os [D]incomparable,
-[Am]Amo[Em]ros[D]o Padre
-===PUENTE===
-[Em]En [D]vi[C]ctoria vivo hoy
-[Em]Sie[G]nt[C]o nuestro eterno amor
-[Em]La [D]co[C]nd[Am]ena[G]ción hoy has callado.
-[Em]Nue[D]va[C] criatura soy
-[Em]Res[G]ta[C]uraste nuestra unión
-`,
-  'NO HAY MAS GUERRA': `
-NO HAY MAS GUERRA
-Bethel Music
-
-===VERSO 1===
-Ya no hay más guerra, ya terminó
-Deja tus armas ahí
-Todo se aclara ante la luz
-Lo que está muerto vivirá.
-===CORO===
-Un camino preparó
-Desde el polvo nos llamó
-En su abrazo respiramos paz.
-Para todos hay lugar
-Su gracia no se detendrá
-Nuestra victoria es.
-===VERSO 2===
-Ya no hay guerra
-Llegó su amor
-Hijos e hijas nos llamó.
-Ya no hay más niños sin un hogar.
-Pertenecemos a un lugar.
-===PUENTE===
-Ya está hecho, terminó
-La sangre de Jesús venció
-Ya está hecho
-El triunfó, el triunfó.
-`,
-  'EN MEMORIA DE TI': `
-EN MEMORIA DE TI
-Un Corazón
-
-===VERSO 1===
-[A]Cu[D]an[A]do[F#m] tú partiste el pan
-[F#m]Nos [E]ll[D]am[A]aste a recordar
-[A]Qu[D]e [A]al[F#m] tu cuerpo quebrantar
-[F#m]Se e[E]nm[D]en[A]dó nuestra maldad
-===VERSO 2===
-[A]Lu[D]eg[A]o [F#m]diste de tomar
-[F#m]Una [E]co[D]pa[A], una señal
-[A]Al[D] t[A]u [F#m]sangre derramar
-[F#m]Nos [E]cu[D]br[A]iste con bondad
-===CORO===
-[F#m]En m[E/G]emori[A]a de ti
-[D]Qu[A]e todo lo que hagamos,
-[D]Y [F#m]cuando nos juntamos,
-[E]Que sea en memoria de ti
-===PUENTE===
-[Bm]Gra[E]ci[C#m]as, [D]gracias, gracias mi Jesús
-`,
-  'LA OSCURIDAD TIEMBLA ANTE CRISTO': `
-LA OSCURIDAD TIEMBLA ANTE CRISTO
-Upper Room
-
-===VERSO 1===
-[Am]Paz[F], dame de tu paz
-[C]Tormentas cesarán
-[G]Al oír tu llamar
-[Am]Paz[F] en la adversidad
-[C]Las olas calmaras
-[Em]Tu poder lo hará
-===CORO===
-[F]Cr[Am]ist[G]o, Cristo la oscuridad tiembla ante
-[F]Cr[Am]ist[G]o, Cristo no temeré
-===VERSO 2===
-[Am]Hoy[F] sopla vida en mí
-[C]Que te adore a ti
-[Em]Otra vez cantaré
-===PUENTE===
-[F]Co[C]n [G]tu poder las tinieblas vencerás
-[F]No[G] h[Am]ay otro nombre igual
-[F]Tu[C] v[G]ivo estás exaltado en majestad
-[F]No[G] h[Am]ay otro nombre igual
-`,
-  'CENTRO': `
-CENTRO
-Bethel Music
-
-===VERSO 1===
-[A]Quizás lo complicamos todo
-[D]Más de lo que debería ser
-[F#m]Si el motivo siempre ha sido el mismo
-[D]Vuelvenos a lo simple otra vez
-===CORO===
-[D]El[F#m] cen[E]tro de todo eres señor
-[D]Tuyo es mi corazón
-[F#m]Eres[E] mi salvador
-[C#m]Solo me sujeto a ti
-[F#m]Pues tu nombre hermoso es
-[D]Mi[E] alma cantará Cristo te amo
-===VERSO 2===
-[A]Enséñanos a discernir el tiempo
-[D]De actuar o descansar aquí a tus pies
-[F#m]A estar atentos a los importante
-[D]A poder escoger la mejor parte
-===PUENTE===
-[D]Lo que soy por tu gloria
-[E]Todo en mi por tu gloria
-[F#m]Que [C#m]en mi ser todo honre tu Nombre
-[D]Si mi vida es una historia,
-[E]qu[F#m]e ha[C#m]ble solo sobre ti
-`,
 };
 // ── Cancionero Banda — independiente del modo Iglesia ─────────────────────
 const SONG_CONTENT_BANDA={
@@ -2803,12 +1939,147 @@ function Onboarding({onFinish}){
 }
 
 // CANCIONERO
-function Cancionero({mode,onOpenSong}){
+// ── Lector de MusicXML con reproducción MIDI via Tone.js ────────────────────
+function playMusicXML(url, onEnd){
+  // Cargar Tone.js dinámicamente si no está cargado
+  if(!window.Tone){
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js';
+    script.onload = () => _playMusicXML(url, onEnd);
+    document.head.appendChild(script);
+  } else {
+    _playMusicXML(url, onEnd);
+  }
+}
+
+function _playMusicXML(url, onEnd){
+  fetch(url)
+    .then(r=>r.text())
+    .then(xml=>{
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xml, 'text/xml');
+      const notes = [];
+      const NOTES_MAP = {'C':0,'D':2,'E':4,'F':5,'G':7,'A':9,'B':11};
+      let time = 0;
+      const divs = doc.querySelectorAll('measure');
+      divs.forEach(measure=>{
+        measure.querySelectorAll('note').forEach(note=>{
+          if(note.querySelector('rest')) return;
+          const step  = note.querySelector('pitch step')?.textContent;
+          const alter = parseInt(note.querySelector('pitch alter')?.textContent||'0');
+          const octave= parseInt(note.querySelector('pitch octave')?.textContent||'4');
+          const dur   = parseInt(note.querySelector('duration')?.textContent||'1');
+          if(step){
+            const midi = (octave+1)*12 + (NOTES_MAP[step]||0) + alter;
+            notes.push({midi, time, dur: dur*0.2});
+            time += dur*0.2;
+          }
+        });
+      });
+      if(!notes.length){ onEnd(); return; }
+      const synth = new window.Tone.Synth({
+        oscillator:{type:'triangle'},
+        envelope:{attack:0.02,decay:0.1,sustain:0.5,release:0.5},
+      }).toDestination();
+      const part = new window.Tone.Part((t,n)=>{
+        synth.triggerAttackRelease(window.Tone.Frequency(n.midi,'midi').toNote(), n.dur, t);
+      }, notes.map(n=>([n.time, n])));
+      part.start(0);
+      window.Tone.Transport.start();
+      window.__midiStop = ()=>{
+        window.Tone.Transport.stop();
+        part.stop();
+        synth.dispose();
+        onEnd();
+      };
+      const totalTime = notes[notes.length-1].time + notes[notes.length-1].dur + 0.5;
+      setTimeout(()=>{
+        window.Tone.Transport.stop();
+        onEnd();
+      }, totalTime * 1000);
+    })
+    .catch(err=>{ console.error('Error cargando partitura:', err); onEnd(); });
+}
+
+function MusicXMLViewer({url}){
+  const [content,setContent]=useState(null);
+  const [error,setError]=useState(null);
+  useEffect(()=>{
+    fetch(url)
+      .then(r=>r.text())
+      .then(xml=>{
+        const parser=new DOMParser();
+        const doc=parser.parseFromString(xml,'text/xml');
+        const title=doc.querySelector('work-title,movement-title')?.textContent||'Partitura';
+        const composer=doc.querySelector('creator[type="composer"]')?.textContent||'';
+        const measures=Array.from(doc.querySelectorAll('measure'));
+        const parsed=measures.map(m=>{
+          const notes=Array.from(m.querySelectorAll('note')).map(n=>{
+            if(n.querySelector('rest'))return{type:'rest',dur:n.querySelector('type')?.textContent||'quarter'};
+            return{
+              type:'note',
+              step:n.querySelector('pitch step')?.textContent||'',
+              octave:n.querySelector('pitch octave')?.textContent||'',
+              alter:n.querySelector('pitch alter')?.textContent||'0',
+              dur:n.querySelector('type')?.textContent||'quarter',
+            };
+          });
+          return{number:m.getAttribute('number'),notes};
+        });
+        setContent({title,composer,measures:parsed});
+      })
+      .catch(()=>setError('No se pudo leer el archivo MusicXML.'));
+  },[url]);
+
+  if(error)return(
+    <div style={{color:'var(--rd)',fontSize:13,textAlign:'center',padding:20}}>{error}</div>
+  );
+  if(!content)return(
+    <div style={{color:'var(--tx3)',fontSize:13,textAlign:'center',padding:20}}>Cargando partitura...</div>
+  );
+  return(
+    <div style={{width:'100%',maxWidth:700,fontFamily:"'Lato',sans-serif"}}>
+      <div style={{fontSize:20,fontWeight:900,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
+      {content.composer&&<div style={{fontSize:12,color:'var(--tx3)',marginBottom:20}}>{content.composer}</div>}
+      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+        {content.measures.map((m,mi)=>(
+          <div key={mi} style={{
+            padding:'8px 10px',borderRadius:8,
+            border:'1px solid var(--bd)',background:'var(--s1)',
+            minWidth:80,
+          }}>
+            <div style={{fontSize:9,color:'var(--tx3)',marginBottom:4,
+              fontWeight:700,letterSpacing:'1px'}}>C{m.number}</div>
+            <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
+              {m.notes.map((n,ni)=>(
+                <div key={ni} style={{
+                  fontSize:11,fontWeight:700,
+                  color:n.type==='rest'?'var(--tx3)':'var(--ac)',
+                  minWidth:16,textAlign:'center',
+                }}>
+                  {n.type==='rest'?'–':`${n.step}${parseInt(n.alter||0)>0?'#':parseInt(n.alter||0)<0?'b':''}${n.octave}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+function Cancionero({mode,onOpenSong,userRole='superadmin'}){
+  const isAdmin=userRole==='superadmin'||userRole==='leader';
   const [filter,setFilter]=useState('');
   const [bv,setBv]=useState(true);
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',letra:''});
+  const [partituras,setPartituras]=useState([]);
+  const [partituraSel,setPartituraSel]=useState(null);
+  const [midiPlaying,setMidiPlaying]=useState(false);
+  const [crearModo,setCrearModo]=useState(null);
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
   const fast=fl.filter(s=>s.bpm>=120).sort((a,b)=>b.bpm-a.bpm);
@@ -2848,56 +2119,354 @@ function Cancionero({mode,onOpenSong}){
   // MODAL CREAR CANCIÓN
   if(showCrear)return(
     <div style={{padding:'10px 8px',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setShowCrear(false)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}}
+        onClick={()=>{setShowCrear(false);setCrearModo(null);}}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+          stroke="var(--tx2)" strokeWidth="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Cancionero</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',marginBottom:5}}>Nueva <span style={{color:'var(--ac)'}}>canción</span></div>
-      <div style={{fontSize:12,color:'var(--tx2)',marginBottom:18}}>Escribe la letra y guárdala en tu cancionero</div>
 
-      <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:10}}>Información</div>
-        <input className="inp" placeholder="Nombre de la canción" value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))} style={{marginBottom:8}}/>
-        <input className="inp" placeholder="Autor o compositor" value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))} style={{marginBottom:8}}/>
-        <div style={{display:'flex',gap:8}}>
-          <select className="inp" value={nueva.key} onChange={e=>setNueva(v=>({...v,key:e.target.value}))} style={{flex:1,cursor:'pointer'}}>
-            {['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','Am','Em','Dm','Bm'].map(k=>(<option key={k} value={k}>{k}</option>))}
-          </select>
-          <input className="inp" placeholder="BPM" type="number" value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))} style={{flex:1}}/>
+      {/* Selector de modo si no hay uno elegido */}
+      {crearModo===null&&(
+        <div>
+          <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,
+            fontSize:20,color:'var(--tx)',marginBottom:4}}>
+            Subir nueva canción
+          </div>
+          <div style={{fontSize:12,color:'var(--tx3)',marginBottom:24,lineHeight:1.5}}>
+            Elige cómo quieres agregar la canción a tu cancionero.
+          </div>
+          {/* Opción 1: Manual */}
+          <div onClick={()=>setCrearModo('manual')}
+            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              marginBottom:10,cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+              background:'rgba(200,169,126,.1)',
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                stroke="var(--ac)" strokeWidth="1.5">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+              </svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
+                fontFamily:"'Lato',sans-serif",marginBottom:3}}>
+                Ingresar letra y acordes
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
+                Escribe la letra con acordes en formato ChordPro. 
+                Soporta transposición automática.
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+          {/* Opción 2: Partitura */}
+          <div onClick={()=>setCrearModo('partitura')}
+            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              marginBottom:10,cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+              background:'rgba(94,206,160,.1)',
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                stroke="var(--gn)" strokeWidth="1.5">
+                <path d="M9 18V5l12-2v13"/>
+                <circle cx="6" cy="18" r="3"/>
+                <circle cx="18" cy="16" r="3"/>
+              </svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
+                fontFamily:"'Lato',sans-serif",marginBottom:3}}>
+                Subir partitura
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
+                <strong style={{color:'var(--gn)'}}>MusicXML</strong> — transposición + reproducción MIDI.{' '}
+                <strong style={{color:'var(--rd)'}}>PDF</strong> — visualización directa.
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+          {/* Opción 3: Drive masivo */}
+          <div onClick={()=>setCrearModo('drive')}
+            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+              background:'rgba(255,255,255,.05)',
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                stroke="var(--tx3)" strokeWidth="1.5">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
+                fontFamily:"'Lato',sans-serif",marginBottom:3}}>
+                Subida masiva desde Drive
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
+                Conecta una carpeta de Google Drive con archivos .txt o .xml 
+                y carga todo el repertorio de una vez.
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="card" style={{padding:14,marginBottom:16}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>Letra y acordes</div>
-        <div style={{fontSize:11,color:'var(--tx3)',marginBottom:8,lineHeight:1.6}}>
-          Usa <code style={{background:'rgba(200,169,126,.1)',padding:'1px 5px',borderRadius:4,color:'var(--ac)'}}>[C]</code> para líneas de contenido y <code style={{background:'rgba(200,169,126,.1)',padding:'1px 5px',borderRadius:4,color:'var(--ac)'}}>[L]</code> para metadatos. Las líneas solo con acordes (A, B, C#m...) se detectan automáticamente.
-        </div>
-        <textarea className="inp" placeholder={`[C]VERSO 1:
-[C]  A          E
+      {/* Modo manual — formulario de letra y acordes */}
+      {crearModo==='manual'&&(
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,
+            cursor:'pointer'}} onClick={()=>setCrearModo(null)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span style={{fontSize:12,color:'var(--tx3)',
+              fontFamily:"'Lato',sans-serif"}}>Subir canción</span>
+          </div>
+          <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,
+            fontSize:20,color:'var(--tx)',marginBottom:16}}>
+            Letra y acordes
+          </div>
+          <div className="card" style={{padding:14,marginBottom:12}}>
+            <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',
+              textTransform:'uppercase',letterSpacing:'1px',marginBottom:10}}>
+              Información
+            </div>
+            <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
+              placeholder="Nombre de la canción"
+              style={{width:'100%',padding:'9px 12px',borderRadius:8,
+                border:'1px solid var(--bd)',background:'var(--s2)',
+                color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
+            <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
+              placeholder="Autor o compositor"
+              style={{width:'100%',padding:'9px 12px',borderRadius:8,
+                border:'1px solid var(--bd)',background:'var(--s2)',
+                color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
+            <div style={{display:'flex',gap:8}}>
+              <select value={nueva.key} onChange={e=>setNueva(v=>({...v,key:e.target.value}))}
+                style={{flex:1,padding:'9px 12px',borderRadius:8,
+                  border:'1px solid var(--bd)',background:'var(--s2)',
+                  color:'var(--tx)',fontSize:13}}>
+                {['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>(
+                  <option key={k}>{k}</option>
+                ))}
+              </select>
+              <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
+                placeholder="BPM" type="number"
+                style={{flex:1,padding:'9px 12px',borderRadius:8,
+                  border:'1px solid var(--bd)',background:'var(--s2)',
+                  color:'var(--tx)',fontSize:13}}/>
+            </div>
+          </div>
+          <div className="card" style={{padding:14,marginBottom:16}}>
+            <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',
+              textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>
+              Letra y acordes
+            </div>
+            <div style={{fontSize:11,color:'var(--tx3)',marginBottom:10,lineHeight:1.5}}>
+              Usa <code style={{background:'var(--s3)',padding:'1px 5px',
+                borderRadius:4,color:'var(--ac)'}}>[C]</code> para líneas de contenido y{' '}
+              <code style={{background:'var(--s3)',padding:'1px 5px',
+                borderRadius:4,color:'var(--ac)'}}>[L]</code> para metadatos.
+              Los acordes entre <code style={{background:'var(--s3)',padding:'1px 5px',
+                borderRadius:4,color:'var(--ac)'}}>[A B C#m]</code> se detectan automáticamente.
+            </div>
+            <textarea value={nueva.letra}
+              onChange={e=>setNueva(v=>({...v,letra:e.target.value}))}
+              rows={10} placeholder={"[L]VERSO 1:
+[C]A         E
 [C]Tu fidelidad es grande
-[C]  D          A
+[C]D         A
 [C]Grande es tu amor
 
-[C]CORO:
-[C]Te alabaré...`} value={nueva.letra} onChange={e=>setNueva(v=>({...v,letra:e.target.value}))} style={{minHeight:200,resize:'vertical',fontFamily:"'Albert Sans',sans-serif",fontSize:12,lineHeight:1.7,fontWeight:700}}/>
-      </div>
+[L]CORO:
+[C]Te alabaré..."}
+              style={{width:'100%',padding:'10px',borderRadius:8,
+                border:'1px solid var(--bd)',background:'var(--s2)',
+                color:'var(--tx)',fontSize:12,fontFamily:"'Source Code Pro',monospace",
+                resize:'vertical',boxSizing:'border-box',lineHeight:1.6}}/>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={{flex:1,padding:'10px',borderRadius:10,
+              border:'1px solid var(--bd)',background:'transparent',
+              color:'var(--tx3)',cursor:'pointer',fontSize:13,fontWeight:700,
+              fontFamily:"'Lato',sans-serif"}}
+              onClick={()=>setCrearModo(null)}>Cancelar</button>
+            <button className="btn-p" disabled={!nueva.nombre.trim()}
+              onClick={()=>{
+                setShowCrear(false);setCrearModo(null);
+                setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});
+              }}
+              style={{flex:2,padding:'10px',borderRadius:10,fontSize:13,fontWeight:700,
+                fontFamily:"'Lato',sans-serif",display:'flex',alignItems:'center',
+                justifyContent:'center',gap:6}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Guardar canción
+            </button>
+          </div>
+        </div>
+      )}
 
-      <div style={{display:'flex',gap:9}}>
-        <button className="btn btn-g" style={{flex:1}} onClick={()=>setShowCrear(false)}>Cancelar</button>
-        <button className="btn btn-p" style={{flex:2}} disabled={!nueva.nombre.trim()} onClick={()=>{setShowCrear(false);setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});}}>
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Guardar canción
-        </button>
-      </div>
+      {/* Modo partitura */}
+      {crearModo==='partitura'&&(
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,
+            cursor:'pointer'}} onClick={()=>setCrearModo(null)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span style={{fontSize:12,color:'var(--tx3)',
+              fontFamily:"'Lato',sans-serif"}}>Subir canción</span>
+          </div>
+          <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,
+            fontSize:20,color:'var(--tx)',marginBottom:6}}>
+            Subir partitura
+          </div>
+          <div style={{fontSize:12,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
+            Selecciona el formato según lo que necesites hacer con la partitura.
+          </div>
+          {/* Explicación formatos */}
+          {[
+            {fmt:'MusicXML',ext:'.xml .mxl .musicxml',color:'var(--gn)',
+             desc:'Partitura digital editable. Permite transposición automática, reproducción MIDI y visualización de notas. Exporta desde MuseScore, Sibelius o Finale.'},
+            {fmt:'PDF',ext:'.pdf',color:'var(--rd)',
+             desc:'Partitura escaneada o exportada. Solo visualización directa, sin edición ni transposición. Útil para partituras antiguas o de editores externos.'},
+          ].map(f=>(
+            <div key={f.fmt} style={{padding:'14px',borderRadius:12,
+              border:`1px solid ${f.color}22`,background:`${f.color}08`,
+              marginBottom:10}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                <span style={{fontSize:13,fontWeight:800,color:f.color,
+                  fontFamily:"'Lato',sans-serif"}}>{f.fmt}</span>
+                <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,
+                  background:'var(--s2)',padding:'2px 6px',borderRadius:6}}>{f.ext}</span>
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.5}}>{f.desc}</div>
+            </div>
+          ))}
+          <label style={{display:'flex',flexDirection:'column',alignItems:'center',
+            justifyContent:'center',gap:10,padding:'24px',borderRadius:14,
+            border:'2px dashed rgba(200,169,126,.3)',background:'rgba(200,169,126,.04)',
+            cursor:'pointer',marginTop:8}}>
+            <input type="file" accept=".xml,.mxl,.musicxml,.pdf"
+              style={{display:'none'}}
+              onChange={e=>{
+                const file=e.target.files[0];
+                if(!file)return;
+                const tipo=file.name.endsWith('.pdf')?'pdf':'musicxml';
+                const url=URL.createObjectURL(file);
+                setPartituras(prev=>[...prev,{
+                  id:Date.now(),
+                  nombre:file.name.replace(/\.[^.]+$/,''),
+                  tipo,url,size:(file.size/1024).toFixed(0)+'kb'
+                }]);
+                setShowCrear(false);setCrearModo(null);
+                setTab('partituras');
+              }}/>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
+              stroke="rgba(200,169,126,.5)" strokeWidth="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--ac)',
+              fontFamily:"'Lato',sans-serif"}}>
+              Tocar para seleccionar archivo
+            </div>
+            <div style={{fontSize:11,color:'var(--tx3)'}}>
+              MusicXML o PDF
+            </div>
+          </label>
+        </div>
+      )}
+
+      {/* Modo drive masivo */}
+      {crearModo==='drive'&&(
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,
+            cursor:'pointer'}} onClick={()=>setCrearModo(null)}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span style={{fontSize:12,color:'var(--tx3)',
+              fontFamily:"'Lato',sans-serif"}}>Subir canción</span>
+          </div>
+          <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,
+            fontSize:20,color:'var(--tx)',marginBottom:6}}>
+            Subida masiva desde Drive
+          </div>
+          <div style={{fontSize:12,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
+            Conecta una carpeta de Google Drive que contenga tus canciones y carga todo el repertorio de una vez.
+          </div>
+          <div style={{padding:'16px',borderRadius:12,border:'1px solid var(--bd)',
+            background:'var(--s1)',marginBottom:12}}>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--tx)',
+              fontFamily:"'Lato',sans-serif",marginBottom:8}}>Formatos soportados</div>
+            {[
+              {ext:'.txt',desc:'Canciones en formato ChordPro (una por archivo)'},
+              {ext:'.xml / .mxl',desc:'Partituras MusicXML'},
+              {ext:'.pdf',desc:'Partituras PDF'},
+            ].map(f=>(
+              <div key={f.ext} style={{display:'flex',gap:8,marginBottom:6}}>
+                <code style={{fontSize:11,fontWeight:700,color:'var(--ac)',
+                  background:'var(--s2)',padding:'2px 6px',borderRadius:4,flexShrink:0}}>
+                  {f.ext}
+                </code>
+                <span style={{fontSize:11,color:'var(--tx3)'}}>{f.desc}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={()=>{setShowCrear(false);setCrearModo(null);}}
+            style={{width:'100%',padding:'12px',borderRadius:12,border:'none',
+              background:'rgba(200,169,126,.12)',color:'var(--ac)',
+              fontSize:13,fontWeight:700,cursor:'pointer',
+              fontFamily:"'Lato',sans-serif",display:'flex',
+              alignItems:'center',justifyContent:'center',gap:8}}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+              stroke="currentColor" strokeWidth="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            Conectar carpeta de Drive
+          </button>
+          <div style={{fontSize:11,color:'var(--tx3)',textAlign:'center',
+            marginTop:8,fontFamily:"'Lato',sans-serif"}}>
+            Disponible en la próxima actualización
+          </div>
+        </div>
+      )}
     </div>
   );
+
 
   return(
     <div>
       <div className="ph">
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Canciones</div>
-          <div style={{fontSize:12,color:'var(--tx2)'}}>Encuentra cualquier canción al instante · <span style={{color:'var(--ac)'}}>{CANCIONES.length} disponibles</span></div>
+          <div style={{fontSize:12,color:'var(--tx2)'}}>Busca canciones · sube letras con acordes · importa partituras MusicXML o PDF · <span style={{color:'var(--ac)'}}>{CANCIONES.length} canciones</span></div>
         </div>
   
       </div>
@@ -2907,11 +2476,45 @@ function Cancionero({mode,onOpenSong}){
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Universal
         </button>}
-        <div style={{flex:1}}/>
-        <button onClick={()=>setShowCrear(true)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 13px',borderRadius:100,border:'1px solid rgba(200,169,126,.35)',background:'rgba(200,169,126,.09)',color:'var(--ac)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lato',sans-serif",flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nueva
+        <button onClick={()=>setTab('partituras')} style={{padding:'6px 14px',borderRadius:100,
+          border:tab==='partituras'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
+          background:tab==='partituras'?'rgba(200,169,126,.1)':'transparent',
+          color:tab==='partituras'?'var(--ac)':'var(--tx3)',
+          fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lato',sans-serif",
+          display:'flex',alignItems:'center',gap:5}}>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>
+          </svg>
+          Partituras
         </button>
+        <div style={{flex:1}}/>
+        <div style={{display:'flex',gap:6,flexShrink:0}}>
+          <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
+            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',
+              borderRadius:100,border:'1px solid rgba(200,169,126,.35)',
+              background:'rgba(200,169,126,.09)',color:'var(--ac)',
+              fontWeight:700,fontSize:11,cursor:'pointer',
+              fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
+              stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Subir canción
+          </button>
+          <button onClick={()=>{setShowCrear(true);setCrearModo('drive');}}
+            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',
+              borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
+              background:'rgba(255,255,255,.04)',color:'var(--tx3)',
+              fontWeight:700,fontSize:11,cursor:'pointer',
+              fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
+              stroke="currentColor" strokeWidth="2.5">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            Subida masiva Drive
+          </button>
+        </div>
       </div>
 
       <div style={{display:'flex',gap:8,marginBottom:10}}>
@@ -2944,6 +2547,212 @@ function Cancionero({mode,onOpenSong}){
           </div>
         </div>
       )}
+
+
+      {tab==='partituras'&&(
+        <div>
+          <div style={{fontSize:20,fontWeight:900,color:'var(--tx)',
+            fontFamily:"'Lato',sans-serif",marginBottom:4}}>Partituras</div>
+          <div style={{fontSize:12,color:'var(--tx3)',marginBottom:20,lineHeight:1.5}}>
+            Sube partituras en formato <strong style={{color:'var(--ac)'}}>MusicXML</strong> o <strong style={{color:'var(--ac)'}}>PDF</strong>.
+            MusicXML permite transposición automática y reproducción MIDI.
+            PDF es para visualización directa.
+          </div>
+
+          {/* Zona de subida */}
+          {isAdmin&&(
+            <label style={{
+              display:'flex',flexDirection:'column',alignItems:'center',
+              justifyContent:'center',gap:10,
+              padding:'24px 16px',borderRadius:14,
+              border:'2px dashed rgba(200,169,126,.3)',
+              background:'rgba(200,169,126,.04)',
+              cursor:'pointer',marginBottom:20,
+            }}>
+              <input type="file" accept=".xml,.mxl,.musicxml,.pdf"
+                style={{display:'none'}}
+                onChange={e=>{
+                  const file=e.target.files[0];
+                  if(!file)return;
+                  const tipo=file.name.endsWith('.pdf')?'pdf':'musicxml';
+                  const url=URL.createObjectURL(file);
+                  setPartituras(prev=>[...prev,{
+                    id:Date.now(),nombre:file.name.replace(/\.[^.]+$/,''),
+                    tipo,url,size:(file.size/1024).toFixed(0)+'kb'
+                  }]);
+                }}/>
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none"
+                stroke="rgba(200,169,126,.5)" strokeWidth="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:13,fontWeight:700,color:'var(--ac)'}}>
+                  Subir partitura
+                </div>
+                <div style={{fontSize:11,color:'var(--tx3)',marginTop:4}}>
+                  Formatos aceptados:
+                </div>
+                <div style={{display:'flex',gap:6,justifyContent:'center',marginTop:6,flexWrap:'wrap'}}>
+                  {[
+                    {ext:'MusicXML',desc:'Transposición + MIDI'},
+                    {ext:'PDF',desc:'Visualización directa'},
+                  ].map(f=>(
+                    <span key={f.ext} style={{fontSize:10,fontWeight:700,
+                      padding:'3px 8px',borderRadius:10,
+                      background:'rgba(200,169,126,.1)',color:'var(--ac)',
+                      border:'1px solid rgba(200,169,126,.2)'}}>
+                      {f.ext} <span style={{opacity:.6,fontWeight:400}}>— {f.desc}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </label>
+          )}
+
+          {/* Lista de partituras */}
+          {partituras.length===0?(
+            <div style={{textAlign:'center',padding:'30px 0',color:'var(--tx3)',fontSize:13}}>
+              {isAdmin?'Aún no hay partituras. Sube una usando el botón de arriba.':'Sin partituras disponibles.'}
+            </div>
+          ):partituras.map(p=>(
+            <div key={p.id} style={{display:'flex',alignItems:'center',gap:12,
+              padding:'12px',borderRadius:12,border:'1px solid var(--bd)',
+              background:'var(--s1)',marginBottom:8}}>
+              {/* Ícono por tipo */}
+              <div style={{width:40,height:40,borderRadius:10,flexShrink:0,
+                background:p.tipo==='pdf'?'rgba(196,64,16,.1)':'rgba(200,169,126,.1)',
+                display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {p.tipo==='pdf'?(
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                    stroke="var(--rd)" strokeWidth="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                  </svg>
+                ):(
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                    stroke="var(--ac)" strokeWidth="1.5">
+                    <path d="M9 18V5l12-2v13"/>
+                    <circle cx="6" cy="18" r="3"/>
+                    <circle cx="18" cy="16" r="3"/>
+                  </svg>
+                )}
+              </div>
+              {/* Info */}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:800,color:'var(--tx)',
+                  fontFamily:"'Lato',sans-serif",whiteSpace:'nowrap',
+                  overflow:'hidden',textOverflow:'ellipsis'}}>{p.nombre}</div>
+                <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
+                  {p.tipo==='pdf'?'PDF':'MusicXML'} · {p.size}
+                </div>
+              </div>
+              {/* Acciones */}
+              <div style={{display:'flex',gap:6,flexShrink:0}}>
+                {p.tipo==='pdf'?(
+                  <a href={p.url} target="_blank" rel="noreferrer"
+                    style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
+                      border:'1px solid var(--bd)',background:'transparent',
+                      color:'var(--tx2)',cursor:'pointer',textDecoration:'none',
+                      fontFamily:"'Lato',sans-serif"}}>
+                    Ver PDF
+                  </a>
+                ):(
+                  <button onClick={()=>setPartituraSel(p)}
+                    style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
+                      border:'1px solid var(--ac)',background:'rgba(200,169,126,.08)',
+                      color:'var(--ac)',cursor:'pointer',fontFamily:"'Lato',sans-serif"}}>
+                    Leer
+                  </button>
+                )}
+                {isAdmin&&(
+                  <button onClick={()=>setPartituras(prev=>prev.filter(x=>x.id!==p.id))}
+                    style={{padding:'5px 8px',borderRadius:8,fontSize:11,
+                      border:'1px solid var(--bd)',background:'transparent',
+                      color:'var(--tx3)',cursor:'pointer'}}>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none"
+                      stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Lector MusicXML con MIDI */}
+          {partituraSel&&(
+            <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:100,
+              display:'flex',flexDirection:'column'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',
+                borderBottom:'1px solid var(--bd)',flexShrink:0}}>
+                <button onClick={()=>{setPartituraSel(null);setMidiPlaying(false);}}
+                  style={{background:'transparent',border:'none',cursor:'pointer',
+                    color:'var(--tx3)',display:'flex',alignItems:'center'}}>
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                    stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                </button>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:900,color:'var(--tx)',
+                    fontFamily:"'Lato',sans-serif"}}>{partituraSel.nombre}</div>
+                  <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,
+                    textTransform:'uppercase',letterSpacing:'1px'}}>
+                    MusicXML · Reproducción MIDI
+                  </div>
+                </div>
+                <button onClick={()=>{
+                  if(midiPlaying){
+                    setMidiPlaying(false);
+                    window.__midiStop&&window.__midiStop();
+                  } else {
+                    setMidiPlaying(true);
+                    playMusicXML(partituraSel.url, ()=>setMidiPlaying(false));
+                  }
+                }} style={{
+                  display:'flex',alignItems:'center',gap:6,
+                  padding:'7px 14px',borderRadius:10,border:'none',
+                  background:midiPlaying?'rgba(196,64,16,.15)':'rgba(200,169,126,.12)',
+                  color:midiPlaying?'var(--rd)':'var(--ac)',
+                  fontSize:12,fontWeight:700,cursor:'pointer',
+                  fontFamily:"'Lato',sans-serif",
+                }}>
+                  {midiPlaying?(
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">
+                      <rect x="6" y="4" width="4" height="16"/>
+                      <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                  ):(
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                  )}
+                  {midiPlaying?'Detener':'Reproducir MIDI'}
+                </button>
+              </div>
+              <div style={{flex:1,overflowY:'auto',padding:'20px',
+                display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
+                <MusicXMLViewer url={partituraSel.url}/>
+              </div>
+              <div style={{padding:'12px 16px',borderTop:'1px solid var(--bd)',
+                background:'var(--s1)',fontSize:11,color:'var(--tx3)',textAlign:'center',
+                lineHeight:1.5}}>
+                El sonido MIDI es una aproximación sintética de la partitura.
+                No representa el sonido real del instrumento.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
     </div>
   );
 }
@@ -6192,8 +6001,6 @@ function App(){
   );
 }
 
-
-// ── Montar la aplicación ─────────────────────────────────────────────────────
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(App));
 if (window.__hideLoading) window.__hideLoading();
