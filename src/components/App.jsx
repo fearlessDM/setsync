@@ -27,8 +27,6 @@ export default function App(){
   const [eventos,setEventos]=useState([]);
   const [userRole]=useState('superadmin');
   const isAdmin=userRole==='superadmin';
-  const isPastor=userRole==='pastor'||isAdmin;
-  const [pastorData,setPastorData]=useState({});
   const handleSaveChords=(name,content)=>{
     SONG_CONTENT_IGLESIA[name]=content;
     showToast('✓ Acordes guardados');
@@ -130,7 +128,7 @@ export default function App(){
         choose:'Elige tu modo de uso',
         forever:'Esta elección define el modo permanente de tu cuenta. No se puede cambiar entre modos una vez elegido.',
         lang:'Idioma / Language',
-        iglesia:{title:'Iglesia',sub:'Cultos · Setlists · Equipos de alabanza · Rol de Pastor'},
+        iglesia:{title:'Iglesia',sub:'Cultos · Setlists · Equipos de alabanza'},
         banda:{title:'Banda',sub:'Gigs · Repertorio · Equipo técnico · Rider'},
         academia:{title:'Academia',sub:'Clases · Partituras · Alumnos · Evaluaciones'},
         soon:'Próximamente',
@@ -141,7 +139,7 @@ export default function App(){
         choose:'Choose your mode',
         forever:'This permanently defines your account mode. You cannot switch between modes once chosen.',
         lang:'Language / Idioma',
-        iglesia:{title:'Church',sub:'Services · Setlists · Worship Teams · Pastor role'},
+        iglesia:{title:'Church',sub:'Services · Setlists · Worship Teams'},
         banda:{title:'Band',sub:'Gigs · Repertoire · Technical crew · Rider'},
         academia:{title:'Academy',sub:'Classes · Sheet music · Students · Assessments'},
         soon:'Coming soon',
@@ -329,7 +327,7 @@ export default function App(){
           {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>{setView('backstage');}}/>}
           {view==='premiere'&&<PremiereView onToast={showToast}/>}
           {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')}/>}
-          {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} pastorData={pastorData} setPastorData={setPastorData} eventos={eventos} setEventos={setEventos} pastorData={pastorData} setPastorData={setPastorData} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme}/>}
+          {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme}/>}
           {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setRehearsal(true)} userRole={userRole} onToast={showToast}/>}
         </div>
       </main>

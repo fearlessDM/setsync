@@ -8,11 +8,11 @@ import { EQUIPOS_DATA } from '../data/constants';
 import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,pastorData={},setPastorData,eventos=[],setEventos}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos}){
   const [bsView,setBsView]=useState(null);
   const isAdmin=userRole==='superadmin';
-  const isPastor=userRole==='pastor'||isAdmin;
-  const isLeader=userRole==='leader'||isAdmin||isPastor;
+  const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
+  const isLeader=userRole==='leader'||isAdmin;
   const [activeEq,setActiveEq]=useState(null);
   const [nuevaBanda,setNuevaBanda]=useState('');
   const [evNombre,setEvNombre]=useState('');
@@ -596,10 +596,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,pasto
     {id:'permisos',label:'Delegar permisos',sub:'Asignar líderes',icon:'shield',adminOnly:true},
     {id:'notif',label:'Notificaciones',sub:'Avisar al equipo',icon:'bell',adminOnly:false},
     {id:'config',label:'Configuración',sub:'Ajustes y preferencias',icon:'settings',adminOnly:false},
-    {id:'pastor',label:'Palabra del Pastor',sub:'Versículo y PPT del domingo',icon:'book',pastorOnly:true},
+    {id:'pastor',label:'Palabra del Pastor',sub:'Versículo y PPT del domingo',icon:'book',adminOnly:true},
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
-    if(it.pastorOnly&&!isPastor)return false;
     return true;
   });
 
