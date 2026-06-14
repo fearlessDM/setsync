@@ -234,6 +234,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [capoOpen,setCapoOpen]=useState(false);
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
+  const [autoScroll,setAutoScroll]=useState(false);
+  const [scrollSpeed,setScrollSpeed]=useState(1); // multiplicador manual
+  const [showBloques,setShowBloques]=useState(false); // panel lateral de estructura
 
   // ── Editor de acordes ────────────────────────────────────────────────────
   const getSongContent=(song)=>editedSongs[song.name]||SONG_CONTENT_IGLESIA[song.name]||null;
@@ -338,6 +341,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const cvRef=useRef(null);
   const wrapRef=useRef(null);
   const strokes=useRef([]);
+  const scrollRaf=useRef(null);
+  const scrollSpeedRef=useRef(1);
   const drawing=useRef(false);
   const cur=useRef(null);
 
@@ -347,6 +352,40 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const sonaKey=tpKey(curKey,-capo);
 
   useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);},[idx]);
+  // ── Auto-scroll ligado a BPM ─────────────────────────────────────────────
+  useEffect(()=>{
+    scrollSpeedRef.current=scrollSpeed;
+  },[scrollSpeed]);
+
+  useEffect(()=>{
+    const w=wrapRef.current;
+    if(!w)return;
+    if(!autoScroll){
+      if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);
+      return;
+    }
+    // Velocidad base: BPM de la canción actual → px/s
+    // 60 BPM = muy lento (~12px/s), 120 BPM = normal (~24px/s), 180 BPM = rápido (~36px/s)
+    const bpm=songs[idx]?.bpm||80;
+    const pxPerSec=(bpm/5)*scrollSpeedRef.current;
+    let last=null;
+    const step=(ts)=>{
+      if(last!==null){
+        const delta=(ts-last)/1000;
+        w.scrollTop+=pxPerSec*delta;
+        // Detener si llegó al final
+        if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){
+          setAutoScroll(false);
+          return;
+        }
+      }
+      last=ts;
+      scrollRaf.current=requestAnimationFrame(step);
+    };
+    scrollRaf.current=requestAnimationFrame(step);
+    return()=>{if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);};
+  },[autoScroll,idx]);
+
   useEffect(()=>{
     const cv=cvRef.current,w=wrapRef.current;
     if(!cv||!w)return;
@@ -367,6 +406,57 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const clear=()=>{strokes.current=[];const ctx=cvRef.current?.getContext('2d');ctx?.clearRect(0,0,cvRef.current.width,cvRef.current.height);};
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?'Tono original':`${nOff>0?'+':''}${nOff} st`});};
   const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
+
+  // ── Panel de bloques / estructura de la canción ─────────────────────────────
+  const getBloques=()=>{
+    const raw=getSongContent(songs[idx]);
+    if(!raw)return[];
+    const lines=raw.split('\n');
+    const result=[];
+    let lineNum=0;
+    // Contar líneas de contenido para mapear bloque → posición scroll
+    lines.forEach((line,i)=>{
+      const t=line.trim();
+      if(t.startsWith('===')&&t.endsWith('===')){
+        const label=t.slice(3,-3).replace(/:$/,'').trim();
+        result.push({label,lineNum:i});
+      }
+    });
+    return result;
+  };
+
+  const scrollToBloque=(lineNum)=>{
+    const w=wrapRef.current;
+    if(!w)return;
+    // Estimación de posición: cada línea ~22px aprox
+    const approxY=lineNum*22;
+    w.scrollTo({top:Math.max(0,approxY-20),behavior:'smooth'});
+  };
+
+  const BLOQUE_COLORS={
+    'INTRO':'#5e9eff','VERSO':'#c8a97e','CORO':'#30d158','PRE-CORO':'#bf5af2',
+    'PUENTE':'#ffd60a','BRIDGE':'#ffd60a','FINAL':'#ff453a','OUTRO':'#ff453a',
+    'INTERLUDIO':'#64d2ff','INSTRUMENTAL':'#64d2ff',
+  };
+  const getColorBloque=(label)=>{
+    const k=Object.keys(BLOQUE_COLORS).find(k=>label.includes(k));
+    return k?BLOQUE_COLORS[k]:'rgba(200,169,126,.7)';
+  };
+
+  const PanelBloques=()=>{
+    const bloques=getBloques();
+    if(!bloques.length)return null;
+    return(
+      <div style={{position:'absolute',left:6,top:'50%',transform:'translateY(-50%)',zIndex:3,display:'flex',flexDirection:'column',gap:4,maxHeight:'70%',overflowY:'auto',scrollbarWidth:'none'}}>
+        {bloques.map((b,i)=>(
+          <button key={i} onClick={()=>{scrollToBloque(b.lineNum);setAutoScroll(false);}}
+            style={{padding:'4px 7px',borderRadius:8,border:`1px solid ${getColorBloque(b.label)}40`,background:`${getColorBloque(b.label)}18`,color:getColorBloque(b.label),cursor:'pointer',fontSize:9,fontWeight:900,fontFamily:"'Lato',sans-serif",letterSpacing:'.5px',textTransform:'uppercase',whiteSpace:'nowrap',transition:'all .15s',textAlign:'left'}}>
+            {b.label.length>8?b.label.slice(0,8)+'…':b.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
 
   // ── Panel Tono + Capo desplegable ──────────────────────────────────────────
   const PanelTono=()=>(
@@ -437,6 +527,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           {showChords?'Solo letra':'Con acordes'}
         </button>
+        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} title={autoScroll?'Detener scroll automático':'Iniciar scroll automático'} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0,transition:'all .2s'}}>
+          {autoScroll
+            ?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            :<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          }
+          {autoScroll?`${songs[idx]?.bpm||80} BPM`:'Auto'}
+        </button>
+        <button onClick={()=>setShowBloques(v=>!v)} title="Navegador de bloques" style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:showBloques?'1px solid rgba(100,210,255,.5)':'1px solid var(--bd)',background:showBloques?'rgba(100,210,255,.12)':'rgba(255,255,255,.04)',color:showBloques?'#64d2ff':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0,transition:'all .2s'}}>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Bloques
+        </button>
         {isAdmin&&(
           <>
           <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
@@ -488,6 +589,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir))}</div>
         }
       </div>
+      {showBloques&&<PanelBloques/>}
       <PanelTono/>
     </div>
   );
