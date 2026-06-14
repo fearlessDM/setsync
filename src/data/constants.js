@@ -53,7 +53,7 @@ export const BANDA_CONFIG = {
   roles: [
     {id:'encargado', label:'Encargado', icon:'⭐', color:'#c8a97e'},
     {id:'guitarrista', label:'Guitarrista', icon:'🎸', color:'#7b68ee'},
-    {id:'bajista', label:'Bajista', icon:'🎸', color:'#5ecea0'},
+    {id:'bajista', label:'Bajista', icon:'🎸', color:'#30C0B7'},
     {id:'baterista', label:'Baterista', icon:'🥁', color:'#ff6b6b'},
     {id:'dj', label:'DJ', icon:'🎧', color:'#ff9f43'},
     {id:'corista1', label:'Corista 1', icon:'🎤', color:'#74b9ff'},
@@ -78,7 +78,7 @@ export const COVERS_DEMO = [
 ];
 
 export const EQUIPOS_DATA=[
-  {id:1,name:'Banda',color:'#8b72d4',roles:['Guitarra','Bajo','Piano','Batería','Mic 1','Libre'],miembros:[
+  {id:1,name:'Banda',color:'#EE227D',roles:['Guitarra','Bajo','Piano','Batería','Mic 1','Libre'],miembros:[
     {id:1,name:'Belén Mella',email:'belen@iglesia.cl',role:'Mic 1'},
     {id:2,name:'Cony Saavedra',email:'cony@iglesia.cl',role:'Guitarra'},
     {id:3,name:'Florencia Gómez',email:'florencia@iglesia.cl',role:'Piano'},
@@ -86,15 +86,15 @@ export const EQUIPOS_DATA=[
     {id:5,name:'Daniel Miranda',email:'daniel@iglesia.cl',role:'Batería'},
     {id:6,name:'Felipe Silva',email:'felipe@iglesia.cl',role:'Libre'},
   ]},
-  {id:2,name:'Proyecciones',color:'#5ecea0',roles:['Operador','Diseño','Libre'],miembros:[
+  {id:2,name:'Proyecciones',color:'#30C0B7',roles:['Operador','Diseño','Libre'],miembros:[
     {id:7,name:'Franco Silva',email:'franco@iglesia.cl',role:'Operador'},
     {id:8,name:'Renata',email:'renata@iglesia.cl',role:'Diseño'},
   ]},
-  {id:3,name:'Sonido',color:'#ff9f0a',roles:['Ingeniero','Asistente','Libre'],miembros:[
+  {id:3,name:'Sonido',color:'#FD8083',roles:['Ingeniero','Asistente','Libre'],miembros:[
     {id:9,name:'Carlos Cuevas',email:'carlos@iglesia.cl',role:'Ingeniero'},
     {id:10,name:'Mauro Pizarro',email:'mauro@iglesia.cl',role:'Asistente'},
   ]},
-  {id:4,name:'Transmisiones',color:'#6e5fa0',roles:['Director','Streaming','Cámara','Libre'],miembros:[
+  {id:4,name:'Transmisiones',color:'#852467',roles:['Director','Streaming','Cámara','Libre'],miembros:[
     {id:11,name:'Renata V.',email:'renatav@iglesia.cl',role:'Streaming'},
   ]},
 ];

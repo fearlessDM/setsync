@@ -9,7 +9,7 @@ import { BandaRepertorio } from './BandaRepertorio';
 import { BandaBackstage } from './BandaBackstage';
 
 export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
-  const [view,setView]=useState('equipo');
+  const [view,setView]=useState('home');
   const [toast,setToast]=useState(null);
   const [songViewBanda,setSongViewBanda]=useState(null);
   const isEncargado=userRole==='encargado'||userRole==='superadmin';
@@ -61,7 +61,65 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
     {n:'TIERRA ROJA',      key:'G', bpm:76,artista:'Los Hijos del Norte',    tipo:'original'},
   ]);
 
+  // ── Dashboard Banda ─────────────────────────────────────────────────────
+  const DashboardBanda=()=>{
+    const hora=new Date().getHours();
+    const saludo=hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
+    const gigsFuturos=[...gigs].sort((a,b)=>new Date(a.fecha)-new Date(b.fecha)).filter(g=>new Date(g.fecha)>=new Date());
+    const siguienteGig=gigsFuturos[0]||null;
+    const acciones=[
+      {icon:'rehearsal', label:'Agendar ensayo',      sub:'Fecha, lugar y setlist',            color:'#EE227D', action:()=>setView('backstage')},
+      {icon:'song',      label:'Ver repertorio',       sub:'Canciones y arreglos',              color:'#30C0B7', action:()=>setView('repertorio')},
+      {icon:'calendar',  label:'Ver próximo gig',      sub:siguienteGig?siguienteGig.nombre:'Sin fechas próximas', color:'#a78bfa', action:()=>setView('fechas')},
+      {icon:'team',      label:'Gestionar equipo',     sub:`${members.length} integrantes`,     color:'#FD8083', action:()=>setView('equipo')},
+      {icon:'notif',     label:'Notificar al equipo',  sub:'Avisos y recordatorios',            color:'#498099', action:()=>setView('backstage')},
+      {icon:'setlist',   label:'Crear setlist',        sub:'Lista para el próximo show',        color:'#852467', action:()=>setView('backstage')},
+    ];
+    const IcoBanda=({icon})=>{
+      const s={viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'};
+      if(icon==='rehearsal')return(<svg {...s}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>);
+      if(icon==='song')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
+      if(icon==='calendar')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
+      if(icon==='team')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
+      if(icon==='notif')return(<svg {...s}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>);
+      if(icon==='setlist')return(<svg {...s}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>);
+      return null;
+    };
+    return(
+      <div style={{padding:'24px 16px 100px'}}>
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lato',sans-serif",marginBottom:4}}>{saludo} 👋</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué ensayamos hoy?</div>
+          {siguienteGig&&(
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:10,background:'rgba(238,34,125,.08)',border:'1px solid rgba(238,34,125,.2)',marginTop:8}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#EE227D" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span style={{fontSize:11,color:'#EE227D',fontWeight:700,fontFamily:"'Lato',sans-serif"}}>
+                Próximo: {siguienteGig.nombre} · {new Date(siguienteGig.fecha).toLocaleDateString('es-CL',{day:'numeric',month:'short'})}
+              </span>
+            </div>
+          )}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          {acciones.map((a,i)=>(
+            <button key={i} onClick={a.action}
+              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,padding:'18px 14px',cursor:'pointer',textAlign:'left',transition:'all .2s',display:'flex',flexDirection:'column',gap:12,position:'relative',overflow:'hidden'}}>
+              <div style={{width:44,height:44,borderRadius:12,background:`${a.color}18`,border:`1px solid ${a.color}35`,display:'flex',alignItems:'center',justifyContent:'center',color:a.color}}>
+                <IcoBanda icon={a.icon}/>
+              </div>
+              <div>
+                <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
+                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
+              </div>
+              <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const TABS=[
+    {id:'home',       label:'Inicio'},
     {id:'equipo',     label:'Equipo'},
     {id:'fechas',     label:'Fechas'},
     {id:'repertorio', label:'Repertorio'},
@@ -72,6 +130,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
     const s={viewBox:'0 0 24 24',width:20,height:20,fill:'none',
       stroke:active?'var(--ac)':'var(--tx3)',strokeWidth:1.5,
       strokeLinecap:'round',strokeLinejoin:'round'};
+    if(id==='home')     return(<svg {...s}><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
     if(id==='equipo')    return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
     if(id==='fechas')    return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
     if(id==='repertorio')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
@@ -143,6 +202,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
         </div>
       )}
       <div style={{padding:'10px 8px 90px'}}>
+        {view==='home'&&<DashboardBanda/>}
         {view==='equipo'&&(
           <div>
             <div className="ph" style={{marginBottom:16}}>

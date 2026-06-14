@@ -235,8 +235,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
-  const [scrollSpeed,setScrollSpeed]=useState(1); // multiplicador manual
-  const [showBloques,setShowBloques]=useState(false); // panel lateral de estructura
+  const [scrollSpeed,setScrollSpeed]=useState(1);
+  const [viewMode,setViewMode]=useState('bloques'); // 'bloques' | 'lineal'
+  const [showModePopup,setShowModePopup]=useState(false);
+  const [secuencia,setSecuencia]=useState(()=>{
+    // Inicializar secuencia desde localStorage si existe
+    try{const k=`ss_seq_${songs[startIdx]?.name}`;const s=localStorage.getItem(k);return s?JSON.parse(s):null;}
+    catch{return null;}
+  });
 
   // ── Editor de acordes ────────────────────────────────────────────────────
   const getSongContent=(song)=>editedSongs[song.name]||SONG_CONTENT_IGLESIA[song.name]||null;
@@ -434,33 +440,253 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const BLOQUE_COLORS={
-    'INTRO':'#5e9eff','VERSO':'#c8a97e','CORO':'#30d158','PRE-CORO':'#bf5af2',
-    'PUENTE':'#ffd60a','BRIDGE':'#ffd60a','FINAL':'#ff453a','OUTRO':'#ff453a',
-    'INTERLUDIO':'#64d2ff','INSTRUMENTAL':'#64d2ff',
+    'INTRO':'#5e9eff','VERSO':'#EE227D','CORO':'#30C0B7','PRE-CORO':'#a78bfa',
+    'PUENTE':'#FD8083','BRIDGE':'#FD8083','FINAL':'#852467','OUTRO':'#852467',
+    'INTERLUDIO':'#498099','INSTRUMENTAL':'#498099',
   };
   const getColorBloque=(label)=>{
     const k=Object.keys(BLOQUE_COLORS).find(k=>label.includes(k));
     return k?BLOQUE_COLORS[k]:'rgba(200,169,126,.7)';
   };
 
-  const PanelBloques=()=>{
-    const bloques=getBloques();
-    if(!bloques.length)return null;
+  // ── Parsear canción en bloques con contenido ──────────────────────────────
+  const parseBloques=()=>{
+    const raw=getSongContent(songs[idx]);
+    if(!raw)return[];
+    const lines=raw.split('\n');
+    const result=[];
+    let curLabel=null,curLines=[];
+    let skip=0;
+    // Saltar header (título/artista - primeras líneas sin acordes ni ===)
+    for(let i=0;i<Math.min(4,lines.length);i++){
+      const l=lines[i].trim();
+      if(!l||(!l.includes('[')&&!l.startsWith('===')))skip=i+1;
+      else break;
+    }
+    lines.slice(skip).forEach(line=>{
+      const t=line.trim();
+      if(t.startsWith('===')&&t.endsWith('===')){
+        if(curLabel!==null||curLines.some(l=>l.trim()))
+          result.push({label:curLabel||'INTRO',lines:curLines});
+        curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();
+        curLines=[];
+      } else { curLines.push(line); }
+    });
+    if(curLabel!==null||curLines.some(l=>l.trim()))
+      result.push({label:curLabel||'INTRO',lines:curLines});
+    return result;
+  };
+
+  // ── Obtener/guardar secuencia de interpretación ────────────────────────────
+  const getSongKey=(name)=>`ss_seq_${name}`;
+  const getSecuencia=()=>{
+    const bloques=parseBloques();
+    if(!bloques.length)return[];
+    const songName=songs[idx]?.name;
+    if(!songName)return bloques.map((b,i)=>({...b,uid:i}));
+    try{
+      const saved=localStorage.getItem(getSongKey(songName));
+      if(saved){
+        const seq=JSON.parse(saved);
+        // Mapear secuencia guardada a bloques actuales
+        return seq.map((item,i)=>{
+          const bloque=bloques.find(b=>b.label===item.label)||bloques[0];
+          return{...bloque,uid:i,seqId:item.seqId};
+        });
+      }
+    }catch{}
+    return bloques.map((b,i)=>({...b,uid:i,seqId:i}));
+  };
+
+  const saveSecuencia=(seq)=>{
+    const songName=songs[idx]?.name;
+    if(!songName)return;
+    try{localStorage.setItem(getSongKey(songName),JSON.stringify(seq.map(b=>({label:b.label,seqId:b.seqId}))));}
+    catch{}
+  };
+
+  const initSecuencia=()=>{
+    const s=getSecuencia();
+    setSecuencia(s);
+    return s;
+  };
+
+  const getActiveSecuencia=()=>{
+    if(secuencia)return secuencia;
+    return getSecuencia();
+  };
+
+  // ── Operaciones de secuencia ──────────────────────────────────────────────
+  const moverBloque=(from,dir)=>{
+    const seq=[...getActiveSecuencia()];
+    const to=from+dir;
+    if(to<0||to>=seq.length)return;
+    [seq[from],seq[to]]=[seq[to],seq[from]];
+    const updated=seq.map((b,i)=>({...b,uid:i}));
+    setSecuencia(updated);
+    saveSecuencia(updated);
+  };
+
+  const duplicarBloque=(i)=>{
+    const seq=[...getActiveSecuencia()];
+    const nuevo={...seq[i],uid:Date.now(),seqId:Date.now()};
+    seq.splice(i+1,0,nuevo);
+    const updated=seq.map((b,j)=>({...b,uid:j}));
+    setSecuencia(updated);
+    saveSecuencia(updated);
+  };
+
+  const eliminarBloque=(i)=>{
+    const seq=[...getActiveSecuencia()];
+    if(seq.length<=1)return;
+    seq.splice(i,1);
+    const updated=seq.map((b,j)=>({...b,uid:j}));
+    setSecuencia(updated);
+    saveSecuencia(updated);
+  };
+
+  // ── Renderizar líneas de un bloque con acordes ─────────────────────────────
+  const renderBloqueLines=(lines,tpOff,showChords)=>{
+    const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
+    const FONT="'Lato',sans-serif";
+    const trC=(ch)=>{
+      if(!tpOff)return ch;
+      const p=ch.split('/');
+      return p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
+    };
+    return lines.filter(l=>l.trim()).map((line,li)=>{
+      const hasChord=CHORD_RE.test(line);
+      CHORD_RE.lastIndex=0;
+      if(hasChord&&showChords){
+        const parts=[];let last=0;let m;
+        while((m=CHORD_RE.exec(line))!==null){
+          if(m.index>last)parts.push({type:'text',val:line.slice(last,m.index)});
+          parts.push({type:'chord',val:trC(m[1])});
+          last=m.index+m[0].length;
+        }
+        if(last<line.length)parts.push({type:'text',val:line.slice(last)});
+        return(
+          <div key={li} style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',lineHeight:1.1,marginBottom:'0.15em'}}>
+            {parts.map((p,pi)=>
+              p.type==='chord'
+                ?<span key={pi} style={{fontFamily:"'Source Code Pro',monospace",fontSize:'0.72em',fontWeight:700,color:'var(--ac)',marginRight:'0.15em',lineHeight:1}}>{p.val}</span>
+                :p.val?<span key={pi} style={{fontFamily:FONT,whiteSpace:'pre'}}>{p.val}</span>:null
+            )}
+          </div>
+        );
+      }
+      const clean=line.replace(CHORD_RE,'').trim();
+      if(!clean)return null;
+      return(<div key={li} style={{fontFamily:FONT,lineHeight:1.25,marginBottom:'0.1em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{clean}</div>);
+    });
+  };
+
+  // ── Vista Bloques ─────────────────────────────────────────────────────────
+  const VistaBloques=()=>{
+    const seq=getActiveSecuencia();
+    if(!seq.length)return(
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'Lato',sans-serif"}}>
+        Sin contenido disponible
+      </div>
+    );
+
+    const w=typeof window!=='undefined'?window.innerWidth:390;
+    const cols=w>=1024?3:w>=768?2:1;
+
+    // Bloques únicos para display (sin repetidos)
+    const unique=[];
+    const seen=new Set();
+    seq.forEach(b=>{if(!seen.has(b.label)){seen.add(b.label);unique.push(b);}});
+
     return(
-      <div style={{position:'absolute',left:6,top:'50%',transform:'translateY(-50%)',zIndex:3,display:'flex',flexDirection:'column',gap:4,maxHeight:'70%',overflowY:'auto',scrollbarWidth:'none'}}>
-        {bloques.map((b,i)=>(
-          <button key={i} onClick={()=>{scrollToBloque(b.lineNum);setAutoScroll(false);}}
-            style={{padding:'4px 7px',borderRadius:8,border:`1px solid ${getColorBloque(b.label)}40`,background:`${getColorBloque(b.label)}18`,color:getColorBloque(b.label),cursor:'pointer',fontSize:9,fontWeight:900,fontFamily:"'Lato',sans-serif",letterSpacing:'.5px',textTransform:'uppercase',whiteSpace:'nowrap',transition:'all .15s',textAlign:'left'}}>
-            {b.label.length>8?b.label.slice(0,8)+'…':b.label}
-          </button>
-        ))}
+      <div style={{
+        flex:1,overflowY:'auto',scrollbarWidth:'thin',
+        display:'grid',
+        gridTemplateColumns:`repeat(${cols},1fr)`,
+        gap:8,padding:'8px',alignContent:'start',
+      }}>
+        {unique.map((bloque,bi)=>{
+          const color=getColorBloque(bloque.label);
+          const lineCount=bloque.lines.filter(l=>l.trim()).length;
+          // Tamaño de fuente dinámico: más líneas = más chico
+          const fs=Math.max(9,Math.min(18,Math.floor(120/(lineCount||1))));
+          return(
+            <div key={bi} style={{
+              background:`${color}10`,
+              border:`1px solid ${color}40`,
+              borderRadius:14,
+              padding:'10px 12px',
+              display:'flex',flexDirection:'column',gap:4,
+              minHeight:80,
+              overflow:'hidden',
+            }}>
+              <div style={{fontSize:9,fontWeight:900,color:color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:4,borderBottom:`1px solid ${color}30`,paddingBottom:4}}>
+                {bloque.label}
+              </div>
+              <div style={{fontSize:fs,color:'var(--tx)',lineHeight:1.3,overflow:'hidden',flex:1}}>
+                {renderBloqueLines(bloque.lines,tpOff,showChords)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // ── Panel estructura (barra derecha) actualizado ───────────────────────────
+  const PanelBloques=()=>{
+    const seq=getActiveSecuencia();
+    if(!seq.length)return null;
+    const panelBg=isLight?'rgba(240,234,222,.88)':'rgba(6,4,18,.88)';
+    return(
+      <div style={{position:'absolute',right:60,top:8,bottom:70,zIndex:3,display:'flex',flexDirection:'column',
+        borderRadius:14,border:`1px solid var(--bd)`,background:panelBg,backdropFilter:'blur(40px)',overflow:'hidden',width:72}}>
+        <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'6px 4px 5px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
+          SECUENCIA
+        </div>
+        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'4px'}}>
+          {seq.map((b,i)=>{
+            const color=getColorBloque(b.label);
+            return(
+              <div key={b.uid??i} style={{marginBottom:3}}>
+                <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
+                  <div style={{fontSize:8,fontWeight:900,color:color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'4px 3px',lineHeight:1.1}}>
+                    {b.label.length>6?b.label.slice(0,6)+'…':b.label}
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',borderTop:`1px solid ${color}25`,padding:'1px 2px',gap:1}}>
+                    <button onClick={()=>moverBloque(i,-1)} disabled={i===0}
+                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:i===0?'var(--tx3)':color,cursor:i===0?'default':'pointer',fontSize:10,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <button onClick={()=>duplicarBloque(i)}
+                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:color,cursor:'pointer',fontSize:9,fontWeight:900,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button onClick={()=>eliminarBloque(i)} disabled={seq.length<=1}
+                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:seq.length<=1?'var(--tx3)':'var(--rd)',cursor:seq.length<=1?'default':'pointer',fontSize:9,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <button onClick={()=>moverBloque(i,1)} disabled={i===seq.length-1}
+                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:i===seq.length-1?'var(--tx3)':color,cursor:i===seq.length-1?'default':'pointer',fontSize:10,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={()=>{const b=parseBloques();if(b.length){const seq=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(seq);saveSecuencia(seq);}}}
+          style={{padding:'5px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}>
+          Reset
+        </button>
       </div>
     );
   };
 
   // ── Panel Tono + Capo desplegable ──────────────────────────────────────────
   const PanelTono=()=>(
-    <div style={{position:'absolute',right:6,top:'50%',transform:'translateY(-50%)',zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',gap:0,borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.12)':'rgba(4,4,12,.10)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
+    <div style={{position:'absolute',right:6,bottom:8,zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',gap:0,borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
       <button onClick={()=>doTp(1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)',borderRadius:'14px 14px 0 0'}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
         <span style={{fontSize:8,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
@@ -534,10 +760,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           }
           {autoScroll?`${songs[idx]?.bpm||80} BPM`:'Auto'}
         </button>
-        <button onClick={()=>setShowBloques(v=>!v)} title="Navegador de bloques" style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:showBloques?'1px solid rgba(100,210,255,.5)':'1px solid var(--bd)',background:showBloques?'rgba(100,210,255,.12)':'rgba(255,255,255,.04)',color:showBloques?'#64d2ff':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0,transition:'all .2s'}}>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          Bloques
-        </button>
+
         {isAdmin&&(
           <>
           <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
@@ -576,20 +799,96 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Área de contenido (canvas + letra) ───────────────────────────────────
-  const ContentArea=({padRight=12})=>(
-    <div style={{flex:1,position:'relative',overflow:'hidden'}}>
-      <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
-        onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
-        onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
-      />
-      <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 10px 10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
-        {song.docId
-          ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
-          :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir))}</div>
-        }
+  // ── Popup modo bloques ────────────────────────────────────────────────────
+  const PopupModoBloques=()=>(
+    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}}
+      onClick={()=>setShowModePopup(false)}>
+      <div onClick={e=>e.stopPropagation()} style={{background:isLight?'rgba(240,234,222,.97)':'rgba(10,6,22,.97)',backdropFilter:'blur(40px)',border:'1px solid var(--bd2)',borderRadius:20,padding:'28px 24px',maxWidth:320,width:'90%',boxShadow:'0 24px 60px rgba(0,0,0,.5)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+          <div style={{width:44,height:44,borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--ac)" strokeWidth="1.8">
+              <rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/>
+              <rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>
+            </svg>
+          </div>
+          <div>
+            <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>Vista por Bloques</div>
+            <div style={{fontSize:11,color:'var(--ac)',fontWeight:700}}>Modo Pro</div>
+          </div>
+        </div>
+        <div style={{fontSize:13,color:'var(--tx)',lineHeight:1.6,marginBottom:16,fontFamily:"'Lato',sans-serif"}}>
+          Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio, con la letra al máximo tamaño posible.
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
+          {[
+            ['🎯','Cero scroll — todo visible de un vistazo'],
+            ['📐','Texto al máximo tamaño por bloque'],
+            ['🔄','Secuencia editable — duplica y reordena bloques'],
+            ['⚡','Ideal para pantallas grandes e iPads en ensayo'],
+          ].map(([ico,txt],i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:10,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+              <span style={{fontSize:16}}>{ico}</span>
+              <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lato',sans-serif",fontWeight:600}}>{txt}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initSecuencia();setShowModePopup(false);}}
+          style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
+          Activar Vista Bloques
+        </button>
+        <button onClick={()=>setShowModePopup(false)}
+          style={{width:'100%',padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lato',sans-serif",fontWeight:700,fontSize:12,marginTop:6}}>
+          Cancelar
+        </button>
       </div>
-      {showBloques&&<PanelBloques/>}
+    </div>
+  );
+
+  // ── Botones toggle de vista ────────────────────────────────────────────────
+  const ToggleVista=()=>(
+    <div style={{display:'flex',gap:3,alignItems:'center',padding:'3px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s2)',flexShrink:0}}>
+      <button onClick={()=>{if(viewMode!=='bloques'){setShowModePopup(true);}}}
+        title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,border:'none',
+        background:viewMode==='bloques'?'var(--ac)':'transparent',
+        color:viewMode==='bloques'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',
+        cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
+        </svg>
+      </button>
+      <button onClick={()=>{if(viewMode!=='lineal')setViewMode('lineal');}}
+        title="Vista lineal" style={{padding:'4px 8px',borderRadius:7,border:'none',
+        background:viewMode==='lineal'?'var(--ac)':'transparent',
+        color:viewMode==='lineal'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',
+        cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/>
+        </svg>
+      </button>
+    </div>
+  );
+
+  // ── Área de contenido (canvas + letra o vista bloques) ───────────────────
+  const ContentArea=({padRight=12})=>(
+    <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
+      {viewMode==='bloques'
+        ? <VistaBloques/>
+        : <>
+            <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
+              onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
+              onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
+            />
+            <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 10px 10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
+              {song.docId
+                ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
+                :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir))}</div>
+              }
+            </div>
+          </>
+      }
+      <PanelBloques/>
       <PanelTono/>
     </div>
   );
@@ -614,6 +913,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(isTablet){
     return(
       <div className="sv" style={{flexDirection:'row',background:svBg}}>
+        {showModePopup&&<PopupModoBloques/>}
         {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
         <div style={{width:220,flexShrink:0,display:'flex',flexDirection:'column',borderRight:'1px solid var(--bd)',background:'rgba(6,6,14,.95)',backdropFilter:'blur(20px)'}}>
           <div style={{padding:'12px 14px 10px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',gap:8}}>
@@ -655,7 +955,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
               {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--tx3)',transition:'all .3s'}}/>))}
             </div>
-            <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{idx+1}/{songs.length}</div>
+            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+              <ToggleVista/>
+              <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+            </div>
           </div>
           <AnnoBar/>
           <ContentArea padRight={12}/>
@@ -668,6 +971,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     // LAYOUT MOBILE < 768px
     return(
     <div className="sv" style={{background:svBg}}>
+      {showModePopup&&<PopupModoBloques/>}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
@@ -678,7 +982,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
           </div>
         </div>
-        <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{idx+1}/{songs.length}</div>
+        <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+          <ToggleVista/>
+          <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+        </div>
       </div>
       <AnnoBar/>
       <ContentArea padRight={12}/>

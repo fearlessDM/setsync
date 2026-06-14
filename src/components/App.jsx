@@ -18,7 +18,7 @@ export default function App(){
   const [onboarded,setOnboarded]=useState(false);
   const [lang,setLang]=useState('es');
   const [mode,setMode]=useState('worship');
-  const [view,setView]=useState('admin');
+  const [view,setView]=useState('home');
   const [sbCol,setSbCol]=useState(false);
   const [songView,setSongView]=useState(null);
   const [rehearsal,setRehearsal]=useState(false);
@@ -36,12 +36,13 @@ export default function App(){
 
   // Temas aplicados via CSS variables inline — funciona en sandbox/artifact
   const THEMES={
-    // ── OSCURO — fondo casi negro, dorado cálido, alto contraste ──
+    // ── OSCURO — gris/violeta oscuro con paleta neon cosmos ──
     dark:{
-      bg:'#07070f',s1:'rgba(255,255,255,.06)',s2:'rgba(255,255,255,.03)',s3:'rgba(255,255,255,.1)',
-      bd:'rgba(255,255,255,.1)',bd2:'rgba(255,255,255,.2)',
-      ac:'#c8a97e',tx:'#ede9ff',tx2:'#9e9ab6',tx3:'#5a566e',
-      gn:'#5ecea0',rd:'#ff5252',
+      bg:'linear-gradient(160deg,#0f0f0f 0%,#0e0810 50%,#1a0a1f 100%)',
+      s1:'rgba(238,34,125,.10)',s2:'rgba(238,34,125,.05)',s3:'rgba(238,34,125,.18)',
+      bd:'rgba(238,34,125,.22)',bd2:'rgba(238,34,125,.45)',
+      ac:'#EE227D',tx:'#f5f0ff',tx2:'#9d8fb8',tx3:'#4a3d5c',
+      gn:'#30C0B7',rd:'#FD8083',
     },
     // ── GRIS — carbón oscuro con naranja quemado ──
     gray:{
@@ -55,10 +56,8 @@ export default function App(){
       bg:'#EDE8DC',
       s1:'rgba(0,0,0,.07)',s2:'rgba(0,0,0,.04)',s3:'rgba(0,0,0,.12)',
       bd:'rgba(0,0,0,.18)',bd2:'rgba(0,0,0,.32)',
-      ac:'#D4500A',   // naranja fuerte — botones, highlights, mes activo
-      tx:'#1a1208',   // casi negro
-      tx2:'#3a2010',  // marrón oscuro
-      tx3:'#7a5a3a',  // marrón medio
+      ac:'#D4500A',
+      tx:'#1a1208',tx2:'#3a2010',tx3:'#7a5a3a',
       gn:'#0d7a35',rd:'#c44010',
     },
     // ── BUBBLEGUM POP — fondo oscuro teal profundo, rosa neón + cyan ──
@@ -68,12 +67,13 @@ export default function App(){
       ac:'#FF69B4',tx:'#f0faff',tx2:'#a0d8d8',tx3:'#069494',
       gn:'#00F0FF',rd:'#ff4488',
     },
-    // ── VERDE OLIVA · MOCHA · NARANJA FUERTE — oscuro terroso con punch ──
-    oliva:{
-      bg:'#111a0a',s1:'rgba(232,103,10,.12)',s2:'rgba(232,103,10,.06)',s3:'rgba(232,103,10,.2)',
-      bd:'rgba(143,186,48,.2)',bd2:'rgba(143,186,48,.38)',
-      ac:'#E8670A',tx:'#f5f0d8',tx2:'#c8b878',tx3:'#6a8a3a',
-      gn:'#8fba30',rd:'#e03020',
+    // ── COSMOS — azul marino oscuro, violeta eléctrico + magenta neón ──
+    cosmos:{
+      bg:'linear-gradient(160deg,#07081a 0%,#0d0a2e 50%,#150720 100%)',
+      s1:'rgba(167,139,250,.12)',s2:'rgba(167,139,250,.06)',s3:'rgba(167,139,250,.2)',
+      bd:'rgba(167,139,250,.25)',bd2:'rgba(167,139,250,.5)',
+      ac:'#a78bfa',tx:'#f0eeff',tx2:'#9d8fe0',tx3:'#6b5fa8',
+      gn:'#34d399',rd:'#f43f5e',
     },
   };
   const t=THEMES[theme]||THEMES.dark;
@@ -95,27 +95,74 @@ export default function App(){
   const modeData=MODES[mode]||MODES.worship;
   const activeSl=SETLISTS[activeSunday]||[];
 
+
+  // ── Dashboard de inicio ───────────────────────────────────────────────────
+  const DashboardHome=({onNavigate,onToast,userName})=>{
+    const hora=new Date().getHours();
+    const saludo=hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
+    const acciones=[
+      {icon:'calendar',  label:'Crear evento',         sub:'Nuevo domingo o fecha especial',  color:'#a78bfa', action:()=>onNavigate('backstage')},
+      {icon:'music',     label:'Armar setlist',         sub:'Elige canciones para el servicio',color:'#34d399', action:()=>onNavigate('backstage')},
+      {icon:'song',      label:'Agregar canción',        sub:'Sube letra y acordes',            color:'#60a5fa', action:()=>onNavigate('cancionero')},
+      {icon:'team',      label:'Gestionar equipos',     sub:'Miembros, roles y permisos',      color:'#f472b6', action:()=>onNavigate('backstage')},
+      {icon:'rehearsal', label:'Ver próxima fecha',     sub:'Setlist y detalles del domingo',  color:'#fb923c', action:()=>onNavigate('misetlist')},
+      {icon:'stats',     label:'Ver resumen',            sub:'Calendario y actividad reciente', color:'#facc15', action:()=>onNavigate('admin')},
+    ];
+    const IcoAccion=({icon})=>{
+      const s={viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'};
+      if(icon==='calendar')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
+      if(icon==='music')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
+      if(icon==='song')return(<svg {...s}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>);
+      if(icon==='team')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
+      if(icon==='rehearsal')return(<svg {...s}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>);
+      if(icon==='stats')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
+      return null;
+    };
+    return(
+      <div style={{padding:'24px 16px 100px',minHeight:'100%'}}>
+        <div style={{marginBottom:28}}>
+          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lato',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué hacemos hoy?</div>
+          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'Lato',sans-serif",lineHeight:1.5}}>Elige una acción rápida para comenzar.</div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          {acciones.map((a,i)=>(
+            <button key={i} onClick={a.action}
+              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,padding:'18px 14px',cursor:'pointer',textAlign:'left',transition:'all .2s',display:'flex',flexDirection:'column',gap:12,position:'relative',overflow:'hidden'}}>
+              <div style={{width:44,height:44,borderRadius:12,background:`${a.color}18`,border:`1px solid ${a.color}35`,display:'flex',alignItems:'center',justifyContent:'center',color:a.color,flexShrink:0}}>
+                <IcoAccion icon={a.icon}/>
+              </div>
+              <div>
+                <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
+                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
+              </div>
+              <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Onboarding antiguo desactivado — reemplazado por ModeSelector
 
   const MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
   const mesActual=new Date().getMonth();
 
   const BNS=[
+    {id:'home',label:'Inicio'},
     {id:'admin',label:'Resumen'},
     {id:'misetlist',label:'Próx Fecha'},
     {id:'cancionero',label:'Cancionero'},
-    {id:'equipos',label:'Equipos'},
     {id:'backstage',label:'Backstage'},
   ];
   const NavIco=({id,active})=>{
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
+    if(id==='home')return(<svg {...s}><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
     if(id==='admin')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
     if(id==='misetlist')return(<svg {...s}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>);
     if(id==='cancionero')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
     if(id==='equipos')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
-    if(id==='equipos')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
-    if(id==='equipos')return(<svg viewBox='0 0 24 24' width={20} height={20} fill='none' stroke={active?'var(--ac)':'var(--tx3)'} strokeWidth={1.5}><path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/></svg>);
-    if(id==='equipos')return(<svg {...s}><path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/></svg>);
     if(id==='backstage')return(<svg {...s}><line x1="5" y1="3" x2="5" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><rect x="3" y="7" width="4" height="3.5" rx="1.5"/><rect x="10" y="13" width="4" height="3.5" rx="1.5"/><rect x="17" y="5" width="4" height="3.5" rx="1.5"/></svg>);
     return null;
   };
@@ -322,11 +369,15 @@ export default function App(){
           ))}
         </div>
         <div className="pw">
+          {view==='home'&&<DashboardHome
+            onNavigate={setView}
+            onToast={showToast}
+            userName="Danny"
+          />}
           {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onRehearsal={()=>setRehearsal(true)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav}/>}
           {view==='cancionero'&&<Cancionero mode={mode} onOpenSong={(name)=>{const sl=activeSl;const idx=sl.findIndex(s=>s.name===name);if(idx>=0)setSongView(idx);}} />}
-          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>{setView('backstage');}}/>}
-          {view==='premiere'&&<PremiereView onToast={showToast}/>}
           {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')}/>}
+          {view==='premiere'&&<PremiereView onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme}/>}
           {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setRehearsal(true)} userRole={userRole} onToast={showToast}/>}
         </div>

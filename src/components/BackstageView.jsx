@@ -31,6 +31,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   const [slSearch,setSlSearch]=useState('');
   const [slEventoId,setSlEventoId]=useState('');
   const [slGuardados,setSlGuardados]=useState([]);
+  // ── Estados Pastor ──
+  const [pastorVersiculo,setPastorVersiculo]=useState('');
+  const [pastorTexto,setPastorTexto]=useState('');
+  const [pastorNotas,setPastorNotas]=useState('');
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
     <div style={{padding:'10px 8px',paddingBottom:90}}>
@@ -518,21 +522,21 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Tema visual</div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10}}>
           {[
-            {id:'dark',      label:'Oscuro',          sub:'Alto contraste · Dorado',
-              bg:'linear-gradient(135deg,#2a1a4a 0%,#07070f 100%)',
-              preview:['#07070f','#c8a97e','#ede9ff']},
+            {id:'dark',      label:'Oscuro',           sub:'Gris/violeta · Rosa neón',
+              bg:'linear-gradient(135deg,#0f0f0f 0%,#1a0a1f 100%)',
+              preview:['#0f0f0f','#EE227D','#30C0B7']},
             {id:'gray',      label:'Gris',             sub:'Carbón · Naranja quemado',
               bg:'linear-gradient(135deg,#22232a 0%,#3a3830 60%,#e07820 100%)',
               preview:['#22232a','#e07820','#f2ede6']},
-            {id:'cream',     label:'Claro',             sub:'Blanco hueso · Contraste fuerte',
+            {id:'cream',     label:'Claro',            sub:'Blanco hueso · Contraste fuerte',
               bg:'linear-gradient(135deg,#EDE8DC 0%,#d8cfc0 100%)',
-              preview:['#F5F0E8','#8B4513','#0e0a06']},
-            {id:'bubblegum', label:'Bubblegum Pop',     sub:'Rosa neón · Teal profundo',
+              preview:['#F5F0E8','#D4500A','#1a1208']},
+            {id:'bubblegum', label:'Bubblegum Pop',    sub:'Rosa neón · Teal profundo',
               bg:'linear-gradient(135deg,#0d1f1f 0%,#062a2a 40%,#FF69B4 100%)',
               preview:['#0d1f1f','#FF69B4','#00F0FF']},
-            {id:'oliva',     label:'Oliva · Mocha',     sub:'Verde oliva · Naranja fuerte',
-              bg:'linear-gradient(135deg,#111a0a 0%,#1e2e0e 40%,#E8670A 85%,#8fba30 100%)',
-              preview:['#161a10','#E8670A','#8fba30']},
+            {id:'cosmos',    label:'Cosmos',           sub:'Azul marino · Violeta eléctrico',
+              bg:'linear-gradient(135deg,#07081a 0%,#0d0a2e 50%,#a78bfa 100%)',
+              preview:['#07081a','#a78bfa','#34d399']},
           ].map(th=>(
             <div key={th.id} onClick={()=>{onSetTheme(th.id);onToast({text:'Tema aplicado',sub:th.label});}}
               style={{borderRadius:12,cursor:'pointer',overflow:'hidden',transition:'all .2s',
@@ -586,8 +590,43 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
     if(icon==='shield')return(<svg {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>);
     if(icon==='bell')return(<svg {...props}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>);
     if(icon==='settings')return(<svg {...props}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>);
+    if(icon==='book')return(<svg {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>);
     return null;
   };
+
+  // ── PALABRA DEL PASTOR ──
+  if(bsView==='pastor')return(
+    <div style={{padding:'10px 8px',paddingBottom:90}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+      </div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>
+        Palabra del <span style={{color:'var(--ac)'}}>Pastor</span>
+      </div>
+      <div style={{fontSize:12,color:'var(--tx2)',marginBottom:20}}>Versículo y notas para el domingo</div>
+      <div className="card" style={{padding:14,marginBottom:12}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Versículo del domingo</div>
+        <input className="inp" placeholder="Ej: Juan 3:16" style={{marginBottom:8}}
+          value={pastorVersiculo||''} onChange={e=>setPastorVersiculo(e.target.value)}/>
+        <textarea className="inp" placeholder="Escribe el texto del versículo aquí..."
+          rows={4} style={{width:'100%',resize:'vertical',fontFamily:"'Lato',sans-serif",fontSize:13,lineHeight:1.6}}
+          value={pastorTexto||''} onChange={e=>setPastorTexto(e.target.value)}/>
+      </div>
+      <div className="card" style={{padding:14,marginBottom:12}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Notas del mensaje</div>
+        <textarea className="inp" placeholder="Título del mensaje, puntos principales, notas para el equipo..."
+          rows={5} style={{width:'100%',resize:'vertical',fontFamily:"'Lato',sans-serif",fontSize:13,lineHeight:1.6}}
+          value={pastorNotas||''} onChange={e=>setPastorNotas(e.target.value)}/>
+      </div>
+      <div style={{display:'flex',gap:8,marginTop:4}}>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
+        <button className="btn btn-p" style={{flex:2}} onClick={()=>{onToast({text:'Guardado',sub:'Palabra del Pastor actualizada'});setBsView(null);}}>
+          Guardar
+        </button>
+      </div>
+    </div>
+  );
 
       const ITEMS=[
     {id:'evento',label:'Crear evento',sub:'Nuevo domingo o fecha especial',icon:'calendar',adminOnly:false},
