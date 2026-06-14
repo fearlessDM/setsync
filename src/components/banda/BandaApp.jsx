@@ -88,12 +88,12 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
     return(
       <div style={{padding:'24px 16px 100px'}}>
         <div style={{marginBottom:24}}>
-          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lato',sans-serif",marginBottom:4}}>{saludo} 👋</div>
+          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>{saludo} 👋</div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué ensayamos hoy?</div>
           {siguienteGig&&(
             <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:10,background:'rgba(238,34,125,.08)',border:'1px solid rgba(238,34,125,.2)',marginTop:8}}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#EE227D" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-              <span style={{fontSize:11,color:'#EE227D',fontWeight:700,fontFamily:"'Lato',sans-serif"}}>
+              <span style={{fontSize:11,color:'#EE227D',fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
                 Próximo: {siguienteGig.nombre} · {new Date(siguienteGig.fecha).toLocaleDateString('es-CL',{day:'numeric',month:'short'})}
               </span>
             </div>
@@ -107,7 +107,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
                 <IcoBanda icon={a.icon}/>
               </div>
               <div>
-                <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
               </div>
               <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
@@ -160,7 +160,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
         </button>
         <div style={{flex:1}}>
           <h1 style={{margin:0,fontSize:16,fontWeight:900,
-            fontFamily:"'Lato',sans-serif",color:'var(--tx)',lineHeight:1}}>
+            fontFamily:"'DM Sans',sans-serif",color:'var(--tx)',lineHeight:1}}>
             Mi Banda
           </h1>
           <span style={{fontSize:9,fontWeight:700,color:'var(--ac)',
@@ -186,7 +186,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
                 background:isNow?'rgba(200,169,126,.15)':'transparent',
                 color:hasGig?'var(--ac)':isNow?'var(--tx2)':'var(--tx3)',
                 fontSize:9,fontWeight:900,cursor:'pointer',
-                letterSpacing:'.8px',fontFamily:"'Lato',sans-serif",
+                letterSpacing:'.8px',fontFamily:"'DM Sans',sans-serif",
                 position:'relative',
               }}>
                 {m}
@@ -207,7 +207,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
           <div>
             <div className="ph" style={{marginBottom:16}}>
               <h2 style={{margin:0,fontSize:20,fontWeight:900,color:'var(--tx)',
-                fontFamily:"'Lato',sans-serif"}}>Equipo</h2>
+                fontFamily:"'Special Gothic Expanded One',sans-serif"}}>Equipo</h2>
               <span style={{fontSize:11,color:'var(--tx3)'}}>
                 {members.filter(m=>ROLES_MUSICOS.find(r=>r.id===m.rol)).length} músicos ·{' '}
                 {members.filter(m=>EQUIPOS_TRABAJO.find(r=>r.id===m.rol)).length} técnicos

@@ -27,7 +27,7 @@ export function MiniCalEvento({mes}){
     <div style={{flexShrink:0,display:'flex',flexDirection:'column',gap:1,minWidth:140}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:1,marginBottom:2}}>
         {['L','M','M','J','V','S','D'].map((d,i)=>(
-          <div key={i} style={{textAlign:'center',fontSize:6,fontWeight:900,color:'rgba(255,255,255,.22)',fontFamily:"'Lato',sans-serif"}}>{d}</div>
+          <div key={i} style={{textAlign:'center',fontSize:6,fontWeight:900,color:'rgba(255,255,255,.22)',fontFamily:"'DM Sans',sans-serif"}}>{d}</div>
         ))}
       </div>
       {rows.map((row,ri)=>(
@@ -40,7 +40,7 @@ export function MiniCalEvento({mes}){
               <div key={ci} style={{height:11,display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <span style={{
                   fontSize:7,fontWeight:hasEv?900:400,
-                  fontFamily:"'Lato',sans-serif",
+                  fontFamily:"'DM Sans',sans-serif",
                   color:hasEv?'var(--ac)':isToday?'rgba(255,255,255,.8)':'var(--tx3)',
                   textDecoration:isToday&&!hasEv?'underline':'none',
                   lineHeight:1
@@ -120,12 +120,12 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
             <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:isNext?'20px 16px':isActive?'18px 16px':'12px 14px',borderRadius:16,background:isNext?'rgba(200,169,126,.1)':isActive?'rgba(200,169,126,.07)':'var(--s1)',border:isNext?'1px solid rgba(200,169,126,.5)':isActive?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:900,fontSize:isNext?28:isActive?22:17,color:'var(--tx)',fontFamily:"'Lato',sans-serif",transition:'font-size .2s'}}>Domingo {day}</div>
+                  <div style={{fontWeight:400,fontSize:isNext?28:isActive?22:17,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>Domingo {day}</div>
                   <div style={{fontSize:13,color:'var(--tx3)',marginTop:4,fontWeight:700}}>{sl.length} {sl.length===1?'canción':'canciones'}</div>
                 </div>
                 <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?'✓ Publicado':'Borrador'}</span>
                 {isLeader&&(
-                  <button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'Lato',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
+                  <button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
                     Modo Ensayo
                   </button>
@@ -135,7 +135,7 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
                 {EQUIPOS_DATA.map(eq=>(
                   <div key={eq.id} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:100,background:eq.color+'12',border:'1px solid '+eq.color+'30'}}>
                     <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'Lato',sans-serif"}}>{eq.name}</span>
+                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'DM Sans',sans-serif"}}>{eq.name}</span>
                     <span style={{fontSize:9,fontWeight:900,color:eq.color,marginLeft:2,display:'flex',alignItems:'center',gap:1}}>
                       {eq.miembros.length}
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke={eq.color} strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -163,11 +163,11 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
               <div key={i} style={{padding:'18px 16px',borderRadius:16,background:'var(--s1)',border:'1px solid rgba(200,169,126,.3)',cursor:'pointer'}} onClick={()=>onSelectDay&&onSelectDay(ev.dia)}>
                 <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
                   <div style={{flex:1}}>
-                    <div style={{fontWeight:900,fontSize:18,color:'var(--tx)',fontFamily:"'Lato',sans-serif"}}>{ev.label}</div>
+                    <div style={{fontWeight:400,fontSize:18,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>{ev.label}</div>
                     <div style={{fontSize:12,color:'var(--ac)',marginTop:3,fontWeight:600,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                   </div>
                   <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',display:'none'}}>Especial</span>
-                  {isLeader&&<button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'Lato',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
+                  {isLeader&&<button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
                     Modo Ensayo
                   </button>}
@@ -199,7 +199,7 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
             <div key={i} style={{padding:'14px 16px',borderRadius:16,background:'var(--s1)',border:'1px solid rgba(200,169,126,.25)'}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:900,fontSize:16,color:'var(--tx)',fontFamily:"'Lato',sans-serif"}}>{ev.label}</div>
+                  <div style={{fontWeight:400,fontSize:16,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>{ev.label}</div>
                   <div style={{fontSize:11,color:'var(--ac)',marginTop:2,fontWeight:700,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                 </div>
                 <span style={{padding:'3px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',flexShrink:0,display:'none'}}>Especial</span>
@@ -215,14 +215,14 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
         <div className="mov" onClick={e=>e.target===e.currentTarget&&setShowPicker(false)}>
           <div className="modal">
             <div className="m-hdr">
-              <span style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:19,color:'var(--tx)'}}>Agregar canción</span>
+              <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:19,color:'var(--tx)'}}>Agregar canción</span>
               <button className="ib" onClick={()=>setShowPicker(false)}><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <input className="inp" style={{margin:'9px 13px',width:'calc(100% - 26px)'}} placeholder="Buscar..." value={pFilter} onChange={e=>setPFilter(e.target.value)}/>
             <div className="m-body">
               {CANCIONES.filter(s=>s.n.toLowerCase().includes(pFilter.toLowerCase())).map((s,i)=>(
                 <div key={s.n} className={`so${sel.has(s.n)?' on':''}`} onClick={()=>setSel(prev=>{const ns=new Set(prev);ns.has(s.n)?ns.delete(s.n):ns.add(s.n);return ns;})}>
-                  <span style={{fontFamily:"'Lato',sans-serif",fontSize:13,color:'var(--tx3)',width:17,flexShrink:0}}>{i+1}</span>
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'var(--tx3)',width:17,flexShrink:0}}>{i+1}</span>
                   <span className="so-n">{s.n}</span>
                   <span className="so-bpm">{s.bpm}</span>
                   <div className="so-chk">✓</div>
@@ -277,7 +277,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
     <div style={{marginBottom:14}}>
       <div style={{borderTop:'1px solid var(--bd)',paddingTop:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Recordatorio al equipo</div>
-        <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'14px 16px',borderRadius:14,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:12,fontFamily:"'Lato',sans-serif",transition:'all .15s'}}>
+        <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'14px 16px',borderRadius:14,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:12,fontFamily:"'DM Sans',sans-serif",transition:'all .15s'}}>
           <div style={{width:38,height:38,borderRadius:10,background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
@@ -299,7 +299,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
       </div>
       <div style={{display:'flex',gap:8,marginBottom:12}}>
         {[['mie','Miércoles'],['sab','Sábado']].map(([t,l])=>(
-          <button key={t} onClick={()=>setTipo(t)} style={{flex:1,padding:'8px',borderRadius:9,border:tipo===t?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tipo===t?'rgba(200,169,126,.08)':'var(--s1)',color:tipo===t?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lato',sans-serif"}}>
+          <button key={t} onClick={()=>setTipo(t)} style={{flex:1,padding:'8px',borderRadius:9,border:tipo===t?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tipo===t?'rgba(200,169,126,.08)':'var(--s1)',color:tipo===t?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
             {l}
           </button>
         ))}
@@ -308,13 +308,13 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
         <div style={{marginBottom:10}}>
           <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>Vista previa del mensaje</div>
           <div style={{padding:'10px 12px',borderRadius:9,background:'var(--s1)',border:'1px solid var(--bd)',fontSize:11,color:'var(--tx)',lineHeight:1.7,whiteSpace:'pre-wrap',maxHeight:160,overflowY:'auto'}}>{msg}</div>
-          <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'Lato',sans-serif"}}>Editar mensaje</button>
+          <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Editar mensaje</button>
         </div>
       )}
       {custom&&(
         <div style={{marginBottom:10}}>
           <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-          <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lato',sans-serif"}}>← Regenerar automático</button>
+          <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>← Regenerar automático</button>
         </div>
       )}
       <div style={{display:'flex',gap:8}}>

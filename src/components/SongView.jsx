@@ -6,15 +6,15 @@ import { Toast } from './common';
 import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 
 export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onMoveChord){
-  if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Lato',sans-serif"}}>Letra no disponible aún.</div>);
+  if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Letra no disponible aún.</div>);
 
   const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
   const fs  =Math.min(14,Math.max(11,Math.floor(screenW/30)));
   const cFs =Math.max(10,fs-2);
   const sFs =Math.max(7,fs-4);
-  const FONT="'Albert Sans',sans-serif";
-  const LATO="'Lato',sans-serif";
+  const FONT="'DM Sans',sans-serif";
+  const LATO="'DM Sans',sans-serif";
 
   const trC=(ch)=>{
     if(!tpOff)return ch;
@@ -546,46 +546,78 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   // ── Renderizar líneas de un bloque con acordes ─────────────────────────────
-  const renderBloqueLines=(lines,tpOff,showChords)=>{
+  // ── Renderizado correcto de línea con acordes encima de la letra ──────────
+  // Cada línea con acordes se divide en "segmentos" [acorde, texto].
+  // Cada segmento es una columna: acorde arriba, texto abajo, alineados.
+  const renderLineaConAcordes=(line,trC,fs)=>{
     const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-    const FONT="'Lato',sans-serif";
+    const segs=[];
+    let last=0,m;
+    while((m=CHORD_RE.exec(line))!==null){
+      // texto antes del acorde
+      const txt=line.slice(last,m.index);
+      segs.push({chord:trC(m[1]),text:txt});
+      last=m.index+m[0].length;
+    }
+    // texto restante sin acorde
+    if(last<line.length) segs.push({chord:null,text:line.slice(last)});
+    const chordFs=Math.max(8,fs*0.65);
+    return(
+      <div style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',marginBottom:'0.2em',lineHeight:1}}>
+        {segs.map((seg,si)=>(
+          <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',marginRight:seg.chord&&seg.text?'0.05em':0}}>
+            {seg.chord
+              ?<span style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>
+                {seg.chord}
+              </span>
+              :<span style={{display:'block',height:chordFs*1.1,lineHeight:1}}/>
+            }
+            {seg.text
+              ?<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre'}}>
+                {seg.text}
+              </span>
+              :<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'transparent',lineHeight:1.25,userSelect:'none'}}>&nbsp;</span>
+            }
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderBloqueLines=(lines,tpOff,showChords,fs=14)=>{
+    const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const trC=(ch)=>{
       if(!tpOff)return ch;
       const p=ch.split('/');
       return p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
     };
-    return lines.filter(l=>l.trim()).map((line,li)=>{
+    return lines.map((line,li)=>{
+      const t=line.trim();
+      if(!t)return null;
+      // Línea que empieza con === es separador de bloque (no debería aparecer aquí)
+      if(t.startsWith('===')&&t.endsWith('==='))return null;
       const hasChord=CHORD_RE.test(line);
       CHORD_RE.lastIndex=0;
       if(hasChord&&showChords){
-        const parts=[];let last=0;let m;
-        while((m=CHORD_RE.exec(line))!==null){
-          if(m.index>last)parts.push({type:'text',val:line.slice(last,m.index)});
-          parts.push({type:'chord',val:trC(m[1])});
-          last=m.index+m[0].length;
-        }
-        if(last<line.length)parts.push({type:'text',val:line.slice(last)});
-        return(
-          <div key={li} style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',lineHeight:1.1,marginBottom:'0.15em'}}>
-            {parts.map((p,pi)=>
-              p.type==='chord'
-                ?<span key={pi} style={{fontFamily:"'Source Code Pro',monospace",fontSize:'0.72em',fontWeight:700,color:'var(--ac)',marginRight:'0.15em',lineHeight:1}}>{p.val}</span>
-                :p.val?<span key={pi} style={{fontFamily:FONT,whiteSpace:'pre'}}>{p.val}</span>:null
-            )}
-          </div>
-        );
+        return renderLineaConAcordes(line,trC,fs);
       }
-      const clean=line.replace(CHORD_RE,'').trim();
+      // Solo letra — limpiar acordes si showChords=false
+      const clean=showChords?t:t.replace(CHORD_RE,'').trim();
       if(!clean)return null;
-      return(<div key={li} style={{fontFamily:FONT,lineHeight:1.25,marginBottom:'0.1em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{clean}</div>);
+      return(
+        <div key={li} style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.35,marginBottom:'0.15em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+          {clean}
+        </div>
+      );
     });
   };
 
   // ── Vista Bloques ─────────────────────────────────────────────────────────
   const VistaBloques=()=>{
     const seq=getActiveSecuencia();
+    const containerRef=useRef(null);
     if(!seq.length)return(
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'Lato',sans-serif"}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'DM Sans',sans-serif"}}>
         Sin contenido disponible
       </div>
     );
@@ -598,33 +630,64 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const seen=new Set();
     seq.forEach(b=>{if(!seen.has(b.label)){seen.add(b.label);unique.push(b);}});
 
+    const numBloques=unique.length;
+
+    // Calcular filas según grid
+    const rows=Math.ceil(numBloques/cols);
+
     return(
-      <div style={{
+      <div ref={containerRef} style={{
         flex:1,overflowY:'auto',scrollbarWidth:'thin',
         display:'grid',
         gridTemplateColumns:`repeat(${cols},1fr)`,
-        gap:8,padding:'8px',alignContent:'start',
+        gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,
+        gap:8,padding:'8px',
+        height:'100%',
+        boxSizing:'border-box',
       }}>
         {unique.map((bloque,bi)=>{
           const color=getColorBloque(bloque.label);
-          const lineCount=bloque.lines.filter(l=>l.trim()).length;
-          // Tamaño de fuente dinámico: más líneas = más chico
-          const fs=Math.max(9,Math.min(18,Math.floor(120/(lineCount||1))));
+          // Líneas de contenido reales (excluir vacías y headers ===)
+          const contentLines=bloque.lines.filter(l=>{
+            const t=l.trim();
+            return t&&!t.startsWith('===');
+          });
+          // Contar cuántas "filas visuales" tiene: líneas con acorde cuentan doble
+          const CHORD_RE=/\[([A-G][b#]?)/.test;
+          const visualRows=contentLines.reduce((acc,l)=>{
+            return acc+(/\[[A-G]/.test(l)?2:1);
+          },0);
+          // Calcular fontSize óptimo para llenar el bloque
+          // Cada bloque tiene ~(containerHeight/rows - 40px header) disponible
+          // Cada fila visual ocupa ~(fontSize*1.35) px
+          // fs = availableHeight / visualRows / 1.35
+          // Estimamos containerHeight como vh aproximado
+          const approxBlockH=typeof window!=='undefined'
+            ?(window.innerHeight*0.82-40)/rows-40
+            :120;
+          const fsDynamic=Math.max(10,Math.min(22,Math.floor(approxBlockH/(visualRows||1)/1.4)));
           return(
             <div key={bi} style={{
               background:`${color}10`,
               border:`1px solid ${color}40`,
               borderRadius:14,
-              padding:'10px 12px',
-              display:'flex',flexDirection:'column',gap:4,
-              minHeight:80,
+              padding:'8px 10px',
+              display:'flex',flexDirection:'column',
               overflow:'hidden',
+              minHeight:0,
             }}>
-              <div style={{fontSize:9,fontWeight:900,color:color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:4,borderBottom:`1px solid ${color}30`,paddingBottom:4}}>
+              <div style={{
+                fontSize:9,fontWeight:700,
+                fontFamily:"'DM Sans',sans-serif",
+                color:color,textTransform:'uppercase',
+                letterSpacing:'1.5px',marginBottom:5,
+                borderBottom:`1px solid ${color}30`,paddingBottom:4,
+                flexShrink:0,
+              }}>
                 {bloque.label}
               </div>
-              <div style={{fontSize:fs,color:'var(--tx)',lineHeight:1.3,overflow:'hidden',flex:1}}>
-                {renderBloqueLines(bloque.lines,tpOff,showChords)}
+              <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',justifyContent:'flex-start'}}>
+                {renderBloqueLines(bloque.lines,tpOff,showChords,fsDynamic)}
               </div>
             </div>
           );
@@ -692,7 +755,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <span style={{fontSize:8,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
       </button>
       <div style={{width:'100%',padding:'6px 0',textAlign:'center',borderBottom:'1px solid var(--bd)'}}>
-        <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:16,color:svAc,lineHeight:1}}>{curKey}</div>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:16,color:svAc,lineHeight:1}}>{curKey}</div>
         {tpOff!==0&&<div style={{fontSize:7,color:'var(--tx3)',fontWeight:700,marginTop:1}}>{tpOff>0?'+':''}{tpOff}st</div>}
       </div>
       <button onClick={()=>doTp(-1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)'}}>
@@ -718,12 +781,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all .15s'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--ac)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10}}/>}
-                  <span style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:isOn?'var(--ac)':'var(--tx)',lineHeight:1}}>
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:isOn?'var(--ac)':'var(--tx)',lineHeight:1}}>
                     {c===0?'Sin capo':c}
                   </span>
                 </div>
                 <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:11,fontWeight:900,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'Albert Sans',sans-serif",fontWeight:700}}>{notaSuena}</div>
+                  <div style={{fontSize:11,fontWeight:900,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'DM Sans',sans-serif",fontWeight:700}}>{notaSuena}</div>
                   {c>0&&<div style={{fontSize:8,color:'var(--tx3)',marginTop:1}}>suena</div>}
                 </div>
               </button>
@@ -738,7 +801,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px'}}>
-        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0,transition:'all .15s'}}>
+        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .15s'}}>
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Anotar
           <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" style={{transform:showAnnoBar?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
@@ -749,11 +812,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             Capo {capo} · suena {sonaKey}
           </div>
         )}
-        <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+        <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           {showChords?'Solo letra':'Con acordes'}
         </button>
-        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} title={autoScroll?'Detener scroll automático':'Iniciar scroll automático'} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0,transition:'all .2s'}}>
+        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} title={autoScroll?'Detener scroll automático':'Iniciar scroll automático'} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
           {autoScroll
             ?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             :<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -763,19 +826,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {isAdmin&&(
           <>
-          <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+          <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             {editMode?'Cancelar':'Editar'}
           </button>
           {editMode&&editedSongs[songs[idx]?.name]&&(
-            <button onClick={handleSaveEdit} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,206,160,.5)',background:'rgba(94,206,160,.15)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+            <button onClick={handleSaveEdit} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,206,160,.5)',background:'rgba(94,206,160,.15)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               Publicar
             </button>
           )}
           </>
         )}
-        <button onClick={()=>setToast({text:'Guardado',sub:'Anotaciones en tu dispositivo'})} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,206,160,.28)',background:'rgba(94,206,160,.07)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>
+        <button onClick={()=>setToast({text:'Guardado',sub:'Anotaciones en tu dispositivo'})} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,206,160,.28)',background:'rgba(94,206,160,.07)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           Guardar
         </button>
@@ -783,7 +846,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {showAnnoBar&&(
         <div style={{display:'flex',alignItems:'center',gap:3,padding:'0 10px 5px',overflowX:'auto',scrollbarWidth:'none'}}>
           {[['draw','Lápiz'],['erase','Borrar']].map(([t,l])=>(
-            <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'rgba(255,255,255,.09)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lato',sans-serif",flexShrink:0}}>{l}</button>
+            <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'rgba(255,255,255,.09)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>{l}</button>
           ))}
           <div style={{width:1,height:16,background:'var(--bd)',margin:'0 3px'}}/>
           {COLS.map(c=>(<button key={c} onClick={()=>setColor(c)} style={{width:18,height:18,borderRadius:'50%',background:c,border:color===c?'2px solid #fff':'2px solid transparent',cursor:'pointer',flexShrink:0}}/>))}
@@ -812,11 +875,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </svg>
           </div>
           <div>
-            <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>Vista por Bloques</div>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>Vista por Bloques</div>
             <div style={{fontSize:11,color:'var(--ac)',fontWeight:700}}>Modo Pro</div>
           </div>
         </div>
-        <div style={{fontSize:13,color:'var(--tx)',lineHeight:1.6,marginBottom:16,fontFamily:"'Lato',sans-serif"}}>
+        <div style={{fontSize:13,color:'var(--tx)',lineHeight:1.6,marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>
           Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio, con la letra al máximo tamaño posible.
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
@@ -828,16 +891,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           ].map(([ico,txt],i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:10,background:'var(--s1)',border:'1px solid var(--bd)'}}>
               <span style={{fontSize:16}}>{ico}</span>
-              <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lato',sans-serif",fontWeight:600}}>{txt}</span>
+              <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>{txt}</span>
             </div>
           ))}
         </div>
         <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initSecuencia();setShowModePopup(false);}}
-          style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
+          style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
           Activar Vista Bloques
         </button>
         <button onClick={()=>setShowModePopup(false)}
-          style={{width:'100%',padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lato',sans-serif",fontWeight:700,fontSize:12,marginTop:6}}>
+          style={{width:'100%',padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,marginTop:6}}>
           Cancelar
         </button>
       </div>
@@ -900,7 +963,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Anterior
       </button>
       <div className="sv-ni">
-        <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
         <div style={{fontSize:9,color:svTx3,marginTop:1,fontWeight:700}}>Canción {idx+1} de {songs.length}</div>
       </div>
       <button className="nb p" onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>i+1);}}>
@@ -919,14 +982,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{padding:'12px 14px 10px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',gap:8}}>
             <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
             <div style={{flex:1}}>
-              <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)'}}>SetSync</div>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)'}}>SetSync</div>
               <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{songs.length} canciones</div>
             </div>
           </div>
           <div style={{flex:1,overflowY:'auto',scrollbarWidth:'thin'}}>
             {songs.map((s,i)=>(
               <div key={i} onClick={()=>setIdx(i)} style={{padding:'11px 14px',borderBottom:'1px solid rgba(255,255,255,.05)',cursor:'pointer',background:i===idx?'rgba(200,169,126,.1)':'transparent',transition:'background .15s',borderLeft:`3px solid ${i===idx?'var(--ac)':'transparent'}`}}>
-                <div style={{fontFamily:"'Lato',sans-serif",fontWeight:i===idx?900:700,fontSize:12,color:i===idx?'var(--ac)':'var(--tx)',marginBottom:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.name}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:i===idx?900:700,fontSize:12,color:i===idx?'var(--ac)':'var(--tx)',marginBottom:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.name}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',display:'flex',gap:8}}>
                   <span style={{fontFamily:"'Source Code Pro',monospace",fontWeight:700}}>{s.key}</span>
                   <span>{s.bpm} BPM</span>
@@ -936,7 +999,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
           <div style={{padding:'11px 14px',borderTop:'1px solid var(--bd)',background:'rgba(200,169,126,.04)'}}>
             <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:4}}>Activa</div>
-            <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:12,color:'var(--ac)',marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:12,color:'var(--ac)',marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
             <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
               <span style={{padding:'2px 7px',borderRadius:100,background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.2)',fontSize:10,fontWeight:900,color:'var(--ac)',fontFamily:"'Source Code Pro',monospace"}}>{curKey}</span>
               {capo>0&&<span style={{fontSize:10,color:'var(--gn)',fontWeight:700}}>· Capo {capo} → {sonaKey}</span>}
@@ -946,7 +1009,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
           <div style={{padding:'10px 14px',borderBottom:'1px solid var(--bd)',background:'rgba(6,6,14,.85)',display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
               <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginTop:1}}>
                 {song.role||'Guitarra'} · {curKey} · {song.bpm} BPM
                 {capo>0&&<span style={{color:'var(--gn)',marginLeft:8}}>· Capo {capo} suena {sonaKey}</span>}
@@ -976,7 +1039,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
             {song.role||'Guitarra'} · {curKey} · {song.bpm} BPM
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}

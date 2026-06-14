@@ -48,7 +48,7 @@ export function MiniCal({eventDays=[]}){
       {exp&&(
         <>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:7}}>
-            <span style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:11,color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
+            <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:11,color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
             <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700}}>{y}</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'1px'}}>

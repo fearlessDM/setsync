@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { COVERS_DEMO } from '../../data/constants';
 
 export function BandaRepertorio({repertorio,setRepertorio,gigs,isEncargado,onToast,onOpenSong}){
-  const FONT="'Lato',sans-serif";
+  const FONT="'DM Sans',sans-serif";
 
   // ── Estado ────────────────────────────────────────────────────────────────
   const [sortBy,setSortBy]=useState('bpm');

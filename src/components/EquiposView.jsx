@@ -17,7 +17,7 @@ export function EquiposView({onToast,onGestionar}){
           <div key={eq.id} className="eq-card">
             <div style={{padding:'12px 15px',display:'flex',alignItems:'center',gap:9,borderBottom:'1px solid var(--bd)'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`,flexShrink:0}}/>
-              <span style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
+              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
               <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,background:'var(--s2)',border:'1px solid var(--bd)',padding:'2px 8px',borderRadius:100}}>{eq.miembros.length} integrantes</span>
             </div>
             <div style={{padding:'8px 15px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5}}>

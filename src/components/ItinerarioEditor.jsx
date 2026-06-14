@@ -23,7 +23,7 @@ export function ItinerarioEditor(){
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
         <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>Horarios del evento</span>
-        <button onClick={()=>setEdit(v=>!v)} style={{fontSize:11,fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lato',sans-serif"}}>
+        <button onClick={()=>setEdit(v=>!v)} style={{fontSize:11,fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
           {edit?'Listo':'Editar'}
         </button>
       </div>
@@ -34,14 +34,14 @@ export function ItinerarioEditor(){
             :<span style={{fontFamily:"'Source Code Pro',monospace",fontSize:11,color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
           }
           {edit
-            ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:11,color:'var(--tx)',background:'var(--s2)',border:'1px solid var(--bd)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"'Lato',sans-serif"}}/>
+            ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:11,color:'var(--tx)',background:'var(--s2)',border:'1px solid var(--bd)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"'DM Sans',sans-serif"}}/>
             :<span style={{flex:1,fontSize:11,color:'var(--tx)'}}>{it.label}</span>
           }
           {edit&&<button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--rd)',cursor:'pointer',fontSize:15,lineHeight:1,flexShrink:0}}>×</button>}
         </div>
       ))}
       {edit&&(
-        <button onClick={addItem} style={{marginTop:8,fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lato',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+        <button onClick={addItem} style={{marginTop:8,fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Agregar ítem
         </button>

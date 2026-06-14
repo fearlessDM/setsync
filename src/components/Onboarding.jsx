@@ -24,7 +24,7 @@ export function Onboarding({onFinish}){
               {[['es','Español','Spanish'],['en','English','Inglés']].map(([l,n,s])=>(
                 <div key={l} className={`ob-lang${lang===l?' on':''}`} onClick={()=>setLang(l)}>
                   <div>
-                    <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{n}</div>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{n}</div>
                     <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>{s}</div>
                   </div>
                 </div>
@@ -52,7 +52,7 @@ export function Onboarding({onFinish}){
                   </div>
                   <div>
                     <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.8px',marginBottom:2}}>{v.sub}</div>
-                    <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)'}}>{v.label}</div>
+                    <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)'}}>{v.label}</div>
                     <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4,marginTop:2}}>{v.events}</div>
                   </div>
                 </div>

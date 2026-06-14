@@ -121,9 +121,9 @@ export default function App(){
     return(
       <div style={{padding:'24px 16px 100px',minHeight:'100%'}}>
         <div style={{marginBottom:28}}>
-          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lato',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
+          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué hacemos hoy?</div>
-          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'Lato',sans-serif",lineHeight:1.5}}>Elige una acción rápida para comenzar.</div>
+          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'DM Sans',sans-serif",lineHeight:1.5}}>Elige una acción rápida para comenzar.</div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           {acciones.map((a,i)=>(
@@ -133,7 +133,7 @@ export default function App(){
                 <IcoAccion icon={a.icon}/>
               </div>
               <div>
-                <div style={{fontFamily:"'Lato',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
               </div>
               <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
@@ -199,10 +199,10 @@ export default function App(){
       <div style={{
         minHeight:'100vh',background:'#07070f',
         display:'flex',flexDirection:'column',
-        fontFamily:"'Lato',sans-serif",
+        fontFamily:"'DM Sans',sans-serif",
         overflowY:'auto',
       }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Lato:wght@400;700;900&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
         <div style={{padding:'48px 24px 24px',textAlign:'center'}}>
           <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#c8a97e" strokeWidth="1.5" style={{marginBottom:10}}>
             <path d="M9 18V5l12-2v13"/>
@@ -226,7 +226,7 @@ export default function App(){
                 style={{padding:'6px 18px',border:'none',cursor:'pointer',
                   background:lang===l?'rgba(200,169,126,.2)':'transparent',
                   color:lang===l?'#c8a97e':'rgba(255,255,255,.3)',
-                  fontSize:12,fontWeight:700,fontFamily:"'Lato',sans-serif",
+                  fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
                   textTransform:'uppercase',letterSpacing:'1px',
                   transition:'all .2s'}}>
                 {l==='es'?'Español':'English'}
@@ -235,7 +235,7 @@ export default function App(){
           </div>
         </div>
         <div style={{padding:'0 24px 8px',textAlign:'center'}}>
-          <div style={{fontSize:17,fontWeight:900,color:'#ede9ff',marginBottom:6}}>
+          <div style={{fontSize:17,fontWeight:400,color:'#ede9ff',marginBottom:6,fontFamily:"'Special Gothic Expanded One',sans-serif"}}>
             {t.choose}
           </div>
           <div style={{fontSize:12,color:'rgba(255,255,255,.35)',lineHeight:1.5,
@@ -324,8 +324,8 @@ export default function App(){
     // ── Modo Banda — completamente separado ────────────────────────────────────
   if(appMode==='banda'){
     return(
-      <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lato',sans-serif"}}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Lato:wght@400;700;900&display=swap');`}</style>
+      <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'DM Sans',sans-serif"}}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
         <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle}/>
       </div>
     );

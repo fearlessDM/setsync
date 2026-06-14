@@ -35,7 +35,7 @@ export function BandaFechas({gigs,setGigs,members,repertorio,isEncargado,onToast
         <div style={{marginBottom:16}}>
           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
             <h2 style={{margin:0,fontSize:18,fontWeight:900,color:'var(--tx)',
-              fontFamily:"'Lato',sans-serif"}}>{g.nombre}</h2>
+              fontFamily:"'DM Sans',sans-serif"}}>{g.nombre}</h2>
             <span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:10,
               background:`rgba(0,0,0,.3)`,color:tipoColor,
               border:`1px solid ${tipoColor}44`,textTransform:'uppercase'}}>
@@ -150,7 +150,7 @@ export function BandaFechas({gigs,setGigs,members,repertorio,isEncargado,onToast
     <div>
       <div className="ph" style={{marginBottom:16}}>
         <h2 style={{margin:0,fontSize:20,fontWeight:900,color:'var(--tx)',
-          fontFamily:"'Lato',sans-serif"}}>Fechas</h2>
+          fontFamily:"'Special Gothic Expanded One',sans-serif"}}>Fechas</h2>
         {isEncargado&&(
           <button onClick={()=>onToast('Crear evento — próximamente')}
             style={{padding:'6px 12px',borderRadius:8,border:'1px solid var(--bd)',
