@@ -54,7 +54,7 @@ export function MiniCalEvento({mes}){
   );
 }
 
-export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSelectDay,mesNav=new Date().getMonth()}){
+export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay,mesNav=new Date().getMonth()}){
   const [selDay,setSelDay]=useState(activeSunday);
   const [showPicker,setShowPicker]=useState(false);
   const [pFilter,setPFilter]=useState('');
@@ -117,17 +117,17 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
                   <div style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
                 </div>
               )}
-            <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:isNext?'20px 16px':isActive?'18px 16px':'12px 14px',borderRadius:16,background:isNext?'rgba(200,169,126,.1)':isActive?'rgba(200,169,126,.07)':'var(--s1)',border:isNext?'1px solid rgba(200,169,126,.5)':isActive?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
+            <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:400,fontSize:isNext?28:isActive?22:17,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>Domingo {day}</div>
+                  <div style={{fontWeight:400,fontSize:22,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>Domingo {day}</div>
                   <div style={{fontSize:13,color:'var(--tx3)',marginTop:4,fontWeight:700}}>{sl.length} {sl.length===1?'canción':'canciones'}</div>
                 </div>
                 <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?'✓ Publicado':'Borrador'}</span>
                 {isLeader&&(
-                  <button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
+                  <button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                    Modo Ensayo
+                    En Vivo
                   </button>
                 )}
               </div>
@@ -167,9 +167,9 @@ export function AdminView({mode,activeSunday,userRole,onRehearsal,onToast,onSele
                     <div style={{fontSize:12,color:'var(--ac)',marginTop:3,fontWeight:600,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                   </div>
                   <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',display:'none'}}>Especial</span>
-                  {isLeader&&<button onClick={e=>{e.stopPropagation();onRehearsal();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
+                  {isLeader&&<button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                    Modo Ensayo
+                    En Vivo
                   </button>}
                 </div>
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
@@ -350,10 +350,10 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast}){
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Dom <span style={{color:'var(--ac)'}}>{activeSunday} {mesNombre}</span></div>
             <div style={{fontSize:12,color:'var(--tx2)'}}>Tu setlist para este domingo. Repasa las canciones con tiempo.</div>
           </div>
-          <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:12,border:'1px solid rgba(255,82,82,.35)',background:'rgba(255,82,82,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+          <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:12,border:'1px solid rgba(48,192,183,.35)',background:'rgba(48,192,183,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
             <div style={{display:'flex',alignItems:'center',gap:5}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
-              <span style={{fontSize:11,fontWeight:900,color:'var(--rd)',textTransform:'uppercase',letterSpacing:'.5px'}}>En Vivo</span>
+              <span style={{fontSize:11,fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>En Vivo</span>
             </div>
             <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700}}>Interpretar</span>
           </button>

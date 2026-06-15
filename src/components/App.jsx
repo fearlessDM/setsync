@@ -6,7 +6,6 @@ import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 import '../styles/theme.css';
 import { Toast } from './common';
 import { SongView } from './SongView';
-import { Rehearsal } from './Rehearsal';
 import { AdminView, MiSetlist, PremiereView } from './AdminView';
 import { Cancionero } from './Cancionero';
 import { EquiposView } from './EquiposView';
@@ -21,7 +20,6 @@ export default function App(){
   const [view,setView]=useState('home');
   const [sbCol,setSbCol]=useState(false);
   const [songView,setSongView]=useState(null);
-  const [rehearsal,setRehearsal]=useState(false);
   const [toast,setToast]=useState(null);
   const [theme,setTheme]=useState('dark');
   const [eventos,setEventos]=useState([]);
@@ -36,12 +34,12 @@ export default function App(){
 
   // Temas aplicados via CSS variables inline — funciona en sandbox/artifact
   const THEMES={
-    // ── OSCURO — negro carbón sin azul, paleta de la foto ──
+    // ── OSCURO — negro puro, acento blanco ──
     dark:{
-      bg:'linear-gradient(160deg,#1a1b1e 0%,#2b2d31 100%)',
-      s1:'rgba(255,255,255,.05)',s2:'rgba(255,255,255,.025)',s3:'rgba(255,255,255,.09)',
-      bd:'rgba(255,255,255,.09)',bd2:'rgba(255,255,255,.18)',
-      ac:'#EE227D',tx:'#f3f1ed',tx2:'rgba(243,241,237,.55)',tx3:'#6b6f77',
+      bg:'#080809',
+      s1:'rgba(255,255,255,.05)',s2:'rgba(255,255,255,.025)',s3:'rgba(255,255,255,.08)',
+      bd:'rgba(255,255,255,.08)',bd2:'rgba(255,255,255,.16)',
+      ac:'#ffffff',tx:'#f3f1ed',tx2:'rgba(243,241,237,.5)',tx3:'#52555c',
       gn:'#30C0B7',rd:'#FD8083',
     },
     // ── GRIS — carbón oscuro con naranja quemado ──
@@ -280,20 +278,35 @@ export default function App(){
       <div className="bg-fx"/>
       <nav className={`sb${sbCol?' col':''}`}>
         <div className="sb-top">
-          <div className="logo-mk"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-          <div className="logo-txt"><h1>Setlist</h1><span>{modeData.tagline}</span></div>
+          <div className="logo-mk">
+            <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:34,height:34,objectFit:'contain'}}/>
+          </div>
+          <div className="logo-txt"><h1>SetSync</h1><span>{modeData.tagline}</span></div>
           <div className="sb-r">
             <button className="sb-btn" onClick={()=>setSbCol(c=>!c)}>
-              {sbCol?<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>:<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>}
+              {sbCol
+                ?<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                :<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              }
             </button>
           </div>
+        </div>
+        {/* Nav items */}
+        <div className="sb-nav">
+          {BNS.map(n=>(
+            <div key={n.id} className={`ni${view===n.id?' on':''}`} onClick={()=>setView(n.id)}>
+              <div className="ni-ic"><NavIco id={n.id} active={view===n.id}/></div>
+              <span className="ni-lb">{n.label}</span>
+              {view===n.id&&<div className="ni-dot"/>}
+            </div>
+          ))}
         </div>
         <div className="sb-foot">
           <div className="u-chip">
             <div className="u-av">DM</div>
             <div className="u-inf">
-              <div style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>Danny</div>
-              <div style={{fontSize:9,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700}}>Super Admin</div>
+              <div className="u-name">Danny</div>
+              <div style={{fontSize:9,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,fontFamily:"'DM Sans',sans-serif",opacity:.7}}>Super Admin</div>
             </div>
           </div>
         </div>
@@ -318,12 +331,12 @@ export default function App(){
             onToast={showToast}
             userName="Danny"
           />}
-          {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onRehearsal={()=>setRehearsal(true)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav}/>}
+          {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onLive={()=>setSongView(0)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav}/>}
           {view==='cancionero'&&<Cancionero mode={mode} onOpenSong={(name)=>{const sl=activeSl;const idx=sl.findIndex(s=>s.name===name);if(idx>=0)setSongView(idx);}} />}
           {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')}/>}
           {view==='premiere'&&<PremiereView onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setRehearsal(true)} userRole={userRole} onToast={showToast}/>}
+          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast}/>}
         </div>
       </main>
 
@@ -337,9 +350,6 @@ export default function App(){
 
       {songView!==null&&activeSl.length>0&&(
         <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,content)=>handleSaveChords(name,content)} contentDB={SONG_CONTENT_IGLESIA}/>
-      )}
-      {rehearsal&&activeSl.length>0&&(
-        <Rehearsal songs={activeSl} onClose={()=>setRehearsal(false)} onToast={showToast}/>
       )}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </div>
