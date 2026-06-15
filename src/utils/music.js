@@ -23,3 +23,48 @@ export function transposeChord(chord, offset) {
 }
 
 export const initials = n => n.trim().split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+// ── Sistema Nashville (grados numéricos) ─────────────────────────────────────
+// Convierte un acorde a su grado relativo a la tonalidad base.
+// Ej: chordToNashville('G', 'C') → '5'
+//     chordToNashville('Am', 'C') → '6m'
+//     chordToNashville('G7', 'C') → '57'
+export function chordToNashville(chord, rootKey) {
+  if (!chord || !rootKey) return chord;
+
+  // Extraer raíz y sufijo del acorde
+  const rootMatch = chord.match(/^([A-G][b#]?)(.*)/);
+  if (!rootMatch) return chord;
+  const chordRoot = rootMatch[1];
+  const suffix = rootMatch[2];
+
+  // Normalizar a CHROMATIC
+  const chordBase = ENHAR[chordRoot] || chordRoot;
+  const keyBase = ENHAR[rootKey] || rootKey;
+
+  const chordIdx = CHROMATIC.indexOf(chordBase);
+  const keyIdx = CHROMATIC.indexOf(keyBase);
+  if (chordIdx < 0 || keyIdx < 0) return chord;
+
+  // Grado = semitono relativo a la tónica
+  const degree = (chordIdx - keyIdx + 12) % 12;
+
+  // Mapa de semitonos a número de grado
+  const DEGREE_MAP = {
+    0: '1',
+    1: '1#',  // b2
+    2: '2',
+    3: '2#',  // b3
+    4: '3',
+    5: '4',
+    6: '4#',  // b5 / #4
+    7: '5',
+    8: '5#',  // b6
+    9: '6',
+    10: '6#', // b7
+    11: '7',
+  };
+
+  const num = DEGREE_MAP[degree] || String(degree);
+  return num + suffix;
+}

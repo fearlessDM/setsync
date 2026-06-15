@@ -1,25 +1,35 @@
-// SongView: visor de canción con transposición, capo, anotaciones (dibujo a mano),
-// edición de acordes y layouts adaptativos desktop/tablet/mobile.
+// SongView: visor de canción con transposición, capo, anotaciones,
+// vista bloques/lineal, Nashville, panel Estructura con scroll táctil.
 import { useState, useEffect, useRef } from 'react';
-import { transposeChord, tpKey } from '../utils/music';
+import { transposeChord, tpKey, chordToNashville } from '../utils/music';
 import { Toast } from './common';
 import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 
-export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onMoveChord){
+const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
+
+// ── Clave localStorage para popup bloques ──────────────────────────────────
+const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
+
+// ── renderSongContent (vista lineal) ──────────────────────────────────────
+export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onMoveChord,nashville=false,songKey='C'){
   if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Letra no disponible aún.</div>);
 
-  const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
   const fs  =Math.min(14,Math.max(11,Math.floor(screenW/30)));
   const cFs =Math.max(10,fs-2);
   const sFs =Math.max(7,fs-4);
   const FONT="'DM Sans',sans-serif";
-  const LATO="'DM Sans',sans-serif";
 
   const trC=(ch)=>{
-    if(!tpOff)return ch;
     const p=ch.split('/');
-    return p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
+    let transposed=p.length>1
+      ?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff)
+      :transposeChord(ch,tpOff);
+    if(nashville){
+      const parts=transposed.split('/');
+      return parts.map(c=>chordToNashville(c,songKey)).join('/');
+    }
+    return transposed;
   };
 
   const lines=raw.split('\n');
@@ -44,7 +54,6 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   const maxLW=blocks.reduce((mx,b)=>b.label?Math.max(mx,b.label.length):mx,0);
   const labelPx=maxLW>0?Math.ceil(maxLW*(sFs*0.62))+10:0;
 
-  // Contar acordes totales para ID único
   let globalChordIdx=0;
 
   const renderLine=(text,lineIdx,key)=>{
@@ -57,11 +66,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
       const lyric=text.replace(CHORD_RE,'').trim();
       if(!lyric)return null;
       return(
-        <div key={key} style={{
-          fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,
-          lineHeight:1.2,textTransform:'uppercase',
-          textAlign:'center',width:'100%',marginBottom:1,
-        }}>{lyric}</div>
+        <div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.2,textAlign:'center',width:'100%',marginBottom:1}}>{lyric}</div>
       );
     }
 
@@ -90,73 +95,27 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
 
     const hasChords=groups.some(g=>g.c);
     return(
-      <div key={key} style={{
-        display:'flex',flexWrap:'nowrap',
-        justifyContent:'center',
-        width:'100%',marginBottom:hasChords?3:1,
-        alignItems:'flex-end',overflow:'visible',
-      }}>
+      <div key={key} style={{display:'flex',flexWrap:'nowrap',justifyContent:'center',width:'100%',marginBottom:hasChords?3:1,alignItems:'flex-end',overflow:'visible'}}>
         {groups.map((g,j)=>{
           const isSelected=editMode&&selectedChord&&selectedChord.lineKey===key&&selectedChord.ci===g.ci;
           return(
-            <div key={j} style={{
-              display:'inline-flex',flexDirection:'column',
-              alignItems:'flex-start',flexShrink:0,
-              position:'relative',
-            }}>
+            <div key={j} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',flexShrink:0,position:'relative'}}>
               {hasChords&&(
                 editMode&&g.c?(
-                  // Modo edición: acorde tocable con controles
                   <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
                     {isSelected&&(
                       <div style={{display:'flex',gap:2,marginBottom:1}}>
-                        <button
-                          onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'left');}}
-                          style={{
-                            fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',
-                            background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',
-                            fontWeight:900,lineHeight:1,
-                          }}>←</button>
-                        <button
-                          onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'right');}}
-                          style={{
-                            fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',
-                            background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',
-                            fontWeight:900,lineHeight:1,
-                          }}>→</button>
+                        <button onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'left');}} style={{fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',fontWeight:900,lineHeight:1}}>←</button>
+                        <button onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'right');}} style={{fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',fontWeight:900,lineHeight:1}}>→</button>
                       </div>
                     )}
-                    <span
-                      onClick={()=>onSelectChord({lineKey:key,ci:g.ci,lineIdx})}
-                      style={{
-                        fontSize:cFs,fontWeight:800,
-                        color:isSelected?'#fff':'var(--ac)',
-                        lineHeight:1,fontFamily:FONT,
-                        whiteSpace:'nowrap',display:'block',
-                        paddingRight:g.t?1:3,
-                        background:isSelected?'var(--ac)':'transparent',
-                        borderRadius:3,padding:isSelected?'1px 3px':'0',
-                        cursor:'pointer',
-                        border:editMode?'1px dashed rgba(200,169,126,.4)':'none',
-                      }}>{g.c}</span>
+                    <span onClick={()=>onSelectChord({lineKey:key,ci:g.ci,lineIdx})} style={{fontSize:cFs,fontWeight:800,color:isSelected?'#fff':'var(--ac)',lineHeight:1,fontFamily:FONT,whiteSpace:'nowrap',display:'block',background:isSelected?'var(--ac)':'transparent',borderRadius:3,padding:isSelected?'1px 3px':'0',cursor:'pointer',border:editMode?'1px dashed rgba(200,169,126,.4)':'none'}}>{g.c}</span>
                   </div>
                 ):(
-                  <span style={{
-                    fontSize:cFs,fontWeight:800,
-                    color:g.c?'var(--ac)':'transparent',
-                    lineHeight:1,fontFamily:FONT,
-                    whiteSpace:'nowrap',display:'block',
-                    paddingRight:g.t?1:3,
-                  }}>{g.c||'·'}</span>
+                  <span style={{fontSize:cFs,fontWeight:800,color:g.c?'var(--ac)':'transparent',lineHeight:1,fontFamily:FONT,whiteSpace:'nowrap',display:'block',paddingRight:g.t?1:3}}>{g.c||'·'}</span>
                 )
               )}
-              <span style={{
-                fontSize:fs,fontWeight:700,
-                color:g.t?'var(--tx)':'transparent',
-                lineHeight:1.2,fontFamily:FONT,
-                whiteSpace:'pre',textTransform:'uppercase',
-                display:'block',
-              }}>{g.t||' '}</span>
+              <span style={{fontSize:fs,fontWeight:700,color:g.t?'var(--tx)':'transparent',lineHeight:1.2,fontFamily:FONT,whiteSpace:'pre',display:'block'}}>{g.t||' '}</span>
             </div>
           );
         })}
@@ -166,44 +125,26 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
 
   let lineCounter=0;
   return(
-    <div style={{width:'100%',padding:'2px 4px 12px',
-      outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',
-      borderRadius:editMode?8:0,
-    }}>
+    <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
       {editMode&&(
-        <div style={{textAlign:'center',fontSize:10,color:'var(--ac)',fontFamily:LATO,
-          fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
+        <div style={{textAlign:'center',fontSize:10,color:'var(--ac)',fontFamily:FONT,fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
           ✏ Toca un acorde y usa ← → para moverlo
         </div>
       )}
       {blocks.map((blk,bi)=>{
-        const blines=blk.lines.filter((l,i,a)=>
-          !((!l.trim())&&(i===0||i===a.length-1))
-        );
+        const blines=blk.lines.filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
         if(!blines.length&&!blk.label)return null;
         return(
-          <div key={bi} style={{
-            marginTop:bi===0?0:fs*0.85,
-            background:'transparent',
-            borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',
-            paddingTop:bi===0?0:4,
-          }}>
+          <div key={bi} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
             {blines.map((line,li)=>{
               if(!line.trim())return<div key={li} style={{height:fs*0.2}}/>;
               const isFirst=li===0;
               const thisLineIdx=lineCounter++;
               return(
                 <div key={li} style={{display:'flex',alignItems:'flex-end',width:'100%'}}>
-                  <div style={{
-                    width:labelPx,minWidth:labelPx,flexShrink:0,
-                    paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2,
-                  }}>
+                  <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2}}>
                     {blk.label&&isFirst&&(
-                      <span style={{
-                        fontSize:sFs,fontWeight:900,color:'var(--tx3)',
-                        fontFamily:LATO,textTransform:'uppercase',
-                        letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8,
-                      }}>{blk.label}</span>
+                      <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
                     )}
                   </div>
                   <div style={{flex:1,minWidth:0}}>
@@ -229,39 +170,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [showAnnoBar,setShowAnnoBar]=useState(false);
   const [capo,setCapo]=useState(0);
   const [editMode,setEditMode]=useState(false);
-  const [selectedChord,setSelectedChord]=useState(null); // {lineIdx, chordIdx}
+  const [selectedChord,setSelectedChord]=useState(null);
   const [editedSongs,setEditedSongs]=useState({});
   const [capoOpen,setCapoOpen]=useState(false);
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(1);
-  const [viewMode,setViewMode]=useState('bloques'); // 'bloques' | 'lineal'
+  const [viewMode,setViewMode]=useState('bloques');
   const [showModePopup,setShowModePopup]=useState(false);
+  const [nashville,setNashville]=useState(false);
   const [secuencia,setSecuencia]=useState(()=>{
-    // Inicializar secuencia desde localStorage si existe
     try{const k=`ss_seq_${songs[startIdx]?.name}`;const s=localStorage.getItem(k);return s?JSON.parse(s):null;}
     catch{return null;}
   });
 
-  // ── Editor de acordes ────────────────────────────────────────────────────
   const getSongContent=(song)=>editedSongs[song.name]||SONG_CONTENT_IGLESIA[song.name]||null;
 
   const handleMoveChord=(lineIdx,chordIdx,dir)=>{
     const song=songs[idx];
     const raw=getSongContent(song)||'';
-    // Reconstruir líneas, encontrar la línea correcta, mover el acorde
     const allLines=raw.split('\n');
-    // Saltar header (título/artista)
     let contentStart=0;
     for(let i=0;i<Math.min(4,allLines.length);i++){
       const l=allLines[i].trim();
       if(!l||(!l.includes('[')&&!l.startsWith('===')))contentStart=i+1;
       else break;
     }
-    // Contar líneas de contenido para llegar a lineIdx
-    let counter=0;
-    let targetAbsIdx=-1;
+    let counter=0,targetAbsIdx=-1;
     for(let i=contentStart;i<allLines.length;i++){
       const t=allLines[i].trim();
       if(t.startsWith('===')&&t.endsWith('==='))continue;
@@ -270,49 +206,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       counter++;
     }
     if(targetAbsIdx<0)return;
-
-    // En la línea encontrada, mover el acorde chordIdx
     const line=allLines[targetAbsIdx];
-    const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const chords=[];
     let m;
     CHORD_RE.lastIndex=0;
     while((m=CHORD_RE.exec(line))!==null){
       chords.push({start:m.index,end:m.index+m[0].length,full:m[0]});
     }
-    // Encontrar el acorde por índice
-    let ci=0;
-    // contar solo los acordes de esta línea hasta chordIdx
-    if(ci>=chords.length)return;
-    // Mapear chordIdx global a índice local en esta línea
-    // (simplificación: usar el primer acorde si chordIdx=0, etc.)
     const localIdx=chordIdx%Math.max(1,chords.length);
     const chord=chords[localIdx];
     if(!chord)return;
-
     let newLine=line;
     if(dir==='left'&&chord.start>0){
-      // Mover el tag del acorde un carácter a la izquierda
       const before=line.slice(0,chord.start);
       const after=line.slice(chord.end);
-      // Quitar último char de before, ponerlo antes en after
-      if(before.length>0){
-        newLine=before.slice(0,-1)+chord.full+before.slice(-1)+after;
-      }
+      if(before.length>0) newLine=before.slice(0,-1)+chord.full+before.slice(-1)+after;
     } else if(dir==='right'){
       const before=line.slice(0,chord.start);
       const after=line.slice(chord.end);
-      // Mover un char a la derecha
-      if(after.length>0){
-        newLine=before+after[0]+chord.full+after.slice(1);
-      }
+      if(after.length>0) newLine=before+after[0]+chord.full+after.slice(1);
     }
-
     if(newLine===line)return;
     const newLines=[...allLines];
     newLines[targetAbsIdx]=newLine;
-    const newContent=newLines.join('\n');
-    setEditedSongs(prev=>({...prev,[song.name]:newContent}));
+    setEditedSongs(prev=>({...prev,[song.name]:newLines.join('\n')}));
   };
 
   const handleSaveEdit=()=>{
@@ -326,16 +243,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     setSelectedChord(null);
   };
 
-  // Colores según tema — funciona incluso con position:fixed
   const isLight = theme==='cream';
-  const svBg      = isLight ? '#ffffff'           : 'rgba(4,4,12,.97)';
+  const svBg      = isLight ? '#ffffff'               : 'rgba(4,4,12,.97)';
   const svHdrBg   = isLight ? 'rgba(240,234,222,.98)' : 'rgba(5,5,14,.92)';
   const svNavBg   = isLight ? 'rgba(235,228,215,.98)' : 'rgba(5,5,14,.88)';
-  const svTx      = isLight ? '#1a1208'           : 'var(--tx)';
-  const svTx2     = isLight ? '#4a3828'           : 'var(--tx2)';
-  const svTx3     = isLight ? '#8a7058'           : 'var(--tx3)';
-  const svAc      = isLight ? '#D4500A'           : 'var(--ac)';
-  const svBd      = isLight ? 'rgba(0,0,0,.15)'   : 'var(--bd)';
+  const svTx      = isLight ? '#1a1208'               : 'var(--tx)';
+  const svTx2     = isLight ? '#4a3828'               : 'var(--tx2)';
+  const svTx3     = isLight ? '#8a7058'               : 'var(--tx3)';
+  const svAc      = isLight ? '#D4500A'               : 'var(--ac)';
+  const svBd      = isLight ? 'rgba(0,0,0,.15)'       : 'var(--bd)';
   const svPanelBg = isLight ? 'rgba(240,234,222,.97)' : 'rgba(8,8,20,.92)';
 
   useEffect(()=>{
@@ -354,24 +270,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
-  // Nota que SUENA realmente con el capo puesto
   const sonaKey=tpKey(curKey,-capo);
 
   useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);},[idx]);
-  // ── Auto-scroll ligado a BPM ─────────────────────────────────────────────
-  useEffect(()=>{
-    scrollSpeedRef.current=scrollSpeed;
-  },[scrollSpeed]);
+
+  useEffect(()=>{scrollSpeedRef.current=scrollSpeed;},[scrollSpeed]);
 
   useEffect(()=>{
     const w=wrapRef.current;
     if(!w)return;
-    if(!autoScroll){
-      if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);
-      return;
-    }
-    // Velocidad base: BPM de la canción actual → px/s
-    // 60 BPM = muy lento (~12px/s), 120 BPM = normal (~24px/s), 180 BPM = rápido (~36px/s)
+    if(!autoScroll){if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);return;}
     const bpm=songs[idx]?.bpm||80;
     const pxPerSec=(bpm/5)*scrollSpeedRef.current;
     let last=null;
@@ -379,11 +287,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       if(last!==null){
         const delta=(ts-last)/1000;
         w.scrollTop+=pxPerSec*delta;
-        // Detener si llegó al final
-        if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){
-          setAutoScroll(false);
-          return;
-        }
+        if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){setAutoScroll(false);return;}
       }
       last=ts;
       scrollRaf.current=requestAnimationFrame(step);
@@ -413,32 +317,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?'Tono original':`${nOff>0?'+':''}${nOff} st`});};
   const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
 
-  // ── Panel de bloques / estructura de la canción ─────────────────────────────
-  const getBloques=()=>{
-    const raw=getSongContent(songs[idx]);
-    if(!raw)return[];
-    const lines=raw.split('\n');
-    const result=[];
-    let lineNum=0;
-    // Contar líneas de contenido para mapear bloque → posición scroll
-    lines.forEach((line,i)=>{
-      const t=line.trim();
-      if(t.startsWith('===')&&t.endsWith('===')){
-        const label=t.slice(3,-3).replace(/:$/,'').trim();
-        result.push({label,lineNum:i});
-      }
-    });
-    return result;
-  };
-
-  const scrollToBloque=(lineNum)=>{
-    const w=wrapRef.current;
-    if(!w)return;
-    // Estimación de posición: cada línea ~22px aprox
-    const approxY=lineNum*22;
-    w.scrollTo({top:Math.max(0,approxY-20),behavior:'smooth'});
-  };
-
   const BLOQUE_COLORS={
     'INTRO':'#5e9eff','VERSO':'#EE227D','CORO':'#30C0B7','PRE-CORO':'#a78bfa',
     'PUENTE':'#FD8083','BRIDGE':'#FD8083','FINAL':'#852467','OUTRO':'#852467',
@@ -449,7 +327,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return k?BLOQUE_COLORS[k]:'rgba(200,169,126,.7)';
   };
 
-  // ── Parsear canción en bloques con contenido ──────────────────────────────
   const parseBloques=()=>{
     const raw=getSongContent(songs[idx]);
     if(!raw)return[];
@@ -457,7 +334,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const result=[];
     let curLabel=null,curLines=[];
     let skip=0;
-    // Saltar header (título/artista - primeras líneas sin acordes ni ===)
     for(let i=0;i<Math.min(4,lines.length);i++){
       const l=lines[i].trim();
       if(!l||(!l.includes('[')&&!l.startsWith('===')))skip=i+1;
@@ -477,7 +353,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return result;
   };
 
-  // ── Obtener/guardar secuencia de interpretación ────────────────────────────
   const getSongKey=(name)=>`ss_seq_${name}`;
   const getSecuencia=()=>{
     const bloques=parseBloques();
@@ -488,7 +363,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       const saved=localStorage.getItem(getSongKey(songName));
       if(saved){
         const seq=JSON.parse(saved);
-        // Mapear secuencia guardada a bloques actuales
         return seq.map((item,i)=>{
           const bloque=bloques.find(b=>b.label===item.label)||bloques[0];
           return{...bloque,uid:i,seqId:item.seqId};
@@ -516,15 +390,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return getSecuencia();
   };
 
-  // ── Operaciones de secuencia ──────────────────────────────────────────────
   const moverBloque=(from,dir)=>{
     const seq=[...getActiveSecuencia()];
     const to=from+dir;
     if(to<0||to>=seq.length)return;
     [seq[from],seq[to]]=[seq[to],seq[from]];
     const updated=seq.map((b,i)=>({...b,uid:i}));
-    setSecuencia(updated);
-    saveSecuencia(updated);
+    setSecuencia(updated);saveSecuencia(updated);
   };
 
   const duplicarBloque=(i)=>{
@@ -532,8 +404,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const nuevo={...seq[i],uid:Date.now(),seqId:Date.now()};
     seq.splice(i+1,0,nuevo);
     const updated=seq.map((b,j)=>({...b,uid:j}));
-    setSecuencia(updated);
-    saveSecuencia(updated);
+    setSecuencia(updated);saveSecuencia(updated);
   };
 
   const eliminarBloque=(i)=>{
@@ -541,25 +412,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(seq.length<=1)return;
     seq.splice(i,1);
     const updated=seq.map((b,j)=>({...b,uid:j}));
-    setSecuencia(updated);
-    saveSecuencia(updated);
+    setSecuencia(updated);saveSecuencia(updated);
   };
 
-  // ── Renderizar líneas de un bloque con acordes ─────────────────────────────
-  // ── Renderizado correcto de línea con acordes encima de la letra ──────────
-  // Cada línea con acordes se divide en "segmentos" [acorde, texto].
-  // Cada segmento es una columna: acorde arriba, texto abajo, alineados.
+  // ── renderLineaConAcordes: acorde exactamente sobre sílaba ────────────────
   const renderLineaConAcordes=(line,trC,fs)=>{
-    const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
+    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const segs=[];
     let last=0,m;
-    while((m=CHORD_RE.exec(line))!==null){
-      // texto antes del acorde
+    re.lastIndex=0;
+    while((m=re.exec(line))!==null){
       const txt=line.slice(last,m.index);
       segs.push({chord:trC(m[1]),text:txt});
       last=m.index+m[0].length;
     }
-    // texto restante sin acorde
     if(last<line.length) segs.push({chord:null,text:line.slice(last)});
     const chordFs=Math.max(8,fs*0.65);
     return(
@@ -585,24 +451,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const renderBloqueLines=(lines,tpOff,showChords,fs=14)=>{
-    const CHORD_RE=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
+    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const trC=(ch)=>{
-      if(!tpOff)return ch;
       const p=ch.split('/');
-      return p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
+      let transposed=p.length>1
+        ?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff)
+        :transposeChord(ch,tpOff);
+      if(nashville){
+        const parts=transposed.split('/');
+        return parts.map(c=>chordToNashville(c,curKey)).join('/');
+      }
+      return transposed;
     };
     return lines.map((line,li)=>{
       const t=line.trim();
       if(!t)return null;
-      // Línea que empieza con === es separador de bloque (no debería aparecer aquí)
       if(t.startsWith('===')&&t.endsWith('==='))return null;
-      const hasChord=CHORD_RE.test(line);
-      CHORD_RE.lastIndex=0;
+      re.lastIndex=0;
+      const hasChord=re.test(line);
+      re.lastIndex=0;
       if(hasChord&&showChords){
-        return renderLineaConAcordes(line,trC,fs);
+        return <div key={li}>{renderLineaConAcordes(line,trC,fs)}</div>;
       }
-      // Solo letra — limpiar acordes si showChords=false
-      const clean=showChords?t:t.replace(CHORD_RE,'').trim();
+      const clean=showChords?t:t.replace(re,'').trim();
       if(!clean)return null;
       return(
         <div key={li} style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.35,marginBottom:'0.15em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
@@ -612,7 +483,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     });
   };
 
-  // ── Vista Bloques ─────────────────────────────────────────────────────────
+  // ── Vista Bloques ──────────────────────────────────────────────────────────
   const VistaBloques=()=>{
     const seq=getActiveSecuencia();
     const containerRef=useRef(null);
@@ -625,14 +496,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const w=typeof window!=='undefined'?window.innerWidth:390;
     const cols=w>=1024?3:w>=768?2:1;
 
-    // Bloques únicos para display (sin repetidos)
     const unique=[];
     const seen=new Set();
     seq.forEach(b=>{if(!seen.has(b.label)){seen.add(b.label);unique.push(b);}});
-
     const numBloques=unique.length;
-
-    // Calcular filas según grid
     const rows=Math.ceil(numBloques/cols);
 
     return(
@@ -641,48 +508,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         display:'grid',
         gridTemplateColumns:`repeat(${cols},1fr)`,
         gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,
-        gap:8,padding:'8px',
-        height:'100%',
-        boxSizing:'border-box',
+        gap:8,padding:'8px',height:'100%',boxSizing:'border-box',
       }}>
         {unique.map((bloque,bi)=>{
           const color=getColorBloque(bloque.label);
-          // Líneas de contenido reales (excluir vacías y headers ===)
           const contentLines=bloque.lines.filter(l=>{
             const t=l.trim();
             return t&&!t.startsWith('===');
           });
-          // Contar cuántas "filas visuales" tiene: líneas con acorde cuentan doble
-          const CHORD_RE=/\[([A-G][b#]?)/.test;
-          const visualRows=contentLines.reduce((acc,l)=>{
-            return acc+(/\[[A-G]/.test(l)?2:1);
-          },0);
-          // Calcular fontSize óptimo para llenar el bloque
-          // Cada bloque tiene ~(containerHeight/rows - 40px header) disponible
-          // Cada fila visual ocupa ~(fontSize*1.35) px
-          // fs = availableHeight / visualRows / 1.35
-          // Estimamos containerHeight como vh aproximado
+          const visualRows=contentLines.reduce((acc,l)=>acc+(/\[[A-G]/.test(l)?2:1),0);
           const approxBlockH=typeof window!=='undefined'
             ?(window.innerHeight*0.82-40)/rows-40
             :120;
-          const fsDynamic=Math.max(10,Math.min(22,Math.floor(approxBlockH/(visualRows||1)/1.4)));
+          // fsDynamic: máximo posible sin desbordarse
+          const fsDynamic=Math.max(10,Math.min(28,Math.floor(approxBlockH/(visualRows||1)/1.35)));
           return(
             <div key={bi} style={{
-              background:`${color}10`,
-              border:`1px solid ${color}40`,
-              borderRadius:14,
-              padding:'8px 10px',
-              display:'flex',flexDirection:'column',
-              overflow:'hidden',
-              minHeight:0,
+              background:`${color}10`,border:`1px solid ${color}40`,
+              borderRadius:14,padding:'8px 10px',
+              display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0,
             }}>
               <div style={{
-                fontSize:9,fontWeight:700,
-                fontFamily:"'DM Sans',sans-serif",
-                color:color,textTransform:'uppercase',
-                letterSpacing:'1.5px',marginBottom:5,
-                borderBottom:`1px solid ${color}30`,paddingBottom:4,
-                flexShrink:0,
+                fontSize:9,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
+                color:color,textTransform:'uppercase',letterSpacing:'1.5px',
+                marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4,flexShrink:0,
               }}>
                 {bloque.label}
               </div>
@@ -696,18 +545,27 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   };
 
-  // ── Panel estructura (barra derecha) actualizado ───────────────────────────
+  // ── Panel ESTRUCTURA (antes Secuencia) — scroll táctil, altura = PanelTono ─
   const PanelBloques=()=>{
     const seq=getActiveSecuencia();
     if(!seq.length)return null;
     const panelBg=isLight?'rgba(240,234,222,.88)':'rgba(6,4,18,.88)';
+    // Altura máxima = misma que PanelTono (aprox 220px en mobile, más en tablet)
+    const maxH=typeof window!=='undefined'?Math.min(window.innerHeight*0.45,260):220;
     return(
-      <div style={{position:'absolute',right:60,top:8,bottom:70,zIndex:3,display:'flex',flexDirection:'column',
-        borderRadius:14,border:`1px solid var(--bd)`,background:panelBg,backdropFilter:'blur(40px)',overflow:'hidden',width:72}}>
+      <div style={{
+        position:'absolute',right:60,bottom:8,zIndex:3,
+        display:'flex',flexDirection:'column',
+        borderRadius:14,border:'1px solid var(--bd)',
+        background:panelBg,backdropFilter:'blur(40px)',
+        overflow:'hidden',width:72,
+        maxHeight:maxH,
+      }}>
         <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'6px 4px 5px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
-          SECUENCIA
+          ESTRUCTURA
         </div>
-        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'4px'}}>
+        {/* scroll táctil: overflow-y auto + touch-action pan-y */}
+        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'4px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}>
           {seq.map((b,i)=>{
             const color=getColorBloque(b.label);
             return(
@@ -739,7 +597,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             );
           })}
         </div>
-        <button onClick={()=>{const b=parseBloques();if(b.length){const seq=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(seq);saveSecuencia(seq);}}}
+        <button onClick={()=>{const b=parseBloques();if(b.length){const s=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(s);saveSecuencia(s);}}}
           style={{padding:'5px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}>
           Reset
         </button>
@@ -747,7 +605,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   };
 
-  // ── Panel Tono + Capo desplegable ──────────────────────────────────────────
+  // ── Panel Tono + Capo ──────────────────────────────────────────────────────
   const PanelTono=()=>(
     <div style={{position:'absolute',right:6,bottom:8,zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',gap:0,borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
       <button onClick={()=>doTp(1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)',borderRadius:'14px 14px 0 0'}}>
@@ -771,7 +629,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </svg>
       </button>
       {capoOpen&&(
-        <div style={{position:'absolute',right:60,top:'50%',transform:'translateY(-50%)',background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',backdropFilter:'blur(0px)',border:`2px solid ${svBd}`,borderRadius:14,padding:12,zIndex:10,minWidth:140,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
+        <div style={{position:'absolute',right:60,top:'50%',transform:'translateY(-50%)',background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:12,zIndex:10,minWidth:140,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Posición de capo</div>
           {[0,1,2,3,4,5,6,7].map(c=>{
             const notaSuena=c===0?curKey:tpKey(curKey,-c);
@@ -786,7 +644,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   </span>
                 </div>
                 <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:11,fontWeight:900,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'DM Sans',sans-serif",fontWeight:700}}>{notaSuena}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'DM Sans',sans-serif"}}>{notaSuena}</div>
                   {c>0&&<div style={{fontSize:8,color:'var(--tx3)',marginTop:1}}>suena</div>}
                 </div>
               </button>
@@ -797,7 +655,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Barra de anotaciones ──────────────────────────────────────────────────
+  // ── Barra de anotaciones (AnnoBar) ─────────────────────────────────────────
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px'}}>
@@ -812,18 +670,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             Capo {capo} · suena {sonaKey}
           </div>
         )}
+        {/* Nashville toggle — antes de Solo letra */}
+        <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
+          <span style={{fontFamily:"'Source Code Pro',monospace",fontSize:10,fontWeight:900}}>1 4 5</span>
+          {nashville?' Grados':'Grados'}
+        </button>
         <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           {showChords?'Solo letra':'Con acordes'}
         </button>
-        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} title={autoScroll?'Detener scroll automático':'Iniciar scroll automático'} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
+        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
           {autoScroll
             ?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             :<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           }
           {autoScroll?`${songs[idx]?.bpm||80} BPM`:'Auto'}
         </button>
-
         {isAdmin&&(
           <>
           <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
@@ -862,7 +724,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Popup modo bloques ────────────────────────────────────────────────────
+  // ── Popup modo bloques — solo la primera vez ───────────────────────────────
   const PopupModoBloques=()=>(
     <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}}
       onClick={()=>setShowModePopup(false)}>
@@ -886,7 +748,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {[
             ['🎯','Cero scroll — todo visible de un vistazo'],
             ['📐','Texto al máximo tamaño por bloque'],
-            ['🔄','Secuencia editable — duplica y reordena bloques'],
+            ['🔄','Estructura editable — duplica y reordena bloques'],
             ['⚡','Ideal para pantallas grandes e iPads en ensayo'],
           ].map(([ico,txt],i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:10,background:'var(--s1)',border:'1px solid var(--bd)'}}>
@@ -895,7 +757,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           ))}
         </div>
-        <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initSecuencia();setShowModePopup(false);}}
+        <button onClick={()=>{
+          setViewMode('bloques');
+          setAutoScroll(false);
+          initSecuencia();
+          setShowModePopup(false);
+          // Marcar como visto en localStorage
+          try{localStorage.setItem(POPUP_SEEN_KEY,'1');}catch{}
+        }}
           style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
           Activar Vista Bloques
         </button>
@@ -907,10 +776,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Botones toggle de vista ────────────────────────────────────────────────
+  // ── Toggle vista bloques/lineal ────────────────────────────────────────────
   const ToggleVista=()=>(
     <div style={{display:'flex',gap:3,alignItems:'center',padding:'3px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s2)',flexShrink:0}}>
-      <button onClick={()=>{if(viewMode!=='bloques'){setShowModePopup(true);}}}
+      <button onClick={()=>{
+        if(viewMode!=='bloques'){
+          // Solo mostrar popup si nunca se vio antes
+          const seen=localStorage.getItem(POPUP_SEEN_KEY);
+          if(seen){
+            setViewMode('bloques');
+            setAutoScroll(false);
+            initSecuencia();
+          } else {
+            setShowModePopup(true);
+          }
+        }
+      }}
         title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,border:'none',
         background:viewMode==='bloques'?'var(--ac)':'transparent',
         color:viewMode==='bloques'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',
@@ -933,7 +814,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Área de contenido (canvas + letra o vista bloques) ───────────────────
+  // ── Área de contenido ──────────────────────────────────────────────────────
   const ContentArea=({padRight=12})=>(
     <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
       {viewMode==='bloques'
@@ -946,7 +827,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 10px 10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
               {song.docId
                 ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
-                :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir))}</div>
+                :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir),nashville,curKey)}</div>
               }
             </div>
           </>
@@ -956,7 +837,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Nav inferior ──────────────────────────────────────────────────────────
+  // ── Nav inferior ───────────────────────────────────────────────────────────
   const NavBar=()=>(
     <div className="sv-nav" style={{background:svNavBg,borderTop:`1px solid ${svBd}`}}>
       <button className="nb" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>
@@ -972,8 +853,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-    // LAYOUT IPAD / TABLET ≥768px — horizontal con panel de setlist
-    if(isTablet){
+  // ── Layout tablet ≥768px ───────────────────────────────────────────────────
+  if(isTablet){
     return(
       <div className="sv" style={{flexDirection:'row',background:svBg}}>
         {showModePopup&&<PopupModoBloques/>}
@@ -1031,8 +912,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   }
 
-    // LAYOUT MOBILE < 768px
-    return(
+  // ── Layout mobile <768px ───────────────────────────────────────────────────
+  return(
     <div className="sv" style={{background:svBg}}>
       {showModePopup&&<PopupModoBloques/>}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
