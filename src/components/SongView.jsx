@@ -1,17 +1,15 @@
 // SongView: visor de canción con transposición, capo, anotaciones,
-// vista bloques/lineal, Nashville, panel Estructura con scroll táctil.
-import { useState, useEffect, useRef } from 'react';
+// vista bloques/lineal, Nashville, panel Estructura con drag touch.
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { transposeChord, tpKey, chordToNashville } from '../utils/music';
 import { Toast } from './common';
 import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 
 const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-
-// ── Clave localStorage para popup bloques ──────────────────────────────────
 const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
 
-// ── renderSongContent (vista lineal) ──────────────────────────────────────
-export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onMoveChord,nashville=false,songKey='C'){
+// ── renderSongContent (vista lineal) ─────────────────────────────────────────
+export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,nashville=false,songKey='C'){
   if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'DM Sans',sans-serif"}}>Letra no disponible aún.</div>);
 
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
@@ -65,9 +63,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     if(!hasC||!showChords){
       const lyric=text.replace(CHORD_RE,'').trim();
       if(!lyric)return null;
-      return(
-        <div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.2,textAlign:'center',width:'100%',marginBottom:1}}>{lyric}</div>
-      );
+      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.2,textAlign:'center',width:'100%',marginBottom:1}}>{lyric}</div>);
     }
 
     const parts=[];
@@ -102,15 +98,54 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
             <div key={j} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',flexShrink:0,position:'relative'}}>
               {hasChords&&(
                 editMode&&g.c?(
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
-                    {isSelected&&(
-                      <div style={{display:'flex',gap:2,marginBottom:1}}>
-                        <button onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'left');}} style={{fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',fontWeight:900,lineHeight:1}}>←</button>
-                        <button onClick={(e)=>{e.stopPropagation();onMoveChord(lineIdx,g.ci,'right');}} style={{fontSize:9,padding:'1px 4px',borderRadius:3,border:'1px solid var(--ac)',background:'rgba(200,169,126,.2)',color:'var(--ac)',cursor:'pointer',fontWeight:900,lineHeight:1}}>→</button>
-                      </div>
-                    )}
-                    <span onClick={()=>onSelectChord({lineKey:key,ci:g.ci,lineIdx})} style={{fontSize:cFs,fontWeight:800,color:isSelected?'#fff':'var(--ac)',lineHeight:1,fontFamily:FONT,whiteSpace:'nowrap',display:'block',background:isSelected?'var(--ac)':'transparent',borderRadius:3,padding:isSelected?'1px 3px':'0',cursor:'pointer',border:editMode?'1px dashed rgba(200,169,126,.4)':'none'}}>{g.c}</span>
-                  </div>
+                  // Acorde draggable en modo edición
+                  <span
+                    draggable
+                    onDragStart={e=>{
+                      e.dataTransfer.setData('text/plain',JSON.stringify({lineKey:key,ci:g.ci,lineIdx}));
+                      e.dataTransfer.effectAllowed='move';
+                    }}
+                    onTouchStart={e=>{
+                      // Touch drag: guardar posición inicial
+                      const touch=e.touches[0];
+                      e.currentTarget._dragStartX=touch.clientX;
+                      e.currentTarget._dragInfo={lineKey:key,ci:g.ci,lineIdx};
+                    }}
+                    onTouchMove={e=>{
+                      e.preventDefault();
+                      const touch=e.touches[0];
+                      const dx=touch.clientX-(e.currentTarget._dragStartX||touch.clientX);
+                      // Mover visualmente
+                      e.currentTarget.style.transform=`translateX(${dx}px)`;
+                      e.currentTarget.style.zIndex=10;
+                      e.currentTarget.style.opacity='0.8';
+                    }}
+                    onTouchEnd={e=>{
+                      const touch=e.changedTouches[0];
+                      const dx=touch.clientX-(e.currentTarget._dragStartX||touch.clientX);
+                      e.currentTarget.style.transform='';
+                      e.currentTarget.style.zIndex='';
+                      e.currentTarget.style.opacity='';
+                      // Convertir px a número de caracteres aproximado (cada char ~8px)
+                      const steps=Math.round(dx/8);
+                      if(Math.abs(steps)>0&&onDragChord){
+                        onDragChord(lineIdx,g.ci,steps);
+                      }
+                    }}
+                    style={{
+                      fontSize:cFs,fontWeight:800,
+                      color:isSelected?'#fff':'var(--ac)',
+                      lineHeight:1,fontFamily:FONT,
+                      whiteSpace:'nowrap',display:'block',
+                      background:isSelected?'var(--ac)':'rgba(200,169,126,.12)',
+                      borderRadius:4,padding:'1px 4px',
+                      cursor:'grab',userSelect:'none',
+                      border:'1px dashed rgba(200,169,126,.4)',
+                      transition:'opacity .15s',
+                      touchAction:'none',
+                    }}
+                    onClick={()=>onSelectChord&&onSelectChord({lineKey:key,ci:g.ci,lineIdx})}
+                  >{g.c}</span>
                 ):(
                   <span style={{fontSize:cFs,fontWeight:800,color:g.c?'var(--ac)':'transparent',lineHeight:1,fontFamily:FONT,whiteSpace:'nowrap',display:'block',paddingRight:g.t?1:3}}>{g.c||'·'}</span>
                 )
@@ -128,7 +163,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
       {editMode&&(
         <div style={{textAlign:'center',fontSize:10,color:'var(--ac)',fontFamily:FONT,fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
-          ✏ Toca un acorde y usa ← → para moverlo
+          ✏ Arrastra un acorde para moverlo
         </div>
       )}
       {blocks.map((blk,bi)=>{
@@ -187,7 +222,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const getSongContent=(song)=>editedSongs[song.name]||SONG_CONTENT_IGLESIA[song.name]||null;
 
-  const handleMoveChord=(lineIdx,chordIdx,dir)=>{
+  // ── Mover acorde por drag (pasos en caracteres) ───────────────────────────
+  const handleDragChord=(lineIdx,chordIdx,steps)=>{
+    if(!steps)return;
     const song=songs[idx];
     const raw=getSongContent(song)||'';
     const allLines=raw.split('\n');
@@ -216,15 +253,23 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const localIdx=chordIdx%Math.max(1,chords.length);
     const chord=chords[localIdx];
     if(!chord)return;
+
+    const dir=steps>0?'right':'left';
+    const abs=Math.abs(steps);
     let newLine=line;
-    if(dir==='left'&&chord.start>0){
-      const before=line.slice(0,chord.start);
-      const after=line.slice(chord.end);
-      if(before.length>0) newLine=before.slice(0,-1)+chord.full+before.slice(-1)+after;
-    } else if(dir==='right'){
-      const before=line.slice(0,chord.start);
-      const after=line.slice(chord.end);
-      if(after.length>0) newLine=before+after[0]+chord.full+after.slice(1);
+    for(let s=0;s<abs;s++){
+      CHORD_RE.lastIndex=0;
+      const curChords=[];
+      while((m=CHORD_RE.exec(newLine))!==null) curChords.push({start:m.index,end:m.index+m[0].length,full:m[0]});
+      const curChord=curChords[localIdx];
+      if(!curChord)break;
+      const before=newLine.slice(0,curChord.start);
+      const after=newLine.slice(curChord.end);
+      if(dir==='left'&&before.length>0){
+        newLine=before.slice(0,-1)+curChord.full+before.slice(-1)+after;
+      } else if(dir==='right'&&after.length>0){
+        newLine=before+after[0]+curChord.full+after.slice(1);
+      } else break;
     }
     if(newLine===line)return;
     const newLines=[...allLines];
@@ -235,30 +280,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const handleSaveEdit=()=>{
     const song=songs[idx];
     const edited=editedSongs[song.name];
-    if(edited&&onSaveChords){
-      onSaveChords(song.name,edited);
-      setToast('✓ Acordes guardados oficialmente');
-    }
-    setEditMode(false);
-    setSelectedChord(null);
+    if(edited&&onSaveChords){onSaveChords(song.name,edited);setToast('✓ Acordes guardados oficialmente');}
+    setEditMode(false);setSelectedChord(null);
   };
 
-  const isLight = theme==='cream';
-  const svBg      = isLight ? '#ffffff'               : 'rgba(4,4,12,.97)';
-  const svHdrBg   = isLight ? 'rgba(240,234,222,.98)' : 'rgba(5,5,14,.92)';
-  const svNavBg   = isLight ? 'rgba(235,228,215,.98)' : 'rgba(5,5,14,.88)';
-  const svTx      = isLight ? '#1a1208'               : 'var(--tx)';
-  const svTx2     = isLight ? '#4a3828'               : 'var(--tx2)';
-  const svTx3     = isLight ? '#8a7058'               : 'var(--tx3)';
-  const svAc      = isLight ? '#D4500A'               : 'var(--ac)';
-  const svBd      = isLight ? 'rgba(0,0,0,.15)'       : 'var(--bd)';
-  const svPanelBg = isLight ? 'rgba(240,234,222,.97)' : 'rgba(8,8,20,.92)';
+  const isLight=theme==='cream';
+  const svBg      =isLight?'#ffffff':'rgba(4,4,12,.97)';
+  const svHdrBg   =isLight?'rgba(240,234,222,.98)':'rgba(5,5,14,.92)';
+  const svNavBg   =isLight?'rgba(235,228,215,.98)':'rgba(5,5,14,.88)';
+  const svTx      =isLight?'#1a1208':'var(--tx)';
+  const svTx3     =isLight?'#8a7058':'var(--tx3)';
+  const svAc      =isLight?'#D4500A':'var(--ac)';
+  const svBd      =isLight?'rgba(0,0,0,.15)':'var(--bd)';
 
-  useEffect(()=>{
-    const h=()=>setIsTablet(window.innerWidth>=768);
-    window.addEventListener('resize',h);
-    return()=>window.removeEventListener('resize',h);
-  },[]);
+  useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
   const cvRef=useRef(null);
   const wrapRef=useRef(null);
@@ -273,9 +308,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const sonaKey=tpKey(curKey,-capo);
 
   useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);},[idx]);
-
   useEffect(()=>{scrollSpeedRef.current=scrollSpeed;},[scrollSpeed]);
-
   useEffect(()=>{
     const w=wrapRef.current;
     if(!w)return;
@@ -284,26 +317,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const pxPerSec=(bpm/5)*scrollSpeedRef.current;
     let last=null;
     const step=(ts)=>{
-      if(last!==null){
-        const delta=(ts-last)/1000;
-        w.scrollTop+=pxPerSec*delta;
-        if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){setAutoScroll(false);return;}
-      }
-      last=ts;
-      scrollRaf.current=requestAnimationFrame(step);
+      if(last!==null){const delta=(ts-last)/1000;w.scrollTop+=pxPerSec*delta;if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){setAutoScroll(false);return;}}
+      last=ts;scrollRaf.current=requestAnimationFrame(step);
     };
     scrollRaf.current=requestAnimationFrame(step);
     return()=>{if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);};
   },[autoScroll,idx]);
-
   useEffect(()=>{
     const cv=cvRef.current,w=wrapRef.current;
     if(!cv||!w)return;
     const resize=()=>{cv.width=w.clientWidth;cv.height=w.clientHeight;redraw();};
-    resize();
-    const ro=new ResizeObserver(resize);
-    ro.observe(w);
-    return()=>ro.disconnect();
+    resize();const ro=new ResizeObserver(resize);ro.observe(w);return()=>ro.disconnect();
   },[idx]);
 
   const getP=e=>{const r=cvRef.current.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
@@ -332,8 +356,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(!raw)return[];
     const lines=raw.split('\n');
     const result=[];
-    let curLabel=null,curLines=[];
-    let skip=0;
+    let curLabel=null,curLines=[],skip=0;
     for(let i=0;i<Math.min(4,lines.length);i++){
       const l=lines[i].trim();
       if(!l||(!l.includes('[')&&!l.startsWith('===')))skip=i+1;
@@ -342,14 +365,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     lines.slice(skip).forEach(line=>{
       const t=line.trim();
       if(t.startsWith('===')&&t.endsWith('===')){
-        if(curLabel!==null||curLines.some(l=>l.trim()))
-          result.push({label:curLabel||'INTRO',lines:curLines});
-        curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();
-        curLines=[];
-      } else { curLines.push(line); }
+        if(curLabel!==null||curLines.some(l=>l.trim()))result.push({label:curLabel||'INTRO',lines:curLines});
+        curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();curLines=[];
+      } else {curLines.push(line);}
     });
-    if(curLabel!==null||curLines.some(l=>l.trim()))
-      result.push({label:curLabel||'INTRO',lines:curLines});
+    if(curLabel!==null||curLines.some(l=>l.trim()))result.push({label:curLabel||'INTRO',lines:curLines});
     return result;
   };
 
@@ -361,43 +381,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(!songName)return bloques.map((b,i)=>({...b,uid:i}));
     try{
       const saved=localStorage.getItem(getSongKey(songName));
-      if(saved){
-        const seq=JSON.parse(saved);
-        return seq.map((item,i)=>{
-          const bloque=bloques.find(b=>b.label===item.label)||bloques[0];
-          return{...bloque,uid:i,seqId:item.seqId};
-        });
-      }
+      if(saved){const seq=JSON.parse(saved);return seq.map((item,i)=>{const bloque=bloques.find(b=>b.label===item.label)||bloques[0];return{...bloque,uid:i,seqId:item.seqId};});}
     }catch{}
     return bloques.map((b,i)=>({...b,uid:i,seqId:i}));
   };
-
   const saveSecuencia=(seq)=>{
     const songName=songs[idx]?.name;
     if(!songName)return;
-    try{localStorage.setItem(getSongKey(songName),JSON.stringify(seq.map(b=>({label:b.label,seqId:b.seqId}))));}
-    catch{}
+    try{localStorage.setItem(getSongKey(songName),JSON.stringify(seq.map(b=>({label:b.label,seqId:b.seqId}))));}catch{}
   };
-
-  const initSecuencia=()=>{
-    const s=getSecuencia();
-    setSecuencia(s);
-    return s;
-  };
-
-  const getActiveSecuencia=()=>{
-    if(secuencia)return secuencia;
-    return getSecuencia();
-  };
-
-  const moverBloque=(from,dir)=>{
-    const seq=[...getActiveSecuencia()];
-    const to=from+dir;
-    if(to<0||to>=seq.length)return;
-    [seq[from],seq[to]]=[seq[to],seq[from]];
-    const updated=seq.map((b,i)=>({...b,uid:i}));
-    setSecuencia(updated);saveSecuencia(updated);
-  };
+  const initSecuencia=()=>{const s=getSecuencia();setSecuencia(s);return s;};
+  const getActiveSecuencia=()=>secuencia||getSecuencia();
 
   const duplicarBloque=(i)=>{
     const seq=[...getActiveSecuencia()];
@@ -406,7 +400,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const updated=seq.map((b,j)=>({...b,uid:j}));
     setSecuencia(updated);saveSecuencia(updated);
   };
-
   const eliminarBloque=(i)=>{
     const seq=[...getActiveSecuencia()];
     if(seq.length<=1)return;
@@ -415,33 +408,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     setSecuencia(updated);saveSecuencia(updated);
   };
 
-  // ── renderLineaConAcordes: acorde exactamente sobre sílaba ────────────────
+  // ── renderLineaConAcordes ─────────────────────────────────────────────────
   const renderLineaConAcordes=(line,trC,fs)=>{
     const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-    const segs=[];
-    let last=0,m;
+    const segs=[];let last=0,m;
     re.lastIndex=0;
-    while((m=re.exec(line))!==null){
-      const txt=line.slice(last,m.index);
-      segs.push({chord:trC(m[1]),text:txt});
-      last=m.index+m[0].length;
-    }
-    if(last<line.length) segs.push({chord:null,text:line.slice(last)});
+    while((m=re.exec(line))!==null){segs.push({chord:trC(m[1]),text:line.slice(last,m.index)});last=m.index+m[0].length;}
+    if(last<line.length)segs.push({chord:null,text:line.slice(last)});
     const chordFs=Math.max(8,fs*0.65);
     return(
       <div style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',marginBottom:'0.2em',lineHeight:1}}>
         {segs.map((seg,si)=>(
           <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',marginRight:seg.chord&&seg.text?'0.05em':0}}>
             {seg.chord
-              ?<span style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>
-                {seg.chord}
-              </span>
+              ?<span style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>{seg.chord}</span>
               :<span style={{display:'block',height:chordFs*1.1,lineHeight:1}}/>
             }
             {seg.text
-              ?<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre'}}>
-                {seg.text}
-              </span>
+              ?<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre'}}>{seg.text}</span>
               :<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'transparent',lineHeight:1.25,userSelect:'none'}}>&nbsp;</span>
             }
           </div>
@@ -454,87 +438,41 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const trC=(ch)=>{
       const p=ch.split('/');
-      let transposed=p.length>1
-        ?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff)
-        :transposeChord(ch,tpOff);
-      if(nashville){
-        const parts=transposed.split('/');
-        return parts.map(c=>chordToNashville(c,curKey)).join('/');
-      }
-      return transposed;
+      let t=p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
+      if(nashville){const parts=t.split('/');return parts.map(c=>chordToNashville(c,curKey)).join('/');}
+      return t;
     };
     return lines.map((line,li)=>{
       const t=line.trim();
-      if(!t)return null;
-      if(t.startsWith('===')&&t.endsWith('==='))return null;
-      re.lastIndex=0;
-      const hasChord=re.test(line);
-      re.lastIndex=0;
-      if(hasChord&&showChords){
-        return <div key={li}>{renderLineaConAcordes(line,trC,fs)}</div>;
-      }
+      if(!t||t.startsWith('==='))return null;
+      re.lastIndex=0;const hasChord=re.test(line);re.lastIndex=0;
+      if(hasChord&&showChords)return <div key={li}>{renderLineaConAcordes(line,trC,fs)}</div>;
       const clean=showChords?t:t.replace(re,'').trim();
       if(!clean)return null;
-      return(
-        <div key={li} style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.35,marginBottom:'0.15em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-          {clean}
-        </div>
-      );
+      return(<div key={li} style={{fontFamily:"'DM Sans',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.35,marginBottom:'0.15em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{clean}</div>);
     });
   };
 
-  // ── Vista Bloques ──────────────────────────────────────────────────────────
+  // ── Vista Bloques ─────────────────────────────────────────────────────────
   const VistaBloques=()=>{
     const seq=getActiveSecuencia();
-    const containerRef=useRef(null);
-    if(!seq.length)return(
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'DM Sans',sans-serif"}}>
-        Sin contenido disponible
-      </div>
-    );
-
+    if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'DM Sans',sans-serif"}}>Sin contenido disponible</div>);
     const w=typeof window!=='undefined'?window.innerWidth:390;
     const cols=w>=1024?3:w>=768?2:1;
-
-    const unique=[];
-    const seen=new Set();
+    const unique=[];const seen=new Set();
     seq.forEach(b=>{if(!seen.has(b.label)){seen.add(b.label);unique.push(b);}});
-    const numBloques=unique.length;
-    const rows=Math.ceil(numBloques/cols);
-
+    const rows=Math.ceil(unique.length/cols);
     return(
-      <div ref={containerRef} style={{
-        flex:1,overflowY:'auto',scrollbarWidth:'thin',
-        display:'grid',
-        gridTemplateColumns:`repeat(${cols},1fr)`,
-        gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,
-        gap:8,padding:'8px',height:'100%',boxSizing:'border-box',
-      }}>
+      <div style={{flex:1,overflowY:'auto',scrollbarWidth:'thin',display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,gap:8,padding:'8px',height:'100%',boxSizing:'border-box'}}>
         {unique.map((bloque,bi)=>{
           const color=getColorBloque(bloque.label);
-          const contentLines=bloque.lines.filter(l=>{
-            const t=l.trim();
-            return t&&!t.startsWith('===');
-          });
+          const contentLines=bloque.lines.filter(l=>{const t=l.trim();return t&&!t.startsWith('===');});
           const visualRows=contentLines.reduce((acc,l)=>acc+(/\[[A-G]/.test(l)?2:1),0);
-          const approxBlockH=typeof window!=='undefined'
-            ?(window.innerHeight*0.82-40)/rows-40
-            :120;
-          // fsDynamic: máximo posible sin desbordarse
+          const approxBlockH=typeof window!=='undefined'?(window.innerHeight*0.82-40)/rows-40:120;
           const fsDynamic=Math.max(10,Math.min(28,Math.floor(approxBlockH/(visualRows||1)/1.35)));
           return(
-            <div key={bi} style={{
-              background:`${color}10`,border:`1px solid ${color}40`,
-              borderRadius:14,padding:'8px 10px',
-              display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0,
-            }}>
-              <div style={{
-                fontSize:9,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
-                color:color,textTransform:'uppercase',letterSpacing:'1.5px',
-                marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4,flexShrink:0,
-              }}>
-                {bloque.label}
-              </div>
+            <div key={bi} style={{background:`${color}10`,border:`1px solid ${color}40`,borderRadius:14,padding:'8px 10px',display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
+              <div style={{fontSize:9,fontWeight:700,fontFamily:"'DM Sans',sans-serif",color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4,flexShrink:0}}>{bloque.label}</div>
               <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',justifyContent:'flex-start'}}>
                 {renderBloqueLines(bloque.lines,tpOff,showChords,fsDynamic)}
               </div>
@@ -545,51 +483,92 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   };
 
-  // ── Panel ESTRUCTURA (antes Secuencia) — scroll táctil, altura = PanelTono ─
-  const PanelBloques=()=>{
+  // ── Panel ESTRUCTURA — drag & drop táctil, sin flechas ───────────────────
+  const PanelEstructura=()=>{
     const seq=getActiveSecuencia();
     if(!seq.length)return null;
-    const panelBg=isLight?'rgba(240,234,222,.88)':'rgba(6,4,18,.88)';
-    // Altura máxima = misma que PanelTono (aprox 220px en mobile, más en tablet)
-    const maxH=typeof window!=='undefined'?Math.min(window.innerHeight*0.45,260):220;
+    const dragIdx=useRef(null);
+    const panelBg=isLight?'rgba(240,234,222,.92)':'rgba(6,4,18,.92)';
+
+    const onTouchStartItem=(i)=>(e)=>{
+      dragIdx.current=i;
+      e.currentTarget.style.opacity='0.5';
+      e.currentTarget.style.transform='scale(1.05)';
+    };
+    const onTouchMoveItem=(e)=>{
+      e.preventDefault();
+      // Encontrar el elemento bajo el dedo
+      const touch=e.touches[0];
+      const el=document.elementFromPoint(touch.clientX,touch.clientY);
+      const item=el?.closest('[data-bloque-idx]');
+      if(item){
+        const targetIdx=parseInt(item.dataset.bloqueIdx);
+        if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
+          // Reordenar
+          const newSeq=[...seq];
+          const [moved]=newSeq.splice(dragIdx.current,1);
+          newSeq.splice(targetIdx,0,moved);
+          dragIdx.current=targetIdx;
+          const updated=newSeq.map((b,j)=>({...b,uid:j}));
+          setSecuencia(updated);saveSecuencia(updated);
+        }
+      }
+    };
+    const onTouchEndItem=(e)=>{
+      if(e.currentTarget){
+        e.currentTarget.style.opacity='';
+        e.currentTarget.style.transform='';
+      }
+      dragIdx.current=null;
+    };
+
     return(
       <div style={{
-        position:'absolute',right:60,bottom:8,zIndex:3,
+        position:'absolute',right:6,bottom:8,zIndex:3,
         display:'flex',flexDirection:'column',
         borderRadius:14,border:'1px solid var(--bd)',
         background:panelBg,backdropFilter:'blur(40px)',
-        overflow:'hidden',width:72,
-        maxHeight:maxH,
+        overflow:'hidden',width:64,
+        // Altura máxima = hasta donde empieza PanelTono desde abajo
+        // PanelTono tiene ~200px aprox, panel estructura encima
+        maxHeight:'42vh',
       }}>
-        <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'6px 4px 5px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
+        <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
           ESTRUCTURA
         </div>
-        {/* scroll táctil: overflow-y auto + touch-action pan-y */}
-        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'4px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}>
+        <div
+          style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'3px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}
+        >
           {seq.map((b,i)=>{
             const color=getColorBloque(b.label);
             return(
-              <div key={b.uid??i} style={{marginBottom:3}}>
+              <div
+                key={b.uid??i}
+                data-bloque-idx={i}
+                onTouchStart={onTouchStartItem(i)}
+                onTouchMove={onTouchMoveItem}
+                onTouchEnd={onTouchEndItem}
+                style={{marginBottom:3,cursor:'grab',userSelect:'none'}}
+              >
                 <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
-                  <div style={{fontSize:8,fontWeight:900,color:color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'4px 3px',lineHeight:1.1}}>
+                  <div style={{fontSize:8,fontWeight:900,color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'5px 3px',lineHeight:1.1}}>
                     {b.label.length>6?b.label.slice(0,6)+'…':b.label}
                   </div>
-                  <div style={{display:'flex',justifyContent:'space-between',borderTop:`1px solid ${color}25`,padding:'1px 2px',gap:1}}>
-                    <button onClick={()=>moverBloque(i,-1)} disabled={i===0}
-                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:i===0?'var(--tx3)':color,cursor:i===0?'default':'pointer',fontSize:10,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
+                  <div style={{display:'flex',justifyContent:'space-around',borderTop:`1px solid ${color}25`,padding:'2px'}}>
+                    <button
+                      onClick={(e)=>{e.stopPropagation();duplicarBloque(i);}}
+                      style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}
+                      title="Duplicar"
+                    >
+                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
-                    <button onClick={()=>duplicarBloque(i)}
-                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:color,cursor:'pointer',fontSize:9,fontWeight:900,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
-                    <button onClick={()=>eliminarBloque(i)} disabled={seq.length<=1}
-                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:seq.length<=1?'var(--tx3)':'var(--rd)',cursor:seq.length<=1?'default':'pointer',fontSize:9,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                    <button onClick={()=>moverBloque(i,1)} disabled={i===seq.length-1}
-                      style={{flex:1,padding:'2px 0',border:'none',background:'transparent',color:i===seq.length-1?'var(--tx3)':color,cursor:i===seq.length-1?'default':'pointer',fontSize:10,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                    <button
+                      onClick={(e)=>{e.stopPropagation();eliminarBloque(i);}}
+                      disabled={seq.length<=1}
+                      style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color:seq.length<=1?'var(--tx3)':'var(--rd)',cursor:seq.length<=1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}
+                      title="Eliminar"
+                    >
+                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
                 </div>
@@ -597,17 +576,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             );
           })}
         </div>
-        <button onClick={()=>{const b=parseBloques();if(b.length){const s=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(s);saveSecuencia(s);}}}
-          style={{padding:'5px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}>
+        <button
+          onClick={()=>{const b=parseBloques();if(b.length){const s=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(s);saveSecuencia(s);}}}
+          style={{padding:'4px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}
+        >
           Reset
         </button>
       </div>
     );
   };
 
-  // ── Panel Tono + Capo ──────────────────────────────────────────────────────
+  // ── Panel Tono + Capo ─────────────────────────────────────────────────────
   const PanelTono=()=>(
-    <div style={{position:'absolute',right:6,bottom:8,zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',gap:0,borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
+    <div style={{position:'absolute',right:6,bottom:8,zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
       <button onClick={()=>doTp(1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)',borderRadius:'14px 14px 0 0'}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
         <span style={{fontSize:8,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
@@ -624,9 +605,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <span style={{fontSize:7,fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',color:capo>0?svAc:svTx3}}>CAPO</span>
         <span style={{fontSize:capo>0?13:11,fontWeight:900,color:capo>0?'var(--ac)':'var(--tx3)',lineHeight:1}}>{capo>0?capo:'—'}</span>
         {capo>0&&<span style={{fontSize:7,color:'var(--gn)',fontWeight:700,lineHeight:1.2}}>{sonaKey}</span>}
-        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:capoOpen?'rotate(180deg)':'none',transition:'transform .2s',marginTop:1}}>
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:capoOpen?'rotate(180deg)':'none',transition:'transform .2s',marginTop:1}}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {capoOpen&&(
         <div style={{position:'absolute',right:60,top:'50%',transform:'translateY(-50%)',background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:12,zIndex:10,minWidth:140,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
@@ -639,9 +618,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all .15s'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--ac)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10}}/>}
-                  <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:isOn?'var(--ac)':'var(--tx)',lineHeight:1}}>
-                    {c===0?'Sin capo':c}
-                  </span>
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:isOn?'var(--ac)':'var(--tx)',lineHeight:1}}>{c===0?'Sin capo':c}</span>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:11,fontWeight:700,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'DM Sans',sans-serif"}}>{notaSuena}</div>
@@ -655,40 +632,37 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Barra de anotaciones (AnnoBar) ─────────────────────────────────────────
+  // ── AnnoBar ───────────────────────────────────────────────────────────────
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
-      <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px'}}>
-        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .15s'}}>
+      <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',overflowX:'auto',scrollbarWidth:'none'}}>
+        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Anotar
           <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" style={{transform:showAnnoBar?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div style={{flex:1}}/>
+        <div style={{flex:1,flexShrink:0,minWidth:4}}/>
         {capo>0&&(
           <div style={{padding:'3px 8px',borderRadius:100,background:'rgba(94,206,160,.1)',border:'1px solid rgba(94,206,160,.25)',fontSize:10,fontWeight:700,color:'var(--gn)',flexShrink:0}}>
-            Capo {capo} · suena {sonaKey}
+            Capo {capo} · {sonaKey}
           </div>
         )}
-        {/* Nashville toggle — antes de Solo letra */}
+        {/* Nashville toggle */}
         <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
           <span style={{fontFamily:"'Source Code Pro',monospace",fontSize:10,fontWeight:900}}>1 4 5</span>
-          {nashville?' Grados':'Grados'}
+          {nashville?' Grados':' Notas'}
         </button>
         <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           {showChords?'Solo letra':'Con acordes'}
         </button>
         <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0,transition:'all .2s'}}>
-          {autoScroll
-            ?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            :<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          }
+          {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
           {autoScroll?`${songs[idx]?.bpm||80} BPM`:'Auto'}
         </button>
         {isAdmin&&(
           <>
-          <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else{setEditMode(true);}}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+          <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else setEditMode(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             {editMode?'Cancelar':'Editar'}
           </button>
@@ -724,17 +698,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Popup modo bloques — solo la primera vez ───────────────────────────────
+  // ── Popup modo bloques — solo la primera vez ──────────────────────────────
   const PopupModoBloques=()=>(
-    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}}
-      onClick={()=>setShowModePopup(false)}>
+    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}} onClick={()=>setShowModePopup(false)}>
       <div onClick={e=>e.stopPropagation()} style={{background:isLight?'rgba(240,234,222,.97)':'rgba(10,6,22,.97)',backdropFilter:'blur(40px)',border:'1px solid var(--bd2)',borderRadius:20,padding:'28px 24px',maxWidth:320,width:'90%',boxShadow:'0 24px 60px rgba(0,0,0,.5)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
           <div style={{width:44,height:44,borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--ac)" strokeWidth="1.8">
-              <rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/>
-              <rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--ac)" strokeWidth="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
           </div>
           <div>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>Vista por Bloques</div>
@@ -742,102 +712,76 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </div>
         <div style={{fontSize:13,color:'var(--tx)',lineHeight:1.6,marginBottom:16,fontFamily:"'DM Sans',sans-serif"}}>
-          Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio, con la letra al máximo tamaño posible.
+          Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio.
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
-          {[
-            ['🎯','Cero scroll — todo visible de un vistazo'],
-            ['📐','Texto al máximo tamaño por bloque'],
-            ['🔄','Estructura editable — duplica y reordena bloques'],
-            ['⚡','Ideal para pantallas grandes e iPads en ensayo'],
-          ].map(([ico,txt],i)=>(
+          {[['🎯','Cero scroll — todo visible de un vistazo'],['📐','Texto al máximo tamaño por bloque'],['🔄','Estructura editable — arrastra para reordenar'],['⚡','Ideal para iPads y pantallas grandes']].map(([ico,txt],i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:10,background:'var(--s1)',border:'1px solid var(--bd)'}}>
               <span style={{fontSize:16}}>{ico}</span>
               <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>{txt}</span>
             </div>
           ))}
         </div>
-        <button onClick={()=>{
-          setViewMode('bloques');
-          setAutoScroll(false);
-          initSecuencia();
-          setShowModePopup(false);
-          // Marcar como visto en localStorage
-          try{localStorage.setItem(POPUP_SEEN_KEY,'1');}catch{}
-        }}
+        <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initSecuencia();setShowModePopup(false);try{localStorage.setItem(POPUP_SEEN_KEY,'1');}catch{}}}
           style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
           Activar Vista Bloques
         </button>
-        <button onClick={()=>setShowModePopup(false)}
-          style={{width:'100%',padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,marginTop:6}}>
+        <button onClick={()=>setShowModePopup(false)} style={{width:'100%',padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,marginTop:6}}>
           Cancelar
         </button>
       </div>
     </div>
   );
 
-  // ── Toggle vista bloques/lineal ────────────────────────────────────────────
+  // ── Toggle vista ──────────────────────────────────────────────────────────
   const ToggleVista=()=>(
     <div style={{display:'flex',gap:3,alignItems:'center',padding:'3px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s2)',flexShrink:0}}>
       <button onClick={()=>{
         if(viewMode!=='bloques'){
-          // Solo mostrar popup si nunca se vio antes
           const seen=localStorage.getItem(POPUP_SEEN_KEY);
-          if(seen){
-            setViewMode('bloques');
-            setAutoScroll(false);
-            initSecuencia();
-          } else {
-            setShowModePopup(true);
-          }
+          if(seen){setViewMode('bloques');setAutoScroll(false);initSecuencia();}
+          else setShowModePopup(true);
         }
-      }}
-        title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,border:'none',
-        background:viewMode==='bloques'?'var(--ac)':'transparent',
-        color:viewMode==='bloques'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',
-        cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
-          <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
-        </svg>
+      }} title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,border:'none',background:viewMode==='bloques'?'var(--ac)':'transparent',color:viewMode==='bloques'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
       </button>
-      <button onClick={()=>{if(viewMode!=='lineal')setViewMode('lineal');}}
-        title="Vista lineal" style={{padding:'4px 8px',borderRadius:7,border:'none',
-        background:viewMode==='lineal'?'var(--ac)':'transparent',
-        color:viewMode==='lineal'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',
-        cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/>
-          <line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/>
-        </svg>
+      <button onClick={()=>{if(viewMode!=='lineal')setViewMode('lineal');}} title="Vista lineal" style={{padding:'4px 8px',borderRadius:7,border:'none',background:viewMode==='lineal'?'var(--ac)':'transparent',color:viewMode==='lineal'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
       </button>
     </div>
   );
 
-  // ── Área de contenido ──────────────────────────────────────────────────────
-  const ContentArea=({padRight=12})=>(
+  // ── ContentArea — Estructura y Tono en misma columna derecha ─────────────
+  const ContentArea=()=>(
     <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
       {viewMode==='bloques'
-        ? <VistaBloques/>
-        : <>
-            <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
-              onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
-              onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
-            />
-            <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 10px 10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
-              {song.docId
-                ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
-                :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,dir)=>handleMoveChord(li,ci,dir),nashville,curKey)}</div>
-              }
-            </div>
-          </>
+        ?<VistaBloques/>
+        :<>
+          <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
+            onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
+            onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
+          />
+          <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
+            {song.docId
+              ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
+              :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),nashville,curKey)}</div>
+            }
+          </div>
+        </>
       }
-      <PanelBloques/>
-      <PanelTono/>
+      {/* Panel Estructura encima de PanelTono, misma columna derecha */}
+      <div style={{position:'absolute',right:6,bottom:8,zIndex:4,display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end',pointerEvents:'none'}}>
+        <div style={{pointerEvents:'all'}}>
+          <PanelEstructura/>
+        </div>
+        <div style={{pointerEvents:'all'}}>
+          <PanelTono/>
+        </div>
+      </div>
     </div>
   );
 
-  // ── Nav inferior ───────────────────────────────────────────────────────────
+  // ── NavBar ────────────────────────────────────────────────────────────────
   const NavBar=()=>(
     <div className="sv-nav" style={{background:svNavBg,borderTop:`1px solid ${svBd}`}}>
       <button className="nb" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>
@@ -853,7 +797,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Layout tablet ≥768px ───────────────────────────────────────────────────
+  // ── Layout tablet ≥768px ──────────────────────────────────────────────────
   if(isTablet){
     return(
       <div className="sv" style={{flexDirection:'row',background:svBg}}>
@@ -905,14 +849,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           </div>
           <AnnoBar/>
-          <ContentArea padRight={12}/>
+          <ContentArea/>
           <NavBar/>
         </div>
       </div>
     );
   }
 
-  // ── Layout mobile <768px ───────────────────────────────────────────────────
+  // ── Layout mobile <768px ──────────────────────────────────────────────────
   return(
     <div className="sv" style={{background:svBg}}>
       {showModePopup&&<PopupModoBloques/>}
@@ -932,7 +876,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
       </div>
       <AnnoBar/>
-      <ContentArea padRight={12}/>
+      <ContentArea/>
       <NavBar/>
     </div>
   );
