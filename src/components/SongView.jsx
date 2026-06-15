@@ -52,112 +52,105 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   const maxLW=blocks.reduce((mx,b)=>b.label?Math.max(mx,b.label.length):mx,0);
   const labelPx=maxLW>0?Math.ceil(maxLW*(sFs*0.62))+10:0;
 
-  let globalChordIdx=0;
+  // ── Detecta si una línea es SOLO acordes (formato BARRO) ─────────────────────
+  // ej: "D A Em" → true | "Mi corazón" → false | "[D]Mi" → false (inline)
+  const CHORD_PLAIN_RE=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
+  const isChordOnlyLine=(txt)=>{
+    if(!txt.trim())return false;
+    if(/\[/.test(txt))return false;
+    const tokens=txt.trim().split(/\s+/);
+    return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN_RE.test(t));
+  };
 
-  const renderLine=(text,lineIdx,key)=>{
-    CHORD_RE.lastIndex=0;
-    const hasC=CHORD_RE.test(text);
-    CHORD_RE.lastIndex=0;
-    if(!text.trim())return null;
-
-    if(!hasC||!showChords){
-      const lyric=text.replace(CHORD_RE,'').trim();
-      if(!lyric)return null;
-      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.2,textAlign:'center',width:'100%',marginBottom:1}}>{lyric}</div>);
+  // Renderiza una línea de acordes-sobre-letra en formato BARRO
+  const renderBarro=(chordLine,lyricLine,key)=>{
+    const chords=(chordLine||'').trim().split(/\s+/).map(c=>trC(c));
+    const lyric=(lyricLine||'').trim();
+    const chordFs=Math.max(9,fs*0.72);
+    if(!showChords){
+      return lyric?(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>):null;
     }
-
-    const parts=[];
-    let last=0,m;
-    CHORD_RE.lastIndex=0;
-    while((m=CHORD_RE.exec(text))!==null){
-      if(m.index>last)parts.push({c:'',t:text.slice(last,m.index)});
-      parts.push({c:trC(m[1]),rawC:m[1],t:''});
-      last=m.index+m[0].length;
-    }
-    if(last<text.length)parts.push({c:'',t:text.slice(last)});
-
-    const groups=[];
-    let i2=0;
-    while(i2<parts.length){
-      if(parts[i2].c){
-        const txt=i2+1<parts.length&&!parts[i2+1].c?parts[i2+1].t:'';
-        groups.push({c:parts[i2].c,rawC:parts[i2].rawC,t:txt,ci:globalChordIdx++});
-        i2+=txt?2:1;
-      } else {
-        groups.push({c:'',t:parts[i2].t,ci:-1});
-        i2++;
-      }
-    }
-
-    const hasChords=groups.some(g=>g.c);
     return(
-      <div key={key} style={{display:'flex',flexWrap:'nowrap',justifyContent:'center',width:'100%',marginBottom:hasChords?3:1,alignItems:'flex-end',overflow:'visible'}}>
-        {groups.map((g,j)=>{
-          const isSelected=editMode&&selectedChord&&selectedChord.lineKey===key&&selectedChord.ci===g.ci;
-          return(
-            <div key={j} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',flexShrink:0,position:'relative'}}>
-              {hasChords&&(
-                editMode&&g.c?(
-                  // Acorde draggable en modo edición
-                  <span
-                    draggable
-                    onDragStart={e=>{
-                      e.dataTransfer.setData('text/plain',JSON.stringify({lineKey:key,ci:g.ci,lineIdx}));
-                      e.dataTransfer.effectAllowed='move';
-                    }}
-                    onTouchStart={e=>{
-                      // Touch drag: guardar posición inicial
-                      const touch=e.touches[0];
-                      e.currentTarget._dragStartX=touch.clientX;
-                      e.currentTarget._dragInfo={lineKey:key,ci:g.ci,lineIdx};
-                    }}
-                    onTouchMove={e=>{
-                      e.preventDefault();
-                      const touch=e.touches[0];
-                      const dx=touch.clientX-(e.currentTarget._dragStartX||touch.clientX);
-                      // Mover visualmente
-                      e.currentTarget.style.transform=`translateX(${dx}px)`;
-                      e.currentTarget.style.zIndex=10;
-                      e.currentTarget.style.opacity='0.8';
-                    }}
-                    onTouchEnd={e=>{
-                      const touch=e.changedTouches[0];
-                      const dx=touch.clientX-(e.currentTarget._dragStartX||touch.clientX);
-                      e.currentTarget.style.transform='';
-                      e.currentTarget.style.zIndex='';
-                      e.currentTarget.style.opacity='';
-                      // Convertir px a número de caracteres aproximado (cada char ~8px)
-                      const steps=Math.round(dx/8);
-                      if(Math.abs(steps)>0&&onDragChord){
-                        onDragChord(lineIdx,g.ci,steps);
-                      }
-                    }}
-                    style={{
-                      fontSize:cFs,fontWeight:800,
-                      color:isSelected?'#fff':'var(--ac)',
-                      lineHeight:1,fontFamily:FONT,
-                      whiteSpace:'nowrap',display:'block',
-                      background:isSelected?'var(--ac)':'rgba(200,169,126,.12)',
-                      borderRadius:4,padding:'1px 4px',
-                      cursor:'grab',userSelect:'none',
-                      border:'1px dashed rgba(200,169,126,.4)',
-                      transition:'opacity .15s',
-                      touchAction:'none',
-                    }}
-                    onClick={()=>onSelectChord&&onSelectChord({lineKey:key,ci:g.ci,lineIdx})}
-                  >{g.c}</span>
-                ):(
-                  <span style={{fontSize:cFs,fontWeight:800,color:g.c?'var(--ac)':'transparent',lineHeight:1,fontFamily:FONT,whiteSpace:'nowrap',display:'block',paddingRight:g.t?1:3}}>{g.c||'·'}</span>
-                )
-              )}
-              <span style={{fontSize:fs,fontWeight:700,color:g.t?'var(--tx)':'transparent',lineHeight:1.2,fontFamily:FONT,whiteSpace:'pre',display:'block'}}>{g.t||' '}</span>
-            </div>
-          );
-        })}
+      <div key={key} style={{marginBottom:'0.35em',lineHeight:1}}>
+        <div style={{display:'flex',gap:Math.max(8,12),marginBottom:2}}>
+          {chords.map((ch,i)=>(
+            <span key={i} style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap'}}>{ch}</span>
+          ))}
+        </div>
+        {lyric&&<div style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.3}}>{lyric}</div>}
       </div>
     );
   };
 
+  // ── renderLinea: formato YESHUA (acordes inline [A]palabra) ─────────────────
+  const renderLinea=(text,lineIdx,key)=>{
+    if(!text.trim())return null;
+    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
+    re.lastIndex=0;
+    const hasChord=re.test(text);
+    re.lastIndex=0;
+
+    if(!hasChord||!showChords){
+      const lyric=text.replace(re,'').trim();
+      if(!lyric)return null;
+      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>);
+    }
+
+    // Parsear segmentos: cada segmento = {chord, text, ci}
+    const segs=[];
+    let last=0,m,ci=0;
+    while((m=re.exec(text))!==null){
+      segs.push({chord:trC(m[1]),text:text.slice(last,m.index),ci:ci++,lineIdx,key});
+      last=m.index+m[0].length;
+    }
+    if(last<text.length)segs.push({chord:null,text:text.slice(last),ci:-1});
+
+    const chordFs=Math.max(9,fs*0.72);
+
+    return(
+      <div key={key} style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',marginBottom:'0.3em',lineHeight:1}}>
+        {segs.map((seg,si)=>(
+          <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start'}}>
+            {seg.chord?(
+              editMode?(
+                // Drag touch en edición
+                <span
+                  onTouchStart={e=>{
+                    const touch=e.touches[0];
+                    e.currentTarget._x0=touch.clientX;
+                  }}
+                  onTouchMove={e=>{
+                    e.preventDefault();
+                    const dx=e.touches[0].clientX-(e.currentTarget._x0||e.touches[0].clientX);
+                    e.currentTarget.style.transform=`translateX(${dx}px)`;
+                    e.currentTarget.style.opacity='0.75';
+                  }}
+                  onTouchEnd={e=>{
+                    const dx=e.changedTouches[0].clientX-(e.currentTarget._x0||e.changedTouches[0].clientX);
+                    e.currentTarget.style.transform='';
+                    e.currentTarget.style.opacity='';
+                    const steps=Math.round(dx/7);
+                    if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
+                  }}
+                  style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
+                >{seg.chord}</span>
+              ):(
+                <span style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>{seg.chord}</span>
+              )
+            ):(
+              <span style={{display:'block',height:chordFs*1.1}}/>
+            )}
+            {seg.text
+              ?<span style={{fontFamily:FONT,fontSize:fs,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre'}}>{seg.text}</span>
+              :<span style={{fontFamily:FONT,fontSize:fs,color:'transparent',lineHeight:1.3,userSelect:'none'}}>&nbsp;</span>
+            }
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const chordFsForLabel=(fs)=>Math.max(9,fs*0.72)*1.1;
   let lineCounter=0;
   return(
     <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
@@ -169,24 +162,58 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
       {blocks.map((blk,bi)=>{
         const blines=blk.lines.filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
         if(!blines.length&&!blk.label)return null;
+
+        // Pre-procesar líneas: detectar pares BARRO (chord-only → lyric)
+        const rows=[];
+        let skipNext=false;
+        for(let li=0;li<blines.length;li++){
+          if(skipNext){skipNext=false;continue;}
+          const line=blines[li];
+          const nextLine=blines[li+1]??'';
+          if(isChordOnlyLine(line)){
+            // Par BARRO: línea de acordes + siguiente línea de letra (o vacío)
+            rows.push({type:'barro',chordLine:line,lyricLine:nextLine,origLi:li});
+            skipNext=true;
+          } else {
+            rows.push({type:'inline',line,origLi:li});
+          }
+        }
+
         return(
           <div key={bi} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
-            {blines.map((line,li)=>{
-              if(!line.trim())return<div key={li} style={{height:fs*0.2}}/>;
-              const isFirst=li===0;
-              const thisLineIdx=lineCounter++;
-              return(
-                <div key={li} style={{display:'flex',alignItems:'flex-end',width:'100%'}}>
-                  <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2}}>
-                    {blk.label&&isFirst&&(
-                      <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
-                    )}
+            {rows.map((row,ri)=>{
+              const isFirst=ri===0;
+              if(row.type==='barro'){
+                const thisLineIdx=lineCounter++;
+                return(
+                  <div key={ri} style={{display:'flex',alignItems:'flex-start',width:'100%'}}>
+                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,paddingTop:chordFsForLabel(fs)}}>
+                      {blk.label&&isFirst&&(
+                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
+                      )}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      {renderBarro(row.chordLine,row.lyricLine,`b${ri}_${bi}`)}
+                    </div>
                   </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    {renderLine(line,thisLineIdx,'l'+li+'_'+bi)}
+                );
+              } else {
+                const line=row.line;
+                if(!line.trim())return<div key={ri} style={{height:fs*0.2}}/>;
+                const thisLineIdx=lineCounter++;
+                return(
+                  <div key={ri} style={{display:'flex',alignItems:'flex-end',width:'100%'}}>
+                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2}}>
+                      {blk.label&&isFirst&&(
+                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
+                      )}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      {renderLinea(line,thisLineIdx,'l'+ri+'_'+bi)}
+                    </div>
                   </div>
-                </div>
-              );
+                );
+              }
             })}
           </div>
         );
@@ -524,14 +551,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
     return(
       <div style={{
-        position:'absolute',right:6,bottom:8,zIndex:3,
         display:'flex',flexDirection:'column',
         borderRadius:14,border:'1px solid var(--bd)',
         background:panelBg,backdropFilter:'blur(40px)',
         overflow:'hidden',width:64,
-        // Altura máxima = hasta donde empieza PanelTono desde abajo
-        // PanelTono tiene ~200px aprox, panel estructura encima
-        maxHeight:'42vh',
+        maxHeight:'38vh',
       }}>
         <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
           ESTRUCTURA
@@ -588,7 +612,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // ── Panel Tono + Capo ─────────────────────────────────────────────────────
   const PanelTono=()=>(
-    <div style={{position:'absolute',right:6,bottom:8,zIndex:3,display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible'}}>
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible',position:'relative'}}>
       <button onClick={()=>doTp(1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)',borderRadius:'14px 14px 0 0'}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
         <span style={{fontSize:8,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
@@ -769,12 +793,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </>
       }
-      {/* Panel Estructura encima de PanelTono, misma columna derecha */}
-      <div style={{position:'absolute',right:6,bottom:8,zIndex:4,display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end',pointerEvents:'none'}}>
-        <div style={{pointerEvents:'all'}}>
+      {/* Columna derecha: Estructura arriba, Tono abajo, sin superponerse */}
+      <div style={{position:'absolute',right:6,bottom:8,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
+        <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
           <PanelEstructura/>
         </div>
-        <div style={{pointerEvents:'all'}}>
+        <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
           <PanelTono/>
         </div>
       </div>
