@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@500;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&family=Special+Gothic+Expanded+One&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
---bg:#0f0f0f;--s1:rgba(238,34,125,.10);--s2:rgba(238,34,125,.05);--s3:rgba(238,34,125,.18);
---bd:rgba(238,34,125,.22);--bd2:rgba(238,34,125,.45);
---ac:#EE227D;--tx:#f5f0ff;--tx2:#9d8fb8;--tx3:#4a3d5c;
---gn:#30C0B7;--rd:#FD8083;--btn-c:#0f0f0f;
+--bg:#1a1b1e;--s1:rgba(255,255,255,.05);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.09);
+--bd:rgba(255,255,255,.09);--bd2:rgba(255,255,255,.18);
+--ac:#EE227D;--tx:#f3f1ed;--tx2:rgba(243,241,237,.55);--tx3:#6b6f77;
+--gn:#30C0B7;--rd:#FD8083;--btn-c:#1a1b1e;
 }
 [data-theme=cream]{
 --bg:#f0ebe0;--s1:rgba(0,0,0,0.04);--s2:rgba(0,0,0,0.02);--s3:rgba(0,0,0,0.07);
@@ -21,9 +21,8 @@
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
 #root{min-height:100vh;}
 .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;
-background:radial-gradient(ellipse 80% 55% at 15% -5%,rgba(139,114,212,.15) 0%,transparent 55%),
-radial-gradient(ellipse 65% 45% at 85% 105%,rgba(238,34,125,.12) 0%,transparent 50%);}
-[data-theme=cream] .bg-fx,[data-theme=gray] .bg-fx{opacity:.3;}
+background:radial-gradient(ellipse 60% 40% at 80% 100%,rgba(238,34,125,.06) 0%,transparent 60%);}
+[data-theme=cream] .bg-fx,[data-theme=gray] .bg-fx{opacity:.2;}
 /* ── GLASS ── */
 .card{background:var(--s1);backdrop-filter:blur(40px) saturate(220%);-webkit-backdrop-filter:blur(40px) saturate(220%);border:1px solid var(--bd);border-radius:14px;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.3);}
 .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 50%);pointer-events:none;border-radius:inherit;}

@@ -271,7 +271,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const getSongContent=(song)=>editedSongs[song.name]||contentDB[song.name]||null;
 
-  // ── Mover acorde por drag (pasos en caracteres) ───────────────────────────
+  // ── Mover acorde por drag — posición absoluta en caracteres ─────────────
+  // steps viene de Math.round(dx/7) donde dx es píxeles arrastrados.
+  // En vez de mover 1 char por paso (que se acumula mal), calculamos
+  // la posición objetivo del inicio del tag y reinsertamos ahí.
   const handleDragChord=(lineIdx,chordIdx,steps)=>{
     if(!steps)return;
     const song=songs[idx];
@@ -303,23 +306,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const chord=chords[localIdx];
     if(!chord)return;
 
-    const dir=steps>0?'right':'left';
-    const abs=Math.abs(steps);
-    let newLine=line;
-    for(let s=0;s<abs;s++){
-      CHORD_RE.lastIndex=0;
-      const curChords=[];
-      while((m=CHORD_RE.exec(newLine))!==null) curChords.push({start:m.index,end:m.index+m[0].length,full:m[0]});
-      const curChord=curChords[localIdx];
-      if(!curChord)break;
-      const before=newLine.slice(0,curChord.start);
-      const after=newLine.slice(curChord.end);
-      if(dir==='left'&&before.length>0){
-        newLine=before.slice(0,-1)+curChord.full+before.slice(-1)+after;
-      } else if(dir==='right'&&after.length>0){
-        newLine=before+after[0]+curChord.full+after.slice(1);
-      } else break;
-    }
+    // Quitar el tag del acorde de su posición actual
+    const lineWithout=line.slice(0,chord.start)+line.slice(chord.end);
+    // Calcular nueva posición: start + steps, clamped a [0, lineWithout.length]
+    const newPos=Math.max(0,Math.min(lineWithout.length,chord.start+steps));
+    // Reinsertar el tag en la nueva posición
+    const newLine=lineWithout.slice(0,newPos)+chord.full+lineWithout.slice(newPos);
+
     if(newLine===line)return;
     const newLines=[...allLines];
     newLines[targetAbsIdx]=newLine;
@@ -854,8 +847,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </>
       }
-      {/* Columna derecha: Estructura arriba, Tono abajo, sin superponerse */}
-      <div style={{position:'absolute',right:6,bottom:8,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
+      {/* Columna derecha: Estructura pegada arriba-derecha, Tono abajo-derecha */}
+      <div style={{position:'absolute',right:6,top:6,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
         <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
           <PanelEstructura/>
         </div>

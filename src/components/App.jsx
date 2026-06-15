@@ -36,12 +36,12 @@ export default function App(){
 
   // Temas aplicados via CSS variables inline — funciona en sandbox/artifact
   const THEMES={
-    // ── OSCURO — gris/violeta oscuro con paleta neon cosmos ──
+    // ── OSCURO — negro carbón sin azul, paleta de la foto ──
     dark:{
-      bg:'linear-gradient(160deg,#0f0f0f 0%,#0e0810 50%,#1a0a1f 100%)',
-      s1:'rgba(238,34,125,.10)',s2:'rgba(238,34,125,.05)',s3:'rgba(238,34,125,.18)',
-      bd:'rgba(238,34,125,.22)',bd2:'rgba(238,34,125,.45)',
-      ac:'#EE227D',tx:'#f5f0ff',tx2:'#9d8fb8',tx3:'#4a3d5c',
+      bg:'linear-gradient(160deg,#1a1b1e 0%,#2b2d31 100%)',
+      s1:'rgba(255,255,255,.05)',s2:'rgba(255,255,255,.025)',s3:'rgba(255,255,255,.09)',
+      bd:'rgba(255,255,255,.09)',bd2:'rgba(255,255,255,.18)',
+      ac:'#EE227D',tx:'#f3f1ed',tx2:'rgba(243,241,237,.55)',tx3:'#6b6f77',
       gn:'#30C0B7',rd:'#FD8083',
     },
     // ── GRIS — carbón oscuro con naranja quemado ──
@@ -197,123 +197,77 @@ export default function App(){
 
     return(
       <div style={{
-        minHeight:'100vh',background:'#07070f',
-        display:'flex',flexDirection:'column',
+        minHeight:'100vh',background:'#13141a',
+        display:'flex',flexDirection:'column',alignItems:'center',
         fontFamily:"'DM Sans',sans-serif",
         overflowY:'auto',
       }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
-        <div style={{padding:'48px 24px 24px',textAlign:'center'}}>
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#c8a97e" strokeWidth="1.5" style={{marginBottom:10}}>
-            <path d="M9 18V5l12-2v13"/>
-            <circle cx="6" cy="18" r="3"/>
-            <circle cx="18" cy="16" r="3"/>
-          </svg>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
-            fontSize:26,color:'#ede9ff',letterSpacing:'2px'}}>
-            SETSYNC
+        {/* Logo vertical */}
+        <div style={{paddingTop:64,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center',gap:14}}>
+          <div style={{width:72,height:72,borderRadius:20,background:'linear-gradient(135deg,#2b2d31,#3c3f45)',border:'1px solid rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#EE227D" strokeWidth="1.5">
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </svg>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,color:'#f3f1ed',letterSpacing:'3px',lineHeight:1}}>SETSYNC</div>
+            <div style={{fontSize:11,color:'#6b6f77',fontWeight:600,letterSpacing:'2px',textTransform:'uppercase',marginTop:6}}>{lang==='es'?'Tu app de setlists':'Your setlist app'}</div>
           </div>
         </div>
-        <div style={{padding:'0 24px 24px',textAlign:'center'}}>
-          <div style={{fontSize:10,color:'rgba(255,255,255,.3)',fontWeight:700,
-            textTransform:'uppercase',letterSpacing:'2px',marginBottom:8}}>
-            {t.lang}
-          </div>
-          <div style={{display:'inline-flex',gap:0,borderRadius:20,
-            border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
-            {['es','en'].map(l=>(
-              <button key={l} onClick={()=>setLang(l)}
-                style={{padding:'6px 18px',border:'none',cursor:'pointer',
-                  background:lang===l?'rgba(200,169,126,.2)':'transparent',
-                  color:lang===l?'#c8a97e':'rgba(255,255,255,.3)',
-                  fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
-                  textTransform:'uppercase',letterSpacing:'1px',
-                  transition:'all .2s'}}>
-                {l==='es'?'Español':'English'}
-              </button>
-            ))}
-          </div>
+        {/* Selector idioma */}
+        <div style={{marginBottom:32,display:'inline-flex',gap:0,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',overflow:'hidden'}}>
+          {['es','en'].map(l=>(
+            <button key={l} onClick={()=>setLang(l)}
+              style={{padding:'7px 20px',border:'none',cursor:'pointer',
+                background:lang===l?'rgba(238,34,125,.15)':'transparent',
+                color:lang===l?'#EE227D':'rgba(255,255,255,.3)',
+                fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
+                textTransform:'uppercase',letterSpacing:'1px',transition:'all .2s'}}>
+              {l==='es'?'ES':'EN'}
+            </button>
+          ))}
         </div>
-        <div style={{padding:'0 24px 8px',textAlign:'center'}}>
-          <div style={{fontSize:17,fontWeight:400,color:'#ede9ff',marginBottom:6,fontFamily:"'Special Gothic Expanded One',sans-serif"}}>
-            {t.choose}
-          </div>
-          <div style={{fontSize:12,color:'rgba(255,255,255,.35)',lineHeight:1.5,
-            maxWidth:320,margin:'0 auto',fontWeight:400}}>
-            {t.forever}
-          </div>
+        {/* Título */}
+        <div style={{textAlign:'center',marginBottom:20,padding:'0 24px'}}>
+          <div style={{fontSize:15,fontWeight:700,color:'#f3f1ed',marginBottom:6}}>{t.choose}</div>
+          <div style={{fontSize:11,color:'#6b6f77',lineHeight:1.6,maxWidth:300,margin:'0 auto'}}>{t.forever}</div>
         </div>
-        <div style={{padding:'16px 20px 48px'}}>
+        {/* Cards modo */}
+        <div style={{width:'100%',maxWidth:400,padding:'0 20px 60px'}}>
           {[
-            {id:'iglesia', data:t.iglesia, icon:'church'},
-            {id:'banda',   data:t.banda,   icon:'music'},
-            {id:'academia',data:t.academia,icon:'school', disabled:true},
+            {id:'iglesia',data:t.iglesia,icon:'church'},
+            {id:'banda',  data:t.banda,  icon:'music'},
+            {id:'academia',data:t.academia,icon:'school',disabled:true},
           ].map(item=>(
             <button key={item.id}
               onClick={()=>!item.disabled&&(setAppMode(item.id),setOnboarded(true))}
               style={{
                 width:'100%',padding:'18px 20px',marginBottom:10,
                 borderRadius:16,display:'flex',alignItems:'center',gap:16,
-                border:`1px solid ${item.disabled?'rgba(255,255,255,.05)':'rgba(200,169,126,.2)'}`,
-                background:item.disabled?'rgba(255,255,255,.01)':'rgba(200,169,126,.04)',
+                border:`1px solid ${item.disabled?'rgba(255,255,255,.04)':'rgba(255,255,255,.1)'}`,
+                background:item.disabled?'rgba(255,255,255,.01)':'rgba(255,255,255,.03)',
                 cursor:item.disabled?'not-allowed':'pointer',
-                opacity:item.disabled?.35:1,
-                textAlign:'left',transition:'all .2s',
+                opacity:item.disabled?.3:1,textAlign:'left',transition:'all .18s',
               }}>
-              <div style={{
-                width:44,height:44,borderRadius:12,flexShrink:0,
-                background:item.disabled?'rgba(255,255,255,.03)':'rgba(200,169,126,.08)',
-                display:'flex',alignItems:'center',justifyContent:'center',
-              }}>
-                {item.icon==='church'&&(
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
-                    stroke={item.disabled?'rgba(255,255,255,.2)':'#c8a97e'} strokeWidth="1.5">
-                    <path d="M18 22H6a2 2 0 0 1-2-2V7l4-4h8l4 4v13a2 2 0 0 1-2 2z"/>
-                    <line x1="12" y1="2" x2="12" y2="7"/>
-                    <line x1="9" y1="11" x2="15" y2="11"/>
-                  </svg>
-                )}
-                {item.icon==='music'&&(
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
-                    stroke={item.disabled?'rgba(255,255,255,.2)':'#c8a97e'} strokeWidth="1.5">
-                    <path d="M9 18V5l12-2v13"/>
-                    <circle cx="6" cy="18" r="3"/>
-                    <circle cx="18" cy="16" r="3"/>
-                  </svg>
-                )}
-                {item.icon==='school'&&(
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
-                    stroke="rgba(255,255,255,.2)" strokeWidth="1.5">
-                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                  </svg>
-                )}
+              <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+                background:item.disabled?'rgba(255,255,255,.03)':'rgba(238,34,125,.1)',
+                border:`1px solid ${item.disabled?'rgba(255,255,255,.05)':'rgba(238,34,125,.2)'}`,
+                display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {item.icon==='church'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke={item.disabled?'rgba(255,255,255,.15)':'#EE227D'} strokeWidth="1.5"><path d="M18 22H6a2 2 0 0 1-2-2V7l4-4h8l4 4v13a2 2 0 0 1-2 2z"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>)}
+                {item.icon==='music'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke={item.disabled?'rgba(255,255,255,.15)':'#EE227D'} strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)}
+                {item.icon==='school'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>)}
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-                  <span style={{fontSize:16,fontWeight:900,
-                    color:item.disabled?'rgba(255,255,255,.2)':'#ede9ff'}}>
-                    {item.data.title}
-                  </span>
-                  {item.disabled&&(
-                    <span style={{fontSize:9,fontWeight:700,
-                      color:'rgba(255,255,255,.2)',letterSpacing:'1px',
-                      textTransform:'uppercase'}}>
-                      {t.soon}
-                    </span>
-                  )}
+                  <span style={{fontSize:15,fontWeight:700,color:item.disabled?'rgba(255,255,255,.2)':'#f3f1ed'}}>{item.data.title}</span>
+                  {item.disabled&&(<span style={{fontSize:9,fontWeight:700,color:'#6b6f77',letterSpacing:'1px',textTransform:'uppercase',padding:'2px 7px',borderRadius:100,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}>{t.soon}</span>)}
                 </div>
-                <div style={{fontSize:11,color:item.disabled?'rgba(255,255,255,.12)':'rgba(255,255,255,.4)',
-                  lineHeight:1.4,fontWeight:400}}>
-                  {item.data.sub}
-                </div>
+                <div style={{fontSize:11,color:item.disabled?'rgba(255,255,255,.1)':'#6b6f77',lineHeight:1.4}}>{item.data.sub}</div>
               </div>
-              {!item.disabled&&(
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-                  stroke="rgba(200,169,126,.4)" strokeWidth="2" style={{flexShrink:0}}>
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              )}
+              {!item.disabled&&(<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>)}
             </button>
           ))}
         </div>
