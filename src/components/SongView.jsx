@@ -182,7 +182,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
         </div>
       )}
       {blocks.map((blk,bi)=>{
-        const blines=blk.lines.filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
+        const blines=(blk.lines||[]).filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
         if(!blines.length&&!blk.label)return null;
 
         // Pre-procesar líneas: detectar pares BARRO (chord-only → lyric)
@@ -430,7 +430,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(!songName)return bloques.map((b,i)=>({...b,uid:i}));
     try{
       const saved=localStorage.getItem(getSongKey(songName));
-      if(saved){const seq=JSON.parse(saved);return seq.map((item,i)=>{const bloque=bloques.find(b=>b.label===item.label)||bloques[0];return{...bloque,uid:i,seqId:item.seqId};});}
+      if(saved){
+        const seq=JSON.parse(saved);
+        return seq.map((item,i)=>{
+          const bloque=bloques.find(b=>b.label===item.label)||bloques[0];
+          // Garantizar que lines siempre sea array (si viene de localStorage solo tiene label/seqId)
+          return{...bloque,lines:bloque?.lines||[],uid:i,seqId:item.seqId};
+        });
+      }
     }catch{}
     return bloques.map((b,i)=>({...b,uid:i,seqId:i}));
   };
@@ -484,6 +491,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const renderBloqueLines=(lines,tpOff,showChords,fs=14)=>{
+    if(!lines||!lines.length)return null;
     const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
     const trC=(ch)=>{
       const p=ch.split('/');
@@ -515,7 +523,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div style={{flex:1,overflowY:'auto',scrollbarWidth:'thin',display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,gap:8,padding:'8px',height:'100%',boxSizing:'border-box'}}>
         {unique.map((bloque,bi)=>{
           const color=getColorBloque(bloque.label);
-          const contentLines=bloque.lines.filter(l=>{const t=l.trim();return t&&!t.startsWith('===');});
+          const safeLines=bloque.lines||[];
+          const contentLines=safeLines.filter(l=>{const t=l.trim();return t&&!t.startsWith('===');});
           const visualRows=contentLines.reduce((acc,l)=>acc+(/\[[A-G]/.test(l)?2:1),0);
           const approxBlockH=typeof window!=='undefined'?(window.innerHeight*0.82-40)/rows-40:120;
           const fsDynamic=Math.max(10,Math.min(28,Math.floor(approxBlockH/(visualRows||1)/1.35)));
@@ -523,7 +532,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div key={bi} style={{background:`${color}10`,border:`1px solid ${color}40`,borderRadius:14,padding:'8px 10px',display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
               <div style={{fontSize:9,fontWeight:700,fontFamily:"'DM Sans',sans-serif",color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4,flexShrink:0}}>{bloque.label}</div>
               <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',justifyContent:'flex-start'}}>
-                {renderBloqueLines(bloque.lines,tpOff,showChords,fsDynamic)}
+                {renderBloqueLines(safeLines,tpOff,showChords,fsDynamic)}
               </div>
             </div>
           );
