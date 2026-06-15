@@ -204,18 +204,8 @@ export default function App(){
       }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
         {/* Logo vertical */}
-        <div style={{paddingTop:64,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center',gap:14}}>
-          <div style={{width:72,height:72,borderRadius:20,background:'linear-gradient(135deg,#2b2d31,#3c3f45)',border:'1px solid rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#EE227D" strokeWidth="1.5">
-              <path d="M9 18V5l12-2v13"/>
-              <circle cx="6" cy="18" r="3"/>
-              <circle cx="18" cy="16" r="3"/>
-            </svg>
-          </div>
-          <div style={{textAlign:'center'}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,color:'#f3f1ed',letterSpacing:'3px',lineHeight:1}}>SETSYNC</div>
-            <div style={{fontSize:11,color:'#6b6f77',fontWeight:600,letterSpacing:'2px',textTransform:'uppercase',marginTop:6}}>{lang==='es'?'Tu app de setlists':'Your setlist app'}</div>
-          </div>
+        <div style={{paddingTop:64,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center'}}>
+          <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:160,height:'auto',objectFit:'contain'}}/>
         </div>
         {/* Selector idioma */}
         <div style={{marginBottom:32,display:'inline-flex',gap:0,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',overflow:'hidden'}}>
