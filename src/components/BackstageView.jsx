@@ -1,3 +1,4 @@
+import { t as getT } from '../i18n';
 // BackstageView: panel completo de backstage para Iglesia — gestión de eventos,
 // setlists, equipos, permisos, notificaciones y configuración de tema.
 // NOTA: candidato a refactor con reducer/contexto en una sesión futura para
@@ -8,7 +9,8 @@ import { EQUIPOS_DATA } from '../data/constants';
 import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang='es'}){
+  const tx=getT(lang);
   const [bsView,setBsView]=useState(null);
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
@@ -49,7 +51,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
           {['Culto Dominical','Reunión Especial','Reunión de Oración','Noche de Adoración','Culto de Jóvenes','Conferencia','Aniversario'].map(op=>(
             <button key={op} onClick={()=>setEvNombre(op)}
-              style={{padding:'6px 12px',borderRadius:100,border:evNombre===op?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",transition:'all .15s'}}>
+              style={{padding:'6px 12px',borderRadius:100,border:evNombre===op?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
               {op}
             </button>
           ))}
@@ -115,7 +117,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <div style={{display:'flex',gap:8}}>
             <input className="inp" placeholder="Nombre del equipo personalizado..." id="eq-custom" style={{flex:1,fontSize:12}}/>
             <button onClick={()=>{const v=document.getElementById('eq-custom').value.trim();if(v){onToast({text:'Equipo agregado',sub:v});document.getElementById('eq-custom').value='';}}}
-              style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(200,169,126,.35)',background:'rgba(200,169,126,.08)',color:'var(--ac)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+              style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(200,169,126,.35)',background:'rgba(200,169,126,.08)',color:'var(--ac)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
               + Agregar
             </button>
           </div>
@@ -202,7 +204,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           {eventos.length===0?(
             <div style={{padding:'12px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
               <div style={{fontSize:12,color:'var(--tx3)',marginBottom:6}}>Aún no hay eventos creados</div>
-              <button onClick={()=>setBsView('evento')} style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+              <button onClick={()=>setBsView('evento')} style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                 + Crear un evento primero →
               </button>
             </div>
@@ -292,7 +294,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                   </div>
                 </div>
                 <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlNombre(sl.nombre);setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:'Editando setlist',sub:sl.nombre});}}
-                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                   Editar
                 </button>
                 <button onClick={()=>setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id))}
@@ -344,7 +346,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <div key={eq.id} className="eq-card" style={{marginBottom:10}}>
             <div onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)} style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:9,cursor:'pointer'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
+              <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
               <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{eq.miembros.length}</span>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{transform:activeEq===eq.id?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
@@ -355,13 +357,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                   {eq.roles.map(r=>(
                     <span key={r} style={{fontSize:10,fontWeight:700,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'2px 8px',borderRadius:100}}>{r}</span>
                   ))}
-                  <button onClick={()=>onToast({text:'Nuevo rol',sub:eq.name})} style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:700}}>+ Rol</button>
+                  <button onClick={()=>onToast({text:'Nuevo rol',sub:eq.name})} style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>+ Rol</button>
                 </div>
                 {eq.miembros.map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
                     <div style={{width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
                     <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.name}</span>
-                    <select defaultValue={m.role} style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",fontWeight:700,outline:'none'}}>
+                    <select defaultValue={m.role} style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
                       {eq.roles.map(r=>(<option key={r} value={r}>{r}</option>))}
                     </select>
                     <button onClick={()=>onToast({text:'Removido',sub:m.name})} style={{width:22,height:22,borderRadius:6,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -459,7 +461,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
           {['Todo el equipo',...EQUIPOS_DATA.map(e=>e.name)].map(dest=>(
-            <button key={dest} onClick={()=>setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest])} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",border:notifDest.includes(dest)?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
+            <button key={dest} onClick={()=>setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest])} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",border:notifDest.includes(dest)?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
           ))}
         </div>
       </div>
@@ -467,7 +469,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Tipo de aviso</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
           {[{id:'recordatorio',label:'Recordatorio',icon:'🔔'},{id:'cambio',label:'Cambio setlist',icon:''},{id:'urgente',label:'Urgente',icon:'⚡'},{id:'general',label:'General',icon:'💬'}].map(t=>(
-            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',border:notifTipo===t.id?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifTipo===t.id?'rgba(200,169,126,.08)':'var(--s1)',fontFamily:"'DM Sans',sans-serif"}}>
+            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',border:notifTipo===t.id?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifTipo===t.id?'rgba(200,169,126,.08)':'var(--s1)',fontFamily:"'Lexend Giga',sans-serif"}}>
               <div style={{fontSize:18,marginBottom:4}}>{t.icon}</div>
               <div style={{fontSize:12,fontWeight:700,color:notifTipo===t.id?'var(--ac)':'var(--tx)'}}>{t.label}</div>
             </button>
@@ -514,7 +516,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           </div>
           <div>
             <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.6}}>PNG o SVG · 512×512px recomendado</div>
-            <button style={{marginTop:6,padding:'4px 10px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Seleccionar archivo</button>
+            <button style={{marginTop:6,padding:'4px 10px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Seleccionar archivo</button>
           </div>
         </div>
       </div>
@@ -559,7 +561,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                 )}
               </div>
               <div style={{padding:'8px 10px',background:'var(--s1)'}}>
-                <div style={{fontSize:11,fontWeight:900,color:'var(--tx)',fontFamily:"'DM Sans',sans-serif"}}>{th.label}</div>
+                <div style={{fontSize:11,fontWeight:900,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{th.label}</div>
                 <div style={{fontSize:9,color:'var(--tx3)',marginTop:2}}>{th.sub}</div>
               </div>
             </div>
@@ -572,7 +574,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
             <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>Daniel Miranda</div>
             <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>dmiranda@fearless.cl · Super Admin</div>
           </div>
-          <button onClick={()=>onToast({text:'Cerrando sesión...',sub:'Hasta pronto'})} style={{padding:'7px 14px',borderRadius:9,border:'1px solid rgba(255,82,82,.3)',background:'rgba(255,82,82,.06)',color:'var(--rd)',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:5}}>
+          <button onClick={()=>onToast({text:'Cerrando sesión...',sub:'Hasta pronto'})} style={{padding:'7px 14px',borderRadius:9,border:'1px solid rgba(255,82,82,.3)',background:'rgba(255,82,82,.06)',color:'var(--rd)',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:5}}>
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Cerrar sesión
           </button>
@@ -610,13 +612,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <input className="inp" placeholder="Ej: Juan 3:16" style={{marginBottom:8}}
           value={pastorVersiculo||''} onChange={e=>setPastorVersiculo(e.target.value)}/>
         <textarea className="inp" placeholder="Escribe el texto del versículo aquí..."
-          rows={4} style={{width:'100%',resize:'vertical',fontFamily:"'DM Sans',sans-serif",fontSize:13,lineHeight:1.6}}
+          rows={4} style={{width:'100%',resize:'vertical',fontFamily:"'Lexend Giga',sans-serif",fontSize:13,lineHeight:1.6}}
           value={pastorTexto||''} onChange={e=>setPastorTexto(e.target.value)}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Notas del mensaje</div>
         <textarea className="inp" placeholder="Título del mensaje, puntos principales, notas para el equipo..."
-          rows={5} style={{width:'100%',resize:'vertical',fontFamily:"'DM Sans',sans-serif",fontSize:13,lineHeight:1.6}}
+          rows={5} style={{width:'100%',resize:'vertical',fontFamily:"'Lexend Giga',sans-serif",fontSize:13,lineHeight:1.6}}
           value={pastorNotas||''} onChange={e=>setPastorNotas(e.target.value)}/>
       </div>
       <div style={{display:'flex',gap:8,marginTop:4}}>
@@ -646,7 +648,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1}}>Backstage</div>
-          <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'DM Sans',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
+          <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
         </div>
         <div style={{fontSize:12,color:'var(--ac)',fontWeight:600,lineHeight:1.5}}>
           {isAdmin?'Crea eventos, arma setlists, gestiona tu equipo y envía comunicaciones.':'Convoca a tu equipo, envía notificaciones y coordina lo que necesites.'}

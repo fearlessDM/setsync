@@ -11,11 +11,13 @@ import { Cancionero } from './Cancionero';
 import { EquiposView } from './EquiposView';
 import { BackstageView } from './BackstageView';
 import { BandaApp } from './banda/BandaApp';
+import { t as getT } from '../i18n';
 
 export default function App(){
   const [appMode,setAppMode]=useState(null); // null | 'iglesia' | 'banda' | 'academia'
   const [onboarded,setOnboarded]=useState(false);
   const [lang,setLang]=useState('es');
+  const tx=getT(lang);
   const [mode,setMode]=useState('worship');
   const [view,setView]=useState('home');
   const [sbCol,setSbCol]=useState(false);
@@ -94,17 +96,39 @@ export default function App(){
   const activeSl=SETLISTS[activeSunday]||[];
 
 
+
+  // ── Footer legal (oculto, baja opacidad) ─────────────────────────────────
+  const Footer=()=>(
+    <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:14,opacity:.25,userSelect:'none'}}>
+      <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:60,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
+      <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
+        © {new Date().getFullYear()} SetSync · {tx.allRights}
+      </div>
+      <div style={{display:'flex',gap:16,flexWrap:'wrap',justifyContent:'center'}}>
+        {[
+          {label:tx.privacy, href:'/privacy'},
+          {label:tx.terms,   href:'/terms'},
+          {label:tx.cookies, href:'/cookies'},
+        ].map(({label,href})=>(
+          <a key={href} href={href} style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,color:'var(--tx3)',textDecoration:'none',letterSpacing:'.5px'}}
+            onMouseEnter={e=>e.target.style.opacity='.6'} onMouseLeave={e=>e.target.style.opacity='1'}>
+            {label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
   // ── Dashboard de inicio ───────────────────────────────────────────────────
-  const DashboardHome=({onNavigate,onToast,userName})=>{
+  const DashboardHome=({onNavigate,onToast,userName,tx})=>{
     const hora=new Date().getHours();
-    const saludo=hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
+    const saludo=hora<12?tx.goodMorning:hora<18?tx.goodAfternoon:tx.goodEvening;
     const acciones=[
-      {icon:'calendar',  label:'Crear evento',         sub:'Nuevo domingo o fecha especial',  color:'#a78bfa', action:()=>onNavigate('backstage')},
-      {icon:'music',     label:'Armar setlist',         sub:'Elige canciones para el servicio',color:'#34d399', action:()=>onNavigate('backstage')},
-      {icon:'song',      label:'Agregar canción',        sub:'Sube letra y acordes',            color:'#60a5fa', action:()=>onNavigate('cancionero')},
-      {icon:'team',      label:'Gestionar equipos',     sub:'Miembros, roles y permisos',      color:'#f472b6', action:()=>onNavigate('backstage')},
-      {icon:'rehearsal', label:'Ver próxima fecha',     sub:'Setlist y detalles del domingo',  color:'#fb923c', action:()=>onNavigate('misetlist')},
-      {icon:'stats',     label:'Ver resumen',            sub:'Calendario y actividad reciente', color:'#facc15', action:()=>onNavigate('admin')},
+      {icon:'calendar',  label:tx.createEvent,sub:tx.createEventSub,  color:'#a78bfa', action:()=>onNavigate('backstage')},
+      {icon:'music',     label:tx.buildSetlist,sub:tx.buildSetlistSub,color:'#34d399', action:()=>onNavigate('backstage')},
+      {icon:'song',      label:tx.addSong,sub:tx.addSongSub,            color:'#60a5fa', action:()=>onNavigate('cancionero')},
+      {icon:'team',      label:tx.manageTeams,sub:tx.manageTeamsSub,      color:'#f472b6', action:()=>onNavigate('backstage')},
+      {icon:'rehearsal', label:tx.nextEvent,sub:tx.nextEventSub,  color:'#fb923c', action:()=>onNavigate('misetlist')},
+      {icon:'stats',     label:tx.viewSummary,sub:tx.viewSummarySub, color:'#facc15', action:()=>onNavigate('admin')},
     ];
     const IcoAccion=({icon})=>{
       const s={viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'};
@@ -119,9 +143,9 @@ export default function App(){
     return(
       <div style={{padding:'24px 16px 100px',minHeight:'100%'}}>
         <div style={{marginBottom:28}}>
-          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué hacemos hoy?</div>
-          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'DM Sans',sans-serif",lineHeight:1.5}}>Elige una acción rápida para comenzar.</div>
+          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>{tx.whatToday}</div>
+          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>{tx.pickAction}</div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           {acciones.map((a,i)=>(
@@ -131,7 +155,7 @@ export default function App(){
                 <IcoAccion icon={a.icon}/>
               </div>
               <div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
               </div>
               <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
@@ -144,15 +168,15 @@ export default function App(){
 
   // Onboarding antiguo desactivado — reemplazado por ModeSelector
 
-  const MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const MESES=tx.months;
   const mesActual=new Date().getMonth();
 
   const BNS=[
-    {id:'home',label:'Inicio'},
-    {id:'admin',label:'Resumen'},
-    {id:'misetlist',label:'Próx Fecha'},
-    {id:'cancionero',label:'Cancionero'},
-    {id:'backstage',label:'Backstage'},
+    {id:'home',      label:tx.home},
+    {id:'admin',     label:tx.admin},
+    {id:'misetlist', label:tx.nextDate},
+    {id:'cancionero',label:tx.songbook},
+    {id:'backstage', label:tx.backstage},
   ];
   const NavIco=({id,active})=>{
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
@@ -197,7 +221,7 @@ export default function App(){
       <div style={{
         minHeight:'100vh',background:'#13141a',
         display:'flex',flexDirection:'column',alignItems:'center',
-        fontFamily:"'DM Sans',sans-serif",
+        fontFamily:"'Lexend Giga',sans-serif",
         overflowY:'auto',
       }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
@@ -212,7 +236,7 @@ export default function App(){
               style={{padding:'7px 20px',border:'none',cursor:'pointer',
                 background:lang===l?'rgba(238,34,125,.15)':'transparent',
                 color:lang===l?'#EE227D':'rgba(255,255,255,.3)',
-                fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif",
+                fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
                 textTransform:'uppercase',letterSpacing:'1px',transition:'all .2s'}}>
               {l==='es'?'ES':'EN'}
             </button>
@@ -266,7 +290,7 @@ export default function App(){
     // ── Modo Banda — completamente separado ────────────────────────────────────
   if(appMode==='banda'){
     return(
-      <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
         <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle}/>
       </div>
@@ -306,7 +330,7 @@ export default function App(){
             <div className="u-av">DM</div>
             <div className="u-inf">
               <div className="u-name">Danny</div>
-              <div style={{fontSize:9,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,fontFamily:"'DM Sans',sans-serif",opacity:.7}}>Super Admin</div>
+              <div style={{fontSize:9,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>Super Admin</div>
             </div>
           </div>
         </div>
@@ -330,13 +354,15 @@ export default function App(){
             onNavigate={setView}
             onToast={showToast}
             userName="Danny"
+            tx={tx}
           />}
-          {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onLive={()=>setSongView(0)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav}/>}
-          {view==='cancionero'&&<Cancionero mode={mode} onOpenSong={(name)=>{const sl=activeSl;const idx=sl.findIndex(s=>s.name===name);if(idx>=0)setSongView(idx);}} />}
-          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')}/>}
+          {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onLive={()=>setSongView(0)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav} lang={lang}/>}
+          {view==='cancionero'&&<Cancionero mode={mode} onOpenSong={(name)=>{const sl=activeSl;const idx=sl.findIndex(s=>s.name===name);if(idx>=0)setSongView(idx);}} lang={lang}/>}
+          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} lang={lang}/>}
           {view==='premiere'&&<PremiereView onToast={showToast}/>}
-          {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast}/>}
+          {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} eventos={eventos} setEventos={setEventos} mode={mode} onSetTheme={setTheme} onGetTheme={()=>theme} lang={lang}/>}
+          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>setSongView(i)} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
+          <Footer/>
         </div>
       </main>
 
@@ -349,7 +375,7 @@ export default function App(){
       </nav>
 
       {songView!==null&&activeSl.length>0&&(
-        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,content)=>handleSaveChords(name,content)} contentDB={SONG_CONTENT_IGLESIA}/>
+        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,c)=>handleSaveChords(name,c)} contentDB={SONG_CONTENT_IGLESIA} lang={lang}/>
       )}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </div>

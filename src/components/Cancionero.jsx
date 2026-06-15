@@ -1,10 +1,12 @@
+import { t as getT } from '../i18n';
 // Cancionero: catálogo de canciones (Iglesia/Banda), partituras MusicXML/PDF,
 // importación, edición y vista de equipos.
 import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
+  const tx=getT(lang);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
   const [filter,setFilter]=useState('');
   const [bv,setBv]=useState(true);
@@ -36,7 +38,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
   const Sec=({title,range,type,songs})=>!songs.length?null:(
     <div className={`bpm-sec ${type}`}>
       <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:10}}>
-        <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{title}</span>
+        <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{title}</span>
         <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 8px',borderRadius:100}}>{range}</span>
       </div>
       <div className={`bpm-bar ${type}`}/>
@@ -89,7 +91,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-                fontFamily:"'DM Sans',sans-serif",marginBottom:3}}>
+                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
                 Ingresar letra y acordes
               </div>
               <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
@@ -119,7 +121,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-                fontFamily:"'DM Sans',sans-serif",marginBottom:3}}>
+                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
                 Subir partitura
               </div>
               <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
@@ -147,7 +149,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
             </div>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-                fontFamily:"'DM Sans',sans-serif",marginBottom:3}}>
+                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
                 Subida masiva desde Drive
               </div>
               <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
@@ -173,7 +175,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             <span style={{fontSize:12,color:'var(--tx3)',
-              fontFamily:"'DM Sans',sans-serif"}}>Subir canción</span>
+              fontFamily:"'Lexend Giga',sans-serif"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:900,
             fontSize:20,color:'var(--tx)',marginBottom:16}}>
@@ -235,14 +237,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
 [C]Te alabaré...`}
               style={{width:'100%',padding:'10px',borderRadius:8,
                 border:'1px solid var(--bd)',background:'var(--s2)',
-                color:'var(--tx)',fontSize:12,fontFamily:"'Source Code Pro',monospace",
+                color:'var(--tx)',fontSize:12,fontFamily:"'Outfit',sans-serif",
                 resize:'vertical',boxSizing:'border-box',lineHeight:1.6}}/>
           </div>
           <div style={{display:'flex',gap:8}}>
             <button style={{flex:1,padding:'10px',borderRadius:10,
               border:'1px solid var(--bd)',background:'transparent',
               color:'var(--tx3)',cursor:'pointer',fontSize:13,fontWeight:700,
-              fontFamily:"'DM Sans',sans-serif"}}
+              fontFamily:"'Lexend Giga',sans-serif"}}
               onClick={()=>setCrearModo(null)}>Cancelar</button>
             <button className="btn-p" disabled={!nueva.nombre.trim()}
               onClick={()=>{
@@ -250,7 +252,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
                 setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});
               }}
               style={{flex:2,padding:'10px',borderRadius:10,fontSize:13,fontWeight:700,
-                fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',
+                fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',
                 justifyContent:'center',gap:6}}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
                 stroke="currentColor" strokeWidth="2.5">
@@ -272,7 +274,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             <span style={{fontSize:12,color:'var(--tx3)',
-              fontFamily:"'DM Sans',sans-serif"}}>Subir canción</span>
+              fontFamily:"'Lexend Giga',sans-serif"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:900,
             fontSize:20,color:'var(--tx)',marginBottom:6}}>
@@ -293,7 +295,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               marginBottom:10}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                 <span style={{fontSize:13,fontWeight:800,color:f.color,
-                  fontFamily:"'DM Sans',sans-serif"}}>{f.fmt}</span>
+                  fontFamily:"'Lexend Giga',sans-serif"}}>{f.fmt}</span>
                 <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,
                   background:'var(--s2)',padding:'2px 6px',borderRadius:6}}>{f.ext}</span>
               </div>
@@ -326,7 +328,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <div style={{fontSize:13,fontWeight:700,color:'var(--ac)',
-              fontFamily:"'DM Sans',sans-serif"}}>
+              fontFamily:"'Lexend Giga',sans-serif"}}>
               Tocar para seleccionar archivo
             </div>
             <div style={{fontSize:11,color:'var(--tx3)'}}>
@@ -346,7 +348,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             <span style={{fontSize:12,color:'var(--tx3)',
-              fontFamily:"'DM Sans',sans-serif"}}>Subir canción</span>
+              fontFamily:"'Lexend Giga',sans-serif"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:900,
             fontSize:20,color:'var(--tx)',marginBottom:6}}>
@@ -358,7 +360,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
           <div style={{padding:'16px',borderRadius:12,border:'1px solid var(--bd)',
             background:'var(--s1)',marginBottom:12}}>
             <div style={{fontSize:12,fontWeight:700,color:'var(--tx)',
-              fontFamily:"'DM Sans',sans-serif",marginBottom:8}}>Formatos soportados</div>
+              fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Formatos soportados</div>
             {[
               {ext:'.txt',desc:'Canciones en formato ChordPro (una por archivo)'},
               {ext:'.xml / .mxl',desc:'Partituras MusicXML'},
@@ -378,7 +380,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
             style={{width:'100%',padding:'12px',borderRadius:12,border:'none',
               background:'rgba(200,169,126,.12)',color:'var(--ac)',
               fontSize:13,fontWeight:700,cursor:'pointer',
-              fontFamily:"'DM Sans',sans-serif",display:'flex',
+              fontFamily:"'Lexend Giga',sans-serif",display:'flex',
               alignItems:'center',justifyContent:'center',gap:8}}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
               stroke="currentColor" strokeWidth="2">
@@ -387,7 +389,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
             Conectar carpeta de Drive
           </button>
           <div style={{fontSize:11,color:'var(--tx3)',textAlign:'center',
-            marginTop:8,fontFamily:"'DM Sans',sans-serif"}}>
+            marginTop:8,fontFamily:"'Lexend Giga',sans-serif"}}>
             Disponible en la próxima actualización
           </div>
         </div>
@@ -406,8 +408,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
   
       </div>
       <div style={{display:'flex',gap:6,marginBottom:14}}>
-        <button onClick={()=>setTab('mi')} style={{padding:'6px 14px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Mi cancionero</button>
-        {mode==='worship'&&<button onClick={()=>setTab('universal')} style={{padding:'6px 14px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:5}}>
+        <button onClick={()=>setTab('mi')} style={{padding:'6px 14px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
+        {mode==='worship'&&<button onClick={()=>setTab('universal')} style={{padding:'6px 14px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Universal
         </button>}
@@ -415,7 +417,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
           border:tab==='partituras'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
           background:tab==='partituras'?'rgba(200,169,126,.1)':'transparent',
           color:tab==='partituras'?'var(--ac)':'var(--tx3)',
-          fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",
+          fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
           display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>
@@ -429,7 +431,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               borderRadius:100,border:'1px solid rgba(200,169,126,.35)',
               background:'rgba(200,169,126,.09)',color:'var(--ac)',
               fontWeight:700,fontSize:11,cursor:'pointer',
-              fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+              fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
               stroke="currentColor" strokeWidth="2.5">
               <line x1="12" y1="5" x2="12" y2="19"/>
@@ -442,7 +444,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
               background:'rgba(255,255,255,.04)',color:'var(--tx3)',
               fontWeight:700,fontSize:11,cursor:'pointer',
-              fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+              fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
               stroke="currentColor" strokeWidth="2.5">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -454,7 +456,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
 
       <div style={{display:'flex',gap:8,marginBottom:10}}>
         <input className="inp" placeholder="Buscar canción..." style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
-        <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,border:'1px solid var(--bd)',background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",height:42,display:'flex',alignItems:'center',gap:5}}>
+        <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,border:'1px solid var(--bd)',background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",height:42,display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           {bv?'Por BPM':'Por lista'}
         </button>
@@ -578,7 +580,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
               {/* Info */}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:800,color:'var(--tx)',
-                  fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap',
+                  fontFamily:"'Lexend Giga',sans-serif",whiteSpace:'nowrap',
                   overflow:'hidden',textOverflow:'ellipsis'}}>{p.nombre}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
                   {p.tipo==='pdf'?'PDF':'MusicXML'} · {p.size}
@@ -591,14 +593,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
                     style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
                       border:'1px solid var(--bd)',background:'transparent',
                       color:'var(--tx2)',cursor:'pointer',textDecoration:'none',
-                      fontFamily:"'DM Sans',sans-serif"}}>
+                      fontFamily:"'Lexend Giga',sans-serif"}}>
                     Ver PDF
                   </a>
                 ):(
                   <button onClick={()=>setPartituraSel(p)}
                     style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
                       border:'1px solid var(--ac)',background:'rgba(200,169,126,.08)',
-                      color:'var(--ac)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                      color:'var(--ac)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                     Leer
                   </button>
                 )}
@@ -634,7 +636,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
                 </button>
                 <div style={{flex:1}}>
                   <div style={{fontSize:14,fontWeight:900,color:'var(--tx)',
-                    fontFamily:"'DM Sans',sans-serif"}}>{partituraSel.nombre}</div>
+                    fontFamily:"'Lexend Giga',sans-serif"}}>{partituraSel.nombre}</div>
                   <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,
                     textTransform:'uppercase',letterSpacing:'1px'}}>
                     MusicXML · Reproducción MIDI
@@ -654,7 +656,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin'}){
                   background:midiPlaying?'rgba(196,64,16,.15)':'rgba(200,169,126,.12)',
                   color:midiPlaying?'var(--rd)':'var(--ac)',
                   fontSize:12,fontWeight:700,cursor:'pointer',
-                  fontFamily:"'DM Sans',sans-serif",
+                  fontFamily:"'Lexend Giga',sans-serif",
                 }}>
                   {midiPlaying?(
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">

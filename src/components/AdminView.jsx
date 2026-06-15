@@ -1,3 +1,4 @@
+import { t as getT } from '../i18n';
 // AdminView: panel de administración con calendario de eventos, generación de
 // mensajes/notificaciones, mi setlist y estrenos.
 import { useState, useEffect, useRef } from 'react';
@@ -27,7 +28,7 @@ export function MiniCalEvento({mes}){
     <div style={{flexShrink:0,display:'flex',flexDirection:'column',gap:1,minWidth:140}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:1,marginBottom:2}}>
         {['L','M','M','J','V','S','D'].map((d,i)=>(
-          <div key={i} style={{textAlign:'center',fontSize:6,fontWeight:900,color:'rgba(255,255,255,.22)',fontFamily:"'DM Sans',sans-serif"}}>{d}</div>
+          <div key={i} style={{textAlign:'center',fontSize:6,fontWeight:900,color:'rgba(255,255,255,.22)',fontFamily:"'Lexend Giga',sans-serif"}}>{d}</div>
         ))}
       </div>
       {rows.map((row,ri)=>(
@@ -40,7 +41,7 @@ export function MiniCalEvento({mes}){
               <div key={ci} style={{height:11,display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <span style={{
                   fontSize:7,fontWeight:hasEv?900:400,
-                  fontFamily:"'DM Sans',sans-serif",
+                  fontFamily:"'Lexend Giga',sans-serif",
                   color:hasEv?'var(--ac)':isToday?'rgba(255,255,255,.8)':'var(--tx3)',
                   textDecoration:isToday&&!hasEv?'underline':'none',
                   lineHeight:1
@@ -54,7 +55,8 @@ export function MiniCalEvento({mes}){
   );
 }
 
-export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay,mesNav=new Date().getMonth()}){
+export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay,mesNav=new Date().getMonth(),lang='es'}){
+  const tx=getT(lang);
   const [selDay,setSelDay]=useState(activeSunday);
   const [showPicker,setShowPicker]=useState(false);
   const [pFilter,setPFilter]=useState('');
@@ -103,7 +105,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
               </div>
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,fontSize:14,color:'var(--tx2)'}}>Dom {day}</div>
-                <div style={{fontSize:11,color:'rgba(255,82,82,.7)',marginTop:2,fontWeight:700}}>Sin reunión</div>
+                <div style={{fontSize:11,color:'rgba(255,82,82,.7)',marginTop:2,fontWeight:700}}>{tx.noReunion}</div>
               </div>
             </div>
           );
@@ -120,14 +122,14 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
             <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:400,fontSize:22,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>Domingo {day}</div>
-                  <div style={{fontSize:13,color:'var(--tx3)',marginTop:4,fontWeight:700}}>{sl.length} {sl.length===1?'canción':'canciones'}</div>
+                  <div style={{fontWeight:400,fontSize:22,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>{tx.sunday} {day}</div>
+                  <div style={{fontSize:13,color:'var(--tx3)',marginTop:4,fontWeight:700}}>{sl.length} {sl.length===1?tx.song:tx.songs}</div>
                 </div>
-                <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?'✓ Publicado':'Borrador'}</span>
+                <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?tx.published:tx.draft}</span>
                 {isLeader&&(
-                  <button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
+                  <button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                    En Vivo
+                    {tx.live}
                   </button>
                 )}
               </div>
@@ -135,7 +137,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                 {EQUIPOS_DATA.map(eq=>(
                   <div key={eq.id} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:100,background:eq.color+'12',border:'1px solid '+eq.color+'30'}}>
                     <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'DM Sans',sans-serif"}}>{eq.name}</span>
+                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{eq.name}</span>
                     <span style={{fontSize:9,fontWeight:900,color:eq.color,marginLeft:2,display:'flex',alignItems:'center',gap:1}}>
                       {eq.miembros.length}
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke={eq.color} strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -155,8 +157,8 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
           {EVENTOS_ESPECIALES.filter(ev=>ev.mes===mesNav+1).length===0?(
             <div style={{padding:'32px 20px',borderRadius:16,background:'var(--s1)',border:'1px solid var(--bd)',textAlign:'center'}}>
               <div style={{fontSize:28,marginBottom:10}}>📭</div>
-              <div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:6}}>Sin eventos ingresados</div>
-              <div style={{fontSize:12,color:'var(--ac)',fontWeight:600}}>Crea un evento en Backstage para este mes</div>
+              <div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:6}}>{tx.noEvents}</div>
+              <div style={{fontSize:12,color:'var(--ac)',fontWeight:600}}>{tx.noEventsSub}</div>
             </div>
           ):(
             EVENTOS_ESPECIALES.filter(ev=>ev.mes===mesNav+1).map((ev,i)=>(
@@ -167,9 +169,9 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                     <div style={{fontSize:12,color:'var(--ac)',marginTop:3,fontWeight:600,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                   </div>
                   <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',display:'none'}}>Especial</span>
-                  {isLeader&&<button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
+                  {isLeader&&<button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                    En Vivo
+                    {tx.live}
                   </button>}
                 </div>
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
@@ -222,7 +224,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
             <div className="m-body">
               {CANCIONES.filter(s=>s.n.toLowerCase().includes(pFilter.toLowerCase())).map((s,i)=>(
                 <div key={s.n} className={`so${sel.has(s.n)?' on':''}`} onClick={()=>setSel(prev=>{const ns=new Set(prev);ns.has(s.n)?ns.delete(s.n):ns.add(s.n);return ns;})}>
-                  <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'var(--tx3)',width:17,flexShrink:0}}>{i+1}</span>
+                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:13,color:'var(--tx3)',width:17,flexShrink:0}}>{i+1}</span>
                   <span className="so-n">{s.n}</span>
                   <span className="so-bpm">{s.bpm}</span>
                   <div className="so-chk">✓</div>
@@ -277,7 +279,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
     <div style={{marginBottom:14}}>
       <div style={{borderTop:'1px solid var(--bd)',paddingTop:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Recordatorio al equipo</div>
-        <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'14px 16px',borderRadius:14,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:12,fontFamily:"'DM Sans',sans-serif",transition:'all .15s'}}>
+        <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'14px 16px',borderRadius:14,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:12,fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
           <div style={{width:38,height:38,borderRadius:10,background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
@@ -299,7 +301,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
       </div>
       <div style={{display:'flex',gap:8,marginBottom:12}}>
         {[['mie','Miércoles'],['sab','Sábado']].map(([t,l])=>(
-          <button key={t} onClick={()=>setTipo(t)} style={{flex:1,padding:'8px',borderRadius:9,border:tipo===t?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tipo===t?'rgba(200,169,126,.08)':'var(--s1)',color:tipo===t?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+          <button key={t} onClick={()=>setTipo(t)} style={{flex:1,padding:'8px',borderRadius:9,border:tipo===t?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tipo===t?'rgba(200,169,126,.08)':'var(--s1)',color:tipo===t?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
             {l}
           </button>
         ))}
@@ -308,13 +310,13 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
         <div style={{marginBottom:10}}>
           <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>Vista previa del mensaje</div>
           <div style={{padding:'10px 12px',borderRadius:9,background:'var(--s1)',border:'1px solid var(--bd)',fontSize:11,color:'var(--tx)',lineHeight:1.7,whiteSpace:'pre-wrap',maxHeight:160,overflowY:'auto'}}>{msg}</div>
-          <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Editar mensaje</button>
+          <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Editar mensaje</button>
         </div>
       )}
       {custom&&(
         <div style={{marginBottom:10}}>
           <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-          <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>← Regenerar automático</button>
+          <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
         </div>
       )}
       <div style={{display:'flex',gap:8}}>
@@ -328,14 +330,15 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
   );
 }
 
-export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast}){
+export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang='es'}){
+  const tx=getT(lang);
   const sl=SETLISTS[activeSunday]||[];
   const MESES_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const mesNombre=MESES_ES[new Date().getMonth()];
   const ITINERARIO=[
     {hora:'08:30',label:'Llegada y preparación técnica'},
     {hora:'09:00',label:'Prueba de sonido'},
-    {hora:'09:30',label:'Ensayo con el equipo'},
+    {hora:'09:30',label:lang==='en'?'Team rehearsal':'Ensayo con el equipo'},
     {hora:'10:00',label:'Inicio del servicio'},
     {hora:'10:05',label:'Bloque de adoración (4 canciones)'},
     {hora:'10:30',label:'Mensaje'},
@@ -353,7 +356,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast}){
           <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:12,border:'1px solid rgba(48,192,183,.35)',background:'rgba(48,192,183,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
             <div style={{display:'flex',alignItems:'center',gap:5}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
-              <span style={{fontSize:11,fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>En Vivo</span>
+              <span style={{fontSize:11,fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
             </div>
             <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700}}>Interpretar</span>
           </button>
@@ -420,7 +423,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast}){
         </div>
         {ITINERARIO.map((it,i)=>(
           <div key={i} style={{display:'flex',gap:12,padding:'10px 14px',borderBottom:i<ITINERARIO.length-1?'1px solid rgba(255,255,255,.04)':'none',alignItems:'flex-start'}}>
-            <span style={{fontSize:11,fontWeight:900,color:'var(--ac)',minWidth:40,fontFamily:"'Source Code Pro',monospace"}}>{it.hora}</span>
+            <span style={{fontSize:11,fontWeight:900,color:'var(--ac)',minWidth:40,fontFamily:"'Outfit',sans-serif"}}>{it.hora}</span>
             <span style={{fontSize:12,color:'var(--tx)',fontWeight:600,lineHeight:1.4}}>{it.label}</span>
           </div>
         ))}
