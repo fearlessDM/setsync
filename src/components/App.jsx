@@ -392,7 +392,7 @@ export default function App(){
       </nav>
 
       {songView!==null&&activeSl.length>0&&(
-        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,content)=>handleSaveChords(name,content)}/>
+        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,content)=>handleSaveChords(name,content)} contentDB={SONG_CONTENT_IGLESIA}/>
       )}
       {rehearsal&&activeSl.length>0&&(
         <Rehearsal songs={activeSl} onClose={()=>setRehearsal(false)} onToast={showToast}/>

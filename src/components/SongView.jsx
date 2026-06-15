@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { transposeChord, tpKey, chordToNashville } from '../utils/music';
 import { Toast } from './common';
-import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 
 const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
 const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
@@ -113,8 +112,31 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
           <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start'}}>
             {seg.chord?(
               editMode?(
-                // Drag touch en edición
+                // Drag touch + mouse en edición
                 <span
+                  onMouseDown={e=>{
+                    e.preventDefault();
+                    const x0=e.clientX;
+                    const el=e.currentTarget;
+                    el.style.cursor='grabbing';
+                    const onMove=(ev)=>{
+                      const dx=ev.clientX-x0;
+                      el.style.transform=`translateX(${dx}px)`;
+                      el.style.opacity='0.75';
+                    };
+                    const onUp=(ev)=>{
+                      const dx=ev.clientX-x0;
+                      el.style.transform='';
+                      el.style.opacity='';
+                      el.style.cursor='grab';
+                      document.removeEventListener('mousemove',onMove);
+                      document.removeEventListener('mouseup',onUp);
+                      const steps=Math.round(dx/7);
+                      if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
+                    };
+                    document.addEventListener('mousemove',onMove);
+                    document.addEventListener('mouseup',onUp);
+                  }}
                   onTouchStart={e=>{
                     const touch=e.touches[0];
                     e.currentTarget._x0=touch.clientX;
@@ -132,7 +154,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                     const steps=Math.round(dx/7);
                     if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
                   }}
-                  style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
+                  style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',userSelect:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
                 >{seg.chord}</span>
               ):(
                 <span style={{fontFamily:"'Source Code Pro',monospace",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>{seg.chord}</span>
@@ -222,7 +244,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   );
 }
 
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={}}){
   const [idx,setIdx]=useState(startIdx);
   const [tpOff,setTpOff]=useState(0);
   const [tool,setTool]=useState('draw');
@@ -247,7 +269,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     catch{return null;}
   });
 
-  const getSongContent=(song)=>editedSongs[song.name]||SONG_CONTENT_IGLESIA[song.name]||null;
+  const getSongContent=(song)=>editedSongs[song.name]||contentDB[song.name]||null;
 
   // ── Mover acorde por drag (pasos en caracteres) ───────────────────────────
   const handleDragChord=(lineIdx,chordIdx,steps)=>{
@@ -510,13 +532,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   };
 
-  // ── Panel ESTRUCTURA — drag & drop táctil, sin flechas ───────────────────
+  // ── Panel ESTRUCTURA — drag & drop mouse + touch, sin flechas ───────────
   const PanelEstructura=()=>{
     const seq=getActiveSecuencia();
     if(!seq.length)return null;
     const dragIdx=useRef(null);
     const panelBg=isLight?'rgba(240,234,222,.92)':'rgba(6,4,18,.92)';
 
+    // ── Touch drag ───────────────────────────────────────────────────────────
     const onTouchStartItem=(i)=>(e)=>{
       dragIdx.current=i;
       e.currentTarget.style.opacity='0.5';
@@ -524,14 +547,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     };
     const onTouchMoveItem=(e)=>{
       e.preventDefault();
-      // Encontrar el elemento bajo el dedo
       const touch=e.touches[0];
       const el=document.elementFromPoint(touch.clientX,touch.clientY);
       const item=el?.closest('[data-bloque-idx]');
       if(item){
         const targetIdx=parseInt(item.dataset.bloqueIdx);
         if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
-          // Reordenar
           const newSeq=[...seq];
           const [moved]=newSeq.splice(dragIdx.current,1);
           newSeq.splice(targetIdx,0,moved);
@@ -542,11 +563,41 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       }
     };
     const onTouchEndItem=(e)=>{
-      if(e.currentTarget){
-        e.currentTarget.style.opacity='';
-        e.currentTarget.style.transform='';
-      }
+      if(e.currentTarget){e.currentTarget.style.opacity='';e.currentTarget.style.transform='';}
       dragIdx.current=null;
+    };
+
+    // ── Mouse drag ───────────────────────────────────────────────────────────
+    const onMouseDownItem=(i)=>(e)=>{
+      e.preventDefault();
+      dragIdx.current=i;
+      const el=e.currentTarget;
+      el.style.opacity='0.5';
+      el.style.transform='scale(1.05)';
+      el.style.cursor='grabbing';
+      const onMove=(ev)=>{
+        const target=document.elementFromPoint(ev.clientX,ev.clientY);
+        const item=target?.closest('[data-bloque-idx]');
+        if(item){
+          const targetIdx=parseInt(item.dataset.bloqueIdx);
+          if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
+            const newSeq=[...seq];
+            const [moved]=newSeq.splice(dragIdx.current,1);
+            newSeq.splice(targetIdx,0,moved);
+            dragIdx.current=targetIdx;
+            const updated=newSeq.map((b,j)=>({...b,uid:j}));
+            setSecuencia(updated);saveSecuencia(updated);
+          }
+        }
+      };
+      const onUp=()=>{
+        el.style.opacity='';el.style.transform='';el.style.cursor='grab';
+        dragIdx.current=null;
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
+      };
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
     };
 
     return(
@@ -560,9 +611,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
           ESTRUCTURA
         </div>
-        <div
-          style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'3px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}
-        >
+        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'3px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}>
           {seq.map((b,i)=>{
             const color=getColorBloque(b.label);
             return(
@@ -572,6 +621,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 onTouchStart={onTouchStartItem(i)}
                 onTouchMove={onTouchMoveItem}
                 onTouchEnd={onTouchEndItem}
+                onMouseDown={onMouseDownItem(i)}
                 style={{marginBottom:3,cursor:'grab',userSelect:'none'}}
               >
                 <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
@@ -580,6 +630,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   </div>
                   <div style={{display:'flex',justifyContent:'space-around',borderTop:`1px solid ${color}25`,padding:'2px'}}>
                     <button
+                      onMouseDown={e=>e.stopPropagation()}
                       onClick={(e)=>{e.stopPropagation();duplicarBloque(i);}}
                       style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}
                       title="Duplicar"
@@ -587,6 +638,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
                     <button
+                      onMouseDown={e=>e.stopPropagation()}
                       onClick={(e)=>{e.stopPropagation();eliminarBloque(i);}}
                       disabled={seq.length<=1}
                       style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color:seq.length<=1?'var(--tx3)':'var(--rd)',cursor:seq.length<=1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}

@@ -311,11 +311,11 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
         <div style={{position:'fixed',inset:0,zIndex:100}}>
           <SongView
             songs={[{name:songViewBanda.n,key:songViewBanda.key,
-              bpm:songViewBanda.bpm,instrument:'GUITARRA',
-              content:SONG_CONTENT_BANDA[songViewBanda.n]||null}]}
+              bpm:songViewBanda.bpm,instrument:'GUITARRA'}]}
             startIdx={0}
             onClose={()=>setSongViewBanda(null)}
             theme="dark"
+            contentDB={SONG_CONTENT_BANDA}
           />
         </div>
       )}
