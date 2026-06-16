@@ -351,7 +351,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
         <div style={{display:'flex',alignItems:'flex-start',gap:12}}>
           <div style={{flex:1}}>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Dom <span style={{color:'var(--ac)'}}>{activeSunday} {mesNombre}</span></div>
-            <div style={{{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5}}>Tu setlist para este domingo. Repasa las canciones con tiempo.</div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5}}>Tu setlist para este domingo. Repasa las canciones con tiempo.</div>
           </div>
           <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:12,border:'1px solid rgba(48,192,183,.35)',background:'rgba(48,192,183,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
             <div style={{display:'flex',alignItems:'center',gap:5}}>
