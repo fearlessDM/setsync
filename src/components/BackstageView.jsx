@@ -650,22 +650,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1}}>Backstage</div>
           <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
         </div>
-        <div style={{fontSize:12,color:'var(--ac)',fontWeight:600,lineHeight:1.5}}>
-          {isAdmin?'Crea eventos, arma setlists, gestiona tu equipo y envía comunicaciones.':'Convoca a tu equipo, envía notificaciones y coordina lo que necesites.'}
-        </div>
+        <div style={{fontSize:12,color:'var(--tx3)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,marginBottom:4}}>Panel de control del equipo</div>
       </div>
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
-          <div key={it.id} onClick={()=>setBsView(it.id)} style={{display:'flex',alignItems:'center',gap:13,padding:'14px 16px',borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer'}}>
-            <div style={{width:42,height:42,borderRadius:11,background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <ItemIcon icon={it.icon}/>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:700,fontSize:15,color:'var(--tx)'}}>{it.label}</div>
-              <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>{it.sub}</div>
-            </div>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
+          <button key={it.id} onClick={()=>setBsView(it.id)}
+            style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)',lineHeight:1.15}}>{it.label}</div>
+            <div style={{fontSize:10,color:'var(--tx3)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{it.sub}</div>
+          </button>
         ))}
       </div>
     </div>

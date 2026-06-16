@@ -199,3 +199,10 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .sb:not(.col) .logo-mk{justify-content:flex-start;}
 /* Hide logo-txt always (logo image is the brand) */
 .logo-txt{display:none;}
+
+/* ── Page subtitles ── */
+.page-sub{font-size:15px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx2);line-height:1.4;}
+.page-sub-sm{font-size:12px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx3);line-height:1.5;}
+
+/* ── SongView fixes ── */
+.sv{position:fixed!important;inset:0!important;z-index:100!important;background:var(--bg)!important;}

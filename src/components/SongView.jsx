@@ -132,7 +132,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                       el.style.cursor='grab';
                       document.removeEventListener('mousemove',onMove);
                       document.removeEventListener('mouseup',onUp);
-                      const steps=Math.round(dx/7);
+                      const steps=Math.round(dx/5);
                       if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
                     };
                     document.addEventListener('mousemove',onMove);
@@ -152,7 +152,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                     const dx=e.changedTouches[0].clientX-(e.currentTarget._x0||e.changedTouches[0].clientX);
                     e.currentTarget.style.transform='';
                     e.currentTarget.style.opacity='';
-                    const steps=Math.round(dx/7);
+                    const steps=Math.round(dx/5);
                     if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
                   }}
                   style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',userSelect:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
@@ -258,6 +258,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [editMode,setEditMode]=useState(false);
   const [selectedChord,setSelectedChord]=useState(null);
   const [editedSongs,setEditedSongs]=useState({});
+  const [showSavePopup,setShowSavePopup]=useState(false);
   const [capoOpen,setCapoOpen]=useState(false);
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
@@ -312,6 +313,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const lineWithout=line.slice(0,chord.start)+line.slice(chord.end);
     // Calcular nueva posición: start + steps, clamped a [0, lineWithout.length]
     const newPos=Math.max(0,Math.min(lineWithout.length,chord.start+steps));
+    // Clamp to valid char positions only
     // Reinsertar el tag en la nueva posición
     const newLine=lineWithout.slice(0,newPos)+chord.full+lineWithout.slice(newPos);
 
@@ -622,11 +624,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div
                 key={b.uid??i}
                 data-bloque-idx={i}
+                onDragOver={e=>{e.preventDefault();e.currentTarget.style.background='rgba(255,255,255,.08)';e.currentTarget.style.transform='scale(1.02)';}}
+                onDragLeave={e=>{e.currentTarget.style.background='';e.currentTarget.style.transform='';}}
                 onTouchStart={onTouchStartItem(i)}
                 onTouchMove={onTouchMoveItem}
                 onTouchEnd={onTouchEndItem}
                 onMouseDown={onMouseDownItem(i)}
-                style={{marginBottom:3,cursor:'grab',userSelect:'none'}}
+                style={{marginBottom:3,cursor:'grab',userSelect:'none',transition:'transform .15s,opacity .15s'}}
               >
                 <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
                   <div style={{fontSize:8,fontWeight:900,color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'5px 3px',lineHeight:1.1}}>
@@ -716,10 +720,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',overflowX:'auto',scrollbarWidth:'none'}}>
-        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
+        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Anotar
-          <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" style={{transform:showAnnoBar?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div style={{flex:1,flexShrink:0,minWidth:4}}/>
         {capo>0&&(
@@ -754,10 +756,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
           </>
         )}
-        <button onClick={()=>setToast({text:'Guardado',sub:'Anotaciones en tu dispositivo'})} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:'1px solid rgba(94,206,160,.28)',background:'rgba(94,206,160,.07)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Guardar
-        </button>
+        
       </div>
       {showAnnoBar&&(
         <div style={{display:'flex',alignItems:'center',gap:3,padding:'0 10px 5px',overflowX:'auto',scrollbarWidth:'none'}}>
@@ -778,6 +777,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
+
+  // ── Popup Guardar ──────────────────────────────────────────────────────────
+  const PopupGuardar=()=>(
+    <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
+      <div style={{background:'#111113',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:17,color:'var(--tx)',marginBottom:8}}>Guardar cambios</div>
+        <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'none',background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>Guardar y salir</button>
+          <button onClick={()=>{setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>Salir sin guardar</button>
+          <button onClick={()=>setShowSavePopup(false)} style={{padding:'8px',border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontSize:12}}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
   // ── Popup modo bloques — solo la primera vez ──────────────────────────────
   const PopupModoBloques=()=>(
     <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}} onClick={()=>setShowModePopup(false)}>
@@ -837,11 +851,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {viewMode==='bloques'
         ?<VistaBloques/>
         :<>
-          <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
+          <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
             onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
             onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
           />
-          <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px',display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
+          <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 78px 60px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
             {song.docId
               ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
               :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),nashville,curKey)}</div>
@@ -861,31 +875,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── NavBar ────────────────────────────────────────────────────────────────
+  // ── NavBar — botones flotantes, sin título ───────────────────────────────
   const NavBar=()=>(
-    <div className="sv-nav" style={{background:svNavBg,borderTop:`1px solid ${svBd}`}}>
-      <button className="nb" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Anterior
+    <>
+      {idx>0&&(
+        <button onClick={()=>setIdx(i=>i-1)}
+          style={{position:'fixed',left:12,bottom:20,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,border:'1px solid var(--bd)',background:'rgba(10,10,20,.88)',backdropFilter:'blur(20px)',color:'var(--tx2)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          {tx.previous}
+        </button>
+      )}
+      <button onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>i+1);}}
+        style={{position:'fixed',right:12,bottom:20,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,border:'1px solid rgba(255,255,255,.18)',background:'rgba(255,255,255,.12)',backdropFilter:'blur(20px)',color:'var(--tx)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
+        {idx===songs.length-1?tx.done:tx.next}
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <div className="sv-ni">
-        <div style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
-        <div style={{fontSize:9,color:svTx3,marginTop:1,fontWeight:700}}>Canción {idx+1} de {songs.length}</div>
-      </div>
-      <button className="nb p" onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>i+1);}}>
-        {idx===songs.length-1?tx.done:tx.next}<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
+    </>
   );
 
   // ── Layout tablet ≥768px ──────────────────────────────────────────────────
   if(isTablet){
     return(
-      <div className="sv" style={{flexDirection:'row',background:svBg}}>
+      <div className="sv" style={{flexDirection:'row',background:svBg,position:'fixed',inset:0,zIndex:100}}>
+        {showSavePopup&&<PopupGuardar/>}
         {showModePopup&&<PopupModoBloques/>}
         {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
         <div style={{width:220,flexShrink:0,display:'flex',flexDirection:'column',borderRight:'1px solid var(--bd)',background:'rgba(6,6,14,.95)',backdropFilter:'blur(20px)'}}>
           <div style={{padding:'12px 14px 10px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',gap:8}}>
-            <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
             <div style={{flex:1}}>
               <div style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)'}}>SetSync</div>
               <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{songs.length} canciones</div>
@@ -916,7 +933,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
               <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginTop:1}}>
-                {song.role||'Guitarra'} · {curKey} · {song.bpm} BPM
+                {curKey} · {song.bpm} BPM
                 {capo>0&&<span style={{color:'var(--gn)',marginLeft:8}}>· Capo {capo} suena {sonaKey}</span>}
               </div>
             </div>
@@ -938,15 +955,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // ── Layout mobile <768px ──────────────────────────────────────────────────
   return(
-    <div className="sv" style={{background:svBg}}>
+    <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
+      {showSavePopup&&<PopupGuardar/>}
       {showModePopup&&<PopupModoBloques/>}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
-        <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
-            {song.role||'Guitarra'} · {curKey} · {song.bpm} BPM
+            {curKey} · {song.bpm} BPM
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
           </div>
         </div>

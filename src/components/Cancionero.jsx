@@ -38,8 +38,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
   const Sec=({title,range,type,songs})=>!songs.length?null:(
     <div className={`bpm-sec ${type}`}>
       <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:10}}>
-        <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{title}</span>
-        <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 8px',borderRadius:100}}>{range}</span>
+        <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:500,fontSize:13,color:'var(--tx)'}}>{title}</span>
+        <span style={{fontSize:9,color:'var(--tx3)',fontWeight:500,background:'var(--s1)',border:'1px solid var(--bd)',padding:'2px 6px',borderRadius:100}}>{range}</span>
       </div>
       <div className={`bpm-bar ${type}`}/>
       <div className="sg">
@@ -150,7 +150,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
                 fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
-                Subida masiva desde Drive
+                Subir por Drive
               </div>
               <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
                 Conecta una carpeta de Google Drive con archivos .txt o .xml 
@@ -352,7 +352,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
           </div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:900,
             fontSize:20,color:'var(--tx)',marginBottom:6}}>
-            Subida masiva desde Drive
+            Subir por Drive
           </div>
           <div style={{fontSize:12,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
             Conecta una carpeta de Google Drive que contenga tus canciones y carga todo el repertorio de una vez.
@@ -400,12 +400,22 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
 
   return(
     <div>
-      <div className="ph">
+      <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Canciones</div>
-          <div style={{fontSize:12,color:'var(--tx2)'}}>Busca canciones · sube letras con acordes · importa partituras MusicXML o PDF · <span style={{color:'var(--ac)'}}>{CANCIONES.length} canciones</span></div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Cancionero</div>
+          <div style={{fontSize:12,color:'var(--tx2)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif"}}>{CANCIONES.length} canciones · letras · acordes · partituras</div>
         </div>
-  
+        <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
+          style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',
+            borderRadius:100,border:'1px solid rgba(255,255,255,.15)',
+            background:'rgba(255,255,255,.06)',color:'var(--tx)',
+            fontWeight:700,fontSize:11,cursor:'pointer',
+            fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Agregar canción
+        </button>
       </div>
       <div style={{display:'flex',gap:6,marginBottom:14}}>
         <button onClick={()=>setTab('mi')} style={{padding:'6px 14px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
@@ -426,19 +436,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
         </button>
         <div style={{flex:1}}/>
         <div style={{display:'flex',gap:6,flexShrink:0}}>
-          <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
-            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',
-              borderRadius:100,border:'1px solid rgba(200,169,126,.35)',
-              background:'rgba(200,169,126,.09)',color:'var(--ac)',
-              fontWeight:700,fontSize:11,cursor:'pointer',
-              fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-              stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Subir canción
-          </button>
+
           <button onClick={()=>{setShowCrear(true);setCrearModo('drive');}}
             style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',
               borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
@@ -449,7 +447,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
               stroke="currentColor" strokeWidth="2.5">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
             </svg>
-            Subida masiva Drive
+            Subir por Drive
           </button>
         </div>
       </div>

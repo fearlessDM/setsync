@@ -19,7 +19,7 @@ export default function App(){
   const [lang,setLang]=useState('es');
   const tx=getT(lang);
   const [mode,setMode]=useState('worship');
-  const [view,setView]=useState('home');
+  const [view,setView]=useState('backstage');
   const [sbCol,setSbCol]=useState(false);
   const [songView,setSongView]=useState(null);
   const [toast,setToast]=useState(null);
@@ -171,13 +171,13 @@ export default function App(){
   const mesActual=new Date().getMonth();
 
   const BNS=[
-    {id:'home',      label:tx.home},
+    {id:'backstage', label:tx.backstage},
     {id:'admin',     label:tx.fechas},
     {id:'misetlist', label:tx.nextDate},
     {id:'cancionero',label:tx.songbook},
-    {id:'backstage', label:tx.backstage},
   ];
   const NavIco=({id,active})=>{
+    if(id==='backstage')return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active?2:1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>);
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
     if(id==='home')return(<svg {...s}><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
     if(id==='admin')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
@@ -258,25 +258,18 @@ export default function App(){
               style={{
                 width:'100%',padding:'18px 20px',marginBottom:10,
                 borderRadius:16,display:'flex',alignItems:'center',gap:16,
-                border:`1px solid ${item.disabled?'rgba(255,255,255,.04)':'rgba(255,255,255,.1)'}`,
+                border:`1px solid ${item.disabled?'rgba(255,255,255,.04)':'rgba(255,255,255,.12)'}`,
                 background:item.disabled?'rgba(255,255,255,.01)':'rgba(255,255,255,.03)',
                 cursor:item.disabled?'not-allowed':'pointer',
                 opacity:item.disabled?.3:1,textAlign:'left',transition:'all .18s',
               }}>
-              <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
-                background:item.disabled?'rgba(255,255,255,.03)':'rgba(238,34,125,.1)',
-                border:`1px solid ${item.disabled?'rgba(255,255,255,.05)':'rgba(238,34,125,.2)'}`,
-                display:'flex',alignItems:'center',justifyContent:'center'}}>
-                {item.icon==='church'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke={item.disabled?'rgba(255,255,255,.15)':'#EE227D'} strokeWidth="1.5"><path d="M18 22H6a2 2 0 0 1-2-2V7l4-4h8l4 4v13a2 2 0 0 1-2 2z"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>)}
-                {item.icon==='music'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke={item.disabled?'rgba(255,255,255,.15)':'#EE227D'} strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)}
-                {item.icon==='school'&&(<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>)}
-              </div>
+
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-                  <span style={{fontSize:15,fontWeight:700,color:item.disabled?'rgba(255,255,255,.2)':'#f3f1ed'}}>{item.data.title}</span>
+                  <span style={{fontSize:15,fontWeight:700,color:item.disabled?'rgba(255,255,255,.2)':'#ffffff'}}>{item.data.title}</span>
                   {item.disabled&&(<span style={{fontSize:9,fontWeight:700,color:'#6b6f77',letterSpacing:'1px',textTransform:'uppercase',padding:'2px 7px',borderRadius:100,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}>{t.soon}</span>)}
                 </div>
-                <div style={{fontSize:11,color:item.disabled?'rgba(255,255,255,.1)':'#6b6f77',lineHeight:1.4}}>{item.data.sub}</div>
+                <div style={{fontSize:11,color:item.disabled?'rgba(255,255,255,.1)':'rgba(255,255,255,.4)',lineHeight:1.4,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11}}>{item.data.sub}</div>
               </div>
               {!item.disabled&&(<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>)}
             </button>
@@ -353,12 +346,7 @@ export default function App(){
           ))}
         </div>
         <div className="pw">
-          {view==='home'&&<DashboardHome
-            onNavigate={setView}
-            onToast={showToast}
-            userName="Danny"
-            tx={tx}
-          />}
+          
           {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onLive={()=>setSongView(0)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav} lang={lang}/>}
           {view==='cancionero'&&<Cancionero mode={mode} onOpenSong={(name)=>{const sl=activeSl;const idx=sl.findIndex(s=>s.name===name);if(idx>=0)setSongView(idx);}} lang={lang}/>}
           {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} lang={lang}/>}
