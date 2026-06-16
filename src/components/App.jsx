@@ -99,9 +99,9 @@ export default function App(){
 
   // ── Footer legal (oculto, baja opacidad) ─────────────────────────────────
   const Footer=()=>(
-    <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:14,opacity:.25,userSelect:'none'}}>
-      <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:60,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
-      <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
+    <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
+      <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
+      <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
         © {new Date().getFullYear()} SetSync · {tx.allRights}
       </div>
       <div style={{display:'flex',gap:16,flexWrap:'wrap',justifyContent:'center'}}>
@@ -110,11 +110,14 @@ export default function App(){
           {label:tx.terms,   href:'/terms'},
           {label:tx.cookies, href:'/cookies'},
         ].map(({label,href})=>(
-          <a key={href} href={href} style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,color:'var(--tx3)',textDecoration:'none',letterSpacing:'.5px'}}
-            onMouseEnter={e=>e.target.style.opacity='.6'} onMouseLeave={e=>e.target.style.opacity='1'}>
+          <a key={href} href={href} style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textDecoration:'none',letterSpacing:'.5px'}}
+            onMouseEnter={e=>e.target.style.opacity='.7'} onMouseLeave={e=>e.target.style.opacity='1'}>
             {label}
           </a>
         ))}
+      </div>
+      <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,letterSpacing:'1.5px',textTransform:'uppercase',marginTop:2}}>
+        by <span style={{fontWeight:500}}>Agencia Fearless</span>
       </div>
     </div>
   );
@@ -143,14 +146,14 @@ export default function App(){
     return(
       <div style={{padding:'24px 16px 100px',minHeight:'100%'}}>
         <div style={{marginBottom:28}}>
-          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
+          <div style={{fontSize:11,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>{saludo}{userName?`, ${userName}`:''} 👋</div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>{tx.whatToday}</div>
-          <div style={{fontSize:12,color:'var(--tx3)',fontWeight:500,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>{tx.pickAction}</div>
+          <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>{tx.pickAction}</div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           {acciones.map((a,i)=>(
             <button key={i} onClick={a.action}
-              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,padding:'18px 14px',cursor:'pointer',textAlign:'left',transition:'all .2s',display:'flex',flexDirection:'column',gap:12,position:'relative',overflow:'hidden'}}>
+              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:8,position:'relative',overflow:'hidden'}}>
               <div style={{width:44,height:44,borderRadius:12,background:`${a.color}18`,border:`1px solid ${a.color}35`,display:'flex',alignItems:'center',justifyContent:'center',color:a.color,flexShrink:0}}>
                 <IcoAccion icon={a.icon}/>
               </div>
@@ -173,7 +176,7 @@ export default function App(){
 
   const BNS=[
     {id:'home',      label:tx.home},
-    {id:'admin',     label:tx.admin},
+    {id:'admin',     label:tx.fechas},
     {id:'misetlist', label:tx.nextDate},
     {id:'cancionero',label:tx.songbook},
     {id:'backstage', label:tx.backstage},
@@ -303,9 +306,11 @@ export default function App(){
       <nav className={`sb${sbCol?' col':''}`}>
         <div className="sb-top">
           <div className="logo-mk">
-            <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:34,height:34,objectFit:'contain'}}/>
+            {sbCol
+              ?<img src="/FAVICON SS.png" alt="SS" style={{width:36,height:36,objectFit:'contain'}}/>
+              :<img src="/LOGO horiz blanco.png" alt="SetSync" style={{height:28,objectFit:'contain'}}/>
+            }
           </div>
-          <div className="logo-txt"><h1>SetSync</h1><span>{modeData.tagline}</span></div>
           <div className="sb-r">
             <button className="sb-btn" onClick={()=>setSbCol(c=>!c)}>
               {sbCol

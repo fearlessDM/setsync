@@ -4,6 +4,7 @@ export const T = {
     // ── Nav / general ────────────────────────────────────────────────────────
     home:       'Inicio',
     admin:      'Resumen',
+    fechas:     'Fechas',
     nextDate:   'Próx. Fecha',
     songbook:   'Cancionero',
     backstage:  'Backstage',
@@ -107,6 +108,7 @@ export const T = {
     // ── Nav / general ────────────────────────────────────────────────────────
     home:       'Home',
     admin:      'Summary',
+    fechas:     'Events',
     nextDate:   'Next Date',
     songbook:   'Songbook',
     backstage:  'Backstage',
