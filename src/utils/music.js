@@ -49,22 +49,25 @@ export function chordToNashville(chord, rootKey) {
   // Grado = semitono relativo a la tónica
   const degree = (chordIdx - keyIdx + 12) % 12;
 
-  // Mapa de semitonos a número de grado
+  // Mapa de semitonos a número de grado — NÚMEROS ROMANOS
   const DEGREE_MAP = {
-    0: '1',
-    1: '1#',  // b2
-    2: '2',
-    3: '2#',  // b3
-    4: '3',
-    5: '4',
-    6: '4#',  // b5 / #4
-    7: '5',
-    8: '5#',  // b6
-    9: '6',
-    10: '6#', // b7
-    11: '7',
+    0: 'I',
+    1: 'I#',   // bII
+    2: 'II',
+    3: 'II#',  // bIII
+    4: 'III',
+    5: 'IV',
+    6: 'IV#',  // bV / #IV
+    7: 'V',
+    8: 'V#',   // bVI
+    9: 'VI',
+    10: 'VI#', // bVII
+    11: 'VII',
   };
 
   const num = DEGREE_MAP[degree] || String(degree);
-  return num + suffix;
+  // Minúscula si el acorde original es menor (m), mantiene mayúscula si es mayor
+  const isMinor = suffix.startsWith('m') && !suffix.startsWith('maj');
+  const roman = isMinor ? num.toLowerCase() : num;
+  return roman + suffix;
 }

@@ -283,20 +283,63 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const song=songs[idx];
     const raw=getSongContent(song)||'';
     const allLines=raw.split('\n');
-    let contentStart=0;
+
+    // Saltar encabezado (igual que renderSongContent)
+    let start=0;
     for(let i=0;i<Math.min(4,allLines.length);i++){
       const l=allLines[i].trim();
-      if(!l||(!l.includes('[')&&!l.startsWith('===')))contentStart=i+1;
+      if(!l||(!l.includes('[')&&!l.startsWith('===')))start=i+1;
       else break;
     }
-    let counter=0,targetAbsIdx=-1;
-    for(let i=contentStart;i<allLines.length;i++){
-      const t=allLines[i].trim();
-      if(t.startsWith('===')&&t.endsWith('==='))continue;
-      if(!t)continue;
-      if(counter===lineIdx){targetAbsIdx=i;break;}
-      counter++;
+
+    // Reconstruir bloques EXACTAMENTE igual que renderSongContent
+    const blockRanges=[]; // {startAbsIdx, lines:[{text,absIdx}]}
+    let curLines=[];
+    allLines.slice(start).forEach((line,relIdx)=>{
+      const absIdx=start+relIdx;
+      const t=line.trim();
+      if(t.startsWith('===')&&t.endsWith('===')){
+        if(curLines.length)blockRanges.push(curLines);
+        curLines=[];
+      } else {
+        curLines.push({text:line,absIdx});
+      }
+    });
+    if(curLines.length)blockRanges.push(curLines);
+
+    // Dentro de cada bloque, filtrar líneas vacías en bordes (igual que blines)
+    let lineCounter=0;
+    let targetAbsIdx=-1;
+
+    for(const blockLines of blockRanges){
+      const blines=blockLines.filter((l,i,a)=>!((!l.text.trim())&&(i===0||i===a.length-1)));
+      // Detectar pares BARRO igual que el render
+      let skipNext=false;
+      for(let li=0;li<blines.length;li++){
+        if(skipNext){skipNext=false;continue;}
+        const line=blines[li].text;
+        const isChordOnly=(()=>{
+          const txt=line.trim();
+          if(!txt)return false;
+          if(/\[/.test(txt))return false;
+          const tokens=txt.split(/\s+/);
+          const CHORD_PLAIN=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
+          return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN.test(t));
+        })();
+        if(isChordOnly){
+          // Línea BARRO — no es arrastrable (no tiene tags [X]), pero cuenta como línea
+          if(lineCounter===lineIdx){targetAbsIdx=blines[li].absIdx;}
+          lineCounter++;
+          skipNext=true;
+        } else {
+          if(!line.trim())continue; // líneas vacías intermedias no cuentan (mismo criterio visual)
+          if(lineCounter===lineIdx){targetAbsIdx=blines[li].absIdx;break;}
+          lineCounter++;
+        }
+      }
+      if(targetAbsIdx>=0)break;
     }
+
     if(targetAbsIdx<0)return;
     const line=allLines[targetAbsIdx];
     const chords=[];
@@ -305,15 +348,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     while((m=CHORD_RE.exec(line))!==null){
       chords.push({start:m.index,end:m.index+m[0].length,full:m[0]});
     }
-    const localIdx=chordIdx%Math.max(1,chords.length);
-    const chord=chords[localIdx];
+    const chord=chords[chordIdx];
     if(!chord)return;
 
     // Quitar el tag del acorde de su posición actual
     const lineWithout=line.slice(0,chord.start)+line.slice(chord.end);
     // Calcular nueva posición: start + steps, clamped a [0, lineWithout.length]
     const newPos=Math.max(0,Math.min(lineWithout.length,chord.start+steps));
-    // Clamp to valid char positions only
     // Reinsertar el tag en la nueva posición
     const newLine=lineWithout.slice(0,newPos)+chord.full+lineWithout.slice(newPos);
 
@@ -556,9 +597,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       const touch=e.touches[0];
       const el=document.elementFromPoint(touch.clientX,touch.clientY);
       const item=el?.closest('[data-bloque-idx]');
+      // Limpiar resaltado anterior
+      document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
       if(item){
         const targetIdx=parseInt(item.dataset.bloqueIdx);
         if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
+          item.style.background='rgba(255,255,255,.1)';
           const newSeq=[...seq];
           const [moved]=newSeq.splice(dragIdx.current,1);
           newSeq.splice(targetIdx,0,moved);
@@ -570,6 +614,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     };
     const onTouchEndItem=(e)=>{
       if(e.currentTarget){e.currentTarget.style.opacity='';e.currentTarget.style.transform='';}
+      document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
       dragIdx.current=null;
     };
 
@@ -584,9 +629,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       const onMove=(ev)=>{
         const target=document.elementFromPoint(ev.clientX,ev.clientY);
         const item=target?.closest('[data-bloque-idx]');
+        document.querySelectorAll('[data-bloque-idx]').forEach(n=>{if(n!==el)n.style.background='';});
         if(item){
           const targetIdx=parseInt(item.dataset.bloqueIdx);
           if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
+            item.style.background='rgba(255,255,255,.1)';
             const newSeq=[...seq];
             const [moved]=newSeq.splice(dragIdx.current,1);
             newSeq.splice(targetIdx,0,moved);
@@ -598,6 +645,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       };
       const onUp=()=>{
         el.style.opacity='';el.style.transform='';el.style.cursor='grab';
+        document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
         dragIdx.current=null;
         document.removeEventListener('mousemove',onMove);
         document.removeEventListener('mouseup',onUp);
@@ -624,8 +672,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div
                 key={b.uid??i}
                 data-bloque-idx={i}
-                onDragOver={e=>{e.preventDefault();e.currentTarget.style.background='rgba(255,255,255,.08)';e.currentTarget.style.transform='scale(1.02)';}}
-                onDragLeave={e=>{e.currentTarget.style.background='';e.currentTarget.style.transform='';}}
                 onTouchStart={onTouchStartItem(i)}
                 onTouchMove={onTouchMoveItem}
                 onTouchEnd={onTouchEndItem}
@@ -731,8 +777,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         )}
         {/* Nashville toggle */}
         <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
-          <span style={{fontFamily:"'Outfit',sans-serif",fontSize:10,fontWeight:900}}>1 4 5</span>
-          {nashville?` ${tx.degrees}`:` ${tx.notes}`}
+          {nashville?'I IV V':tx.notes}
         </button>
         <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
