@@ -84,7 +84,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
       <div style={{padding:'12px 8px 10px',display:'flex',alignItems:'flex-start',gap:12}}>
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
-            Eventos <span style={{color:'var(--ac)'}}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNav]}</span>
+            Fechas en <span style={{color:'var(--ac)'}}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNav]}</span>
           </div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:5}}>
             {mesNav===new Date().getMonth()?`${diasEvento.filter(e=>e.sl).length} domingos · Toca uno para ver el detalle`:'Eventos del mes seleccionado'}
@@ -122,7 +122,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
             <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:22,transition:'font-size .2s'}}>{tx.sunday} {day}</div>
+                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:18,transition:'font-size .2s'}}>{tx.sunday} {day}</div>
                   <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginTop:4}}>{sl.length} {sl.length===1?tx.song:tx.songs}</div>
                 </div>
                 <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?tx.published:tx.draft}</span>
@@ -137,7 +137,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                 {EQUIPOS_DATA.map(eq=>(
                   <div key={eq.id} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:100,background:eq.color+'12',border:'1px solid '+eq.color+'30'}}>
                     <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{eq.name}</span>
+                    <span style={{fontSize:10,fontWeight:200,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{eq.name}</span>
                     <span style={{fontSize:9,fontWeight:900,color:eq.color,marginLeft:2,display:'flex',alignItems:'center',gap:1}}>
                       {eq.miembros.length}
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke={eq.color} strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

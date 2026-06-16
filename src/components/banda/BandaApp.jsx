@@ -7,9 +7,11 @@ import { SongView } from '../SongView';
 import { BandaFechas } from './BandaFechas';
 import { BandaRepertorio } from './BandaRepertorio';
 import { BandaBackstage } from './BandaBackstage';
+import { t as getT } from '../../i18n';
 
-export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
-  const [view,setView]=useState('home');
+export function BandaApp({onBack,userRole='superadmin',themeStyle={},lang='es'}){
+  const tx=getT(lang);
+  const [view,setView]=useState('backstage');
   const [toast,setToast]=useState(null);
   const [songViewBanda,setSongViewBanda]=useState(null);
   const isEncargado=userRole==='encargado'||userRole==='superadmin';
@@ -61,80 +63,50 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
     {n:'TIERRA ROJA',      key:'G', bpm:76,artista:'Los Hijos del Norte',    tipo:'original'},
   ]);
 
-  // ── Dashboard Banda ─────────────────────────────────────────────────────
-  const DashboardBanda=()=>{
-    const hora=new Date().getHours();
-    const saludo=hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
-    const gigsFuturos=[...gigs].sort((a,b)=>new Date(a.fecha)-new Date(b.fecha)).filter(g=>new Date(g.fecha)>=new Date());
-    const siguienteGig=gigsFuturos[0]||null;
-    const acciones=[
-      {icon:'rehearsal', label:'Agendar ensayo',      sub:'Fecha, lugar y setlist',            color:'#EE227D', action:()=>setView('backstage')},
-      {icon:'song',      label:'Ver repertorio',       sub:'Canciones y arreglos',              color:'#30C0B7', action:()=>setView('repertorio')},
-      {icon:'calendar',  label:'Ver próximo gig',      sub:siguienteGig?siguienteGig.nombre:'Sin fechas próximas', color:'#a78bfa', action:()=>setView('fechas')},
-      {icon:'team',      label:'Gestionar equipo',     sub:`${members.length} integrantes`,     color:'#FD8083', action:()=>setView('equipo')},
-      {icon:'notif',     label:'Notificar al equipo',  sub:'Avisos y recordatorios',            color:'#498099', action:()=>setView('backstage')},
-      {icon:'setlist',   label:'Crear setlist',        sub:'Lista para el próximo show',        color:'#852467', action:()=>setView('backstage')},
-    ];
-    const IcoBanda=({icon})=>{
-      const s={viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'};
-      if(icon==='rehearsal')return(<svg {...s}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>);
-      if(icon==='song')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
-      if(icon==='calendar')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
-      if(icon==='team')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
-      if(icon==='notif')return(<svg {...s}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>);
-      if(icon==='setlist')return(<svg {...s}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>);
-      return null;
-    };
-    return(
-      <div style={{padding:'24px 16px 100px'}}>
-        <div style={{marginBottom:24}}>
-          <div style={{fontSize:13,color:'var(--tx3)',fontWeight:600,fontFamily:"'DM Sans',sans-serif",marginBottom:4}}>{saludo} 👋</div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:26,color:'var(--tx)',lineHeight:1.1,marginBottom:6}}>¿Qué ensayamos hoy?</div>
-          {siguienteGig&&(
-            <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:10,background:'rgba(238,34,125,.08)',border:'1px solid rgba(238,34,125,.2)',marginTop:8}}>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#EE227D" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-              <span style={{fontSize:11,color:'#EE227D',fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
-                Próximo: {siguienteGig.nombre} · {new Date(siguienteGig.fecha).toLocaleDateString('es-CL',{day:'numeric',month:'short'})}
-              </span>
-            </div>
-          )}
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          {acciones.map((a,i)=>(
-            <button key={i} onClick={a.action}
-              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,padding:'18px 14px',cursor:'pointer',textAlign:'left',transition:'all .2s',display:'flex',flexDirection:'column',gap:12,position:'relative',overflow:'hidden'}}>
-              <div style={{width:44,height:44,borderRadius:12,background:`${a.color}18`,border:`1px solid ${a.color}35`,display:'flex',alignItems:'center',justifyContent:'center',color:a.color}}>
-                <IcoBanda icon={a.icon}/>
-              </div>
-              <div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
-              </div>
-              <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
-            </button>
-          ))}
-        </div>
+  const [colecciones,setColecciones]=useState([
+    {id:'col1',nombre:'Covers',tipo:'cover',canciones:[]},
+    {id:'col2',nombre:'Originales',tipo:'album',canciones:['NOCHE SIN FIN','FUEGO CRUZADO','MAR ADENTRO','CIUDAD DE VIDRIO','TIERRA ROJA']},
+  ]);
+
+  // ── Footer (igual que modo Iglesia) ─────────────────────────────────────
+  const Footer=()=>(
+    <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
+      <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
+      <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
+        © {new Date().getFullYear()} SetSync · {tx.allRights}
       </div>
-    );
-  };
+      <div style={{display:'flex',gap:16,flexWrap:'wrap',justifyContent:'center'}}>
+        {[
+          {label:tx.privacy, href:'/privacy'},
+          {label:tx.terms,   href:'/terms'},
+          {label:tx.cookies, href:'/cookies'},
+        ].map(({label,href})=>(
+          <a key={href} href={href} style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textDecoration:'none',letterSpacing:'.5px'}}>
+            {label}
+          </a>
+        ))}
+      </div>
+      <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,letterSpacing:'1.5px',textTransform:'uppercase',marginTop:2}}>
+        by <span style={{fontWeight:500}}>Agencia Fearless</span>
+      </div>
+    </div>
+  );
 
   const TABS=[
-    {id:'home',       label:'Inicio'},
-    {id:'equipo',     label:'Equipo'},
-    {id:'fechas',     label:'Fechas'},
-    {id:'repertorio', label:'Repertorio'},
-    {id:'backstage',  label:'Backstage'},
+    {id:'backstage',  label:tx.backstage},
+    {id:'fechas',     label:tx.fechas},
+    {id:'repertorio', label:lang==='en'?'Repertoire':'Repertorio'},
+    {id:'equipo',     label:lang==='en'?'Team':'Equipo'},
   ];
 
   const NavIcoBanda=({id,active})=>{
     const s={viewBox:'0 0 24 24',width:20,height:20,fill:'none',
       stroke:active?'var(--ac)':'var(--tx3)',strokeWidth:1.5,
       strokeLinecap:'round',strokeLinejoin:'round'};
-    if(id==='home')     return(<svg {...s}><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
-    if(id==='equipo')    return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
+    if(id==='backstage') return(<svg {...s}><line x1="5" y1="3" x2="5" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><rect x="3" y="7" width="4" height="3.5" rx="1.5"/><rect x="10" y="13" width="4" height="3.5" rx="1.5"/><rect x="17" y="5" width="4" height="3.5" rx="1.5"/></svg>);
     if(id==='fechas')    return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
     if(id==='repertorio')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
-    if(id==='backstage') return(<svg {...s}><line x1="5" y1="3" x2="5" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><rect x="3" y="7" width="4" height="3.5" rx="1.5"/><rect x="10" y="13" width="4" height="3.5" rx="1.5"/><rect x="17" y="5" width="4" height="3.5" rx="1.5"/></svg>);
+    if(id==='equipo')    return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
     return null;
   };
 
@@ -142,7 +114,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
     <div style={{...themeStyle,minHeight:'100vh',position:'relative'}}>
       <div style={{
         position:'sticky',top:0,zIndex:40,
-        background:'rgba(var(--bg-rgb,5,5,13),.92)',
+        background:'rgba(8,7,14,.92)',
         backdropFilter:'blur(26px)',
         borderBottom:'1px solid var(--bd)',
         display:'flex',alignItems:'center',gap:10,
@@ -159,20 +131,19 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
           </svg>
         </button>
         <div style={{flex:1}}>
-          <h1 style={{margin:0,fontSize:16,fontWeight:900,
-            fontFamily:"'DM Sans',sans-serif",color:'var(--tx)',lineHeight:1}}>
-            Mi Banda
+          <h1 style={{margin:0,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)',lineHeight:1}}>
+            {lang==='en'?'My Band':'Mi Banda'}
           </h1>
-          <span style={{fontSize:9,fontWeight:700,color:'var(--ac)',
+          <span style={{fontSize:9,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
             textTransform:'uppercase',letterSpacing:'2px'}}>
-            Modo Banda
+            {lang==='en'?'Band Mode':'Modo Banda'}
           </span>
         </div>
       </div>
       {view==='fechas'&&(
         <div style={{
           position:'sticky',top:49,zIndex:39,
-          background:'rgba(8,7,14,.9)',backdropFilter:'blur(18px)',
+          background:'rgba(8,7,14,.28)',backdropFilter:'blur(18px)',
           borderBottom:'1px solid var(--bd)',
           display:'flex',overflowX:'auto',scrollbarWidth:'none',
           padding:'4px 8px',gap:4,
@@ -183,10 +154,10 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
             return(
               <button key={m} style={{
                 flexShrink:0,padding:'4px 8px',borderRadius:6,border:'none',
-                background:isNow?'rgba(200,169,126,.15)':'transparent',
-                color:hasGig?'var(--ac)':isNow?'var(--tx2)':'var(--tx3)',
-                fontSize:9,fontWeight:900,cursor:'pointer',
-                letterSpacing:'.8px',fontFamily:"'DM Sans',sans-serif",
+                background:isNow?'rgba(255,255,255,.08)':'transparent',
+                color:hasGig?'var(--tx)':isNow?'var(--tx2)':'var(--tx3)',
+                fontSize:9,fontWeight:700,cursor:'pointer',
+                letterSpacing:'.8px',fontFamily:"'Lexend Giga',sans-serif",
                 position:'relative',
               }}>
                 {m}
@@ -202,20 +173,31 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
         </div>
       )}
       <div style={{padding:'10px 8px 90px'}}>
-        {view==='home'&&<DashboardBanda/>}
+        {view==='backstage'&&(
+          <BandaBackstage
+            members={members} setMembers={setMembers}
+            gigs={gigs} setGigs={setGigs}
+            repertorio={repertorio}
+            isEncargado={isEncargado} onToast={showToast}
+            getRol={getRol} lang={lang}
+          />
+        )}
         {view==='equipo'&&(
           <div>
-            <div className="ph" style={{marginBottom:16}}>
-              <h2 style={{margin:0,fontSize:20,fontWeight:900,color:'var(--tx)',
-                fontFamily:"'Special Gothic Expanded One',sans-serif"}}>Equipo</h2>
-              <span style={{fontSize:11,color:'var(--tx3)'}}>
-                {members.filter(m=>ROLES_MUSICOS.find(r=>r.id===m.rol)).length} músicos ·{' '}
-                {members.filter(m=>EQUIPOS_TRABAJO.find(r=>r.id===m.rol)).length} técnicos
-              </span>
+            <div className="ph" style={{marginBottom:16,alignItems:'flex-start'}}>
+              <div>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
+                  {lang==='en'?'Team':'Equipo'}
+                </div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:5}}>
+                  {members.filter(m=>ROLES_MUSICOS.find(r=>r.id===m.rol)).length} {lang==='en'?'musicians':'músicos'} ·{' '}
+                  {members.filter(m=>EQUIPOS_TRABAJO.find(r=>r.id===m.rol)).length} {lang==='en'?'crew':'técnicos'}
+                </div>
+              </div>
             </div>
-            <div style={{fontSize:10,fontWeight:700,color:'var(--ac)',
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',
               textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
-              Músicos
+              {lang==='en'?'Musicians':'Músicos'}
             </div>
             {members.filter(m=>ROLES_MUSICOS.find(r=>r.id===m.rol)).map(m=>(
               <div key={m.id} style={{
@@ -224,22 +206,22 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
                 border:'1px solid var(--bd)',background:'var(--s1)',marginBottom:8,
               }}>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:'var(--tx)'}}>{m.nombre}</div>
-                  <div style={{fontSize:11,color:'var(--tx2)',marginTop:1}}>{getRol(m.rol).label}</div>
+                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:14,fontWeight:400,color:'var(--tx)'}}>{m.nombre}</div>
+                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:200,color:'var(--tx2)',marginTop:1}}>{getRol(m.rol).label}</div>
                 </div>
                 {m.rol==='encargado'&&(
-                  <span style={{fontSize:9,padding:'2px 7px',borderRadius:10,
-                    background:'rgba(200,169,126,.12)',color:'var(--ac)',
-                    border:'1px solid rgba(200,169,126,.25)',fontWeight:700}}>
-                    ENCARGADO
+                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,padding:'2px 7px',borderRadius:10,
+                    background:'rgba(255,255,255,.08)',color:'var(--tx)',
+                    border:'1px solid rgba(255,255,255,.15)',fontWeight:300}}>
+                    {lang==='en'?'LEADER':'ENCARGADO'}
                   </span>
                 )}
               </div>
             ))}
             <div style={{height:1,background:'var(--bd)',margin:'18px 0 12px'}}/>
-            <div style={{fontSize:10,fontWeight:700,color:'var(--ac)',
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',
               textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
-              Equipos de trabajo
+              {lang==='en'?'Crew teams':'Equipos de trabajo'}
             </div>
             {EQUIPOS_TRABAJO.map(eq=>{
               const crew=members.filter(m=>m.rol===eq.id);
@@ -250,17 +232,17 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
                   border:'1px solid var(--bd)',background:'var(--s1)',marginBottom:8,
                 }}>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:800,color:'var(--tx)'}}>{eq.label}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>
-                      {crew.length>0?crew.map(c=>c.nombre).join(', '):'Sin asignar'}
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:13,fontWeight:400,color:'var(--tx)'}}>{eq.label}</div>
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:200,color:'var(--tx3)',marginTop:2}}>
+                      {crew.length>0?crew.map(c=>c.nombre).join(', '):(lang==='en'?'Unassigned':'Sin asignar')}
                     </div>
                   </div>
                   <div style={{
                     width:24,height:24,borderRadius:12,
-                    background:crew.length>0?'rgba(200,169,126,.1)':'var(--s2)',
+                    background:crew.length>0?'rgba(255,255,255,.08)':'var(--s2)',
                     display:'flex',alignItems:'center',justifyContent:'center',
-                    fontSize:12,fontWeight:800,
-                    color:crew.length>0?'var(--ac)':'var(--tx3)',
+                    fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:500,
+                    color:crew.length>0?'var(--tx)':'var(--tx3)',
                   }}>{crew.length}</div>
                 </div>
               );
@@ -271,29 +253,22 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
           <BandaFechas
             gigs={gigs} setGigs={setGigs}
             members={members} repertorio={repertorio}
-            isEncargado={isEncargado} onToast={showToast}
+            isEncargado={isEncargado} onToast={showToast} lang={lang}
           />
         )}
         {view==='repertorio'&&(
           <BandaRepertorio
             repertorio={repertorio} setRepertorio={setRepertorio}
+            colecciones={colecciones} setColecciones={setColecciones}
             gigs={gigs} isEncargado={isEncargado} onToast={showToast}
-            onOpenSong={(song)=>setSongViewBanda(song)}
+            onOpenSong={(song)=>setSongViewBanda(song)} lang={lang}
           />
         )}
-        {view==='backstage'&&(
-          <BandaBackstage
-            members={members} setMembers={setMembers}
-            gigs={gigs} setGigs={setGigs}
-            repertorio={repertorio}
-            isEncargado={isEncargado} onToast={showToast}
-            getRol={getRol}
-          />
-        )}
+        <Footer/>
       </div>
       <nav style={{
         position:'fixed',bottom:0,left:0,right:0,
-        background:'rgba(5,5,13,.92)',backdropFilter:'blur(26px)',
+        background:'rgba(8,7,14,.92)',backdropFilter:'blur(26px)',
         borderTop:'1px solid var(--bd)',zIndex:20,
         padding:'7px 0 11px',display:'flex',
         justifyContent:'space-around',
@@ -316,6 +291,7 @@ export function BandaApp({onBack,userRole='superadmin',themeStyle={}}){
             onClose={()=>setSongViewBanda(null)}
             theme="dark"
             contentDB={SONG_CONTENT_BANDA}
+            lang={lang}
           />
         </div>
       )}

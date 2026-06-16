@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ALL_ROLES_BANDA } from '../../data/constants';
 
 export function BandaCrearEnsayo({gigs,repertorio,members,onSave,onToast}){
-  const FONT="'DM Sans',sans-serif";
+  const FONT="'Lexend Giga',sans-serif";
   const [fecha,setFecha]=useState('');
   const [hora,setHora]=useState('');
   const [lugar,setLugar]=useState('');

@@ -5,7 +5,7 @@ import { initials } from '../../utils/music';
 import { BandaCrearEnsayo } from './BandaCrearEnsayo';
 import { ItinerarioEditor } from '../ItinerarioEditor';
 
-export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[],isEncargado,onToast,getRol}){
+export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[],isEncargado,onToast,getRol,lang='es'}){
   const [bsView,setBsView]=useState(null);
   const [subView,setSubView]=useState(null); // 'agregar' | 'equipo'
   const [nuevoNombre,setNuevoNombre]=useState('');
@@ -31,12 +31,12 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx3)" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx3)',fontFamily:"'DM Sans',sans-serif"}}>Backstage</span>
+        <span style={{fontSize:12,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Backstage</span>
       </div>
 
       <div className="ph">
         <div>
-          <h2 style={{margin:0,fontSize:20,fontWeight:900,color:'var(--tx)',
+          <h2 style={{margin:0,fontSize:18,fontWeight:400,color:'var(--tx)',
             fontFamily:"'Special Gothic Expanded One',sans-serif"}}>Gestión de Equipo</h2>
           <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>
             {members.length} integrantes · {equiposPersonalizados.length} equipos
@@ -47,13 +47,13 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
             <button onClick={()=>setSubView('agregar')}
               style={{padding:'6px 12px',borderRadius:8,fontSize:12,fontWeight:700,
                 border:'1px solid var(--ac)',background:'rgba(200,169,126,.08)',
-                color:'var(--ac)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                color:'var(--ac)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               + Persona
             </button>
             <button onClick={()=>setSubView('equipo')}
               style={{padding:'6px 12px',borderRadius:8,fontSize:12,fontWeight:700,
                 border:'1px solid var(--bd)',background:'transparent',
-                color:'var(--tx3)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               + Equipo
             </button>
           </div>
@@ -62,8 +62,8 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
       {subView==='agregar'&&isEncargado&&(
         <div style={{padding:'14px',borderRadius:14,border:'1px solid var(--bd)',
           background:'var(--s2)',marginBottom:16}}>
-          <div style={{fontSize:11,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',marginBottom:10,fontFamily:"'DM Sans',sans-serif"}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',textTransform:'uppercase',
+            letterSpacing:'1px',marginBottom:10}}>
             Nuevo integrante
           </div>
           <input value={nuevoNombre} onChange={e=>setNuevoNombre(e.target.value)}
@@ -90,7 +90,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
             <button onClick={()=>{setSubView(null);setNuevoNombre('');}}
               style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid var(--bd)',
                 background:'transparent',color:'var(--tx3)',fontSize:13,
-                fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               Cancelar
             </button>
             <button onClick={()=>{
@@ -100,7 +100,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
               onToast(`✓ ${nuevoNombre} agregado`);
             }} style={{flex:2,padding:'9px',borderRadius:10,border:'none',
               background:'var(--ac)',color:'var(--bg)',fontSize:13,fontWeight:700,
-              cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+              cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               Agregar
             </button>
           </div>
@@ -109,8 +109,8 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
       {subView==='equipo'&&isEncargado&&(
         <div style={{padding:'14px',borderRadius:14,border:'1px solid var(--bd)',
           background:'var(--s2)',marginBottom:16}}>
-          <div style={{fontSize:11,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',marginBottom:10,fontFamily:"'DM Sans',sans-serif"}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',textTransform:'uppercase',
+            letterSpacing:'1px',marginBottom:10}}>
             Nuevo equipo
           </div>
           <input value={nuevoEquipoNombre} onChange={e=>setNuevoEquipoNombre(e.target.value)}
@@ -118,7 +118,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
             style={{width:'100%',padding:'9px 12px',borderRadius:10,border:'1px solid var(--bd)',
               background:'var(--s1)',color:'var(--tx)',fontSize:13,
               marginBottom:8,boxSizing:'border-box'}}/>
-          <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'DM Sans',sans-serif",marginBottom:6}}>
+          <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>
             Roles dentro del equipo
           </div>
           {nuevoEquipoRoles.map((r,i)=>(
@@ -138,14 +138,14 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
           <button onClick={()=>setNuevoEquipoRoles(prev=>[...prev,''])}
             style={{width:'100%',padding:'7px',borderRadius:8,border:'1px dashed var(--bd)',
               background:'transparent',color:'var(--tx3)',fontSize:12,
-              fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",marginBottom:10}}>
+              fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",marginBottom:10}}>
             + Agregar rol
           </button>
           <div style={{display:'flex',gap:8}}>
             <button onClick={()=>{setSubView(null);setNuevoEquipoNombre('');setNuevoEquipoRoles(['']);}}
               style={{flex:1,padding:'9px',borderRadius:10,border:'1px solid var(--bd)',
                 background:'transparent',color:'var(--tx3)',fontSize:13,
-                fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               Cancelar
             </button>
             <button onClick={()=>{
@@ -158,14 +158,14 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
               onToast(`✓ Equipo "${nuevoEquipoNombre}" creado`);
             }} style={{flex:2,padding:'9px',borderRadius:10,border:'none',
               background:'var(--ac)',color:'var(--bg)',fontSize:13,fontWeight:700,
-              cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+              cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               Crear equipo
             </button>
           </div>
         </div>
       )}
-      <div style={{fontSize:10,fontWeight:700,color:'var(--ac)',textTransform:'uppercase',
-        letterSpacing:'1.5px',marginBottom:8,fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',textTransform:'uppercase',
+        letterSpacing:'1.5px',marginBottom:8}}>
         Músicos
       </div>
       {members.filter(m=>ROLES_MUSICOS.find(r=>r.id===m.rol)).map(m=>(
@@ -173,8 +173,8 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
           padding:'10px 12px',borderRadius:12,border:'1px solid var(--bd)',
           background:'var(--s1)',marginBottom:8}}>
           <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-              fontFamily:"'DM Sans',sans-serif"}}>{m.nombre}</div>
+            <div style={{fontSize:14,fontWeight:400,color:'var(--tx)',
+              fontFamily:"'Lexend Giga',sans-serif"}}>{m.nombre}</div>
             <div style={{fontSize:11,color:'var(--tx2)'}}>{getRol(m.rol).label}</div>
           </div>
           {isEncargado&&(
@@ -189,8 +189,8 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
         </div>
       ))}
       <div style={{height:1,background:'var(--bd)',margin:'16px 0 12px'}}/>
-      <div style={{fontSize:10,fontWeight:700,color:'var(--ac)',textTransform:'uppercase',
-        letterSpacing:'1.5px',marginBottom:8,fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',textTransform:'uppercase',
+        letterSpacing:'1.5px',marginBottom:8}}>
         Equipos de trabajo
       </div>
       {members.filter(m=>EQUIPOS_TRABAJO.find(r=>r.id===m.rol)).map(m=>(
@@ -198,8 +198,8 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
           padding:'10px 12px',borderRadius:12,border:'1px solid var(--bd)',
           background:'var(--s1)',marginBottom:8}}>
           <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-              fontFamily:"'DM Sans',sans-serif"}}>{m.nombre}</div>
+            <div style={{fontSize:14,fontWeight:400,color:'var(--tx)',
+              fontFamily:"'Lexend Giga',sans-serif"}}>{m.nombre}</div>
             <div style={{fontSize:11,color:'var(--tx2)'}}>{getRol(m.rol).label}</div>
           </div>
           {isEncargado&&(
@@ -216,14 +216,14 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
       {equiposPersonalizados.map(eq=>(
         <div key={eq.id} style={{marginTop:16}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-            <div style={{fontSize:10,fontWeight:700,color:'var(--ac)',textTransform:'uppercase',
-              letterSpacing:'1.5px',fontFamily:"'DM Sans',sans-serif"}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',textTransform:'uppercase',
+              letterSpacing:'1.5px'}}>
               {eq.nombre}
             </div>
             {isEncargado&&(
               <button onClick={()=>setEquiposPersonalizados(prev=>prev.filter(x=>x.id!==eq.id))}
                 style={{fontSize:10,color:'var(--tx3)',background:'transparent',
-                  border:'none',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                  border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                 Eliminar
               </button>
             )}
@@ -234,14 +234,14 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
               background:'var(--s1)',marginBottom:8}}>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-                  fontFamily:"'DM Sans',sans-serif"}}>{m.nombre}</div>
+                  fontFamily:"'Lexend Giga',sans-serif"}}>{m.nombre}</div>
                 <div style={{fontSize:11,color:'var(--tx2)'}}>{m.rol}</div>
               </div>
             </div>
           ))}
           {members.filter(m=>eq.roles.includes(m.rol)).length===0&&(
             <div style={{fontSize:12,color:'var(--tx3)',padding:'8px 0',
-              fontFamily:"'DM Sans',sans-serif"}}>
+              fontFamily:"'Lexend Giga',sans-serif"}}>
               Sin integrantes en este equipo
             </div>
           )}
@@ -257,7 +257,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx3)" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx3)',fontFamily:"'DM Sans',sans-serif"}}>Backstage</span>
+        <span style={{fontSize:12,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Backstage</span>
       </div>
       <h2 style={{margin:'0 0 16px',fontSize:20,fontWeight:900,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>
         Notificaciones
@@ -267,7 +267,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
           <button key={dest}
             style={{padding:'5px 10px',borderRadius:20,fontSize:11,fontWeight:700,
               cursor:'pointer',border:'1px solid var(--bd)',
-              background:'transparent',color:'var(--tx3)',fontFamily:"'DM Sans',sans-serif"}}>
+              background:'transparent',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
             {dest}
           </button>
         ))}
@@ -280,7 +280,7 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
       <button onClick={()=>{onToast('✓ Notificación enviada');setBsView(null);}}
         style={{width:'100%',padding:'11px',borderRadius:12,border:'none',
           background:'var(--ac)',color:'var(--bg)',fontSize:13,fontWeight:800,
-          cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+          cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
         Enviar mensaje
       </button>
     </div>
@@ -289,33 +289,22 @@ export function BandaBackstage({members,setMembers,gigs=[],setGigs,repertorio=[]
   // ── Home Backstage ────────────────────────────────────────────────────────
   return(
     <div>
-      <h2 style={{margin:'0 0 4px',fontSize:20,fontWeight:900,color:'var(--tx)',
-        fontFamily:"'Special Gothic Expanded One',sans-serif"}}>Backstage</h2>
-      <div style={{fontSize:11,color:'var(--tx3)',marginBottom:20}}>Gestión y configuración</div>
-      {MENU.map(item=>(
-        <div key={item.id}
-          onClick={()=>['equipo','notif','ensayo'].includes(item.id)?setBsView(item.id):onToast(`${item.label} — próximamente`)}
-          style={{display:'flex',alignItems:'center',gap:14,padding:'14px',
-            borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
-            marginBottom:10,cursor:'pointer'}}>
-          <div style={{width:38,height:38,borderRadius:10,background:'var(--s2)',flexShrink:0,
-            display:'flex',alignItems:'center',justifyContent:'center'}}>
-            {item.id==='evento'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>}
-            {item.id==='ensayo'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>}
-            {item.id==='setlist'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>}
-            {item.id==='equipo'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
-            {item.id==='notif'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>}
-            {item.id==='config'&&<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>}
-          </div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:700,color:'var(--tx)',fontFamily:"'DM Sans',sans-serif"}}>{item.label}</div>
-            <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>{item.sub}</div>
-          </div>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </div>
-      ))}
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        Backstage
+      </div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>
+        {lang==='en'?'Band management panel':'Panel de gestión de la banda'}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        {MENU.map(item=>(
+          <button key={item.id}
+            onClick={()=>['equipo','notif','ensayo'].includes(item.id)?setBsView(item.id):onToast(`${item.label} — próximamente`)}
+            style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)',lineHeight:1.15}}>{item.label}</div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:200,fontSize:10,color:'var(--tx3)',lineHeight:1.4}}>{item.sub}</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -283,7 +283,7 @@ export default function App(){
     return(
       <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
-        <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle}/>
+        <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} lang={lang}/>
       </div>
     );
   }
