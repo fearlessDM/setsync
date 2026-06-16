@@ -83,10 +83,10 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
     <div style={{padding:'0 0 90px'}}>
       <div style={{padding:'12px 8px 10px',display:'flex',alignItems:'flex-start',gap:12}}>
         <div style={{flex:1}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
             Eventos <span style={{color:'var(--ac)'}}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNav]}</span>
           </div>
-          <div style={{fontSize:12,color:'var(--ac)',fontWeight:600,marginTop:5}}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:5}}>
             {mesNav===new Date().getMonth()?`${diasEvento.filter(e=>e.sl).length} domingos · Toca uno para ver el detalle`:'Eventos del mes seleccionado'}
           </div>
         </div>
@@ -122,8 +122,8 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
             <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:400,fontSize:22,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif",transition:'font-size .2s'}}>{tx.sunday} {day}</div>
-                  <div style={{fontSize:13,color:'var(--tx3)',marginTop:4,fontWeight:700}}>{sl.length} {sl.length===1?tx.song:tx.songs}</div>
+                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:22,transition:'font-size .2s'}}>{tx.sunday} {day}</div>
+                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginTop:4}}>{sl.length} {sl.length===1?tx.song:tx.songs}</div>
                 </div>
                 <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?tx.published:tx.draft}</span>
                 {isLeader&&(
@@ -165,8 +165,8 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
               <div key={i} style={{padding:'18px 16px',borderRadius:16,background:'var(--s1)',border:'1px solid rgba(200,169,126,.3)',cursor:'pointer'}} onClick={()=>onSelectDay&&onSelectDay(ev.dia)}>
                 <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
                   <div style={{flex:1}}>
-                    <div style={{fontWeight:400,fontSize:18,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>{ev.label}</div>
-                    <div style={{fontSize:12,color:'var(--ac)',marginTop:3,fontWeight:600,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:18}}>{ev.label}</div>
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:3,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                   </div>
                   <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',display:'none'}}>Especial</span>
                   {isLeader&&<button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
@@ -201,7 +201,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
             <div key={i} style={{padding:'14px 16px',borderRadius:16,background:'var(--s1)',border:'1px solid rgba(200,169,126,.25)'}}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:400,fontSize:16,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>{ev.label}</div>
+                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:16}}>{ev.label}</div>
                   <div style={{fontSize:11,color:'var(--ac)',marginTop:2,fontWeight:700,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
                 </div>
                 <span style={{padding:'3px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',flexShrink:0,display:'none'}}>Especial</span>
@@ -350,8 +350,8 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
       <div style={{marginBottom:16}}>
         <div style={{display:'flex',alignItems:'flex-start',gap:12}}>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Dom <span style={{color:'var(--ac)'}}>{activeSunday} {mesNombre}</span></div>
-            <div style={{fontSize:12,color:'var(--tx2)'}}>Tu setlist para este domingo. Repasa las canciones con tiempo.</div>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Dom <span style={{color:'var(--ac)'}}>{activeSunday} {mesNombre}</span></div>
+            <div style={{{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5}}>Tu setlist para este domingo. Repasa las canciones con tiempo.</div>
           </div>
           <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:12,border:'1px solid rgba(48,192,183,.35)',background:'rgba(48,192,183,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
             <div style={{display:'flex',alignItems:'center',gap:5}}>

@@ -417,48 +417,46 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
           Agregar canción
         </button>
       </div>
-      <div style={{display:'flex',gap:6,marginBottom:14}}>
-        <button onClick={()=>setTab('mi')} style={{padding:'6px 14px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
-        {mode==='worship'&&<button onClick={()=>setTab('universal')} style={{padding:'6px 14px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:5}}>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
+        <button onClick={()=>setTab('mi')} style={{padding:'5px 11px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
+        {mode==='worship'&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Universal
         </button>}
-        <button onClick={()=>setTab('partituras')} style={{padding:'6px 14px',borderRadius:100,
+        <button onClick={()=>setTab('partituras')} style={{padding:'5px 11px',borderRadius:100,
           border:tab==='partituras'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
           background:tab==='partituras'?'rgba(200,169,126,.1)':'transparent',
           color:tab==='partituras'?'var(--ac)':'var(--tx3)',
-          fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
-          display:'flex',alignItems:'center',gap:5}}>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+          fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+          display:'flex',alignItems:'center',gap:4}}>
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>
           </svg>
           Partituras
         </button>
         <div style={{flex:1}}/>
-        <div style={{display:'flex',gap:6,flexShrink:0}}>
-
-          <button onClick={()=>{setShowCrear(true);setCrearModo('drive');}}
-            style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',
-              borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
-              background:'rgba(255,255,255,.04)',color:'var(--tx3)',
-              fontWeight:700,fontSize:11,cursor:'pointer',
-              fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-              stroke="currentColor" strokeWidth="2.5">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-            Subir por Drive
-          </button>
-        </div>
+        <button onClick={()=>{setShowCrear(true);setCrearModo('drive');}}
+          style={{display:'flex',alignItems:'center',gap:4,padding:'5px 10px',
+            borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
+            background:'rgba(255,255,255,.04)',color:'var(--tx3)',
+            fontWeight:600,fontSize:10,cursor:'pointer',
+            fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="none"
+            stroke="currentColor" strokeWidth="2.5">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          Subir por Drive
+        </button>
       </div>
 
-      <div style={{display:'flex',gap:8,marginBottom:10}}>
+      <div style={{display:'flex',gap:8,marginBottom:14}}>
         <input className="inp" placeholder="Buscar canción..." style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
         <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,border:'1px solid var(--bd)',background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",height:42,display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           {bv?'Por BPM':'Por lista'}
         </button>
       </div>
+
 
       {tab==='mi'&&(
         bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)

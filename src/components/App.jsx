@@ -177,7 +177,6 @@ export default function App(){
     {id:'cancionero',label:tx.songbook},
   ];
   const NavIco=({id,active})=>{
-    if(id==='backstage')return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active?2:1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>);
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
     if(id==='home')return(<svg {...s}><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
     if(id==='admin')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);
@@ -233,8 +232,8 @@ export default function App(){
           {['es','en'].map(l=>(
             <button key={l} onClick={()=>setLang(l)}
               style={{padding:'7px 20px',border:'none',cursor:'pointer',
-                background:lang===l?'rgba(238,34,125,.15)':'transparent',
-                color:lang===l?'#EE227D':'rgba(255,255,255,.3)',
+                background:lang===l?'rgba(255,255,255,.1)':'transparent',
+                color:lang===l?'#f3f1ed':'rgba(255,255,255,.3)',
                 fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
                 textTransform:'uppercase',letterSpacing:'1px',transition:'all .2s'}}>
               {l==='es'?'ES':'EN'}
@@ -243,7 +242,7 @@ export default function App(){
         </div>
         {/* Título */}
         <div style={{textAlign:'center',marginBottom:20,padding:'0 24px'}}>
-          <div style={{fontSize:15,fontWeight:700,color:'#f3f1ed',marginBottom:6}}>{t.choose}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:18,color:'#f3f1ed',marginBottom:6}}>{t.choose}</div>
           <div style={{fontSize:11,color:'#6b6f77',lineHeight:1.6,maxWidth:300,margin:'0 auto'}}>{t.forever}</div>
         </div>
         {/* Cards modo */}
@@ -266,7 +265,7 @@ export default function App(){
 
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-                  <span style={{fontSize:15,fontWeight:700,color:item.disabled?'rgba(255,255,255,.2)':'#ffffff'}}>{item.data.title}</span>
+                  <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:item.disabled?'rgba(255,255,255,.2)':'#ffffff'}}>{item.data.title}</span>
                   {item.disabled&&(<span style={{fontSize:9,fontWeight:700,color:'#6b6f77',letterSpacing:'1px',textTransform:'uppercase',padding:'2px 7px',borderRadius:100,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}>{t.soon}</span>)}
                 </div>
                 <div style={{fontSize:11,color:item.disabled?'rgba(255,255,255,.1)':'rgba(255,255,255,.4)',lineHeight:1.4,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11}}>{item.data.sub}</div>
@@ -333,6 +332,7 @@ export default function App(){
       </nav>
 
       <main className={`main${sbCol?' col':''}`}>
+        {view==='admin'&&(
         <div style={{display:'flex',overflowX:'hidden',gap:0,padding:'0',scrollbarWidth:'none',background:'rgba(8,7,14,.28)',backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)',boxShadow:'inset 0 -1px 0 rgba(255,255,255,.06)',isolation:'isolate',position:'sticky',top:0,zIndex:40}}>
           {MESES.map((m,i)=>(
             <div key={m} onClick={()=>{setMesNav(i);setView('admin');}} style={{flex:1,padding:'5px 2px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,margin:'3px 1px',borderRadius:5,border:'1px solid transparent',background:mesNav===i?'rgba(200,169,126,.12)':i===mesActual?'rgba(200,169,126,.07)':'transparent',transition:'all .15s',minWidth:0}}>
@@ -345,6 +345,7 @@ export default function App(){
             </div>
           ))}
         </div>
+        )}
         <div className="pw">
           
           {view==='admin'&&<AdminView mode={mode} activeSunday={activeSunday} userRole={userRole} onLive={()=>setSongView(0)} onToast={showToast} onSelectDay={day=>{setActiveSunday(day);setView('misetlist');}} mesNav={mesNav} lang={lang}/>}

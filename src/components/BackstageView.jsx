@@ -44,8 +44,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Crear <span style={{color:'var(--ac)'}}>evento</span></div>
-      <div style={{fontSize:12,color:'var(--tx2)',marginBottom:20}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Crear <span style={{color:'var(--ac)'}}>evento</span></div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Nombre del evento</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
@@ -188,10 +188,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
-        <div style={{fontSize:12,color:'var(--tx2)',marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
         <div className="card" style={{padding:14,marginBottom:12}}>
           <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Nombre del setlist</div>
           <input className="inp" placeholder="Ej: Setlist 6 de julio · Noche de adoración..." value={slNombre} onChange={e=>setSlNombre(e.target.value)}/>
@@ -324,7 +324,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Gestión de <span style={{color:'var(--ac)'}}>equipos</span></div>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Gestión de <span style={{color:'var(--ac)'}}>equipos</span></div>
         <div style={{fontSize:12,color:'var(--tx2)',marginBottom:18}}>Crea equipos de trabajo y los roles dentro de cada uno. También puedes crear una nómina de músicos para cada evento o crear varias bandas desde un grupo grande de músicos.</div>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Listado de músicos · {listado.length} personas</div>
         <div className="card" style={{padding:14,marginBottom:14}}>
@@ -400,7 +400,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:24,color:'var(--tx)',marginBottom:6}}>Delegar Permisos</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Delegar Permisos</div>
       <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.6,marginBottom:18}}>Asigna líderes para que gestionen su área sin necesitar tu aprobación. </div>
       <div className="card" style={{padding:16,marginBottom:14}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Líderes actuales</div>
@@ -455,7 +455,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:24,color:'var(--tx)',marginBottom:6}}>Notificaciones</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Notificaciones</div>
       <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.6,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
       <div className="card" style={{padding:16,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
@@ -497,8 +497,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>Ajustes</div>
-      <div style={{fontSize:12,color:'var(--tx2)',marginBottom:20}}>Personaliza la app a tu estilo</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Ajustes</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Personaliza la app a tu estilo</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Mi organización</div>
         <input className="inp" placeholder="Nombre de la iglesia o banda" style={{marginBottom:8}} defaultValue="Iglesia"/>
@@ -603,10 +603,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--tx)',lineHeight:1,marginBottom:5}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Palabra del <span style={{color:'var(--ac)'}}>Pastor</span>
       </div>
-      <div style={{fontSize:12,color:'var(--tx2)',marginBottom:20}}>Versículo y notas para el domingo</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Versículo y notas para el domingo</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Versículo del domingo</div>
         <input className="inp" placeholder="Ej: Juan 3:16" style={{marginBottom:8}}
@@ -647,17 +647,17 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
     <div style={{padding:'10px 8px',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:32,color:'var(--tx)',lineHeight:1}}>Backstage</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>Backstage</div>
           <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
         </div>
-        <div style={{fontSize:12,color:'var(--tx3)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,marginBottom:4}}>Panel de control del equipo</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:4}}>Panel de control del equipo</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
             style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)',lineHeight:1.15}}>{it.label}</div>
-            <div style={{fontSize:10,color:'var(--tx3)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{it.sub}</div>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:15}}>{it.label}</div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
           </button>
         ))}
       </div>
