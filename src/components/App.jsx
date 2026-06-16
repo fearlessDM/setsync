@@ -153,15 +153,11 @@ export default function App(){
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           {acciones.map((a,i)=>(
             <button key={i} onClick={a.action}
-              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:8,position:'relative',overflow:'hidden'}}>
-              <div style={{width:44,height:44,borderRadius:12,background:`${a.color}18`,border:`1px solid ${a.color}35`,display:'flex',alignItems:'center',justifyContent:'center',color:a.color,flexShrink:0}}>
-                <IcoAccion icon={a.icon}/>
-              </div>
-              <div>
-                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',marginBottom:3,lineHeight:1.2}}>{a.label}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',fontWeight:500,lineHeight:1.4}}>{a.sub}</div>
-              </div>
-              <div style={{position:'absolute',bottom:0,right:0,width:60,height:60,borderRadius:'50%',background:`${a.color}08`,transform:'translate(20px,20px)'}}/>
+              style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'22px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
+
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',lineHeight:1.1}}>{a.label}</div>
+              <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>{a.sub}</div>
+
             </button>
           ))}
         </div>
@@ -305,20 +301,22 @@ export default function App(){
       <div className="bg-fx"/>
       <nav className={`sb${sbCol?' col':''}`}>
         <div className="sb-top">
-          <div className="logo-mk">
-            {sbCol
-              ?<img src="/FAVICON SS.png" alt="SS" style={{width:36,height:36,objectFit:'contain'}}/>
-              :<img src="/LOGO horiz blanco.png" alt="SetSync" style={{height:28,objectFit:'contain'}}/>
-            }
-          </div>
-          <div className="sb-r">
-            <button className="sb-btn" onClick={()=>setSbCol(c=>!c)}>
-              {sbCol
-                ?<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                :<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              }
-            </button>
-          </div>
+          {sbCol
+            ?/* CERRADO: favicon centrado grande */
+            <div style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <img src="/FAVICON SS.png" alt="SS" style={{width:44,height:44,objectFit:'contain',margin:'0 auto'}}/>
+              <button className="sb-btn" onClick={()=>setSbCol(c=>!c)} style={{position:'absolute',right:6,top:10}}>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
+            </div>
+            :/* ABIERTO: logo horizontal grande + botón X */
+            <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+              <img src="/LOGO horiz blanco.png" alt="SetSync" style={{height:36,objectFit:'contain',flex:1,maxWidth:'calc(100% - 36px)'}}/>
+              <button className="sb-btn" onClick={()=>setSbCol(c=>!c)} style={{flexShrink:0,width:26,height:26}}>
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          }
         </div>
         {/* Nav items */}
         <div className="sb-nav">

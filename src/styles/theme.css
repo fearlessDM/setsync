@@ -72,9 +72,9 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 [data-theme=cream] .sb{background:rgba(236,230,218,.97);}
 [data-theme=gray] .sb{background:#0d0d0f;}
 .sb.col{width:60px;}
-.sb-top{display:flex;align-items:center;padding:18px 14px 16px;border-bottom:1px solid var(--bd);gap:10px;min-height:72px;flex-shrink:0;}
-.logo-mk{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s;}
-.logo-mk img{width:34px;height:34px;object-fit:contain;transition:all .25s;}
+.sb-top{display:flex;align-items:center;padding:14px 12px;border-bottom:1px solid var(--bd);min-height:68px;flex-shrink:0;position:relative;}
+.logo-mk{width:100%;display:flex;align-items:center;transition:all .25s;}
+.logo-mk img{max-height:36px;object-fit:contain;transition:all .25s;}
 .logo-txt{flex:1;overflow:hidden;transition:opacity .2s;}
 .logo-txt h1{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:15px;color:var(--tx);white-space:nowrap;letter-spacing:1px;}
 .logo-txt span{font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:2px;font-weight:700;white-space:nowrap;font-family:'Lexend Giga',sans-serif;}
@@ -178,15 +178,6 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .pw{padding:10px 8px 90px;}
 }
 
-/* Sidebar logo states */
-.sb:not(.col) .logo-mk{width:100%;height:auto;justify-content:flex-start;}
-.sb:not(.col) .logo-mk img{width:100%;height:32px;object-fit:contain;object-position:left center;}
-.sb.col .logo-mk{width:40px;height:40px;justify-content:center;}
-.sb.col .logo-mk img{width:40px;height:40px;object-fit:contain;}
-.sb.col .sb-top{justify-content:center;padding:16px 8px;}
-.sb:not(.col) .sb-top{padding:14px 14px 12px;}
-/* Hide text label when open (logo is the brand) */
-.sb:not(.col) .logo-txt{display:none;}
 /* Footer links higher opacity */
 
 /* ── CANCIONERO — Song chips grid ── */
@@ -201,3 +192,10 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .bpm-bar.fast{background:var(--rd);}
 .bpm-bar.mid{background:var(--gn);}
 .bpm-bar.slow{background:#6b6f77;}
+
+/* Sidebar collapsed: center favicon */
+.sb.col .sb-top{justify-content:center;padding:14px 0;}
+.sb.col .logo-mk{justify-content:center;}
+.sb:not(.col) .logo-mk{justify-content:flex-start;}
+/* Hide logo-txt always (logo image is the brand) */
+.logo-txt{display:none;}
