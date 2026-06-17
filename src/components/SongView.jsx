@@ -2,248 +2,20 @@ import { t as getT } from '../i18n';
 // SongView: visor de canción con transposición, capo, anotaciones,
 // vista bloques/lineal, Nashville, panel Estructura con drag touch.
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { transposeChord, tpKey, chordToNashville } from '../utils/music';
+import { tpKey } from '../utils/music';
 import { Toast } from './common';
+import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
+import { VistaBloques } from './songview/VistaBloques';
+import { useMapaCancion } from './songview/useMapaCancion';
+import { useAnotaciones } from './songview/useAnotaciones';
+import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
+import { PanelEstructura } from './songview/PanelEstructura';
 
-const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
 const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
 
-// ── renderSongContent (vista lineal) ─────────────────────────────────────────
-export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,nashville=false,songKey='C'){
-  if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
-
-  const screenW=typeof window!=='undefined'?window.innerWidth:390;
-  const fs  =Math.min(14,Math.max(11,Math.floor(screenW/30)));
-  const cFs =Math.max(10,fs-2);
-  const sFs =Math.max(7,fs-4);
-  const FONT="'Outfit',sans-serif";
-
-  const trC=(ch)=>{
-    const p=ch.split('/');
-    let transposed=p.length>1
-      ?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff)
-      :transposeChord(ch,tpOff);
-    if(nashville){
-      const parts=transposed.split('/');
-      return parts.map(c=>chordToNashville(c,songKey)).join('/');
-    }
-    return transposed;
-  };
-
-  const lines=raw.split('\n');
-  let start=0;
-  for(let i=0;i<Math.min(4,lines.length);i++){
-    const l=lines[i].trim();
-    if(!l||(!l.includes('[')&&!l.startsWith('===')))start=i+1;
-    else break;
-  }
-
-  const blocks=[];
-  let curLabel=null,curLines=[];
-  lines.slice(start).forEach(line=>{
-    const t=line.trim();
-    if(t.startsWith('===')&&t.endsWith('===')){
-      if(curLines.length||curLabel!==null){blocks.push({label:curLabel,lines:curLines});curLines=[];}
-      curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();
-    } else { curLines.push(t); }
-  });
-  if(curLines.length||curLabel!==null)blocks.push({label:curLabel,lines:curLines});
-
-  const maxLW=blocks.reduce((mx,b)=>b.label?Math.max(mx,b.label.length):mx,0);
-  const labelPx=maxLW>0?Math.ceil(maxLW*(sFs*0.62))+10:0;
-
-  // ── Detecta si una línea es SOLO acordes (formato BARRO) ─────────────────────
-  // ej: "D A Em" → true | "Mi corazón" → false | "[D]Mi" → false (inline)
-  const CHORD_PLAIN_RE=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
-  const isChordOnlyLine=(txt)=>{
-    if(!txt.trim())return false;
-    if(/\[/.test(txt))return false;
-    const tokens=txt.trim().split(/\s+/);
-    return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN_RE.test(t));
-  };
-
-  // Renderiza una línea de acordes-sobre-letra en formato BARRO
-  const renderBarro=(chordLine,lyricLine,key)=>{
-    const chords=(chordLine||'').trim().split(/\s+/).map(c=>trC(c));
-    const lyric=(lyricLine||'').trim();
-    const chordFs=Math.max(9,fs*0.72);
-    if(!showChords){
-      return lyric?(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>):null;
-    }
-    return(
-      <div key={key} style={{marginBottom:'0.35em',lineHeight:1}}>
-        <div style={{display:'flex',gap:Math.max(8,12),marginBottom:2}}>
-          {chords.map((ch,i)=>(
-            <span key={i} style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap'}}>{ch}</span>
-          ))}
-        </div>
-        {lyric&&<div style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.3}}>{lyric}</div>}
-      </div>
-    );
-  };
-
-  // ── renderLinea: formato YESHUA (acordes inline [A]palabra) ─────────────────
-  const renderLinea=(text,lineIdx,key)=>{
-    if(!text.trim())return null;
-    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-    re.lastIndex=0;
-    const hasChord=re.test(text);
-    re.lastIndex=0;
-
-    if(!hasChord||!showChords){
-      const lyric=text.replace(re,'').trim();
-      if(!lyric)return null;
-      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>);
-    }
-
-    // Parsear segmentos: cada segmento = {chord, text, ci}
-    const segs=[];
-    let last=0,m,ci=0;
-    while((m=re.exec(text))!==null){
-      segs.push({chord:trC(m[1]),text:text.slice(last,m.index),ci:ci++,lineIdx,key});
-      last=m.index+m[0].length;
-    }
-    if(last<text.length)segs.push({chord:null,text:text.slice(last),ci:-1});
-
-    const chordFs=Math.max(9,fs*0.72);
-
-    return(
-      <div key={key} style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',marginBottom:'0.3em',lineHeight:1}}>
-        {segs.map((seg,si)=>(
-          <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start'}}>
-            {seg.chord?(
-              editMode?(
-                // Drag touch + mouse en edición
-                <span
-                  onMouseDown={e=>{
-                    e.preventDefault();
-                    const x0=e.clientX;
-                    const el=e.currentTarget;
-                    el.style.cursor='grabbing';
-                    const onMove=(ev)=>{
-                      const dx=ev.clientX-x0;
-                      el.style.transform=`translateX(${dx}px)`;
-                      el.style.opacity='0.75';
-                    };
-                    const onUp=(ev)=>{
-                      const dx=ev.clientX-x0;
-                      el.style.transform='';
-                      el.style.opacity='';
-                      el.style.cursor='grab';
-                      document.removeEventListener('mousemove',onMove);
-                      document.removeEventListener('mouseup',onUp);
-                      const steps=Math.round(dx/5);
-                      if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
-                    };
-                    document.addEventListener('mousemove',onMove);
-                    document.addEventListener('mouseup',onUp);
-                  }}
-                  onTouchStart={e=>{
-                    const touch=e.touches[0];
-                    e.currentTarget._x0=touch.clientX;
-                  }}
-                  onTouchMove={e=>{
-                    e.preventDefault();
-                    const dx=e.touches[0].clientX-(e.currentTarget._x0||e.touches[0].clientX);
-                    e.currentTarget.style.transform=`translateX(${dx}px)`;
-                    e.currentTarget.style.opacity='0.75';
-                  }}
-                  onTouchEnd={e=>{
-                    const dx=e.changedTouches[0].clientX-(e.currentTarget._x0||e.changedTouches[0].clientX);
-                    e.currentTarget.style.transform='';
-                    e.currentTarget.style.opacity='';
-                    const steps=Math.round(dx/5);
-                    if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
-                  }}
-                  style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',userSelect:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
-                >{seg.chord}</span>
-              ):(
-                <span style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>{seg.chord}</span>
-              )
-            ):(
-              <span style={{display:'block',height:chordFs*1.1}}/>
-            )}
-            {seg.text
-              ?<span style={{fontFamily:FONT,fontSize:fs,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre'}}>{seg.text}</span>
-              :<span style={{fontFamily:FONT,fontSize:fs,color:'transparent',lineHeight:1.3,userSelect:'none'}}>&nbsp;</span>
-            }
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const chordFsForLabel=(fs)=>Math.max(9,fs*0.72)*1.1;
-  let lineCounter=0;
-  return(
-    <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
-      {editMode&&(
-        <div style={{textAlign:'center',fontSize:10,color:'var(--ac)',fontFamily:FONT,fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
-          ✏ Arrastra un acorde para moverlo
-        </div>
-      )}
-      {blocks.map((blk,bi)=>{
-        const blines=(blk.lines||[]).filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
-        if(!blines.length&&!blk.label)return null;
-
-        // Pre-procesar líneas: detectar pares BARRO (chord-only → lyric)
-        const rows=[];
-        let skipNext=false;
-        for(let li=0;li<blines.length;li++){
-          if(skipNext){skipNext=false;continue;}
-          const line=blines[li];
-          const nextLine=blines[li+1]??'';
-          if(isChordOnlyLine(line)){
-            // Par BARRO: línea de acordes + siguiente línea de letra (o vacío)
-            rows.push({type:'barro',chordLine:line,lyricLine:nextLine,origLi:li});
-            skipNext=true;
-          } else {
-            rows.push({type:'inline',line,origLi:li});
-          }
-        }
-
-        return(
-          <div key={bi} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
-            {rows.map((row,ri)=>{
-              const isFirst=ri===0;
-              if(row.type==='barro'){
-                const thisLineIdx=lineCounter++;
-                return(
-                  <div key={ri} style={{display:'flex',alignItems:'flex-start',width:'100%'}}>
-                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,paddingTop:chordFsForLabel(fs)}}>
-                      {blk.label&&isFirst&&(
-                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
-                      )}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      {renderBarro(row.chordLine,row.lyricLine,`b${ri}_${bi}`)}
-                    </div>
-                  </div>
-                );
-              } else {
-                const line=row.line;
-                if(!line.trim())return<div key={ri} style={{height:fs*0.2}}/>;
-                const thisLineIdx=lineCounter++;
-                return(
-                  <div key={ri} style={{display:'flex',alignItems:'flex-end',width:'100%'}}>
-                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2}}>
-                      {blk.label&&isFirst&&(
-                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
-                      )}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      {renderLinea(line,thisLineIdx,'l'+ri+'_'+bi)}
-                    </div>
-                  </div>
-                );
-              }
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// renderSongContent re-exportado para no romper imports externos existentes
+// (Tanda 1 — refactor de carpeta, ahora vive en ./songview/vistaLineal.jsx)
+export { renderSongContent };
 
 export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},lang='es'}){
   const tx=getT(lang);
@@ -263,16 +35,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
-  const [scrollSpeed,setScrollSpeed]=useState(1);
+  const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
   const [viewMode,setViewMode]=useState('bloques');
   const [showModePopup,setShowModePopup]=useState(false);
   const [nashville,setNashville]=useState(false);
-  const [secuencia,setSecuencia]=useState(()=>{
-    try{const k=`ss_seq_${songs[startIdx]?.name}`;const s=localStorage.getItem(k);return s?JSON.parse(s):null;}
-    catch{return null;}
-  });
+  const [showSpeedPopup,setShowSpeedPopup]=useState(false);
 
   const getSongContent=(song)=>editedSongs[song.name]||contentDB[song.name]||null;
+
+  // ── Mapa de la Canción — vista de NAVEGACIÓN del panel lateral, INDEPENDIENTE
+  // del contenido real de la canción. Reordenar/duplicar/eliminar aquí NUNCA
+  // debe tocar getBloquesCancion() (lo que ve VistaBloques) ni el texto original.
+  // Es solo un "mapa de lectura" privado del panel, por diseño explícito.
+  const{getBloquesCancion,getActiveMapaCancion,initMapaCancion,duplicarBloqueMapa,eliminarBloqueMapa,reordenarMapa,resetMapa}=useMapaCancion({songs,idx,getSongContent});
 
   // ── Mover acorde por drag — posición absoluta en caracteres ─────────────
   // steps viene de Math.round(dx/7) donde dx es píxeles arrastrados.
@@ -382,340 +157,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
-  const cvRef=useRef(null);
   const wrapRef=useRef(null);
-  const strokes=useRef([]);
-  const scrollRaf=useRef(null);
-  const scrollSpeedRef=useRef(1);
-  const drawing=useRef(false);
-  const cur=useRef(null);
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
   const sonaKey=tpKey(curKey,-capo);
 
-  useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);},[idx]);
-  useEffect(()=>{scrollSpeedRef.current=scrollSpeed;},[scrollSpeed]);
-  useEffect(()=>{
-    const w=wrapRef.current;
-    if(!w)return;
-    if(!autoScroll){if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);return;}
-    const bpm=songs[idx]?.bpm||80;
-    const pxPerSec=(bpm/5)*scrollSpeedRef.current;
-    let last=null;
-    const step=(ts)=>{
-      if(last!==null){const delta=(ts-last)/1000;w.scrollTop+=pxPerSec*delta;if(w.scrollTop+w.clientHeight>=w.scrollHeight-10){setAutoScroll(false);return;}}
-      last=ts;scrollRaf.current=requestAnimationFrame(step);
-    };
-    scrollRaf.current=requestAnimationFrame(step);
-    return()=>{if(scrollRaf.current)cancelAnimationFrame(scrollRaf.current);};
-  },[autoScroll,idx]);
-  useEffect(()=>{
-    const cv=cvRef.current,w=wrapRef.current;
-    if(!cv||!w)return;
-    const resize=()=>{cv.width=w.clientWidth;cv.height=w.clientHeight;redraw();};
-    resize();const ro=new ResizeObserver(resize);ro.observe(w);return()=>ro.disconnect();
-  },[idx]);
+  // ── Anotaciones (canvas de dibujo libre) — ver songview/useAnotaciones.js
+  const{cvRef,startD,moveD,endD,undo,clear}=useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx});
+  // ── Auto-scroll por BPM — ver songview/useAutoScroll.js
+  const{resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
 
-  const getP=e=>{const r=cvRef.current.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
-  const applyS=s=>{const ctx=cvRef.current.getContext('2d');const t=s?.type||tool,c2=s?.color||color,sz2=s?.sz||sz;if(t==='erase'){ctx.globalCompositeOperation='destination-out';ctx.lineWidth=sz2*4;}else{ctx.globalCompositeOperation='source-over';ctx.strokeStyle=c2;ctx.lineWidth=sz2;}ctx.lineCap='round';ctx.lineJoin='round';};
-  const redraw=()=>{const cv=cvRef.current;if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);strokes.current.forEach(s=>{if(s.pts.length<2)return;ctx.beginPath();applyS(s);ctx.moveTo(s.pts[0].x,s.pts[0].y);s.pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();});ctx.globalCompositeOperation='source-over';};
-  const startD=e=>{if(tool==='text'||!showAnnoBar)return;drawing.current=true;const p=getP(e);cur.current={type:tool,color,sz,pts:[p]};const ctx=cvRef.current.getContext('2d');ctx.beginPath();ctx.moveTo(p.x,p.y);applyS();};
-  const moveD=e=>{if(!drawing.current||!cur.current)return;const p=getP(e);cur.current.pts.push(p);const ctx=cvRef.current.getContext('2d');ctx.lineTo(p.x,p.y);ctx.stroke();};
-  const endD=()=>{if(!drawing.current)return;drawing.current=false;if(cur.current?.pts.length>1)strokes.current.push(cur.current);cur.current=null;const ctx=cvRef.current.getContext('2d');ctx.globalCompositeOperation='source-over';};
-  const undo=()=>{strokes.current.pop();redraw();};
-  const clear=()=>{strokes.current=[];const ctx=cvRef.current?.getContext('2d');ctx?.clearRect(0,0,cvRef.current.width,cvRef.current.height);};
+  useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);setShowSpeedPopup(false);},[idx]);
+  useEffect(()=>{if(!autoScroll)setShowSpeedPopup(false);},[autoScroll]);
+
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?tx.original:`${nOff>0?'+':''}${nOff} st`});};
   const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
-
-  const BLOQUE_COLORS={
-    'INTRO':'#5e9eff','VERSO':'#EE227D','CORO':'#30C0B7','PRE-CORO':'#a78bfa',
-    'PUENTE':'#FD8083','BRIDGE':'#FD8083','FINAL':'#852467','OUTRO':'#852467',
-    'INTERLUDIO':'#498099','INSTRUMENTAL':'#498099',
-  };
-  const getColorBloque=(label)=>{
-    const k=Object.keys(BLOQUE_COLORS).find(k=>label.includes(k));
-    return k?BLOQUE_COLORS[k]:'rgba(200,169,126,.7)';
-  };
-
-  const parseBloques=()=>{
-    const raw=getSongContent(songs[idx]);
-    if(!raw)return[];
-    const lines=raw.split('\n');
-    const result=[];
-    let curLabel=null,curLines=[],skip=0;
-    for(let i=0;i<Math.min(4,lines.length);i++){
-      const l=lines[i].trim();
-      if(!l||(!l.includes('[')&&!l.startsWith('===')))skip=i+1;
-      else break;
-    }
-    lines.slice(skip).forEach(line=>{
-      const t=line.trim();
-      if(t.startsWith('===')&&t.endsWith('===')){
-        if(curLabel!==null||curLines.some(l=>l.trim()))result.push({label:curLabel||'INTRO',lines:curLines});
-        curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();curLines=[];
-      } else {curLines.push(line);}
-    });
-    if(curLabel!==null||curLines.some(l=>l.trim()))result.push({label:curLabel||'INTRO',lines:curLines});
-    return result;
-  };
-
-  const getSongKey=(name)=>`ss_seq_${name}`;
-  const getSecuencia=()=>{
-    const bloques=parseBloques();
-    if(!bloques.length)return[];
-    const songName=songs[idx]?.name;
-    if(!songName)return bloques.map((b,i)=>({...b,uid:i}));
-    try{
-      const saved=localStorage.getItem(getSongKey(songName));
-      if(saved){
-        const seq=JSON.parse(saved);
-        return seq.map((item,i)=>{
-          const bloque=bloques.find(b=>b.label===item.label)||bloques[0];
-          // Garantizar que lines siempre sea array (si viene de localStorage solo tiene label/seqId)
-          return{...bloque,lines:bloque?.lines||[],uid:i,seqId:item.seqId};
-        });
-      }
-    }catch{}
-    return bloques.map((b,i)=>({...b,uid:i,seqId:i}));
-  };
-  const saveSecuencia=(seq)=>{
-    const songName=songs[idx]?.name;
-    if(!songName)return;
-    try{localStorage.setItem(getSongKey(songName),JSON.stringify(seq.map(b=>({label:b.label,seqId:b.seqId}))));}catch{}
-  };
-  const initSecuencia=()=>{const s=getSecuencia();setSecuencia(s);return s;};
-  const getActiveSecuencia=()=>secuencia||getSecuencia();
-
-  const duplicarBloque=(i)=>{
-    const seq=[...getActiveSecuencia()];
-    const nuevo={...seq[i],uid:Date.now(),seqId:Date.now()};
-    seq.splice(i+1,0,nuevo);
-    const updated=seq.map((b,j)=>({...b,uid:j}));
-    setSecuencia(updated);saveSecuencia(updated);
-  };
-  const eliminarBloque=(i)=>{
-    const seq=[...getActiveSecuencia()];
-    if(seq.length<=1)return;
-    seq.splice(i,1);
-    const updated=seq.map((b,j)=>({...b,uid:j}));
-    setSecuencia(updated);saveSecuencia(updated);
-  };
-
-  // ── renderLineaConAcordes ─────────────────────────────────────────────────
-  const renderLineaConAcordes=(line,trC,fs)=>{
-    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-    const segs=[];let last=0,m;
-    re.lastIndex=0;
-    while((m=re.exec(line))!==null){segs.push({chord:trC(m[1]),text:line.slice(last,m.index)});last=m.index+m[0].length;}
-    if(last<line.length)segs.push({chord:null,text:line.slice(last)});
-    const chordFs=Math.max(8,fs*0.65);
-    return(
-      <div style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',marginBottom:'0.2em',lineHeight:1}}>
-        {segs.map((seg,si)=>(
-          <div key={si} style={{display:'inline-flex',flexDirection:'column',alignItems:'flex-start',marginRight:seg.chord&&seg.text?'0.05em':0}}>
-            {seg.chord
-              ?<span style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block'}}>{seg.chord}</span>
-              :<span style={{display:'block',height:chordFs*1.1,lineHeight:1}}/>
-            }
-            {seg.text
-              ?<span style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre'}}>{seg.text}</span>
-              :<span style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,color:'transparent',lineHeight:1.25,userSelect:'none'}}>&nbsp;</span>
-            }
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderBloqueLines=(lines,tpOff,showChords,fs=14)=>{
-    if(!lines||!lines.length)return null;
-    const re=/\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-    const trC=(ch)=>{
-      const p=ch.split('/');
-      let t=p.length>1?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff):transposeChord(ch,tpOff);
-      if(nashville){const parts=t.split('/');return parts.map(c=>chordToNashville(c,curKey)).join('/');}
-      return t;
-    };
-    return lines.map((line,li)=>{
-      const t=line.trim();
-      if(!t||t.startsWith('==='))return null;
-      re.lastIndex=0;const hasChord=re.test(line);re.lastIndex=0;
-      if(hasChord&&showChords)return <div key={li}>{renderLineaConAcordes(line,trC,fs)}</div>;
-      const clean=showChords?t:t.replace(re,'').trim();
-      if(!clean)return null;
-      return(<div key={li} style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.35,marginBottom:'0.15em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{clean}</div>);
-    });
-  };
-
-  // ── Vista Bloques ─────────────────────────────────────────────────────────
-  const VistaBloques=()=>{
-    const seq=getActiveSecuencia();
-    if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'Outfit',sans-serif"}}>Sin contenido disponible</div>);
-    const w=typeof window!=='undefined'?window.innerWidth:390;
-    const cols=w>=1024?3:w>=768?2:1;
-    const unique=[];const seen=new Set();
-    seq.forEach(b=>{if(!seen.has(b.label)){seen.add(b.label);unique.push(b);}});
-    const rows=Math.ceil(unique.length/cols);
-    return(
-      <div style={{flex:1,overflowY:'auto',scrollbarWidth:'thin',display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gridAutoRows:`calc((100% - ${(rows+1)*8}px) / ${rows})`,gap:8,padding:'8px',height:'100%',boxSizing:'border-box'}}>
-        {unique.map((bloque,bi)=>{
-          const color=getColorBloque(bloque.label);
-          const safeLines=bloque.lines||[];
-          const contentLines=safeLines.filter(l=>{const t=l.trim();return t&&!t.startsWith('===');});
-          const visualRows=contentLines.reduce((acc,l)=>acc+(/\[[A-G]/.test(l)?2:1),0);
-          const approxBlockH=typeof window!=='undefined'?(window.innerHeight*0.82-40)/rows-40:120;
-          const fsDynamic=Math.max(10,Math.min(28,Math.floor(approxBlockH/(visualRows||1)/1.35)));
-          return(
-            <div key={bi} style={{background:`${color}10`,border:`1px solid ${color}40`,borderRadius:14,padding:'8px 10px',display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
-              <div style={{fontSize:9,fontWeight:700,fontFamily:"'Outfit',sans-serif",color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4,flexShrink:0}}>{bloque.label}</div>
-              <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',justifyContent:'flex-start'}}>
-                {renderBloqueLines(safeLines,tpOff,showChords,fsDynamic)}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // ── Panel ESTRUCTURA — drag & drop mouse + touch, sin flechas ───────────
-  const PanelEstructura=()=>{
-    const seq=getActiveSecuencia();
-    if(!seq.length)return null;
-    const dragIdx=useRef(null);
-    const panelBg=isLight?'rgba(240,234,222,.92)':'rgba(6,4,18,.92)';
-
-    // ── Touch drag ───────────────────────────────────────────────────────────
-    const onTouchStartItem=(i)=>(e)=>{
-      dragIdx.current=i;
-      e.currentTarget.style.opacity='0.5';
-      e.currentTarget.style.transform='scale(1.05)';
-    };
-    const onTouchMoveItem=(e)=>{
-      e.preventDefault();
-      const touch=e.touches[0];
-      const el=document.elementFromPoint(touch.clientX,touch.clientY);
-      const item=el?.closest('[data-bloque-idx]');
-      // Limpiar resaltado anterior
-      document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
-      if(item){
-        const targetIdx=parseInt(item.dataset.bloqueIdx);
-        if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
-          item.style.background='rgba(255,255,255,.1)';
-          const newSeq=[...seq];
-          const [moved]=newSeq.splice(dragIdx.current,1);
-          newSeq.splice(targetIdx,0,moved);
-          dragIdx.current=targetIdx;
-          const updated=newSeq.map((b,j)=>({...b,uid:j}));
-          setSecuencia(updated);saveSecuencia(updated);
-        }
-      }
-    };
-    const onTouchEndItem=(e)=>{
-      if(e.currentTarget){e.currentTarget.style.opacity='';e.currentTarget.style.transform='';}
-      document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
-      dragIdx.current=null;
-    };
-
-    // ── Mouse drag ───────────────────────────────────────────────────────────
-    const onMouseDownItem=(i)=>(e)=>{
-      e.preventDefault();
-      dragIdx.current=i;
-      const el=e.currentTarget;
-      el.style.opacity='0.5';
-      el.style.transform='scale(1.05)';
-      el.style.cursor='grabbing';
-      const onMove=(ev)=>{
-        const target=document.elementFromPoint(ev.clientX,ev.clientY);
-        const item=target?.closest('[data-bloque-idx]');
-        document.querySelectorAll('[data-bloque-idx]').forEach(n=>{if(n!==el)n.style.background='';});
-        if(item){
-          const targetIdx=parseInt(item.dataset.bloqueIdx);
-          if(dragIdx.current!==null&&targetIdx!==dragIdx.current){
-            item.style.background='rgba(255,255,255,.1)';
-            const newSeq=[...seq];
-            const [moved]=newSeq.splice(dragIdx.current,1);
-            newSeq.splice(targetIdx,0,moved);
-            dragIdx.current=targetIdx;
-            const updated=newSeq.map((b,j)=>({...b,uid:j}));
-            setSecuencia(updated);saveSecuencia(updated);
-          }
-        }
-      };
-      const onUp=()=>{
-        el.style.opacity='';el.style.transform='';el.style.cursor='grab';
-        document.querySelectorAll('[data-bloque-idx]').forEach(n=>{n.style.background='';});
-        dragIdx.current=null;
-        document.removeEventListener('mousemove',onMove);
-        document.removeEventListener('mouseup',onUp);
-      };
-      document.addEventListener('mousemove',onMove);
-      document.addEventListener('mouseup',onUp);
-    };
-
-    return(
-      <div style={{
-        display:'flex',flexDirection:'column',
-        borderRadius:14,border:'1px solid var(--bd)',
-        background:panelBg,backdropFilter:'blur(40px)',
-        overflow:'hidden',width:64,
-        maxHeight:'38vh',
-      }}>
-        <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
-          ESTRUCTURA
-        </div>
-        <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'3px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}>
-          {seq.map((b,i)=>{
-            const color=getColorBloque(b.label);
-            return(
-              <div
-                key={b.uid??i}
-                data-bloque-idx={i}
-                onTouchStart={onTouchStartItem(i)}
-                onTouchMove={onTouchMoveItem}
-                onTouchEnd={onTouchEndItem}
-                onMouseDown={onMouseDownItem(i)}
-                style={{marginBottom:3,cursor:'grab',userSelect:'none',transition:'transform .15s,opacity .15s'}}
-              >
-                <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
-                  <div style={{fontSize:8,fontWeight:900,color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'5px 3px',lineHeight:1.1}}>
-                    {b.label.length>6?b.label.slice(0,6)+'…':b.label}
-                  </div>
-                  <div style={{display:'flex',justifyContent:'space-around',borderTop:`1px solid ${color}25`,padding:'2px'}}>
-                    <button
-                      onMouseDown={e=>e.stopPropagation()}
-                      onClick={(e)=>{e.stopPropagation();duplicarBloque(i);}}
-                      style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}
-                      title="Duplicar"
-                    >
-                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
-                    <button
-                      onMouseDown={e=>e.stopPropagation()}
-                      onClick={(e)=>{e.stopPropagation();eliminarBloque(i);}}
-                      disabled={seq.length<=1}
-                      style={{flex:1,padding:'3px 0',border:'none',background:'transparent',color:seq.length<=1?'var(--tx3)':'var(--rd)',cursor:seq.length<=1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}
-                      title="Eliminar"
-                    >
-                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          onClick={()=>{const b=parseBloques();if(b.length){const s=b.map((bl,i)=>({...bl,uid:i,seqId:i}));setSecuencia(s);saveSecuencia(s);}}}
-          style={{padding:'4px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}
-        >
-          Reset
-        </button>
-      </div>
-    );
-  };
-
   // ── Panel Tono + Capo ─────────────────────────────────────────────────────
   const PanelTono=()=>(
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible',position:'relative'}}>
@@ -762,6 +219,37 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
+  // ── Fader de velocidad de Auto Scroll — contenido reusable ───────────────
+  // Mismo slider, usado inline (tablet/PC) o dentro de un popup (móvil).
+  const FaderVelocidad=()=>(
+    <>
+      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>Lento</span>
+      <input
+        type="range"
+        min={RANGO_SCROLL.min}
+        max={RANGO_SCROLL.max}
+        value={scrollSpeed}
+        onChange={e=>setScrollSpeed(Number(e.target.value))}
+        style={{flex:1,accentColor:'var(--gn)'}}
+      />
+      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>Rápido</span>
+    </>
+  );
+
+  // ── Popup de velocidad — solo en móvil vertical, para no ocupar espacio
+  // fijo en la barra de controles cuando la pantalla es angosta ───────────
+  const PopupVelocidad=()=>(
+    <div onClick={()=>setShowSpeedPopup(false)} style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:'#111113',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,color:'var(--tx)',marginBottom:16}}>Velocidad de Auto Scroll</div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <FaderVelocidad/>
+        </div>
+        <button onClick={()=>setShowSpeedPopup(false)} style={{width:'100%',padding:'10px',marginTop:18,border:'1px solid var(--bd)',borderRadius:10,background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>Listo</button>
+      </div>
+    </div>
+  );
+
   // ── AnnoBar ───────────────────────────────────────────────────────────────
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
@@ -783,10 +271,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           {showChords?tx.lyricsOnly:tx.withChords}
         </button>
-        <button onClick={()=>{setAutoScroll(v=>!v);if(wrapRef.current)wrapRef.current.scrollTop=0;}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
+        <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
           {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
-          {autoScroll?`${songs[idx]?.bpm||80} BPM`:tx.autoScroll}
+          {tx.autoScroll}
         </button>
+        {autoScroll&&!isTablet&&(
+          <button onClick={()=>setShowSpeedPopup(true)} title="Ajustar velocidad" style={{display:'flex',alignItems:'center',justifyContent:'center',width:26,height:26,borderRadius:8,border:'1px solid rgba(94,206,160,.35)',background:'rgba(94,206,160,.1)',color:'var(--gn)',cursor:'pointer',flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </button>
+        )}
         {isAdmin&&(
           <>
           <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else setEditMode(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
@@ -819,6 +312,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </button>
         </div>
       )}
+      {/* Fader de velocidad de Auto Scroll:
+          - Tablet/PC (isTablet): inline en la barra, hay espacio de sobra.
+          - Móvil vertical (!isTablet): como popup, para no competir con
+            los demás botones en una pantalla angosta. */}
+      {autoScroll&&isTablet&&(
+        <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 10px 7px'}}>
+          <FaderVelocidad/>
+        </div>
+      )}
+      {showSpeedPopup&&!isTablet&&<PopupVelocidad/>}
     </div>
   );
 
@@ -854,14 +357,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio.
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
-          {[['🎯','Cero scroll — todo visible de un vistazo'],['📐','Texto al máximo tamaño por bloque'],['🔄','Estructura editable — arrastra para reordenar'],['⚡','Ideal para iPads y pantallas grandes']].map(([ico,txt],i)=>(
+          {[['🎯','Cero scroll — todo visible de un vistazo'],['📐','Texto al máximo tamaño por bloque'],['🗺️','Mapa lateral — visualiza y navega la estructura'],['⚡','Ideal para iPads y pantallas grandes']].map(([ico,txt],i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:10,background:'var(--s1)',border:'1px solid var(--bd)'}}>
               <span style={{fontSize:16}}>{ico}</span>
               <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",fontWeight:600}}>{txt}</span>
             </div>
           ))}
         </div>
-        <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initSecuencia();setShowModePopup(false);try{localStorage.setItem(POPUP_SEEN_KEY,'1');}catch{}}}
+        <button onClick={()=>{setViewMode('bloques');setAutoScroll(false);initMapaCancion();setShowModePopup(false);try{localStorage.setItem(POPUP_SEEN_KEY,'1');}catch{}}}
           style={{width:'100%',padding:'13px',border:'none',borderRadius:12,background:'var(--ac)',color:isLight?'#fff':'#0a0a0a',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:14,letterSpacing:'.5px'}}>
           Activar Vista Bloques
         </button>
@@ -878,7 +381,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <button onClick={()=>{
         if(viewMode!=='bloques'){
           const seen=localStorage.getItem(POPUP_SEEN_KEY);
-          if(seen){setViewMode('bloques');setAutoScroll(false);initSecuencia();}
+          if(seen){setViewMode('bloques');setAutoScroll(false);initMapaCancion();}
           else setShowModePopup(true);
         }
       }} title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,border:'none',background:viewMode==='bloques'?'var(--ac)':'transparent',color:viewMode==='bloques'?(isLight?'#fff':'#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -894,7 +397,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const ContentArea=()=>(
     <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
       {viewMode==='bloques'
-        ?<VistaBloques/>
+        ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} nashville={nashville} curKey={curKey}/>
         :<>
           <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
             onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
@@ -911,7 +414,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {/* Columna derecha: Estructura pegada arriba-derecha, Tono abajo-derecha */}
       <div style={{position:'absolute',right:6,top:6,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
         <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
-          <PanelEstructura/>
+          <PanelEstructura
+            seq={getActiveMapaCancion()}
+            isLight={isLight}
+            onReordenar={reordenarMapa}
+            onDuplicar={duplicarBloqueMapa}
+            onEliminar={eliminarBloqueMapa}
+            onReset={resetMapa}
+          />
         </div>
         <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
           <PanelTono/>
