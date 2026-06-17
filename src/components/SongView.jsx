@@ -17,8 +17,26 @@ const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
 // (Tanda 1 — refactor de carpeta, ahora vive en ./songview/vistaLineal.jsx)
 export { renderSongContent };
 
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},lang='es'}){
+// Permisos por defecto: acceso total. Así Iglesia/Banda (que nunca pasan este
+// prop) no se ven afectados por la Tanda 2 — el comportamiento previo al
+// agregar Academia queda exactamente igual.
+const PERMISOS_TOTAL={
+  verAcordes:true,
+  estructuraVisible:true,
+  estructuraEditable:true,
+  modoNashville:true,
+  modoPractica:true,
+  anotacionesPropias:true,
+  autoScroll:true,
+};
+
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es'}){
   const tx=getT(lang);
+  // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
+  // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
+  // funcionando igual, esto solo decide si su botón/panel se renderiza.
+  // permisos=null (default) o no provisto = acceso total, sin restricciones.
+  const perm={...PERMISOS_TOTAL,...(permisos||{})};
   const [idx,setIdx]=useState(startIdx);
   const [tpOff,setTpOff]=useState(0);
   const [tool,setTool]=useState('draw');
@@ -170,6 +188,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);setShowSpeedPopup(false);},[idx]);
   useEffect(()=>{if(!autoScroll)setShowSpeedPopup(false);},[autoScroll]);
+  // Si el permiso de ver acordes está desactivado, forzamos showChords=false
+  // de forma persistente — sin esto, un alumno podría quedar con acordes
+  // visibles si showChords ya estaba en true antes de aplicar el permiso.
+  useEffect(()=>{if(!perm.verAcordes)setShowChords(false);},[perm.verAcordes]);
+  // Mismo patrón defensivo para Nashville y Auto Scroll: si el permiso se
+  // revoca mientras el control ya estaba activo, lo apagamos. Hoy esto no
+  // puede ocurrir en la práctica (SongView reinicia su estado al desmontar),
+  // pero queda como protección barata ante una futura persistencia de estado.
+  useEffect(()=>{if(!perm.modoNashville)setNashville(false);},[perm.modoNashville]);
+  useEffect(()=>{if(!perm.autoScroll)setAutoScroll(false);},[perm.autoScroll]);
 
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?tx.original:`${nOff>0?'+':''}${nOff} st`});};
   const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
@@ -254,9 +282,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',overflowX:'auto',scrollbarWidth:'none'}}>
-        <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
+        {perm.anotacionesPropias&&(
+          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+        )}
         <div style={{flex:1,flexShrink:0,minWidth:4}}/>
         {capo>0&&(
           <div style={{padding:'3px 8px',borderRadius:100,background:'rgba(94,206,160,.1)',border:'1px solid rgba(94,206,160,.25)',fontSize:10,fontWeight:700,color:'var(--gn)',flexShrink:0}}>
@@ -264,18 +294,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         )}
         {/* Nashville toggle */}
-        <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
-          {nashville?'I IV V':tx.notes}
-        </button>
-        <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          {showChords?tx.lyricsOnly:tx.withChords}
-        </button>
-        <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
-          {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
-          {tx.autoScroll}
-        </button>
-        {autoScroll&&!isTablet&&(
+        {perm.modoNashville&&(
+          <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
+            {nashville?'I IV V':tx.notes}
+          </button>
+        )}
+        {perm.verAcordes&&(
+          <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            {showChords?tx.lyricsOnly:tx.withChords}
+          </button>
+        )}
+        {perm.autoScroll&&(
+          <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
+            {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
+            {tx.autoScroll}
+          </button>
+        )}
+        {perm.autoScroll&&autoScroll&&!isTablet&&(
           <button onClick={()=>setShowSpeedPopup(true)} title="Ajustar velocidad" style={{display:'flex',alignItems:'center',justifyContent:'center',width:26,height:26,borderRadius:8,border:'1px solid rgba(94,206,160,.35)',background:'rgba(94,206,160,.1)',color:'var(--gn)',cursor:'pointer',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
           </button>
@@ -413,16 +449,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       }
       {/* Columna derecha: Estructura pegada arriba-derecha, Tono abajo-derecha */}
       <div style={{position:'absolute',right:6,top:6,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
-        <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
-          <PanelEstructura
-            seq={getActiveMapaCancion()}
-            isLight={isLight}
-            onReordenar={reordenarMapa}
-            onDuplicar={duplicarBloqueMapa}
-            onEliminar={eliminarBloqueMapa}
-            onReset={resetMapa}
-          />
-        </div>
+        {perm.estructuraVisible&&(
+          <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
+            <PanelEstructura
+              seq={getActiveMapaCancion()}
+              isLight={isLight}
+              onReordenar={reordenarMapa}
+              onDuplicar={duplicarBloqueMapa}
+              onEliminar={eliminarBloqueMapa}
+              onReset={resetMapa}
+              editable={perm.estructuraEditable}
+            />
+          </div>
+        )}
         <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
           <PanelTono/>
         </div>

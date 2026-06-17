@@ -11,6 +11,7 @@ import { Cancionero } from './Cancionero';
 import { EquiposView } from './EquiposView';
 import { BackstageView } from './BackstageView';
 import { BandaApp } from './banda/BandaApp';
+import { AcademiaApp } from './academia/AcademiaApp';
 import { t as getT } from '../i18n';
 
 export default function App(){
@@ -250,7 +251,7 @@ export default function App(){
           {[
             {id:'iglesia',data:t.iglesia,icon:'church'},
             {id:'banda',  data:t.banda,  icon:'music'},
-            {id:'academia',data:t.academia,icon:'school',disabled:true},
+            {id:'academia',data:t.academia,icon:'school'},
           ].map(item=>(
             <button key={item.id}
               onClick={()=>!item.disabled&&(setAppMode(item.id),setOnboarded(true))}
@@ -284,6 +285,16 @@ export default function App(){
       <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
         <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} lang={lang}/>
+      </div>
+    );
+  }
+
+    // ── Modo Academia — completamente separado ──────────────────────────────────
+  if(appMode==='academia'){
+    return(
+      <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
+        <AcademiaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} lang={lang}/>
       </div>
     );
   }
