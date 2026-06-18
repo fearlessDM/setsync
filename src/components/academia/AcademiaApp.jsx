@@ -9,6 +9,7 @@ import { AcademiaFechas } from './AcademiaFechas';
 import { AcademiaRepertorio } from './AcademiaRepertorio';
 import { AcademiaBackstage } from './AcademiaBackstage';
 import { AcademiaGrupos } from './AcademiaGrupos';
+import { Sidebar } from '../Sidebar';
 import { t as getT } from '../../i18n';
 
 // ── Permisos por defecto de un nivel nuevo ───────────────────────────────
@@ -24,9 +25,10 @@ export const PERMISOS_DEFAULT={
   autoScroll:false,
 };
 
-export function AcademiaApp({onBack,userRole='superadmin',themeStyle={},lang='es'}){
+export function AcademiaApp({onBack,userRole='superadmin',themeStyle={},theme,setTheme,lang='es'}){
   const tx=getT(lang);
   const [view,setView]=useState('backstage');
+  const [sbCol,setSbCol]=useState(false);
   const [toast,setToast]=useState(null);
   const [songViewIdx,setSongViewIdx]=useState(null);
   const [songViewPermisos,setSongViewPermisos]=useState(null); // null = profesor, ve todo
@@ -137,8 +139,23 @@ export function AcademiaApp({onBack,userRole='superadmin',themeStyle={},lang='es
     return null;
   };
 
+  // navItems en el formato que espera Sidebar (compartido con Iglesia y
+  // Banda) — reusa el mismo array TABS y NavIcoAcademia que ya existían
+  // para la barra inferior, sin duplicar la lista de secciones.
+  const navItems=TABS.map(t=>({id:t.id,label:t.label,icon:<NavIcoAcademia id={t.id} active={view===t.id}/>}));
+
   return(
     <div style={{...themeStyle,minHeight:'100vh',position:'relative'}}>
+      <Sidebar
+        navItems={navItems}
+        activeId={view}
+        onSelect={setView}
+        sbCol={sbCol}
+        setSbCol={setSbCol}
+        theme={theme}
+        onSetTheme={setTheme}
+      />
+      <div className={`main${sbCol?' col':''}`}>
       <div style={{
         position:'sticky',top:0,zIndex:40,
         background:'rgba(8,7,14,.92)',
@@ -204,6 +221,7 @@ export function AcademiaApp({onBack,userRole='superadmin',themeStyle={},lang='es
         )}
         <Footer/>
       </div>
+      </div>
       <nav style={{
         position:'fixed',bottom:0,left:0,right:0,
         background:'rgba(8,7,14,.92)',backdropFilter:'blur(26px)',
@@ -221,17 +239,17 @@ export function AcademiaApp({onBack,userRole='superadmin',themeStyle={},lang='es
         ))}
       </nav>
       {songViewIdx!==null&&(
-        <div style={{position:'fixed',inset:0,zIndex:100}}>
-          <SongView
-            songs={repertorio.map(c=>({name:c.n,key:c.key,bpm:c.bpm}))}
-            startIdx={songViewIdx}
-            onClose={()=>{setSongViewIdx(null);setSongViewPermisos(null);}}
-            theme="dark"
-            contentDB={SONG_CONTENT_BANDA}
-            permisos={songViewPermisos}
-            lang={lang}
-          />
-        </div>
+        <SongView
+          songs={repertorio.map(c=>({name:c.n,key:c.key,bpm:c.bpm}))}
+          startIdx={songViewIdx}
+          onClose={()=>{setSongViewIdx(null);setSongViewPermisos(null);}}
+          theme="dark"
+          contentDB={SONG_CONTENT_BANDA}
+          permisos={songViewPermisos}
+          lang={lang}
+          sidebarVisible={true}
+          sidebarCollapsed={sbCol}
+        />
       )}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </div>

@@ -284,7 +284,7 @@ export default function App(){
     return(
       <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
-        <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} lang={lang}/>
+        <BandaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} theme={theme} setTheme={setTheme} lang={lang}/>
       </div>
     );
   }
@@ -294,7 +294,7 @@ export default function App(){
     return(
       <div style={{minHeight:'100vh',background:'#07070f',color:'#ede9ff',fontFamily:"'Lexend Giga',sans-serif"}}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=DM+Sans:wght@400;700;900&display=swap');`}</style>
-        <AcademiaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} lang={lang}/>
+        <AcademiaApp onBack={()=>setAppMode(null)} userRole={userRole} themeStyle={themeStyle} theme={theme} setTheme={setTheme} lang={lang}/>
       </div>
     );
   }
@@ -378,7 +378,7 @@ export default function App(){
       </nav>
 
       {songView!==null&&activeSl.length>0&&(
-        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,c)=>handleSaveChords(name,c)} contentDB={SONG_CONTENT_IGLESIA} lang={lang}/>
+        <SongView songs={activeSl} startIdx={songView} onClose={()=>setSongView(null)} theme={theme} isAdmin={isAdmin} onSaveChords={(name,c)=>handleSaveChords(name,c)} contentDB={SONG_CONTENT_IGLESIA} lang={lang} sidebarVisible={true} sidebarCollapsed={sbCol}/>
       )}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </div>

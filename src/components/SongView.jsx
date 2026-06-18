@@ -2,6 +2,7 @@ import { t as getT } from '../i18n';
 // SongView: visor de canción con transposición, capo, anotaciones,
 // vista bloques/lineal, Nashville, panel Estructura con drag touch.
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { tpKey } from '../utils/music';
 import { Toast } from './common';
 import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
@@ -30,7 +31,7 @@ const PERMISOS_TOTAL={
   autoScroll:true,
 };
 
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es'}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -51,6 +52,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [showSavePopup,setShowSavePopup]=useState(false);
   const [capoOpen,setCapoOpen]=useState(false);
   const [notacionOpen,setNotacionOpen]=useState(false);
+  const [notacionPos,setNotacionPos]=useState(null);
+  const notacionBtnRef=useRef(null);
   const NOTACION_LABELS=lang==='en'
     ?{americano:'American',latino:'Latin',grados:'Degrees'}
     :{americano:'Americano',latino:'Latino',grados:'Grados'};
@@ -207,7 +210,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
   // ── Panel Tono + Capo ─────────────────────────────────────────────────────
   const PanelTono=()=>(
-    <div style={{display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:48,overflow:'visible',position:'relative'}}>
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:64,overflow:'visible',position:'relative'}}>
       <button onClick={()=>doTp(1)} style={{width:'100%',padding:'7px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)',borderRadius:'14px 14px 0 0'}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
         <span style={{fontSize:8,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
@@ -253,16 +256,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // ── Fader de velocidad de Auto Scroll — contenido reusable ───────────────
   // Mismo slider, usado inline (tablet/PC) o dentro de un popup (móvil).
+  // Thumb agrandado vía clase CSS .fader-velocidad (ver theme.css) — el
+  // slider siempre soportó drag nativo, pero el thumb por defecto del
+  // navegador es muy chico para agarrarlo con precisión en pantallas
+  // táctiles, lo cual se sentía como "solo responde al clic".
   const FaderVelocidad=()=>(
     <>
       <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>Lento</span>
       <input
         type="range"
+        className="fader-velocidad"
         min={RANGO_SCROLL.min}
         max={RANGO_SCROLL.max}
         value={scrollSpeed}
         onChange={e=>setScrollSpeed(Number(e.target.value))}
-        style={{flex:1,accentColor:'var(--gn)'}}
+        style={{flex:1}}
       />
       <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>Rápido</span>
     </>
@@ -297,40 +305,57 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             Capo {capo} · {sonaKey}
           </div>
         )}
-        {/* Selector de notación: Americano / Latino / Grados — pedido
-            explícito de Danny de tener los 3 sistemas disponibles, no solo
-            un toggle binario Grados-sí/Grados-no. Mismo patrón visual del
-            dropdown de Capo (botón con flecha que rota + lista flotante con
-            check en la opción activa), para mantener consistencia con el
-            resto de la UI en vez de inventar un estilo nuevo. */}
+        {/* Selector de notación: Americano / Latino / Grados.
+            BUG CORREGIDO (reportado por Danny): el dropdown no se veía al
+            abrirlo. Causa real: este botón vive dentro de AnnoBar, cuyo
+            contenedor directo tiene overflowX:'auto' para permitir scroll
+            horizontal de toda la fila de botones. Cualquier hijo con
+            position:absolute queda recortado por los límites de un
+            ancestro con overflow distinto de 'visible' — regla básica de
+            CSS, no relacionada con el estado de React (que sí se activaba
+            bien, por eso la flecha rotaba en la captura de Danny aunque el
+            panel no apareciera). Solución: createPortal renderiza el
+            dropdown directamente en document.body, fuera del árbol DOM
+            del contenedor con overflow, posicionado con coordenadas fijas
+            calculadas desde getBoundingClientRect() del botón real. */}
         {perm.modoNashville&&(
           <div style={{position:'relative',flexShrink:0}}>
-            <button onClick={()=>setNotacionOpen(o=>!o)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:notacion!=='americano'?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:notacion!=='americano'?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:notacion!=='americano'?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",transition:'all .2s'}}>
+            <button ref={notacionBtnRef} onClick={()=>{
+                if(!notacionOpen){
+                  const r=notacionBtnRef.current.getBoundingClientRect();
+                  setNotacionPos({top:r.bottom+6,right:window.innerWidth-r.right});
+                }
+                setNotacionOpen(o=>!o);
+              }} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:notacion!=='americano'?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:notacion!=='americano'?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:notacion!=='americano'?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",transition:'all .2s'}}>
               {NOTACION_LABELS[notacion]}
               <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:notacionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            {notacionOpen&&(
-              <div style={{position:'absolute',right:0,top:'calc(100% + 6px)',background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:8,zIndex:10,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
-                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8,padding:'0 4px'}}>
-                  {lang==='en'?'Show notes as:':'Notas en:'}
+            {notacionOpen&&notacionPos&&createPortal(
+              <>
+                {/* Capa invisible para cerrar el dropdown al tocar fuera */}
+                <div onClick={()=>setNotacionOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+                <div style={{position:'fixed',top:notacionPos.top,right:notacionPos.right,background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:8,zIndex:999,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
+                  <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8,padding:'0 4px'}}>
+                    {lang==='en'?'Show notes as:':'Notas en:'}
+                  </div>
+                  {['americano','latino','grados'].map(opt=>{
+                    const isOn=notacion===opt;
+                    return(
+                      <button key={opt} onClick={()=>{setNotacion(opt);setNotacionOpen(false);}}
+                        style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
+                        {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10,flexShrink:0}}/>}
+                        <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'#a78bfa':'var(--tx)',lineHeight:1}}>{NOTACION_LABELS[opt]}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-                {['americano','latino','grados'].map(opt=>{
-                  const isOn=notacion===opt;
-                  return(
-                    <button key={opt} onClick={()=>{setNotacion(opt);setNotacionOpen(false);}}
-                      style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
-                      {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10,flexShrink:0}}/>}
-                      <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'#a78bfa':'var(--tx)',lineHeight:1}}>{NOTACION_LABELS[opt]}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              </>,
+              document.body
             )}
           </div>
         )}
         {perm.verAcordes&&(
           <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             {showChords?tx.lyricsOnly:tx.withChords}
           </button>
         )}
@@ -476,10 +501,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </>
       }
-      {/* Columna derecha: Estructura pegada arriba-derecha, Tono abajo-derecha */}
-      <div style={{position:'absolute',right:6,top:6,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6,pointerEvents:'none'}}>
+      {/* Columna derecha: Estructura pegada arriba-derecha, Tono abajo-derecha.
+          Ambos paneles ahora comparten el MISMO ancho (64px) y una separación
+          vertical de exactamente 5px entre ellos — pedido de Danny, antes
+          tenían anchos distintos (64 vs 48) que se veían desalineados. */}
+      <div style={{position:'absolute',right:6,top:6,zIndex:4,display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,pointerEvents:'none'}}>
         {perm.estructuraVisible&&(
-          <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
+          <div style={{pointerEvents:'all',flex:'0 0 auto',width:64}}>
             <PanelEstructura
               seq={getActiveMapaCancion()}
               isLight={isLight}
@@ -491,7 +519,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             />
           </div>
         )}
-        <div style={{pointerEvents:'all',flex:'0 0 auto'}}>
+        <div style={{pointerEvents:'all',flex:'0 0 auto',width:64}}>
           <PanelTono/>
         </div>
       </div>
@@ -519,7 +547,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── Layout tablet ≥768px ──────────────────────────────────────────────────
   if(isTablet){
     return(
-      <div className="sv" style={{flexDirection:'row',background:svBg,position:'fixed',inset:0,zIndex:100}}>
+      <div className={`sv${sidebarVisible?' sv-with-sidebar':''}${sidebarCollapsed?' sv-sb-col':''}`} style={{flexDirection:'row',background:svBg,position:'fixed',inset:0,zIndex:100}}>
         {showSavePopup&&<PopupGuardar/>}
         {showModePopup&&<PopupModoBloques/>}
         {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
@@ -578,7 +606,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // ── Layout mobile <768px ──────────────────────────────────────────────────
   return(
-    <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
+    <div className={`sv${sidebarVisible?' sv-with-sidebar':''}${sidebarCollapsed?' sv-sb-col':''}`} style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
       {showSavePopup&&<PopupGuardar/>}
       {showModePopup&&<PopupModoBloques/>}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
