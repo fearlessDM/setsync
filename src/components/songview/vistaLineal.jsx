@@ -9,6 +9,20 @@ import { transposeChord, chordToAmericano, chordToLatino, chordToNashville } fro
 
 export const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
 
+// ── Detecta si una línea es SOLO acordes (formato BARRO) ─────────────────────
+// ej: "D A Em" → true | "Mi corazón" → false | "[D]Mi" → false (inline)
+// Movida a nivel de módulo (antes vivía dentro de renderSongContent) porque
+// el cálculo de tamaño de letra dinámico también la necesita, y ese cálculo
+// ocurre antes en el flujo de la función — function puro, sin dependencias
+// del closure, así que no hay razón para que viva anidada.
+const CHORD_PLAIN_RE=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
+const isChordOnlyLine=(txt)=>{
+  if(!txt.trim())return false;
+  if(/\[/.test(txt))return false;
+  const tokens=txt.trim().split(/\s+/);
+  return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN_RE.test(t));
+};
+
 // ── Medición real de ancho de carácter para el drag de acordes ─────────────
 // BUG CORREGIDO (reportado por Danny): al arrastrar un acorde, este "rebota"
 // a una posición distinta de donde se soltó. Causa real: steps=Math.round(dx/5)
@@ -46,14 +60,36 @@ function medirAnchoCaracter(fontSizePx,fontFamily){
   return ancho;
 }
 
+// ── Medición de ancho real de una línea completa de texto ──────────────────
+// Usada para el cálculo de tamaño de letra dinámico: necesitamos saber
+// cuánto mide en píxeles la línea de letra más larga de la canción a un
+// tamaño de referencia, para luego escalar proporcionalmente. A diferencia
+// de medirAnchoCaracter (que promedia el ancho de un carácter cualquiera),
+// esta mide el string real completo — más preciso, porque el kerning real
+// entre letras específicas de una palabra no es exactamente igual al
+// promedio de caracteres sueltos.
+const anchoLineaCache={};
+function medirAnchoLinea(texto,fontSizePx,fontFamily){
+  const key=`${texto}_${fontSizePx}_${fontFamily}`;
+  if(anchoLineaCache[key])return anchoLineaCache[key];
+  if(typeof document==='undefined')return texto.length*fontSizePx*0.6;
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.font=`700 ${fontSizePx}px ${fontFamily}`;
+  const ancho=ctx.measureText(texto).width;
+  anchoLineaCache[key]=ancho;
+  return ancho;
+}
+
 export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,notacion='americano',songKey='C'){
   if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
 
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
-  const fs  =Math.min(14,Math.max(11,Math.floor(screenW/30)));
-  const cFs =Math.max(10,fs-2);
-  const sFs =Math.max(7,fs-4);
   const FONT="'Outfit',sans-serif";
+  // sFs (tamaño de las etiquetas de bloque) se mantiene en un cálculo simple
+  // ligado al ancho de pantalla, no a la letra — es un elemento de UI fijo,
+  // no parte del contenido que necesita maximizarse para llenar el espacio.
+  const sFs=Math.max(7,Math.floor(screenW/30)-4);
 
   // Aplica el sistema de notación elegido (Americano/Latino/Grados) a un
   // acorde ya transpuesto. Americano es passthrough (el acorde tal cual);
@@ -93,18 +129,59 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   });
   if(curLines.length||curLabel!==null)blocks.push({label:curLabel,lines:curLines});
 
-  const maxLW=blocks.reduce((mx,b)=>b.label?Math.max(mx,b.label.length):mx,0);
-  const labelPx=maxLW>0?Math.ceil(maxLW*(sFs*0.62))+10:0;
+  // maxLW/labelPx eliminados: el título de bloque ya no reserva una columna
+  // lateral fija en cada línea (ver el nuevo render de bloques más abajo,
+  // que usa una franja propia arriba del bloque) — pedido de Danny para
+  // liberar ancho horizontal completo para la letra.
 
-  // ── Detecta si una línea es SOLO acordes (formato BARRO) ─────────────────────
-  // ej: "D A Em" → true | "Mi corazón" → false | "[D]Mi" → false (inline)
-  const CHORD_PLAIN_RE=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
-  const isChordOnlyLine=(txt)=>{
-    if(!txt.trim())return false;
-    if(/\[/.test(txt))return false;
-    const tokens=txt.trim().split(/\s+/);
-    return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN_RE.test(t));
-  };
+  // ── Tamaño de letra dinámico (pedido de Danny) ──────────────────────────
+  // Antes, fs era un valor fijo según el ancho de pantalla, sin considerar
+  // el contenido real — canciones con líneas largas igual podían desbordar
+  // y obligar a hacer scroll horizontal extra para leerlas completas. Ahora
+  // se calcula el tamaño máximo de fuente que permite que la línea de LETRA
+  // más larga de toda la canción quepa en el ancho disponible, usando el
+  // mismo mecanismo de medición real con Canvas que ya se usa para el fix
+  // de drag de acordes (medirAnchoCaracter) — consistente con cómo el resto
+  // del archivo ya resuelve este tipo de cálculo. Solo se consideran líneas
+  // de LETRA (no de acordes ni etiquetas de bloque), porque son las que el
+  // usuario necesita leer completas sin recortes.
+  const lineasDeLetra=[];
+  blocks.forEach(b=>{
+    b.lines.forEach(line=>{
+      const t=line.trim();
+      if(!t)return;
+      // Si la línea tiene acordes inline, la letra real es el texto sin
+      // los tags [ACORDE]; si es una línea BARRO (solo acordes), no es
+      // letra, se descarta para este cálculo.
+      if(isChordOnlyLine(t))return;
+      CHORD_RE.lastIndex=0;
+      const limpio=t.replace(CHORD_RE,'');
+      if(limpio.trim())lineasDeLetra.push(limpio);
+    });
+  });
+  // Ancho disponible real: ancho de pantalla menos el padding del contenedor
+  // de letra (10px+78px en el wrap, ver SongView.jsx). Ya no se resta
+  // espacio para etiquetas de bloque — el título ahora vive en su propia
+  // franja arriba del bloque, no roba ancho horizontal a las líneas de letra.
+  const anchoDisponible=Math.max(screenW-10-78-10,100);
+  let fsCalculado=14; // tope superior razonable, no crecer más allá de esto
+  if(lineasDeLetra.length){
+    const lineaMasLarga=lineasDeLetra.reduce((a,b)=>a.length>=b.length?a:b,'');
+    // Medición directa: el ancho del texto escala linealmente con el
+    // tamaño de fuente para una tipografía dada, así que basta medir a un
+    // tamaño de referencia (16px) y escalar proporcionalmente — más directo
+    // y preciso que ir probando tamaños uno por uno.
+    const anchoRef=medirAnchoLinea(lineaMasLarga.toUpperCase(),16,FONT);
+    fsCalculado=Math.floor(16*(anchoDisponible/anchoRef));
+  }
+  // Sin tope artificial en 14px (pedido de Danny: la letra debe poder
+  // crecer más allá de eso si la canción tiene líneas cortas, para
+  // aprovechar el espacio disponible al máximo). El único límite superior
+  // es una salvaguarda técnica (36px) para evitar tamaños absurdos en
+  // casos extremos (ej. una canción con una sola línea muy corta de letra),
+  // no un límite de diseño.
+  const fs=Math.min(36,Math.max(11,fsCalculado));
+  const cFs=Math.max(10,fs-2);
 
   // Renderiza una línea de acordes-sobre-letra en formato BARRO
   const renderBarro=(chordLine,lyricLine,key)=>{
@@ -211,7 +288,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
               <span style={{display:'block',height:chordFs*1.1}}/>
             )}
             {seg.text
-              ?<span style={{fontFamily:FONT,fontSize:fs,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre',textTransform:'uppercase'}}>{seg.text}</span>
+              ?<span style={{fontFamily:FONT,fontSize:fs,fontWeight:700,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre',textTransform:'uppercase'}}>{seg.text}</span>
               :<span style={{fontFamily:FONT,fontSize:fs,color:'transparent',lineHeight:1.3,userSelect:'none'}}>&nbsp;</span>
             }
           </div>
@@ -219,8 +296,6 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
       </div>
     );
   };
-
-  const chordFsForLabel=(fs)=>Math.max(9,fs*0.72)*1.1;
   let lineCounter=0;
   return(
     <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
@@ -251,20 +326,24 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
 
         return(
           <div key={bi} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
+            {/* Título del bloque: franja angosta PROPIA arriba del bloque,
+                no más como columna lateral fija en cada línea (pedido de
+                Danny: la columna lateral le robaba ancho horizontal a la
+                letra en TODAS las líneas, no solo en la primera, aunque el
+                texto del título solo aparecía una vez). Ahora cada línea de
+                letra usa el 100% del ancho disponible, alineada a la
+                izquierda desde el borde real del contenedor. */}
+            {blk.label&&(
+              <div style={{fontSize:Math.max(8,sFs-1),fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.5px',whiteSpace:'nowrap',opacity:.7,marginBottom:Math.max(3,fs*0.25)}}>
+                {blk.label}
+              </div>
+            )}
             {rows.map((row,ri)=>{
-              const isFirst=ri===0;
               if(row.type==='barro'){
                 const thisLineIdx=lineCounter++;
                 return(
-                  <div key={ri} style={{display:'flex',alignItems:'flex-start',width:'100%'}}>
-                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,paddingTop:chordFsForLabel(fs)}}>
-                      {blk.label&&isFirst&&(
-                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
-                      )}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      {renderBarro(row.chordLine,row.lyricLine,`b${ri}_${bi}`)}
-                    </div>
+                  <div key={ri} style={{width:'100%'}}>
+                    {renderBarro(row.chordLine,row.lyricLine,`b${ri}_${bi}`)}
                   </div>
                 );
               } else {
@@ -272,15 +351,8 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                 if(!line.trim())return<div key={ri} style={{height:fs*0.2}}/>;
                 const thisLineIdx=lineCounter++;
                 return(
-                  <div key={ri} style={{display:'flex',alignItems:'flex-end',width:'100%'}}>
-                    <div style={{width:labelPx,minWidth:labelPx,flexShrink:0,paddingRight:4,display:'flex',alignItems:'flex-end',paddingBottom:2}}>
-                      {blk.label&&isFirst&&(
-                        <span style={{fontSize:sFs,fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.2px',whiteSpace:'nowrap',opacity:.8}}>{blk.label}</span>
-                      )}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      {renderLinea(line,thisLineIdx,'l'+ri+'_'+bi)}
-                    </div>
+                  <div key={ri} style={{width:'100%'}}>
+                    {renderLinea(line,thisLineIdx,'l'+ri+'_'+bi)}
                   </div>
                 );
               }

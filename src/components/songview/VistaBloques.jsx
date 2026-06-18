@@ -19,7 +19,7 @@ const renderLineaConAcordes=(line,trC,fs)=>{
             :<span style={{display:'block',height:chordFs*1.1,lineHeight:1}}/>
           }
           {seg.text
-            ?<span style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre',textTransform:'uppercase'}}>{seg.text}</span>
+            ?<span style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,fontWeight:700,color:'var(--tx)',lineHeight:1.25,whiteSpace:'pre',textTransform:'uppercase'}}>{seg.text}</span>
             :<span style={{fontFamily:"'Outfit',sans-serif",fontSize:fs,color:'transparent',lineHeight:1.25,userSelect:'none'}}>&nbsp;</span>
           }
         </div>

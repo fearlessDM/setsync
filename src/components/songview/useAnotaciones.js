@@ -17,11 +17,18 @@ export function useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx}){
   const strokes=useRef([]);
   const drawing=useRef(false);
   const cur=useRef(null);
+  // Guarda el dpr usado al dimensionar el canvas, para que getP() pueda
+  // convertir coordenadas de pantalla a las unidades reales del contexto
+  // ya escalado (ver explicación completa más abajo).
+  const dprRef=useRef(1);
 
   const redraw=()=>{
     const cv=cvRef.current;if(!cv)return;
     const ctx=cv.getContext('2d');
-    ctx.clearRect(0,0,cv.width,cv.height);
+    // clearRect debe cubrir el canvas completo en sus unidades REALES
+    // (post-scale), no las dimensiones CSS — por eso se divide por dpr.
+    const dpr=dprRef.current;
+    ctx.clearRect(0,0,cv.width/dpr,cv.height/dpr);
     strokes.current.forEach(s=>{
       if(s.pts.length<2)return;
       ctx.beginPath();applyS(s);
@@ -32,10 +39,34 @@ export function useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx}){
     ctx.globalCompositeOperation='source-over';
   };
 
+  // ── BUG CORREGIDO (reportado por Danny): al dibujar en tablet, la raya
+  // aparecía con un offset grande respecto a donde tocaba el dedo/lápiz, y
+  // se sentía "con zoom" o más grande de lo esperado. Causa real: el canvas
+  // se dimensionaba (cv.width/cv.height) directamente en píxeles CSS
+  // lógicos (clientWidth/clientHeight), ignorando devicePixelRatio. En
+  // tablets de alta densidad (dpr 2 o más, la mayoría hoy), esto desalinea
+  // el sistema de coordenadas interno del canvas respecto a los píxeles
+  // físicos reales de la pantalla — el mismo tipo de bug ya resuelto en
+  // Waveform.jsx (Tanda 3) para el dibujo de la forma de onda de audio.
+  // Solución: dimensionar el canvas en píxeles físicos reales
+  // (clientWidth*dpr), escalar el contexto con ctx.scale(dpr,dpr) una sola
+  // vez al redimensionar, y dejar que el resto del código (getP, dibujo de
+  // trazos) siga trabajando en unidades CSS normales — el scale del
+  // contexto se encarga de la conversión real a píxeles físicos de forma
+  // transparente, sin tocar ninguna otra parte de la lógica de dibujo.
   useEffect(()=>{
     const cv=cvRef.current,w=wrapRef.current;
     if(!cv||!w)return;
-    const resize=()=>{cv.width=w.clientWidth;cv.height=w.clientHeight;redraw();};
+    const resize=()=>{
+      const dpr=window.devicePixelRatio||1;
+      dprRef.current=dpr;
+      cv.width=w.clientWidth*dpr;
+      cv.height=w.clientHeight*dpr;
+      const ctx=cv.getContext('2d');
+      ctx.setTransform(1,0,0,1,0,0); // resetea cualquier scale previo antes de aplicar el nuevo
+      ctx.scale(dpr,dpr);
+      redraw();
+    };
     resize();
     const ro=new ResizeObserver(resize);
     ro.observe(w);
@@ -45,6 +76,11 @@ export function useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx}){
   const getP=e=>{
     const r=cvRef.current.getBoundingClientRect();
     const s=e.touches?e.touches[0]:e;
+    // Coordenadas en unidades CSS (no físicas) — correctas porque el
+    // contexto ya está escalado con ctx.scale(dpr,dpr) en resize(), así que
+    // dibujar en estas unidades produce la posición física correcta sin
+    // necesidad de multiplicar por dpr aquí también (evita escalar dos
+    // veces, que sería el error opuesto al bug original).
     return{x:s.clientX-r.left,y:s.clientY-r.top};
   };
 
@@ -85,8 +121,13 @@ export function useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx}){
   const undo=()=>{strokes.current.pop();redraw();};
   const clear=()=>{
     strokes.current=[];
-    const ctx=cvRef.current?.getContext('2d');
-    ctx?.clearRect(0,0,cvRef.current.width,cvRef.current.height);
+    const cv=cvRef.current;
+    const ctx=cv?.getContext('2d');
+    // Mismo criterio que redraw(): el clearRect debe cubrir el área en
+    // unidades reales del contexto ya escalado, no las dimensiones físicas
+    // crudas del canvas — si no, "Limpiar" solo borraría una fracción del
+    // área visible en pantallas con devicePixelRatio>1.
+    if(ctx&&cv)ctx.clearRect(0,0,cv.width/dprRef.current,cv.height/dprRef.current);
   };
 
   return{cvRef,startD,moveD,endD,undo,clear};
