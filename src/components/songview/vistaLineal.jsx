@@ -1,4 +1,4 @@
-import { transposeChord, chordToNashville } from '../../utils/music';
+import { transposeChord, chordToAmericano, chordToLatino, chordToNashville } from '../../utils/music';
 
 // ── Vista lineal: renderiza letra/acordes en formato continuo ───────────────
 // Función pura: no usa estado de React, recibe todo por parámetro.
@@ -9,7 +9,44 @@ import { transposeChord, chordToNashville } from '../../utils/music';
 
 export const CHORD_RE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
 
-export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,nashville=false,songKey='C'){
+// ── Medición real de ancho de carácter para el drag de acordes ─────────────
+// BUG CORREGIDO (reportado por Danny): al arrastrar un acorde, este "rebota"
+// a una posición distinta de donde se soltó. Causa real: steps=Math.round(dx/5)
+// convertía píxeles de arrastre a "posiciones de carácter" usando un divisor
+// fijo arbitrario (5px = 1 carácter), que no tiene relación real con el
+// ancho real de un carácter en la fuente/tamaño actual. handleDragChord en
+// SongView.jsx sí mueve el acorde exactamente `steps` caracteres dentro del
+// texto — el problema nunca fue ese cálculo, sino que `steps` representaba
+// una cantidad de caracteres completamente distinta a la distancia visual
+// que el usuario realmente arrastró. Con fuentes más anchas que 5px por
+// carácter (siempre, en la práctica), el acorde terminaba moviéndose menos
+// posiciones de las que el arrastre visual sugería, y como el transform
+// visual temporal SIEMPRE se revierte a 0 al soltar (antes de que el
+// re-render con el texto nuevo se aplique), la sensación era "se soltó acá
+// pero volvió a otro lado".
+// Solución: medir el ancho real de un carácter en mayúscula (todo el texto
+// está forzado a mayúscula desde el pedido de tipografía de esta misma
+// sesión) con Canvas measureText, usando la fuente y tamaño exactos que se
+// están renderizando. Memoizado por combinación fontSize+fontFamily para no
+// medir en cada frame de movimiento del mouse/touch.
+const anchoCaracterCache={};
+function medirAnchoCaracter(fontSizePx,fontFamily){
+  const key=`${fontSizePx}_${fontFamily}`;
+  if(anchoCaracterCache[key])return anchoCaracterCache[key];
+  if(typeof document==='undefined')return fontSizePx*0.6; // fallback si no hay DOM (SSR improbable aquí, pero defensivo)
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.font=`700 ${fontSizePx}px ${fontFamily}`;
+  // Medimos una cadena de varios caracteres en mayúscula y promediamos —
+  // más estable que medir un solo carácter, porque algunas fuentes varían
+  // ligeramente el ancho entre letras (kerning).
+  const muestra='ABCDEFGHIJ';
+  const ancho=ctx.measureText(muestra).width/muestra.length;
+  anchoCaracterCache[key]=ancho;
+  return ancho;
+}
+
+export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,notacion='americano',songKey='C'){
   if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
 
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
@@ -18,16 +55,23 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   const sFs =Math.max(7,fs-4);
   const FONT="'Outfit',sans-serif";
 
+  // Aplica el sistema de notación elegido (Americano/Latino/Grados) a un
+  // acorde ya transpuesto. Americano es passthrough (el acorde tal cual);
+  // Latino convierte la raíz a nombre de nota en español; Grados usa el
+  // sistema Nashville (números romanos relativos a la tonalidad).
+  const aplicarNotacion=(ch)=>{
+    if(notacion==='grados')return chordToNashville(ch,songKey);
+    if(notacion==='latino')return chordToLatino(ch);
+    return chordToAmericano(ch);
+  };
+
   const trC=(ch)=>{
     const p=ch.split('/');
     let transposed=p.length>1
       ?transposeChord(p[0],tpOff)+'/'+transposeChord(p[1],tpOff)
       :transposeChord(ch,tpOff);
-    if(nashville){
-      const parts=transposed.split('/');
-      return parts.map(c=>chordToNashville(c,songKey)).join('/');
-    }
-    return transposed;
+    const parts=transposed.split('/');
+    return parts.map(c=>aplicarNotacion(c)).join('/');
   };
 
   const lines=raw.split('\n');
@@ -68,7 +112,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     const lyric=(lyricLine||'').trim();
     const chordFs=Math.max(9,fs*0.72);
     if(!showChords){
-      return lyric?(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>):null;
+      return lyric?(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em',textTransform:'uppercase'}}>{lyric}</div>):null;
     }
     return(
       <div key={key} style={{marginBottom:'0.35em',lineHeight:1}}>
@@ -77,7 +121,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
             <span key={i} style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap'}}>{ch}</span>
           ))}
         </div>
-        {lyric&&<div style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.3}}>{lyric}</div>}
+        {lyric&&<div style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.3,textTransform:'uppercase'}}>{lyric}</div>}
       </div>
     );
   };
@@ -93,7 +137,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     if(!hasChord||!showChords){
       const lyric=text.replace(re,'').trim();
       if(!lyric)return null;
-      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em'}}>{lyric}</div>);
+      return(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em',textTransform:'uppercase'}}>{lyric}</div>);
     }
 
     // Parsear segmentos: cada segmento = {chord, text, ci}
@@ -119,6 +163,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                     e.preventDefault();
                     const x0=e.clientX;
                     const el=e.currentTarget;
+                    const anchoCar=medirAnchoCaracter(fs,FONT);
                     el.style.cursor='grabbing';
                     const onMove=(ev)=>{
                       const dx=ev.clientX-x0;
@@ -132,7 +177,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                       el.style.cursor='grab';
                       document.removeEventListener('mousemove',onMove);
                       document.removeEventListener('mouseup',onUp);
-                      const steps=Math.round(dx/5);
+                      const steps=Math.round(dx/anchoCar);
                       if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
                     };
                     document.addEventListener('mousemove',onMove);
@@ -141,6 +186,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                   onTouchStart={e=>{
                     const touch=e.touches[0];
                     e.currentTarget._x0=touch.clientX;
+                    e.currentTarget._anchoCar=medirAnchoCaracter(fs,FONT);
                   }}
                   onTouchMove={e=>{
                     e.preventDefault();
@@ -150,9 +196,10 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                   }}
                   onTouchEnd={e=>{
                     const dx=e.changedTouches[0].clientX-(e.currentTarget._x0||e.changedTouches[0].clientX);
+                    const anchoCar=e.currentTarget._anchoCar||medirAnchoCaracter(fs,FONT);
                     e.currentTarget.style.transform='';
                     e.currentTarget.style.opacity='';
-                    const steps=Math.round(dx/5);
+                    const steps=Math.round(dx/anchoCar);
                     if(Math.abs(steps)>0&&onDragChord) onDragChord(lineIdx,seg.ci,steps);
                   }}
                   style={{fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap',display:'block',cursor:'grab',touchAction:'none',userSelect:'none',background:'rgba(200,169,126,.1)',borderRadius:3,padding:'0 2px',border:'1px dashed rgba(200,169,126,.35)'}}
@@ -164,7 +211,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
               <span style={{display:'block',height:chordFs*1.1}}/>
             )}
             {seg.text
-              ?<span style={{fontFamily:FONT,fontSize:fs,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre'}}>{seg.text}</span>
+              ?<span style={{fontFamily:FONT,fontSize:fs,color:'var(--tx)',lineHeight:1.3,whiteSpace:'pre',textTransform:'uppercase'}}>{seg.text}</span>
               :<span style={{fontFamily:FONT,fontSize:fs,color:'transparent',lineHeight:1.3,userSelect:'none'}}>&nbsp;</span>
             }
           </div>

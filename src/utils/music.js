@@ -24,7 +24,48 @@ export function transposeChord(chord, offset) {
 
 export const initials = n => n.trim().split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
 
-// ── Sistema Nashville (grados numéricos) ─────────────────────────────────────
+// ── Sistemas de notación de acordes ──────────────────────────────────────
+// Tres formas de nombrar un acorde, todas representando lo mismo (pedido
+// explícito de Danny — quiere las 3 disponibles como opciones del usuario,
+// no una sola fija):
+//
+//  - Americano: A, C, Gm — el nombre "de fábrica" del acorde, sin conversión.
+//  - Latino:    La, Do, Sol menor (abreviado "Solm") — nombres de nota en
+//               español/solfeo, en vez de letras A-G.
+//  - Grados:    I, bIII, v — números romanos relativos a la tonalidad de la
+//               canción (sistema Nashville). Mayúscula = acorde mayor,
+//               minúscula = acorde menor. Grados fuera de la escala natural
+//               se notan con bemol ANTES del número romano (bIII, bVI) —
+//               convención confirmada con Danny, más reconocible para
+//               músicos que la alternativa de sostenido-después.
+
+// Notación Americano: el acorde tal cual viene, sin transformación. Existe
+// como función explícita (no solo "no llamar nada") para que el código que
+// elige el sistema de notación tenga una API simétrica entre los 3 modos.
+export function chordToAmericano(chord) {
+  return chord;
+}
+
+const NOMBRES_LATINOS = {
+  'C':'Do','D':'Re','E':'Mi','F':'Fa','G':'Sol','A':'La','B':'Si',
+  'C#':'Do#','D#':'Re#','F#':'Fa#','G#':'Sol#','A#':'La#',
+  'Db':'Reb','Eb':'Mib','Gb':'Solb','Ab':'Lab','Bb':'Sib',
+};
+
+// Notación Latino: convierte la raíz del acorde (A-G) a su nombre de nota
+// en español, conservando el sufijo (m, 7, sus4, etc.) pero usando "menor"
+// abreviado a "m" pegado al nombre (ej. "Sol menor" se abrevia "Solm" en el
+// texto del acorde, igual de compacto que "Gm" en notación americana).
+export function chordToLatino(chord) {
+  if (!chord) return chord;
+  const rootMatch = chord.match(/^([A-G][b#]?)(.*)/);
+  if (!rootMatch) return chord;
+  const root = rootMatch[1];
+  const suffix = rootMatch[2];
+  const nombreLatino = NOMBRES_LATINOS[root] || root;
+  return nombreLatino + suffix;
+}
+
 // Convierte un acorde a su grado relativo a la tonalidad base.
 // Ej: chordToNashville('G', 'C') → '5'
 //     chordToNashville('Am', 'C') → '6m'
@@ -49,19 +90,21 @@ export function chordToNashville(chord, rootKey) {
   // Grado = semitono relativo a la tónica
   const degree = (chordIdx - keyIdx + 12) % 12;
 
-  // Mapa de semitonos a número de grado — NÚMEROS ROMANOS
+  // Mapa de semitonos a número de grado — NÚMEROS ROMANOS, notación
+  // bemol-antes para grados fuera de la escala natural (bIII, bVI), no
+  // sostenido-después — convención confirmada con Danny.
   const DEGREE_MAP = {
     0: 'I',
-    1: 'I#',   // bII
+    1: 'bII',
     2: 'II',
-    3: 'II#',  // bIII
+    3: 'bIII',
     4: 'III',
     5: 'IV',
-    6: 'IV#',  // bV / #IV
+    6: 'bV',
     7: 'V',
-    8: 'V#',   // bVI
+    8: 'bVI',
     9: 'VI',
-    10: 'VI#', // bVII
+    10: 'bVII',
     11: 'VII',
   };
 

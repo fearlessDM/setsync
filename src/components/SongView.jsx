@@ -50,13 +50,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [editedSongs,setEditedSongs]=useState({});
   const [showSavePopup,setShowSavePopup]=useState(false);
   const [capoOpen,setCapoOpen]=useState(false);
+  const [notacionOpen,setNotacionOpen]=useState(false);
+  const NOTACION_LABELS=lang==='en'
+    ?{americano:'American',latino:'Latin',grados:'Degrees'}
+    :{americano:'Americano',latino:'Latino',grados:'Grados'};
   const [toast,setToast]=useState(null);
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
-  const [viewMode,setViewMode]=useState('bloques');
+  const [viewMode,setViewMode]=useState('lineal');
   const [showModePopup,setShowModePopup]=useState(false);
-  const [nashville,setNashville]=useState(false);
+  const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
   const [showSpeedPopup,setShowSpeedPopup]=useState(false);
 
   const getSongContent=(song)=>editedSongs[song.name]||contentDB[song.name]||null;
@@ -196,7 +200,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // revoca mientras el control ya estaba activo, lo apagamos. Hoy esto no
   // puede ocurrir en la práctica (SongView reinicia su estado al desmontar),
   // pero queda como protección barata ante una futura persistencia de estado.
-  useEffect(()=>{if(!perm.modoNashville)setNashville(false);},[perm.modoNashville]);
+  useEffect(()=>{if(!perm.modoNashville)setNotacion('americano');},[perm.modoNashville]);
   useEffect(()=>{if(!perm.autoScroll)setAutoScroll(false);},[perm.autoScroll]);
 
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?tx.original:`${nOff>0?'+':''}${nOff} st`});};
@@ -293,11 +297,36 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             Capo {capo} · {sonaKey}
           </div>
         )}
-        {/* Nashville toggle */}
+        {/* Selector de notación: Americano / Latino / Grados — pedido
+            explícito de Danny de tener los 3 sistemas disponibles, no solo
+            un toggle binario Grados-sí/Grados-no. Mismo patrón visual del
+            dropdown de Capo (botón con flecha que rota + lista flotante con
+            check en la opción activa), para mantener consistencia con el
+            resto de la UI en vez de inventar un estilo nuevo. */}
         {perm.modoNashville&&(
-          <button onClick={()=>setNashville(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:nashville?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:nashville?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:nashville?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
-            {nashville?'I IV V':tx.notes}
-          </button>
+          <div style={{position:'relative',flexShrink:0}}>
+            <button onClick={()=>setNotacionOpen(o=>!o)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:notacion!=='americano'?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:notacion!=='americano'?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:notacion!=='americano'?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",transition:'all .2s'}}>
+              {NOTACION_LABELS[notacion]}
+              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:notacionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            {notacionOpen&&(
+              <div style={{position:'absolute',right:0,top:'calc(100% + 6px)',background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:8,zIndex:10,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8,padding:'0 4px'}}>
+                  {lang==='en'?'Show notes as:':'Notas en:'}
+                </div>
+                {['americano','latino','grados'].map(opt=>{
+                  const isOn=notacion===opt;
+                  return(
+                    <button key={opt} onClick={()=>{setNotacion(opt);setNotacionOpen(false);}}
+                      style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
+                      {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10,flexShrink:0}}/>}
+                      <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'#a78bfa':'var(--tx)',lineHeight:1}}>{NOTACION_LABELS[opt]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
         {perm.verAcordes&&(
           <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
@@ -433,7 +462,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const ContentArea=()=>(
     <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
       {viewMode==='bloques'
-        ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} nashville={nashville} curKey={curKey}/>
+        ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} notacion={notacion} curKey={curKey}/>
         :<>
           <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
             onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
@@ -442,7 +471,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 78px 60px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
             {song.docId
               ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
-              :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),nashville,curKey)}</div>
+              :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
             }
           </div>
         </>
