@@ -78,6 +78,10 @@ export function Backstage({
             </button>
             <button onClick={()=>{
                 if(!nuevoNombre.trim()){onToast(lang==='en'?'Enter a name':'Ingresa un nombre');return;}
+                if(planActivo&&personas.length>=planActivo.limiteMiembros){
+                  onToast(lang==='en'?`Limit reached: ${planActivo.limiteMiembros} members on plan ${planActivo.label}`:`Límite alcanzado: ${planActivo.limiteMiembros} miembros en plan ${planActivo.label}`);
+                  return;
+                }
                 setPersonas(prev=>[...prev,{id:`p${Date.now()}`,nombre:nuevoNombre.trim(),rol:nuevoRol,email:null,equipoId:null}]);
                 setNuevoNombre('');setSubView(null);
                 onToast(`✓ ${nuevoNombre.trim()} ${lang==='en'?'added':'agregado'}`);

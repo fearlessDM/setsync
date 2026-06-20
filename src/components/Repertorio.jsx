@@ -23,6 +23,7 @@ export function Repertorio({
   setColecciones=()=>{},
   onToast=()=>{},
   mostrarUniversal=false, // ya viene resuelto desde App.jsx: modo Y plan combinados
+  planActivo=null,
 }){
   const tx=getT(lang);
   const vx=getModoTexto(mode, lang);
@@ -281,6 +282,12 @@ export function Repertorio({
               onClick={()=>setCrearModo(null)}>Cancelar</button>
             <button className="btn-p" disabled={!nueva.nombre.trim()}
               onClick={()=>{
+                if(planActivo&&CANCIONES.length>=planActivo.limiteCanciones){
+                  onToast(lang==='en'?`Limit reached: ${planActivo.limiteCanciones} songs on plan ${planActivo.label}`:`Límite alcanzado: ${planActivo.limiteCanciones} canciones en plan ${planActivo.label}`);
+                  return;
+                }
+                CANCIONES.push({n:nueva.nombre.trim().toUpperCase(),key:nueva.key,bpm:Number(nueva.bpm)||90});
+                onToast(`✓ ${nueva.nombre.trim()} ${lang==='en'?'added':'agregada'}`);
                 setShowCrear(false);setCrearModo(null);
                 setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});
               }}

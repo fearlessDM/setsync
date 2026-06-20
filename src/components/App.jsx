@@ -16,6 +16,7 @@ import { Equipos } from './Equipos';
 import { Premiere } from './Premiere';
 import { Backstage } from './Backstage';
 import { MiEvento } from './MiEvento';
+import { Pads } from './Pads';
 import { t as getT } from '../i18n';
 import { getModoTexto, getModoFeatures } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
@@ -77,6 +78,7 @@ export default function App(){
   const planActivo=getPlan(planId);
   const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
+  const tienePads=featureDisponible('pads',feat,planActivo);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
   // migración del modo elegido, no ambas) ─────────────────────────────
@@ -243,7 +245,7 @@ export default function App(){
       <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
           {view==='fechas'&&<Fechas eventos={eventos} setEventos={setEventos} personas={personas} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} onOpenSong={abrirSongDesdeEvento}/>}
-          {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast} mostrarUniversal={tieneUniversal}/>}
+          {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast} mostrarUniversal={tieneUniversal} planActivo={planActivo}/>}
           {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
           {view==='premiere'&&(tienePremiere?<Premiere onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId}/>}
@@ -261,9 +263,16 @@ export default function App(){
       </nav>
 
       {songView!==null&&songViewSongs&&songViewSongs.length>0&&(
-        <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
-          theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
-          sidebarVisible={true} sidebarCollapsed={sbCol}/>
+        <>
+          <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
+            theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
+            sidebarVisible={true} sidebarCollapsed={sbCol}/>
+          {tienePads&&(
+            <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:220}}>
+              <Pads songKey={songViewSongs[songView]?.key} lang={lang}/>
+            </div>
+          )}
+        </>
       )}
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
     </div>

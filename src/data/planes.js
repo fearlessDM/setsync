@@ -9,25 +9,22 @@ export const PLANES_SETSYNC = {
   lite: {
     id:'lite', label:'Lite', precioMensual:0, precioAnual:0,
     limiteCanciones:10, limiteMiembros:5,
-    cancioneroUniversal:false, // Pro+ únicamente, aunque sea modo Iglesia
-    premiereExclusivas:false,  // Pro+ únicamente
-    vistaEscenario:false,      // monitoreo + secuencias — feature de Pro
+    cancioneroUniversal:false, premiereExclusivas:false,
+    vistaEscenario:false, pads:false,
     multiBanda:false, marcaBlanca:false,
   },
   pro: {
     id:'pro', label:'Pro', precioMensual:7.90, precioAnual:66.36,
     limiteCanciones:40, limiteMiembros:30,
-    cancioneroUniversal:true,
-    premiereExclusivas:true,
-    vistaEscenario:true,
+    cancioneroUniversal:true, premiereExclusivas:true,
+    vistaEscenario:true, pads:true,
     multiBanda:false, marcaBlanca:false,
   },
   premium: {
     id:'premium', label:'Premium', precioMensual:19.90, precioAnual:167.16,
     limiteCanciones:100, limiteMiembros:Infinity,
-    cancioneroUniversal:true,
-    premiereExclusivas:true,
-    vistaEscenario:true,
+    cancioneroUniversal:true, premiereExclusivas:true,
+    vistaEscenario:true, pads:true,
     multiBanda:true, marcaBlanca:true,
   },
 };
