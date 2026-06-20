@@ -50,6 +50,7 @@ export const MODO_FEATURES = {
     pads:                true,   // pads ambientales por tonalidad — protagonista en worship
     click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     multitracks:         true,   // multipistas — disponible en ambos modos
+    monitoreo:           true,   // monitoreo OSC — disponible en ambos modos (mesa es mesa)
     premiereExclusivas:  true,   // Premiere — lanzamientos exclusivos de bandas cristianas
                                   // aliadas, antes que nadie, para clientes Pro/Premium.
                                   // Modelo de negocio de adquisición de contenido vía alianzas
@@ -61,6 +62,7 @@ export const MODO_FEATURES = {
     pads:                false,  // existe técnicamente (Vista Escenario) pero no es protagonista
     click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     multitracks:         true,   // multipistas — disponible en ambos modos
+    monitoreo:           true,   // monitoreo OSC — disponible en ambos modos (mesa es mesa)
     premiereExclusivas:  false,
   },
 };

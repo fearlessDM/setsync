@@ -19,6 +19,7 @@ import { MiEvento } from './MiEvento';
 import { Pads } from './Pads';
 import { Click } from './Click';
 import { Multitracks } from './Multitracks';
+import { Monitoreo } from './Monitoreo';
 import { t as getT } from '../i18n';
 import { getModoTexto, getModoFeatures } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
@@ -83,6 +84,7 @@ export default function App(){
   const tienePads=featureDisponible('pads',feat,planActivo);
   const tieneClick=featureDisponible('click',feat,planActivo);
   const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
+  const tieneMonitoreo=featureDisponible('monitoreo',feat,planActivo);
   const [mostrarMultitracks,setMostrarMultitracks]=useState(false);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
@@ -149,6 +151,7 @@ export default function App(){
     {id:'repertorio', label:vx.repertorioTab},
     {id:'equipos',    label:vx.equipoPersona.plural},
     ...(tienePremiere?[{id:'premiere',label:'Premiere'}]:[]),
+    ...(tieneMonitoreo?[{id:'monitoreo',label:'Monitoreo'}]:[]),
   ];
   const NavIco=({id,active})=>{
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
@@ -156,6 +159,7 @@ export default function App(){
     if(id==='repertorio')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
     if(id==='equipos')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
     if(id==='premiere')return(<svg {...s}><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>);
+    if(id==='monitoreo')return(<svg {...s}><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>);
     if(id==='backstage')return(<svg {...s}><line x1="5" y1="3" x2="5" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><rect x="3" y="7" width="4" height="3.5" rx="1.5"/><rect x="10" y="13" width="4" height="3.5" rx="1.5"/><rect x="17" y="5" width="4" height="3.5" rx="1.5"/></svg>);
     return null;
   };
@@ -253,6 +257,7 @@ export default function App(){
           {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast} mostrarUniversal={tieneUniversal} planActivo={planActivo}/>}
           {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
           {view==='premiere'&&(tienePremiere?<Premiere onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
+          {view==='monitoreo'&&tieneMonitoreo&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId}/>}
           {view==='misetlist'&&tienePremiere&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
