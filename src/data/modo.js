@@ -48,6 +48,7 @@ export const MODO_FEATURES = {
   iglesia: {
     cancioneroUniversal: true,   // banco comunitario entre iglesias
     pads:                true,   // pads ambientales por tonalidad — protagonista en worship
+    click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     premiereExclusivas:  true,   // Premiere — lanzamientos exclusivos de bandas cristianas
                                   // aliadas, antes que nadie, para clientes Pro/Premium.
                                   // Modelo de negocio de adquisición de contenido vía alianzas
@@ -57,6 +58,7 @@ export const MODO_FEATURES = {
   banda: {
     cancioneroUniversal: false,  // no existe en Banda
     pads:                false,  // existe técnicamente (Vista Escenario) pero no es protagonista
+    click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     premiereExclusivas:  false,
   },
 };

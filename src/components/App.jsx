@@ -17,6 +17,7 @@ import { Premiere } from './Premiere';
 import { Backstage } from './Backstage';
 import { MiEvento } from './MiEvento';
 import { Pads } from './Pads';
+import { Click } from './Click';
 import { t as getT } from '../i18n';
 import { getModoTexto, getModoFeatures } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
@@ -79,6 +80,7 @@ export default function App(){
   const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
   const tienePads=featureDisponible('pads',feat,planActivo);
+  const tieneClick=featureDisponible('click',feat,planActivo);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
   // migración del modo elegido, no ambas) ─────────────────────────────
@@ -267,9 +269,10 @@ export default function App(){
           <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={true} sidebarCollapsed={sbCol}/>
-          {tienePads&&(
-            <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:220}}>
-              <Pads songKey={songViewSongs[songView]?.key} lang={lang}/>
+          {(tienePads||tieneClick)&&(
+            <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:220,display:'flex',flexDirection:'column',gap:8}}>
+              {tienePads&&<Pads songKey={songViewSongs[songView]?.key} lang={lang}/>}
+              {tieneClick&&<Click songBpm={songViewSongs[songView]?.bpm} lang={lang}/>}
             </div>
           )}
         </>
