@@ -18,6 +18,7 @@ import { Backstage } from './Backstage';
 import { MiEvento } from './MiEvento';
 import { Pads } from './Pads';
 import { Click } from './Click';
+import { Multitracks } from './Multitracks';
 import { t as getT } from '../i18n';
 import { getModoTexto, getModoFeatures } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
@@ -81,6 +82,8 @@ export default function App(){
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
   const tienePads=featureDisponible('pads',feat,planActivo);
   const tieneClick=featureDisponible('click',feat,planActivo);
+  const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
+  const [mostrarMultitracks,setMostrarMultitracks]=useState(false);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
   // migración del modo elegido, no ambas) ─────────────────────────────
@@ -269,10 +272,20 @@ export default function App(){
           <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={true} sidebarCollapsed={sbCol}/>
-          {(tienePads||tieneClick)&&(
-            <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:220,display:'flex',flexDirection:'column',gap:8}}>
+          {(tienePads||tieneClick||tieneMultitracks)&&(
+            <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
+              {mostrarMultitracks&&tieneMultitracks&&(
+                <Multitracks tracks={[]} lang={lang} onToast={showToast}/>
+              )}
               {tienePads&&<Pads songKey={songViewSongs[songView]?.key} lang={lang}/>}
               {tieneClick&&<Click songBpm={songViewSongs[songView]?.bpm} lang={lang}/>}
+              {tieneMultitracks&&(
+                <button onClick={()=>setMostrarMultitracks(v=>!v)}
+                  style={{padding:'7px 10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
+                    color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {mostrarMultitracks?(lang==='en'?'Hide tracks':'Ocultar pistas'):(lang==='en'?'Show tracks':'Ver pistas')}
+                </button>
+              )}
             </div>
           )}
         </>
