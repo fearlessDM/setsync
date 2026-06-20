@@ -23,6 +23,29 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
   const mesesEs=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const mesesEn=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const mesNombre=(lang==='en'?mesesEn:mesesEs)[mesActivo];
+  const mesActual=new Date().getMonth();
+
+  const MonthStrip=()=>(
+    <div style={{display:'flex',overflowX:'auto',gap:0,padding:'0',scrollbarWidth:'none',
+      background:'rgba(8,7,14,.28)',backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)',
+      boxShadow:'inset 0 -1px 0 rgba(255,255,255,.06)',position:'sticky',top:0,zIndex:40,marginBottom:14,borderRadius:10}}>
+      {(lang==='en'?mesesEn:mesesEs).map((m,i)=>{
+        const count=eventosConFecha.filter(e=>new Date(e.fecha).getMonth()===i).length;
+        return(
+          <div key={m} onClick={()=>setMesActivo(i)}
+            style={{flex:1,padding:'5px 2px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+              margin:'3px 1px',borderRadius:5,border:'1px solid transparent',
+              background:mesActivo===i?'rgba(200,169,126,.12)':i===mesActual?'rgba(200,169,126,.07)':'transparent',minWidth:32}}>
+            <span style={{fontSize:8,fontWeight:mesActivo===i?700:i===mesActual?600:400,
+              color:mesActivo===i?'var(--ac)':i===mesActual?'rgba(200,169,126,.65)':'var(--tx3)',
+              textTransform:'uppercase',letterSpacing:'.3px'}}>{m.slice(0,3)}</span>
+            {count>0?(<span style={{fontSize:8,fontWeight:700,color:mesActivo===i?'var(--ac)':'rgba(255,255,255,.4)',lineHeight:1}}>{count}</span>):null}
+          </div>
+        );
+      })}
+    </div>
+  );
+
 
   // ── Detalle de un evento ─────────────────────────────────────────────
   if(selId){
@@ -149,6 +172,7 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
   // ── Lista de eventos ─────────────────────────────────────────────────
   return(
     <div>
+      <MonthStrip/>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>

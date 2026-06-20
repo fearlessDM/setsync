@@ -88,6 +88,10 @@ export default function App(){
 
   const showToast=(msg)=>{setToast(typeof msg==='string'?{text:msg}:msg);setTimeout(()=>setToast(null),2500);};
 
+  // Domingo activo para MiEvento: el primero con setlist cargado, en vez de
+  // un número fijo hardcodeado (pendiente anotado en la entrega anterior).
+  const proximoDomingo=Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1;
+
   // ── Apertura de SongView: cualquier pantalla puede abrirlo pasando el
   // array de canciones de su contexto (repertorio completo o setlist de
   // un evento puntual) — ya no depende de un "activeSunday" fijo global ──
@@ -236,7 +240,7 @@ export default function App(){
           {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
           {view==='premiere'&&feat.premiereExclusivas&&<Premiere onToast={showToast}/>}
           {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]}/>}
-          {view==='misetlist'&&feat.premiereExclusivas&&<MiEvento activeSunday={7} onOpenSong={i=>{setSongViewSongs(SETLISTS[7]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
+          {view==='misetlist'&&feat.premiereExclusivas&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>
       </main>
