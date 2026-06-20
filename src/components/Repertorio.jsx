@@ -1,22 +1,57 @@
 import { t as getT } from '../i18n';
-// Cancionero: catálogo de canciones (Iglesia/Banda), partituras MusicXML/PDF,
-// importación, edición y vista de equipos.
+// Repertorio: catálogo único de canciones para Iglesia y Banda (antes:
+// Cancionero.jsx + BandaRepertorio.jsx, dos componentes paralelos).
+// Plataforma única: el mismo componente sirve a ambos modos. Lo que cambia
+// según el modo es texto/labels (vía modo.js) y la feature Universal
+// (gateada por MODO_FEATURES.cancioneroUniversal, no por un componente
+// distinto). Suma capacidades de ambos lados:
+//  - de Cancionero (Iglesia): agrupación por BPM, tab Universal, partituras
+//    MusicXML/PDF
+//  - de BandaRepertorio (Banda): colecciones personalizadas (Cover/Artista/
+//    Álbum/Instrumento), constructor de setlist para eventos
 import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
+import { getModoTexto, getModoFeatures } from '../data/modo';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
+export function Repertorio({
+  mode,                     // 'iglesia' | 'banda' — antes 'worship' en Cancionero, se normaliza abajo
+  onOpenSong,
+  userRole='superadmin',
+  lang='es',
+  // ── props nuevas, traídas de BandaRepertorio — opcionales, con default
+  // seguro para no romper a quien todavía no las pasa ──────────────────
+  colecciones=[],
+  setColecciones=()=>{},
+  onToast=()=>{},
+}){
   const tx=getT(lang);
-  const isAdmin=userRole==='superadmin'||userRole==='leader';
+  const vx=getModoTexto(mode, lang);           // vocabulario del modo activo
+  const feat=getModoFeatures(mode);            // feature flags del modo activo
+  const isAdmin=userRole==='superadmin'||userRole==='leader'||userRole==='encargado';
   const [filter,setFilter]=useState('');
   const [bv,setBv]=useState(true);
-  const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
+  const [tab,setTab]=useState('mi'); // 'mi' | 'colecciones' | 'universal' | 'partituras'
   const [showCrear,setShowCrear]=useState(false);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',letra:''});
   const [partituras,setPartituras]=useState([]);
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
   const [crearModo,setCrearModo]=useState(null);
+
+  // ── Estado de colecciones (de BandaRepertorio) ───────────────────────
+  const [colActiva,setColActiva]=useState(null);
+  const [showNewCol,setShowNewCol]=useState(false);
+  const [newColLabel,setNewColLabel]=useState('');
+  const [newColTipo,setNewColTipo]=useState('cover');
+  const [showAddToCol,setShowAddToCol]=useState(null);
+
+  const TIPOS_COL=[
+    {id:'cover',       label:lang==='en'?'Cover':'Cover'},
+    {id:'artista',     label:lang==='en'?'By artist':'Por artista'},
+    {id:'album',       label:lang==='en'?'Album':'Álbum'},
+    {id:'instrumento', label:lang==='en'?'Instrument':'Instrumento'},
+  ];
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
   const fast=fl.filter(s=>s.bpm>=120).sort((a,b)=>b.bpm-a.bpm);
@@ -418,8 +453,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
         </button>
       </div>
       <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
-        <button onClick={()=>setTab('mi')} style={{padding:'5px 11px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
-        {mode==='worship'&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+        <button onClick={()=>setTab('mi')} style={{padding:'5px 11px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{vx.repertorioTab}</button>
+        <button onClick={()=>setTab('colecciones')} style={{padding:'5px 11px',borderRadius:100,border:tab==='colecciones'?'1px solid rgba(123,104,238,.4)':'1px solid var(--bd)',background:tab==='colecciones'?'rgba(123,104,238,.1)':'transparent',color:tab==='colecciones'?'#7b68ee':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{lang==='en'?'Collections':'Colecciones'}</button>
+        {feat.cancioneroUniversal&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
           <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Universal
         </button>}
@@ -461,6 +497,149 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es'}){
       {tab==='mi'&&(
         bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)
         :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><div key={s.n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}><div className="scard-n">{s.n}</div><div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div></div>)}</div>)
+      )}
+
+      {tab==='colecciones'&&(
+        <div>
+          {showAddToCol?(
+            (()=>{
+              const col=colecciones.find(c=>c.id===showAddToCol);
+              if(!col)return null;
+              return(
+                <div>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,cursor:'pointer'}}
+                    onClick={()=>setShowAddToCol(null)}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                    <span style={{fontSize:12,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{col.nombre}</span>
+                  </div>
+                  <div className="sg">
+                    {CANCIONES.filter(c=>c.n.toLowerCase().includes(filter.toLowerCase())).map((c,i)=>{
+                      const enCol=col.canciones.includes(c.n);
+                      return(
+                        <div key={i} onClick={()=>setColecciones(prev=>prev.map(p=>p.id===showAddToCol?{
+                            ...p,canciones:enCol?p.canciones.filter(x=>x!==c.n):[...p.canciones,c.n]
+                          }:p))}
+                          className="scard" style={{cursor:'pointer',
+                            border:enCol?'1px solid rgba(123,104,238,.5)':undefined,
+                            background:enCol?'rgba(123,104,238,.08)':undefined}}>
+                          <div className="scard-n">{c.n}</div>
+                          <div className="scard-s">{c.key} · {c.bpm} BPM</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={()=>setShowAddToCol(null)}
+                    style={{width:'100%',padding:'11px',borderRadius:12,border:'none',
+                      background:'var(--tx)',color:'var(--bg)',fontSize:13,fontWeight:700,
+                      cursor:'pointer',marginTop:12,fontFamily:"'Lexend Giga',sans-serif"}}>
+                    {lang==='en'?'Done':'Listo'}
+                  </button>
+                </div>
+              );
+            })()
+          ):(
+            <>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <div style={{fontSize:11,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {lang==='en'?'Group songs by cover, artist, album or instrument.':'Agrupa canciones por cover, artista, álbum o instrumento.'}
+                </div>
+                {isAdmin&&(
+                  <button onClick={()=>setShowNewCol(v=>!v)}
+                    style={{fontSize:11,fontWeight:700,color:'var(--tx)',background:'transparent',
+                      border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                    {showNewCol?(lang==='en'?'Cancel':'Cancelar'):`+ ${lang==='en'?'New':'Nueva'}`}
+                  </button>
+                )}
+              </div>
+
+              {showNewCol&&isAdmin&&(
+                <div style={{padding:'12px',borderRadius:12,border:'1px solid var(--bd)',
+                  background:'var(--s2)',marginBottom:14}}>
+                  <input value={newColLabel} onChange={e=>setNewColLabel(e.target.value)}
+                    placeholder={lang==='en'?'Collection name':'Nombre de la colección'}
+                    style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid var(--bd)',
+                      background:'var(--s1)',color:'var(--tx)',fontSize:13,marginBottom:8,
+                      boxSizing:'border-box',fontFamily:"'Lexend Giga',sans-serif"}}/>
+                  <div style={{display:'flex',gap:5,marginBottom:10,flexWrap:'wrap'}}>
+                    {TIPOS_COL.map(t=>(
+                      <button key={t.id} onClick={()=>setNewColTipo(t.id)}
+                        style={{flex:'1 0 45%',padding:'6px 8px',borderRadius:8,fontSize:10,fontWeight:700,
+                          border:`1px solid ${newColTipo===t.id?'rgba(123,104,238,.5)':'var(--bd)'}`,
+                          background:newColTipo===t.id?'rgba(123,104,238,.1)':'transparent',
+                          color:newColTipo===t.id?'#7b68ee':'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={()=>{
+                      if(!newColLabel.trim()){onToast(lang==='en'?'Enter a name':'Ingresa un nombre');return;}
+                      const id='c'+Date.now();
+                      setColecciones(prev=>[...prev,{id,nombre:newColLabel.trim(),tipo:newColTipo,canciones:[]}]);
+                      setShowNewCol(false);setNewColLabel('');setShowAddToCol(id);
+                      onToast(`✓ ${lang==='en'?'Collection created':'Colección creada'}`);
+                    }}
+                    style={{width:'100%',padding:'9px',borderRadius:8,border:'none',
+                      background:'var(--tx)',color:'var(--bg)',fontSize:13,fontWeight:700,
+                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                    {lang==='en'?'Create collection':'Crear colección'}
+                  </button>
+                </div>
+              )}
+
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+                <button onClick={()=>setColActiva(null)}
+                  style={{padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:600,
+                    border:`1px solid ${colActiva===null?'rgba(123,104,238,.5)':'var(--bd)'}`,
+                    background:colActiva===null?'rgba(123,104,238,.1)':'transparent',
+                    color:colActiva===null?'#7b68ee':'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {lang==='en'?'All':'Todas'}
+                </button>
+                {colecciones.map(col=>(
+                  <div key={col.id} style={{display:'flex',alignItems:'center',gap:2}}>
+                    <button onClick={()=>setColActiva(colActiva===col.id?null:col.id)}
+                      style={{padding:'5px 12px',borderRadius:isAdmin?'20px 0 0 20px':20,
+                        fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                        border:`1px solid ${colActiva===col.id?'rgba(123,104,238,.5)':'var(--bd)'}`,
+                        borderRight:isAdmin?'none':undefined,
+                        background:colActiva===col.id?'rgba(123,104,238,.1)':'transparent',
+                        color:colActiva===col.id?'#7b68ee':'var(--tx3)'}}>
+                      {col.nombre}<span style={{fontSize:9,opacity:.6,marginLeft:4}}>{col.canciones.length}</span>
+                    </button>
+                    {isAdmin&&(
+                      <button onClick={()=>setShowAddToCol(col.id)}
+                        style={{padding:'5px 7px',borderRadius:'0 20px 20px 0',fontSize:11,fontWeight:600,
+                          cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                          border:`1px solid ${colActiva===col.id?'rgba(123,104,238,.5)':'var(--bd)'}`,
+                          background:colActiva===col.id?'rgba(123,104,238,.1)':'transparent',color:'var(--tx3)'}}>+</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {colecciones.length===0?(
+                <div style={{textAlign:'center',padding:'30px 0',color:'var(--tx3)',fontSize:12,
+                  fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+                  {lang==='en'?'No collections yet':'Sin colecciones todavía'}
+                </div>
+              ):(
+                <div className="sg">
+                  {CANCIONES.filter(c=>{
+                    if(!colActiva)return false;
+                    const col=colecciones.find(c2=>c2.id===colActiva);
+                    return col&&col.canciones.includes(c.n);
+                  }).map((c,i)=>(
+                    <div key={i} className="scard" onClick={()=>onOpenSong&&onOpenSong(c.n)} style={{cursor:'pointer'}}>
+                      <div className="scard-n">{c.n}</div>
+                      <div className="scard-s">{c.key} · {c.bpm} BPM</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       {tab==='universal'&&(
