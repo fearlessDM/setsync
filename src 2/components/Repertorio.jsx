@@ -12,22 +12,20 @@ import { t as getT } from '../i18n';
 import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
-import { getModoTexto, getModoFeatures } from '../data/modo';
+import { getModoTexto } from '../data/modo';
 
 export function Repertorio({
-  mode,                     // 'iglesia' | 'banda' — antes 'worship' en Cancionero, se normaliza abajo
+  mode,
   onOpenSong,
   userRole='superadmin',
   lang='es',
-  // ── props nuevas, traídas de BandaRepertorio — opcionales, con default
-  // seguro para no romper a quien todavía no las pasa ──────────────────
   colecciones=[],
   setColecciones=()=>{},
   onToast=()=>{},
+  mostrarUniversal=false, // ya viene resuelto desde App.jsx: modo Y plan combinados
 }){
   const tx=getT(lang);
-  const vx=getModoTexto(mode, lang);           // vocabulario del modo activo
-  const feat=getModoFeatures(mode);            // feature flags del modo activo
+  const vx=getModoTexto(mode, lang);
   const isAdmin=userRole==='superadmin'||userRole==='leader'||userRole==='encargado';
   const [filter,setFilter]=useState('');
   const [bv,setBv]=useState(true);
@@ -455,7 +453,7 @@ export function Repertorio({
       <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
         <button onClick={()=>setTab('mi')} style={{padding:'5px 11px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{vx.repertorioTab}</button>
         <button onClick={()=>setTab('colecciones')} style={{padding:'5px 11px',borderRadius:100,border:tab==='colecciones'?'1px solid rgba(123,104,238,.4)':'1px solid var(--bd)',background:tab==='colecciones'?'rgba(123,104,238,.1)':'transparent',color:tab==='colecciones'?'#7b68ee':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{lang==='en'?'Collections':'Colecciones'}</button>
-        {feat.cancioneroUniversal&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+        {mostrarUniversal&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
           <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Universal
         </button>}

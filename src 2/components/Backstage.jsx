@@ -8,7 +8,8 @@ export function Backstage({
   personas=[],setPersonas=()=>{},
   eventos=[],setEventos=()=>{},
   isAdmin,onToast,mode,lang='es',
-  rolesDisponibles=[], // catálogo de roles a ofrecer en el form de "agregar persona", según modo
+  rolesDisponibles=[],
+  planActivo=null,planId='lite',setPlanId=()=>{}, // capa de planes (Fase 1)
 }){
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -134,7 +135,47 @@ export function Backstage({
     </div>
   );
 
-  // ── Notificaciones (unificada) ───────────────────────────────────────
+  // ── Configuración (incluye selector de plan — temporal hasta que haya
+  // cobro real conectado; el plan es siempre del usuario individual) ────
+  if(bsView==='config')return(
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+        <span style={{fontSize:12,fontWeight:300,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Backstage</span>
+      </div>
+      <h2 style={{margin:'0 0 16px',fontSize:20,fontWeight:400,color:'var(--tx)',fontFamily:"'Special Gothic Expanded One',sans-serif"}}>
+        {lang==='en'?'Settings':'Configuración'}
+      </h2>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:13,color:'var(--tx2)',
+        textTransform:'uppercase',letterSpacing:'1px',marginBottom:10}}>
+        {lang==='en'?'Plan':'Plan'}
+      </div>
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+        {['lite','pro','premium'].map(p=>(
+          <button key={p} onClick={()=>{setPlanId(p);onToast(`✓ Plan ${p}`);}}
+            style={{flex:'1 0 28%',padding:'10px 8px',borderRadius:10,fontSize:12,fontWeight:700,
+              border:`1px solid ${planId===p?'rgba(200,169,126,.5)':'var(--bd)'}`,
+              background:planId===p?'rgba(200,169,126,.1)':'transparent',
+              color:planId===p?'var(--ac)':'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",textTransform:'capitalize'}}>
+            {p}
+          </button>
+        ))}
+      </div>
+      {planActivo&&(
+        <div style={{padding:'12px',borderRadius:12,border:'1px solid var(--bd)',background:'var(--s1)',fontSize:11,
+          color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
+          {lang==='en'?'Songs':'Canciones'}: {personas.length>0?'':''}{planActivo.limiteCanciones}{lang==='en'?' max':' máx'}<br/>
+          {lang==='en'?'Members':'Miembros'}: {planActivo.limiteMiembros===Infinity?(lang==='en'?'Unlimited':'Ilimitados'):planActivo.limiteMiembros}<br/>
+          {vx.lider}: {planActivo.cancioneroUniversal||planActivo.premiereExclusivas?'✓':'—'}
+        </div>
+      )}
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:300,color:'var(--tx3)',lineHeight:1.4,marginTop:10}}>
+        {lang==='en'?'Plan switcher is temporary, for testing — real billing not connected yet.':'Selector de plan temporal, para pruebas — el cobro real todavía no está conectado.'}
+      </div>
+    </div>
+  );
+
+
   if(bsView==='notif')return(
     <div>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -169,7 +210,7 @@ export function Backstage({
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {MENU.map(item=>(
           <button key={item.id}
-            onClick={()=>['equipo','notif','palabra'].includes(item.id)?setBsView(item.id):onToast(`${item.label} — ${lang==='en'?'coming soon':'próximamente'}`)}
+            onClick={()=>['equipo','notif','palabra','config'].includes(item.id)?setBsView(item.id):onToast(`${item.label} — ${lang==='en'?'coming soon':'próximamente'}`)}
             style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',
               textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)',lineHeight:1.15}}>{item.label}</div>

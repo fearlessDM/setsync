@@ -18,6 +18,7 @@ import { Backstage } from './Backstage';
 import { MiEvento } from './MiEvento';
 import { t as getT } from '../i18n';
 import { getModoTexto, getModoFeatures } from '../data/modo';
+import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia } from '../data/eventos-schema';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
@@ -70,6 +71,12 @@ export default function App(){
   const [theme,setTheme]=useState('dark');
   const [userRole]=useState('superadmin');
   const isAdmin=userRole==='superadmin';
+  const [planId,setPlanId]=useState('lite'); // 'lite' | 'pro' | 'premium' — selector temporal de prueba,
+  // hasta que exista cobro real. El plan es SIEMPRE del usuario individual,
+  // nunca se hereda del líder/equipo (mismo principio que ya regía SongView).
+  const planActivo=getPlan(planId);
+  const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
+  const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
   // migración del modo elegido, no ambas) ─────────────────────────────
@@ -134,7 +141,7 @@ export default function App(){
     {id:'fechas',     label:vx.evento.plural},
     {id:'repertorio', label:vx.repertorioTab},
     {id:'equipos',    label:vx.equipoPersona.plural},
-    ...(feat.premiereExclusivas?[{id:'premiere',label:'Premiere'}]:[]),
+    ...(tienePremiere?[{id:'premiere',label:'Premiere'}]:[]),
   ];
   const NavIco=({id,active})=>{
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
@@ -236,11 +243,11 @@ export default function App(){
       <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
           {view==='fechas'&&<Fechas eventos={eventos} setEventos={setEventos} personas={personas} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} onOpenSong={abrirSongDesdeEvento}/>}
-          {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast}/>}
+          {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast} mostrarUniversal={tieneUniversal}/>}
           {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
-          {view==='premiere'&&feat.premiereExclusivas&&<Premiere onToast={showToast}/>}
-          {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]}/>}
-          {view==='misetlist'&&feat.premiereExclusivas&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
+          {view==='premiere'&&(tienePremiere?<Premiere onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
+          {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId}/>}
+          {view==='misetlist'&&tienePremiere&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>
       </main>
