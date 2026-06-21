@@ -25,7 +25,7 @@ import { getModoTexto, getModoFeatures } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
-import { getAccountId, subscribeEventos, subscribePersonas, guardarEvento, guardarPersona, crearInvitacion } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -123,12 +123,20 @@ export default function App(){
         setPersonas(data);
       }
     });
-    return ()=>{ unsubEv(); unsubPe(); };
+    const unsubEq = subscribeEquipos(accountId, data=>{
+      if(data.length===0 && equipos.length>0){
+        equipos.forEach(eq=>guardarEquipo(accountId, eq));
+      } else if(data.length>0){
+        setEquipos(data);
+      }
+    });
+    return ()=>{ unsubEv(); unsubPe(); unsubEq(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online]);
 
   const persistirPersona = (persona) => { if(firebaseListo && online) guardarPersona(accountId, persona); };
   const persistirEvento = (evento) => { if(firebaseListo && online) guardarEvento(accountId, evento); };
+  const persistirEquipo = (equipo) => { if(firebaseListo && online) guardarEquipo(accountId, equipo); };
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
@@ -292,7 +300,7 @@ export default function App(){
           {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
           {view==='premiere'&&(tienePremiere?<Premiere onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&tieneMonitoreo&&<Monitoreo lang={lang} onToast={showToast}/>}
-          {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} equipos={equipos} setEquipos={setEquipos} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId} persistirPersona={persistirPersona} online={online} setOnline={setOnline} firebaseListo={firebaseListo} onCrearInvitacion={()=>crearInvitacion(accountId)} theme={theme} setTheme={setTheme} repertorio={repertorio}/>}
+          {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} equipos={equipos} setEquipos={setEquipos} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId} persistirPersona={persistirPersona} online={online} setOnline={setOnline} firebaseListo={firebaseListo} onCrearInvitacion={()=>crearInvitacion(accountId)} theme={theme} setTheme={setTheme} repertorio={repertorio} persistirEquipo={persistirEquipo}/>}
           {view==='misetlist'&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>

@@ -68,6 +68,23 @@ export async function borrarPersona(accountId, personaId){
   await deleteDoc(doc(db, 'accounts', accountId, 'personas', String(personaId)));
 }
 
+// ── Equipos (formaciones: Banda/Sonido/etc, con roles[]) ────────────────
+export function subscribeEquipos(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'accounts', accountId, 'equipos');
+  return onSnapshot(query(ref), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+export async function guardarEquipo(accountId, equipo){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'equipos', String(equipo.id)), equipo);
+}
+export async function borrarEquipo(accountId, equipoId){
+  if(!firebaseListo) return;
+  await deleteDoc(doc(db, 'accounts', accountId, 'equipos', String(equipoId)));
+}
+
 // ── CAPA 1: Sesión compartida (lo que el líder transmite en vivo) ──────
 // Documento único por cuenta: accounts/{accountId}/sesion/activa
 export function subscribeSesionActiva(accountId, onChange){

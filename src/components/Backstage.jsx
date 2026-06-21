@@ -15,6 +15,7 @@ export function Backstage({
   persistirPersona=()=>{},online=true,setOnline=()=>{},firebaseListo=false,onCrearInvitacion=async()=>null, // Firebase (Fase 2)
   theme='dark',setTheme=()=>{}, // selector de tema — portado del BackstageView.jsx original de Iglesia
   repertorio=[], // para el constructor de setlist real
+  persistirEquipo=()=>{},
 }){
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -512,7 +513,7 @@ export function Backstage({
                   ))}
                   <button onClick={()=>{
                       const rol=prompt(lang==='en'?'New role name:':'Nombre del rol nuevo:');
-                      if(rol&&rol.trim())setEquipos(prev=>prev.map(e=>e.id===eq.id?{...e,roles:[...e.roles,rol.trim()]}:e));
+                      if(rol&&rol.trim()){const upd={...eq,roles:[...eq.roles,rol.trim()]};setEquipos(prev=>prev.map(e=>e.id===eq.id?upd:e));persistirEquipo(upd);}
                     }}
                     style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',
                       padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>
@@ -522,12 +523,12 @@ export function Backstage({
                 {miembrosEq.map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
                     <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.nombre}</span>
-                    <select value={m.rol} onChange={e=>setPersonas(prev=>prev.map(p=>p.id===m.id?{...p,rol:e.target.value}:p))}
+                    <select value={m.rol} onChange={e=>{const upd={...m,rol:e.target.value};setPersonas(prev=>prev.map(p=>p.id===m.id?upd:p));persistirPersona(upd);}}
                       style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',
                         padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
                       {eq.roles.map(r=>(<option key={r} value={r}>{r}</option>))}
                     </select>
-                    <button onClick={()=>setPersonas(prev=>prev.map(p=>p.id===m.id?{...p,equipoId:null,equipoNombre:null,equipoColor:null}:p))}
+                    <button onClick={()=>{const upd={...m,equipoId:null,equipoNombre:null,equipoColor:null};setPersonas(prev=>prev.map(p=>p.id===m.id?upd:p));persistirPersona(upd);}}
                       style={{width:22,height:22,borderRadius:6,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',
                         cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                       <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -539,7 +540,7 @@ export function Backstage({
                       border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}
                     defaultValue="" onChange={e=>{
                       if(!e.target.value)return;
-                      setPersonas(prev=>prev.map(p=>p.id===e.target.value?{...p,equipoId:eq.id,equipoNombre:eq.name,equipoColor:eq.color,rol:eq.roles[0]||p.rol}:p));
+                      setPersonas(prev=>prev.map(p=>{if(p.id!==e.target.value)return p;const upd={...p,equipoId:eq.id,equipoNombre:eq.name,equipoColor:eq.color,rol:eq.roles[0]||p.rol};persistirPersona(upd);return upd;}));
                       onToast(`✓ ${lang==='en'?'Added to':'Agregado a'} ${eq.name}`);
                       e.target.value='';
                     }}>
@@ -566,7 +567,7 @@ export function Backstage({
               if(!nuevaFormacion.trim())return;
               const colores=['#EE227D','#30C0B7','#FD8083','#7b68ee','#5ecea0','#e07820'];
               const color=colores[equipos.length%colores.length];
-              setEquipos(prev=>[...prev,{id:`eq${Date.now()}`,name:nuevaFormacion.trim(),color,roles:['General']}]);
+              const nuevoEq={id:`eq${Date.now()}`,name:nuevaFormacion.trim(),color,roles:['General']};setEquipos(prev=>[...prev,nuevoEq]);persistirEquipo(nuevoEq);
               onToast(`✓ ${lang==='en'?'Formation created':'Formación creada'}`);
               setNuevaFormacion('');
             }}
