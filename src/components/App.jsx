@@ -10,18 +10,16 @@ import { SONG_CONTENT_BANDA } from '../data/songs-banda';
 import '../styles/theme.css';
 import { Toast } from './common';
 import { SongView } from './SongView';
-import { Fechas } from './Fechas';
-import { Repertorio } from './Repertorio';
-import { Equipos } from './Equipos';
-import { Premiere } from './Premiere';
-import { Backstage } from './Backstage';
-import { MiEvento } from './MiEvento';
+import { AdminView, MiSetlist, PremiereView } from './AdminView';
+import { Cancionero } from './Cancionero';
+import { EquiposView } from './EquiposView';
+import { BackstageView } from './BackstageView';
 import { Pads } from './Pads';
 import { Click } from './Click';
 import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
 import { t as getT } from '../i18n';
-import { getModoTexto, getModoFeatures } from '../data/modo';
+import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
@@ -140,19 +138,22 @@ export default function App(){
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
+  const [mesNav,setMesNav]=useState(new Date().getMonth());
+  const [activeSunday,setActiveSunday]=useState(()=>Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1);
   const contentDB = appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
 
   const showToast=(msg)=>{setToast(typeof msg==='string'?{text:msg}:msg);setTimeout(()=>setToast(null),2500);};
 
   // Domingo activo para MiEvento: el primero con setlist cargado, en vez de
   // un número fijo hardcodeado (pendiente anotado en la entrega anterior).
-  const proximoDomingo=Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1;
+  // proximoDomingo ya no hace falta — activeSunday cumple ese rol como estado real
 
   // ── Apertura de SongView: cualquier pantalla puede abrirlo pasando el
   // array de canciones de su contexto (repertorio completo o setlist de
   // un evento puntual) — ya no depende de un "activeSunday" fijo global ──
   const abrirSongDesdeRepertorio=(name)=>{
-    const songs=repertorio.map(c=>({name:c.n,key:c.key,bpm:c.bpm}));
+    const fuente = appMode==='banda'?repertorio:CANCIONES; // CANCIONES se muta en vivo desde Cancionero.jsx
+    const songs=fuente.map(c=>({name:c.n,key:c.key,bpm:c.bpm}));
     const idx=songs.findIndex(s=>s.name===name);
     if(idx>=0){setSongViewSongs(songs);setSongView(idx);}
   };
@@ -295,13 +296,17 @@ export default function App(){
 
       <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
-          {view==='fechas'&&<Fechas eventos={eventos} setEventos={setEventos} personas={personas} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} onOpenSong={abrirSongDesdeEvento}/>}
-          {view==='repertorio'&&<Repertorio mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} colecciones={colecciones} setColecciones={setColecciones} onToast={showToast} mostrarUniversal={tieneUniversal} planActivo={planActivo} onSaveChords={handleSaveChords}/>}
-          {view==='equipos'&&<Equipos personas={personas} onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
-          {view==='premiere'&&(tienePremiere?<Premiere onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
+          {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
+            onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
+            onToast={showToast} onSelectDay={setActiveSunday} mesNav={mesNav} lang={lang}
+            eventos={eventos} onOpenSong={abrirSongDesdeEvento}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
+          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
+          {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&tieneMonitoreo&&<Monitoreo lang={lang} onToast={showToast}/>}
-          {view==='backstage'&&<Backstage personas={personas} setPersonas={setPersonas} equipos={equipos} setEquipos={setEquipos} eventos={eventos} setEventos={setEventos} isAdmin={isAdmin} onToast={showToast} mode={appMode} lang={lang} rolesDisponibles={appMode==='banda'?ROLES_BANDA:[]} planActivo={planActivo} planId={planId} setPlanId={setPlanId} persistirPersona={persistirPersona} online={online} setOnline={setOnline} firebaseListo={firebaseListo} onCrearInvitacion={()=>crearInvitacion(accountId)} theme={theme} setTheme={setTheme} repertorio={repertorio} persistirEquipo={persistirEquipo}/>}
-          {view==='misetlist'&&<MiEvento activeSunday={proximoDomingo} onOpenSong={i=>{setSongViewSongs(SETLISTS[proximoDomingo]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
+          {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
+            onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}/>}
+          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>
       </main>
