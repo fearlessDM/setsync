@@ -9,6 +9,7 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
   const tipos=getTiposEventoDisponibles(mode,lang);
   const [selId,setSelId]=useState(null);
   const [mesActivo,setMesActivo]=useState(new Date().getMonth());
+  const [diaSeleccionado,setDiaSeleccionado]=useState(null); // día del mes activo, para filtrar la lista de abajo
 
   const tipoLabel=(tipo)=>tipos.find(t=>t.tipo===tipo)?.label||tipo;
   const tipoColor=(tipo)=>({
@@ -17,7 +18,12 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
   }[tipo]||'var(--ac)');
 
   const eventosConFecha=eventos.filter(e=>!!e.fecha);
-  const porMes=eventosConFecha.filter(e=>new Date(e.fecha).getMonth()===mesActivo||eventosConFecha.length<4)
+  const porMes=eventosConFecha.filter(e=>{
+      const d=new Date(e.fecha);
+      if(d.getMonth()!==mesActivo && eventosConFecha.length>=4) return false;
+      if(diaSeleccionado && d.getDate()!==diaSeleccionado) return false;
+      return true;
+    })
     .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
 
   const mesesEs=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -45,6 +51,80 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
       })}
     </div>
   );
+
+  // ── Calendario de mes real (grilla de días) — portado de MiniCalEvento
+  // del AdminView.jsx original, adaptado para leer del array `eventos`
+  // único en vez de SETLISTS/EVENTOS_ESPECIALES por separado. Click en un
+  // día filtra la lista de abajo a solo ese día. ───────────────────────
+  const CalendarioMes=()=>{
+    const now=new Date();
+    const year=now.getFullYear();
+    const daysInMonth=new Date(year,mesActivo+1,0).getDate();
+    const rawFirst=new Date(year,mesActivo,1).getDay();
+    const firstDay=rawFirst===0?6:rawFirst-1; // semana arranca lunes
+    const isCurrentMonth=mesActivo===now.getMonth();
+    const today=isCurrentMonth?now.getDate():0;
+    const eventDays=new Set(
+      eventosConFecha.filter(e=>new Date(e.fecha).getMonth()===mesActivo).map(e=>new Date(e.fecha).getDate())
+    );
+
+    const cells=[];
+    for(let i=0;i<firstDay;i++)cells.push(null);
+    for(let d=1;d<=daysInMonth;d++)cells.push(d);
+    while(cells.length%7!==0)cells.push(null);
+    const rows=[];
+    for(let i=0;i<cells.length;i+=7)rows.push(cells.slice(i,i+7));
+
+    const diasSemana=lang==='en'?['M','T','W','T','F','S','S']:['L','M','M','J','V','S','D'];
+
+    return(
+      <div style={{padding:'12px',borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',marginBottom:14}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <button onClick={()=>setMesActivo(m=>m===0?11:m-1)} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--tx3)',padding:4}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px'}}>
+            {mesNombre} {year}
+          </span>
+          <button onClick={()=>setMesActivo(m=>m===11?0:m+1)} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--tx3)',padding:4}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
+          {diasSemana.map((d,i)=>(
+            <div key={i} style={{textAlign:'center',fontSize:9,fontWeight:900,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{d}</div>
+          ))}
+        </div>
+        {rows.map((row,ri)=>(
+          <div key={ri} style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
+            {row.map((d,ci)=>{
+              if(!d)return(<div key={ci} style={{height:30}}/>);
+              const hasEv=eventDays.has(d);
+              const isToday=d===today;
+              const isSel=diaSeleccionado===d;
+              return(
+                <div key={ci} onClick={()=>setDiaSeleccionado(isSel?null:d)}
+                  style={{height:30,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',
+                    borderRadius:8,background:isSel?'rgba(200,169,126,.18)':'transparent',
+                    border:isSel?'1px solid rgba(200,169,126,.5)':'1px solid transparent'}}>
+                  <span style={{fontSize:12,fontWeight:hasEv?900:400,fontFamily:"'Lexend Giga',sans-serif",
+                    color:hasEv?'var(--ac)':isToday?'var(--tx)':'var(--tx3)',
+                    textDecoration:isToday&&!hasEv?'underline':'none'}}>{d}</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        {diaSeleccionado&&(
+          <button onClick={()=>setDiaSeleccionado(null)}
+            style={{marginTop:8,fontSize:10,fontWeight:700,color:'var(--tx3)',background:'transparent',
+              border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+            {lang==='en'?'Clear day filter ×':'Quitar filtro de día ×'}
+          </button>
+        )}
+      </div>
+    );
+  };
 
 
   // ── Detalle de un evento ─────────────────────────────────────────────
@@ -173,6 +253,7 @@ export function Fechas({eventos=[],setEventos=()=>{},personas=[],isAdmin,onToast
   return(
     <div>
       <MonthStrip/>
+      <CalendarioMes/>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
