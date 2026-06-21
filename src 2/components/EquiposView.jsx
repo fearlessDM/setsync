@@ -1,10 +1,10 @@
 import { t as getT } from '../i18n';
 // EquiposView: vista de equipos del modo Iglesia con sus integrantes y roles
-import { EQUIPOS_DATA } from '../data/constants';
+// equipos ya no se importa directo — llega por props para sincronizar con Firestore.
 import { initials } from '../utils/music';
 import { getModoTexto } from '../data/modo';
 
-export function EquiposView({onToast,onGestionar,mode,lang='es'}){
+export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
   const vx=getModoTexto(mode,lang);
   return(
     <div>
@@ -16,7 +16,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es'}){
         
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(295px,1fr))',gap:13}}>
-        {EQUIPOS_DATA.map(eq=>(
+        {equipos.map(eq=>(
           <div key={eq.id} className="eq-card">
             <div style={{padding:'12px 15px',display:'flex',alignItems:'center',gap:9,borderBottom:'1px solid var(--bd)'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`,flexShrink:0}}/>

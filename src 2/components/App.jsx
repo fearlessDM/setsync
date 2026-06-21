@@ -299,13 +299,14 @@ export default function App(){
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
             onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
             onToast={showToast} onSelectDay={setActiveSunday} mesNav={mesNav} lang={lang}
-            eventos={eventos} onOpenSong={abrirSongDesdeEvento}/>}
+            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
-          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang}/>}
+          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang} equipos={equipos}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&tieneMonitoreo&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
-            onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}/>}
+            onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}
+            equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}/>}
           {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>

@@ -2,7 +2,7 @@ import { t as getT } from '../i18n';
 // AdminView: panel de administración con calendario de eventos, generación de
 // mensajes/notificaciones, mi setlist y estrenos.
 import { useState, useEffect, useRef } from 'react';
-import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES, EQUIPOS_DATA } from '../data/constants';
+import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 
 export function MiniCalEvento({mes}){
@@ -55,7 +55,7 @@ export function MiniCalEvento({mes}){
   );
 }
 
-export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay,mesNav=new Date().getMonth(),lang='es',eventos=[],onOpenSong}){
+export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay,mesNav=new Date().getMonth(),lang='es',eventos=[],onOpenSong,equipos=[]}){
   const tx=getT(lang);
   const [selDay,setSelDay]=useState(activeSunday);
   const [showPicker,setShowPicker]=useState(false);
@@ -134,7 +134,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                 )}
               </div>
               <div style={{display:'flex',gap:7,flexWrap:'wrap',marginTop:2}}>
-                {EQUIPOS_DATA.map(eq=>(
+                {equipos.map(eq=>(
                   <div key={eq.id} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',borderRadius:100,background:eq.color+'12',border:'1px solid '+eq.color+'30'}}>
                     <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
                     <span style={{fontSize:10,fontWeight:200,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{eq.name}</span>
@@ -178,7 +178,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                   {ev.setlist.map((s,j)=>(<span key={j} style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.07)',padding:'2px 7px',borderRadius:100}}>{s.name.split(' ').slice(0,3).join(' ')}</span>))}
                 </div>
                 <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                  {EQUIPOS_DATA.map(eq=>(
+                  {equipos.map(eq=>(
                     <div key={eq.id} style={{display:'flex',alignItems:'center',gap:4,padding:'2px 8px',borderRadius:100,background:eq.color+'12',border:'1px solid '+eq.color+'25'}}>
                       <div style={{width:5,height:5,borderRadius:'50%',background:eq.color}}/>
                       <span style={{fontSize:9,fontWeight:700,color:'rgba(255,255,255,.6)'}}>{eq.name}</span>
@@ -428,9 +428,9 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,marginBottom:14,overflow:'hidden'}}>
         <div style={{padding:'10px 14px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Equipos convocados</span>
-          <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{EQUIPOS_DATA.reduce((a,e)=>a+e.miembros.length,0)} personas</span>
+          <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equipos.reduce((a,e)=>a+e.miembros.length,0)} personas</span>
         </div>
-        {EQUIPOS_DATA.map(eq=>(
+        {equipos.map(eq=>(
           <div key={eq.id} style={{borderBottom:'1px solid rgba(255,255,255,.04)'}}>
             <div style={{padding:'8px 14px',display:'flex',alignItems:'center',gap:8}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
