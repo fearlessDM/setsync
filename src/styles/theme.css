@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Lexend+Giga:wght@100;175;300;400;500;700&family=Outfit:wght@300;400;500;600;700;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+--bg:#080809;--s1:rgba(255,255,255,.05);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
+--bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
+--ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.5);--tx3:#52555c;
+--gn:#30C0B7;--rd:#FD8083;--btn-c:#080809;
+}
+[data-theme=cream]{
+--bg:#f0ebe0;--s1:rgba(0,0,0,0.04);--s2:rgba(0,0,0,0.02);--s3:rgba(0,0,0,0.07);
+--bd:rgba(0,0,0,0.1);--bd2:rgba(0,0,0,0.18);
+--ac:#1a1b1e;--tx:#1a1208;--tx2:#5a4a30;--tx3:#a09070;
+--gn:#3a7a50;--rd:#c04040;--btn-c:#fffdf7;
+}
+[data-theme=gray]{
+--bg:#111113;--s1:rgba(255,255,255,0.06);--s2:rgba(255,255,255,0.03);--s3:rgba(255,255,255,0.10);
+--bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);
+--ac:#e0e0e0;--tx:#f0ede8;--tx2:#aaa49e;--tx3:#60605a;
+--gn:#5ecea0;--rd:#ff5252;--btn-c:#111;
+}
+body{background:var(--bg);color:var(--tx);font-family:'Lexend Giga',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
+#root{min-height:100vh;}
+/* Font roles */
+.f-title{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;}
+.f-body{font-family:'Lexend Giga',sans-serif;}
+.f-song{font-family:'Outfit',sans-serif;}
+/* Override all generic text */
+button,input,select,textarea{font-family:'Lexend Giga',sans-serif;}
+.bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;}
+[data-theme=cream] .bg-fx,[data-theme=gray] .bg-fx{opacity:.2;}
+/* ── GLASS ── */
+.card{background:var(--s1);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border:1px solid var(--bd);border-radius:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 50%);pointer-events:none;border-radius:inherit;}
+.card-hdr{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.card-body{padding:13px 16px;}
+/* ── TYPE — solo Special Gothic + DM Sans ── */
+h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;}
+.ff{font-family:'Lexend Giga',sans-serif;font-weight:900;}
+.title{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:clamp(22px,4vw,34px);color:var(--tx);line-height:1.05;}
+.ac{color:var(--ac);}
+.lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--tx3);font-family:'Lexend Giga',sans-serif;}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;border:none;cursor:pointer;font-family:'Lexend Giga',sans-serif;font-size:12px;font-weight:700;transition:all .2s;letter-spacing:.2px;}
+.btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.btn-p{background:var(--ac);color:var(--btn-c);}
+.btn-p:hover{opacity:.88;}
+.btn-g{background:var(--s1);color:var(--tx2);border:1px solid var(--bd);}
+.btn-g:hover{background:var(--s3);color:var(--tx);}
+.btn-s{background:rgba(255,255,255,.08);color:var(--tx);border:1px solid var(--bd);}
+.btn-s:hover{background:rgba(255,255,255,.13);}
+.btn-live{background:rgba(48,192,183,.15);color:var(--gn);border:1px solid rgba(48,192,183,.35);display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;cursor:pointer;font-family:'Lexend Giga',sans-serif;font-size:12px;font-weight:700;transition:all .2s;}
+.btn-live:hover{background:rgba(48,192,183,.25);}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.btn-xs{padding:3px 8px;font-size:10px;}
+.btn:disabled{opacity:.25;pointer-events:none;}
+.ib{width:26px;height:26px;border-radius:7px;border:1px solid var(--bd);background:var(--s1);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.ib svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.ib:hover{background:var(--s3);color:var(--tx);}
+.ib.del:hover{background:rgba(255,82,82,.1);color:var(--rd);border-color:rgba(255,82,82,.35);}
+/* ── INPUT ── */
+.inp{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:9px;padding:8px 12px;color:var(--tx);font-family:'Lexend Giga',sans-serif;font-size:13px;outline:none;transition:all .2s;width:100%;}
+.inp:focus{border-color:rgba(255,255,255,.25);box-shadow:0 0 0 3px rgba(255,255,255,.06);}
+.inp::placeholder{color:var(--tx3);}
+[data-theme=cream] .inp,[data-theme=gray] .inp{background:rgba(0,0,0,.04);}
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Lexend Giga',sans-serif;}
+.bdot{width:4px;height:4px;border-radius:50%;background:currentColor;}
+.b-draft{background:rgba(90,86,110,.2);color:var(--tx3);border:1px solid rgba(90,86,110,.25);}
+.b-pub{background:rgba(48,192,183,.1);color:var(--gn);border:1px solid rgba(48,192,183,.22);}
+/* ── SIDEBAR ── */
+.sb{position:fixed;left:0;top:0;bottom:0;width:180px;background:#0e0e10;border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:width .25s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+[data-theme=cream] .sb{background:rgba(236,230,218,.97);}
+[data-theme=gray] .sb{background:#0d0d0f;}
+.sb.col{width:60px;}
+.sb-top{display:flex;align-items:center;padding:14px 12px;border-bottom:1px solid var(--bd);min-height:68px;flex-shrink:0;position:relative;}
+.logo-mk{width:100%;display:flex;align-items:center;transition:all .25s;}
+.logo-mk img{max-height:36px;object-fit:contain;transition:all .25s;}
+.logo-txt{flex:1;overflow:hidden;transition:opacity .2s;}
+.logo-txt h1{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:15px;color:var(--tx);white-space:nowrap;letter-spacing:1px;}
+.logo-txt span{font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:2px;font-weight:700;white-space:nowrap;font-family:'Lexend Giga',sans-serif;}
+.sb.col .logo-txt,.sb.col .th-sw,.sb.col .sb-section-label{opacity:0;pointer-events:none;}
+.sb-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0;}
+.sb-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--bd);background:var(--s1);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.sb-btn:hover{background:var(--s3);color:var(--tx);}
+.sb-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.th-sw{display:flex;gap:5px;align-items:center;}
+.th-btn{width:14px;height:14px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:all .18s;}
+/* ── SIDEBAR NAV ── */
+.sb-nav{flex:1;overflow-y:auto;scrollbar-width:none;padding:12px 8px;}
+.sb-section-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--tx3);padding:0 8px;margin:10px 0 4px;font-family:'Lexend Giga',sans-serif;white-space:nowrap;transition:opacity .2s;}
+.nav-grp{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--tx3);padding:0 8px;margin-bottom:3px;font-weight:700;white-space:nowrap;transition:opacity .2s;font-family:'Lexend Giga',sans-serif;}
+.sb.col .nav-grp{opacity:0;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 8px;border-radius:9px;cursor:pointer;color:var(--tx2);transition:all .15s;margin-bottom:1px;white-space:nowrap;overflow:hidden;border:1px solid transparent;font-family:'Lexend Giga',sans-serif;}
+.ni:hover{background:var(--s1);color:var(--tx);}
+.ni.on{background:rgba(255,255,255,.07);color:var(--tx);border-color:rgba(255,255,255,.1);}
+.ni.on .ni-dot{background:var(--ac);}
+.ni-dot{width:4px;height:4px;border-radius:50%;background:var(--tx3);flex-shrink:0;transition:all .2s;}
+.ni-ic{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.ni-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;}
+.ni-lb{font-size:11px;font-weight:300;transition:opacity .2s;flex:1;font-family:'Lexend Giga',sans-serif;}
+.sb.col .ni-lb,.sb.col .ni-dot,.sb.col .sb-section-label{opacity:0;}
+.sb-foot{padding:12px;border-top:1px solid var(--bd);flex-shrink:0;}
+/* ── USER CHIP ── */
+.u-chip{display:flex;align-items:center;gap:9px;}
+.u-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--tx2);flex-shrink:0;font-family:'Lexend Giga',sans-serif;}
+.u-inf{min-width:0;overflow:hidden;transition:opacity .2s;}
+.u-name{font-size:11px;font-weight:300;color:var(--tx);white-space:nowrap;font-family:'Lexend Giga',sans-serif;}
+.sb.col .u-inf{opacity:0;}
+/* ── MAIN ── */
+.main{margin-left:180px;transition:margin-left .25s cubic-bezier(.4,0,.2,1);min-height:100vh;position:relative;z-index:1;}
+.main.col{margin-left:60px;}
+.pw{padding:10px 8px 90px;}
+
+/* ── SongView con sidebar visible ──────────────────────────────────────────
+   SongView usa position:fixed con inset:0 (pantalla completa), lo cual por
+   diseño no respeta el margin-left de .main — fixed se posiciona respecto
+   al viewport, no al contenedor padre. Para que el sidebar de navegación
+   general (Backstage/Fechas/Cancionero) siga visible mientras se ve una
+   canción en escritorio/tablet horizontal (pedido explícito de Danny:
+   "el sidebar es importante"), se usa "left" en vez de "inset" cuando
+   SongView recibe el prop sidebarVisible — mismos valores de ancho que ya
+   rigen .main en cada breakpoint, para que ambos queden sincronizados
+   automáticamente sin duplicar lógica de breakpoints en JS.
+   NOTA DE ESPECIFICIDAD: se usa el selector compuesto .sv.sv-with-sidebar
+   (no solo .sv-with-sidebar) para garantizar mayor especificidad real que
+   la regla `.sv{inset:0!important}` definida más abajo en este archivo —
+   sin esto, esa regla (misma especificidad si el selector fuera simple,
+   ambas con !important) gana por aparecer después en el código fuente,
+   anulando el ajuste de left por completo. */
+.sv.sv-with-sidebar{left:180px!important;}
+.sv.sv-with-sidebar.sv-sb-col{left:60px!important;}
+@media(min-width:768px) and (max-width:1023px){
+  /* En tablet vertical el sidebar real (.sb) ya se oculta vía CSS — acá se
+     refleja lo mismo, SongView vuelve a ocupar el ancho completo. */
+  .sv.sv-with-sidebar,.sv.sv-with-sidebar.sv-sb-col{left:0!important;}
+}
+@media(min-width:1024px){
+  .sv.sv-with-sidebar{left:220px!important;}
+  .sv.sv-with-sidebar.sv-sb-col{left:60px!important;}
+}
+@media(min-width:1440px){
+  .sv.sv-with-sidebar{left:200px!important;}
+  .sv.sv-with-sidebar.sv-sb-col{left:60px!important;}
+}
+@media(max-width:767px){
+  .sv.sv-with-sidebar,.sv.sv-with-sidebar.sv-sb-col{left:0!important;}
+}
+/* ── BOTTOM NAV (mobile) ── */
+.bot{display:none;position:fixed;bottom:0;left:0;right:0;background:#0e0e10;backdrop-filter:blur(26px);border-top:1px solid var(--bd);z-index:20;padding:7px 0 11px;justify-content:space-around;align-items:center;}
+[data-theme=cream] .bot{background:rgba(236,230,218,.97);}
+[data-theme=gray] .bot{background:#0d0d0f;}
+.bn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 7px;color:var(--tx3);transition:all .15s;font-family:'Lexend Giga',sans-serif;}
+.bn.on{color:var(--ac);}
+.bn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;}
+.bn-lb{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+/* ── MISC ── */
+.sc-n{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:clamp(32px,6vw,42px);color:var(--tx);line-height:1;}
+.two{display:grid;grid-template-columns:1fr;gap:12px;}
+.stats{display:flex;flex-wrap:wrap;gap:10px;}
+.ph{display:flex;flex-direction:column;gap:16px;}
+.modal{background:var(--s1);backdrop-filter:blur(40px);border:1px solid var(--bd);border-radius:20px;padding:24px;width:90vw;max-width:420px;}
+/* ── SV (SongView) ── */
+.sv{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;background:var(--bg);}
+.sv-hdr{display:flex;align-items:center;gap:10px;padding:10px 12px;flex-shrink:0;}
+.sv-back{width:32px;height:32px;border-radius:9px;border:1px solid var(--bd);background:var(--s1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.sv-back svg{width:14px;height:14px;stroke:var(--tx2);fill:none;stroke-width:2;}
+.sv-nav{display:flex;align-items:center;padding:8px 12px;gap:8px;flex-shrink:0;}
+.sv-ni{flex:1;text-align:center;min-width:0;}
+.nb{display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:9px;border:1px solid var(--bd);background:var(--s1);color:var(--tx2);cursor:pointer;font-family:'Lexend Giga',sans-serif;font-size:11px;font-weight:700;transition:all .2s;flex-shrink:0;}
+.nb:disabled{opacity:.2;pointer-events:none;}
+.nb.p{color:var(--ac);border-color:rgba(255,255,255,.2);}
+.nb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.sv-content{overscroll-behavior:contain;}
+
+/* ── Fader de velocidad de Auto Scroll ──────────────────────────────────
+   El thumb por defecto del navegador en un <input type="range"> es chico
+   (12-16px aprox.), difícil de agarrar con precisión en pantallas táctiles
+   — reportado por Danny como "se siente como que solo responde al clic".
+   El slider SIEMPRE soportó arrastre nativo (es un comportamiento estándar
+   de HTML, no algo que se pueda "romper" en código), pero un thumb tan
+   chico hace que arrastrarlo con el dedo se sienta poco confiable. Se
+   agranda el thumb y se le da mejor contraste visual para que el área
+   táctil real sea generosa y el drag se sienta sólido. */
+input[type="range"].fader-velocidad{
+  -webkit-appearance:none;appearance:none;
+  height:6px;border-radius:100px;
+  background:rgba(255,255,255,.12);
+  outline:none;cursor:pointer;
+}
+input[type="range"].fader-velocidad::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--gn);
+  border:3px solid rgba(255,255,255,.9);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  cursor:grab;
+}
+input[type="range"].fader-velocidad::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.1);}
+input[type="range"].fader-velocidad::-moz-range-thumb{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--gn);
+  border:3px solid rgba(255,255,255,.9);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  cursor:grab;
+}
+input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;transform:scale(1.1);}
+/* ── TABLET VERTICAL (768-1023px) ── */
+@media(min-width:768px) and (max-width:1023px){
+.sb{display:none;}
+.main{margin-left:0!important;}
+.bot{display:flex;}
+.pw{padding:16px 20px 90px;}
+}
+/* ── DESKTOP (>=1024px) ── */
+@media(min-width:1024px){
+.sb{display:flex;width:220px;}
+.sb.col{width:60px;}
+.main{margin-left:180px;}
+.main.col{margin-left:60px;}
+.bot{display:none;}
+.pw{padding:24px 28px 40px;}
+.sc-n{font-size:40px;}
+.title{font-size:34px;}
+.two{grid-template-columns:1fr 1fr;}
+.ph{flex-direction:row;align-items:center;}
+.modal{width:600px;}
+.ni-lb{font-size:11px;}
+.ni-ic svg{width:17px;height:17px;}
+}
+/* ── DESKTOP GRANDE (>=1440px) ── */
+@media(min-width:1440px){
+.sb{width:200px;}
+.sb.col{width:60px;}
+.main{margin-left:200px;}
+.main.col{margin-left:60px;}
+.pw{padding:28px 36px 40px;}
+.sc-n{font-size:46px;}
+.title{font-size:38px;}
+.modal{width:680px;}
+}
+/* ── MÓVIL (<768px) ── */
+@media(max-width:767px){
+.sb{display:none;}
+.main{margin-left:0!important;}
+.bot{display:flex;}
+.pw{padding:10px 8px 90px;}
+}
+
+/* Footer links higher opacity */
+
+/* ── CANCIONERO — Song chips grid ── */
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px;}
+.scard{display:flex;flex-direction:column;gap:4px;padding:11px 13px;border-radius:12px;background:var(--s1);border:1px solid var(--bd);cursor:pointer;transition:all .15s;min-width:0;}
+.scard:hover{background:var(--s3);border-color:var(--bd2);}
+.scard-n{font-family:'Lexend Giga',sans-serif;font-weight:500;font-size:10px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scard-s{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:6px;}
+.scard-s span{color:var(--tx3);font-weight:400;font-size:9px;}
+.bpm-sec{margin-bottom:24px;}
+.bpm-bar{height:2px;border-radius:2px;margin-bottom:12px;opacity:.25;}
+.bpm-bar.fast{background:var(--rd);}
+.bpm-bar.mid{background:var(--gn);}
+.bpm-bar.slow{background:#6b6f77;}
+@media(min-width:600px){
+  .sg{grid-template-columns:repeat(3,1fr);}
+}
+@media(min-width:1024px){
+  .sg{grid-template-columns:repeat(4,1fr);}
+}
+
+/* Sidebar collapsed: center favicon */
+.sb.col .sb-top{justify-content:center;padding:14px 0;}
+.sb.col .logo-mk{justify-content:center;}
+.sb:not(.col) .logo-mk{justify-content:flex-start;}
+/* Hide logo-txt always (logo image is the brand) */
+.logo-txt{display:none;}
+
+/* ── Page subtitles ── */
+.page-sub{font-size:15px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx2);line-height:1.4;}
+.page-sub-sm{font-size:12px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx3);line-height:1.5;}
+
+/* ── SongView fixes ── */
+.sv{position:fixed!important;inset:0!important;z-index:100!important;background:var(--bg)!important;}
