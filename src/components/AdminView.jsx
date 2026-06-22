@@ -93,7 +93,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
         <MiniCalEvento mes={mesNav}/>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 8px 14px'}}>
-        {mesNav===new Date().getMonth()&&Object.entries(SETLISTS).map(([dayStr,sl])=>{
+        {(mesNav===new Date().getMonth()||mesNav===6)&&Object.entries(SETLISTS).map(([dayStr,sl])=>{
           const day=parseInt(dayStr);
           const isNull=sl===null;
           const isActive=day===selDay;
@@ -190,7 +190,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
           )}
         </div>
       )}
-      {mesNav===new Date().getMonth()&&EVENTOS_ESPECIALES.filter(ev=>ev.mes===mesNav+1).length>0&&(
+      {EVENTOS_ESPECIALES.filter(ev=>ev.mes===mesNav+1).length>0&&(
         <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:10}}>
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0'}}>
             <div style={{flex:1,height:1,background:'rgba(255,255,255,.08)'}}/>
