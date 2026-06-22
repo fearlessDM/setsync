@@ -162,16 +162,9 @@ export default function App(){
   };
   const handleSaveChords=(name,content)=>{contentDB[name]=content;showToast('✓ Acordes guardados');};
 
-  const THEMES={
-    dark:{bg:'#080809',s1:'rgba(255,255,255,.05)',s2:'rgba(255,255,255,.025)',s3:'rgba(255,255,255,.08)',
-      bd:'rgba(255,255,255,.08)',bd2:'rgba(255,255,255,.16)',ac:'#ffffff',tx:'#f3f1ed',tx2:'rgba(243,241,237,.5)',tx3:'#52555c',gn:'#30C0B7',rd:'#FD8083'},
-    gray:{bg:'#22232a',s1:'rgba(255,255,255,.08)',s2:'rgba(255,255,255,.04)',s3:'rgba(255,255,255,.13)',
-      bd:'rgba(255,255,255,.13)',bd2:'rgba(255,255,255,.24)',ac:'#e07820',tx:'#f2ede6',tx2:'#b0a898',tx3:'#6a6258',gn:'#5ecea0',rd:'#ff5252'},
-    cream:{bg:'#EDE8DC',s1:'rgba(0,0,0,.07)',s2:'rgba(0,0,0,.04)',s3:'rgba(0,0,0,.12)',
-      bd:'rgba(0,0,0,.18)',bd2:'rgba(0,0,0,.32)',ac:'#D4500A',tx:'#1a1208',tx2:'#3a2010',tx3:'#7a5a3a',gn:'#1f8a5f',rd:'#c4361f'},
-  };
-  const themeVars=THEMES[theme]||THEMES.dark;
-  const themeStyle=Object.fromEntries(Object.entries(themeVars).map(([k,v])=>[`--${k}`,v]));
+  // Temas: dark es el default desde :root en theme.css
+  // gray y cream usan [data-theme] selector en theme.css
+  const dataTheme = theme==='dark' ? undefined : theme;
 
   const Footer=()=>(
     <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
@@ -253,10 +246,8 @@ export default function App(){
   }
 
   // ── Plataforma única — mismo árbol para Iglesia y Banda ───────────────
-  const themeVarsCSS = Object.entries(themeVars).map(([k,v])=>`--${k}:${v}`).join(';');
   return(
-    <div style={themeStyle}>
-      <style>{`:root{${themeVarsCSS}}`}</style>
+    <div data-theme={dataTheme}>
       <div className="bg-fx"/>
       <nav className={`sb${sbCol?' col':''}`}>
         <div className="sb-top">
@@ -295,7 +286,7 @@ export default function App(){
         </div>
       </nav>
 
-      <main className={`main${sbCol?' col':''}`} style={themeStyle}>
+      <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
           {view==='inicio'&&(
             <Inicio mode={appMode} lang={lang} userRole={userRole}

@@ -280,3 +280,28 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 
 /* ── SongView fixes ── */
 .sv{position:fixed!important;inset:0!important;z-index:100!important;background:var(--bg)!important;}
+
+/* ── Toast notification ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--s3);border:1px solid var(--bd2);border-radius:14px;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:9999;
+  min-width:160px;max-width:300px;backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px rgba(0,0,0,.4);pointer-events:none;}
+.t-ic{width:20px;height:20px;border-radius:50%;background:var(--gn);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.t-ic svg{width:11px;height:11px;fill:none;stroke:#fff;stroke-width:3;
+  stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── Temas extra ── */
+[data-theme=bubblegum]{
+--bg:#0d1f1f;--s1:rgba(255,105,180,.07);--s2:rgba(255,105,180,.04);--s3:rgba(255,105,180,.12);
+--bd:rgba(255,105,180,.15);--bd2:rgba(255,105,180,.28);
+--ac:#FF69B4;--tx:#e8fff8;--tx2:rgba(232,255,248,.55);--tx3:#5a8a7a;
+--gn:#00F0FF;--rd:#ff4488;
+}
+[data-theme=cosmos]{
+--bg:#07081a;--s1:rgba(167,139,250,.07);--s2:rgba(167,139,250,.04);--s3:rgba(167,139,250,.12);
+--bd:rgba(167,139,250,.15);--bd2:rgba(167,139,250,.28);
+--ac:#a78bfa;--tx:#e8e4ff;--tx2:rgba(232,228,255,.5);--tx3:#6060a0;
+--gn:#34d399;--rd:#f87171;
+}
