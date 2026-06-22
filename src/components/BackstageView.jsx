@@ -11,7 +11,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()={}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
