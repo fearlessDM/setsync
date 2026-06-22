@@ -22,7 +22,13 @@ export const EVENTOS_ESPECIALES=[
   {mes:9,dia:21,tipo:'domingo',label:'Domingo 21 de Septiembre',setlist:[{name:'YESHUA',key:'D',bpm:130},{name:'LA BONDAD DE DIOS',key:'C',bpm:89},{name:'LO HARÁS OTRA VEZ',key:'G',bpm:70},{name:'SEGURO ESTOY',key:'D',bpm:58}]},
 ];
 
-export const CANCIONES = [];
+export const CANCIONES = [
+  {n:'TODA LENGUA TODA NACIÓN', key:'A',  bpm:124, artista:'Marcos Witt'},
+  {n:'GRANDE ES TU FIDELIDAD',  key:'G',  bpm:72,  artista:'Clásico'},
+  {n:'ABBA PADRE',              key:'D',  bpm:68,  artista:'Redimi2'},
+  {n:'NO HAY LUGAR MÁS ALTO',  key:'C',  bpm:80,  artista:'Ingrid Rosario'},
+  {n:'JESÚS ERES MI REY',       key:'E',  bpm:116, artista:'Hillsong en Español'},
+];
 
 export const MODES = {
   band:    {label:'Bandas',sub:'Para músicos y agrupaciones',events:'Show, Gig, Ensayo',tagline:'Panel de Banda'},

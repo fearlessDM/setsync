@@ -304,10 +304,19 @@ export default function App(){
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
               onNavigate={setView}/>
           )}
-          {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
-            onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
-            onToast={showToast} onSelectDay={setActiveSunday} mesNav={mesNav} lang={lang}
-            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>}
+          {view==='fechas'&&(
+            <div style={{...themeStyle,minHeight:'100%'}}>
+              <AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
+                onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
+                onToast={showToast} onSelectDay={setActiveSunday} mesNav={mesNav} lang={lang}
+                eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>
+            </div>
+          )}
+          {view==='misetlist'&&(
+            <div style={{...themeStyle,minHeight:'100%'}}>
+              <MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>
+            </div>
+          )}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
@@ -318,7 +327,6 @@ export default function App(){
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             onNavigate={setView}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>
       </main>

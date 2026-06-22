@@ -236,5 +236,130 @@ Elevation Worship / Brandon Lake
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios,
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios.
 `,
+,
+  'TODA LENGUA TODA NACIÓN': `
+TODA LENGUA TODA NACIÓN
+Marcos Witt
+
+===VERSO 1===
+[A]Toda lengua, to[E]da nación
+[F#m]Toda tribu, to[D]do poder
+[A]Se rendirá an[E]te tu altar
+[D]Y te adorará
+
+===CORO===
+[A]¡Gloria, gloria!
+[E]¡A ti sea la glo[F#m]ria!
+[D]Por los siglos de los si[A]glos
+[E]¡Aleluya!
+
+===VERSO 2===
+[A]Todo ojo te mi[E]rará
+[F#m]Todo corazón te a[D]mará
+[A]De oriente a ponien[E]te, Señor
+[D]Tu nombre exaltará
+
+===PUENTE===
+[D]Santo, santo, san[E]to es el Señor
+[F#m]De los ejér[E]citos
+[D]Toda la tierra está [A]llena
+[E]De su gloria y su [A]esplendor
+`,
+
+  'GRANDE ES TU FIDELIDAD': `
+GRANDE ES TU FIDELIDAD
+Clásico
+
+===VERSO 1===
+[G]Grande es tu fide[C]lidad, oh [G]Dios
+[G]No hay sombra de va[D]riación en [G]ti
+[C]No te arre[G]pientes ni [Em]cambias tu [A]ser
+[D]Y todo lo [D7]que prometiste cum[G]plirás
+
+===CORO===
+[G]Grande es tu fide[C]lidad
+[G]Grande es tu fide[D]lidad
+[G]Mañana tras ma[C]ñana, nuevas [G]son
+[Em]Tus miseri[A7]cordias, toda mi ne[D]cesidad
+[G]Tus manos pro[C]veen [G]siempre para [D]mí
+[G]Grande es tu fide[C]lidad, oh [G]Dios
+
+===VERSO 2===
+[G]Verano e in[C]vierno y pri[G]mavera y otoño
+[G]Sol, luna y es[D]trellas en su [G]lugar
+[C]Lluvias y co[G]secha, cie[Em]los y tierra
+[A]Hablan de tu fiel[D]dad sin par
+`,
+
+  'ABBA PADRE': `
+ABBA PADRE
+Redimi2
+
+===VERSO 1===
+[D]Abba Padre te ne[A]cesito
+[Bm]Aquí en tu pre[G]sencia quiero estar
+[D]Abba Padre te ne[A]cesito
+[G]Aquí en tu pre[A]sencia quiero es[D]tar
+
+===CORO===
+[G]Tú eres mi fuerza, [A]tú eres mi paz
+[D]Tú eres mi forta[A]leza, mi ayuda [Bm]fiel
+[G]En ti confío, en [A]ti creo
+[D]Tú eres mi todo, mi [G]Dios y Re[A]y
+
+===PUENTE===
+[Bm]No hay nada que me separe [G]de tu amor
+[D]Nada que me aleje de [A]ti, Señor
+[Bm]Tu gracia me sostiene [G]cada día
+[D]Tu amor es todo lo que [A]necesito
+`,
+
+  'NO HAY LUGAR MÁS ALTO': `
+NO HAY LUGAR MÁS ALTO
+Ingrid Rosario
+
+===VERSO 1===
+[C]No hay lugar más al[G]to que tu pre[Am]sencia
+[F]No hay lugar más sa[C]grado, no hay [G]nada igual
+[C]En tu pre[G]sencia hay [Am]plenitud
+[F]Gozo eter[G]no en tu a[C]mor
+
+===CORO===
+[F]Aquí me pos[C]tro ante ti
+[G]Mi alma te [Am]adora a ti
+[F]No hay nada que com[C]pare con tu [G]amor
+[F]Tu presencia es mi [C]hogar
+[G]En ti quiero que[Am]dar
+[F]Para siempre, [G]para siem[C]pre
+
+===VERSO 2===
+[C]Tu presencia lle[G]na este lu[Am]gar
+[F]Tu gloria, tu po[C]der nos rodea [G]ya
+[C]Espíritu [G]Santo, bienve[Am]nido eres
+[F]A este lugar, [G]a este lu[C]gar
+`,
+
+  'JESÚS ERES MI REY': `
+JESÚS ERES MI REY
+Hillsong en Español
+
+===VERSO 1===
+[E]Jesús, eres mi Rey, mi [A]Señor
+[E]Te adoraré, te da[B]ré mi amor
+[C#m]Porque tú me a[A]maste prime[E]ro
+[B]Y en tu amor en[A]contré mi [E]ser
+
+===CORO===
+[A]Digno eres de [E]gloria
+[B]Digno de todo [C#m]honor
+[A]Digno de ala[E]banza
+[B]Eres tú, mi [E]Dios
+
+===PUENTE===
+[A]Eres Santo, [E]eres digno
+[B]Tu nombre es en[C#m]salzado
+[A]De la tierra al [E]cielo
+[B]Tu gloria será can[E]tada
+`,
 
 };
