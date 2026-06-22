@@ -236,7 +236,6 @@ Elevation Worship / Brandon Lake
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios,
 [G]Que toda la[G] Creación,[G] Alabe a Dios[G] alabe a Dios.
 `,
-,
   'TODA LENGUA TODA NACIÓN': `
 TODA LENGUA TODA NACIÓN
 Marcos Witt
