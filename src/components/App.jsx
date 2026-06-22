@@ -14,7 +14,7 @@ import { AdminView, MiSetlist, PremiereView } from './AdminView';
 import { Cancionero } from './Cancionero';
 import { EquiposView } from './EquiposView';
 import { BackstageView } from './BackstageView';
-import { Pads } from './Pads';
+import { Inicio } from './Inicio';
 import { Click } from './Click';
 import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
@@ -253,8 +253,10 @@ export default function App(){
   }
 
   // ── Plataforma única — mismo árbol para Iglesia y Banda ───────────────
+  const themeVarsCSS = Object.entries(themeVars).map(([k,v])=>`--${k}:${v}`).join(';');
   return(
     <div style={themeStyle}>
+      <style>{`:root{${themeVarsCSS}}`}</style>
       <div className="bg-fx"/>
       <nav className={`sb${sbCol?' col':''}`}>
         <div className="sb-top">
@@ -296,29 +298,11 @@ export default function App(){
       <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
           {view==='inicio'&&(
-            <div style={{padding:'20px 8px'}}>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>
-                {lang==='en'?'Welcome':'Bienvenido'}
-              </div>
-              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.6,marginBottom:20}}>
-                {appMode==='iglesia'?'Tu plataforma de worship':'Tu plataforma para la banda'}
-              </div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                {[
-                  {id:'fechas',label:'Fechas',sub:'Ver eventos del mes'},
-                  {id:'misetlist',label:'Próx. Fecha',sub:'Mi setlist y notificación'},
-                  {id:'repertorio',label:vx.repertorioTab,sub:'Mis canciones'},
-                  {id:'backstage',label:'Backstage',sub:'Gestión y configuración'},
-                ].map(it=>(
-                  <button key={it.id} onClick={()=>setView(it.id)}
-                    style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'18px 14px',
-                      cursor:'pointer',textAlign:'left',display:'flex',flexDirection:'column',gap:5}}>
-                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)'}}>{it.label}</div>
-                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:200,fontSize:10,color:'var(--tx3)'}}>{it.sub}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Inicio mode={appMode} lang={lang} userRole={userRole}
+              equipos={equipos} personas={personas} eventos={eventos}
+              planActivo={planActivo} planId={planId}
+              tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
+              onNavigate={setView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
             onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
