@@ -63,7 +63,7 @@ export default function App(){
   const tx=getT(lang);
   const vx=getModoTexto(appMode,lang);
   const feat=getModoFeatures(appMode);
-  const [view,setView]=useState('backstage');
+  const [view,setView]=useState('inicio');
   const [sbCol,setSbCol]=useState(false);
   const [toast,setToast]=useState(null);
   const [theme,setTheme]=useState('dark');
@@ -187,13 +187,11 @@ export default function App(){
 
   // ── Navegación — misma para ambos modos, etiquetas vía vx ────────────
   const BNS=[
-    {id:'backstage',  label:tx.backstage||'Backstage'},
+    {id:'inicio',     label:lang==='en'?'Home':'Inicio'},
     {id:'fechas',     label:lang==='en'?'Dates':'Fechas'},
     {id:'misetlist',  label:lang==='en'?'Next date':'Próx. Fecha'},
     {id:'repertorio', label:vx.repertorioTab},
-    {id:'equipos',    label:vx.equipoPersona.plural},
-    ...(tienePremiere?[{id:'premiere',label:'Premiere'}]:[]),
-    ...(tieneMonitoreo?[{id:'monitoreo',label:'Monitoreo'}]:[]),
+    {id:'backstage',  label:'Backstage'},
   ];
   const NavIco=({id,active})=>{
     const s={viewBox:"0 0 24 24",width:20,height:20,fill:"none",stroke:active?"var(--ac)":"var(--tx3)",strokeWidth:1.5,strokeLinecap:"round",strokeLinejoin:"round"};
@@ -201,6 +199,7 @@ export default function App(){
     if(id==='repertorio')return(<svg {...s}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
     if(id==='equipos')return(<svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>);
     if(id==='premiere')return(<svg {...s}><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>);
+    if(id==='inicio')return(<svg {...s}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
     if(id==='misetlist')return(<svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><polyline points="9 16 11 18 15 13.5"/></svg>);
     if(id==='monitoreo')return(<svg {...s}><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>);
     if(id==='backstage')return(<svg {...s}><line x1="5" y1="3" x2="5" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><rect x="3" y="7" width="4" height="3.5" rx="1.5"/><rect x="10" y="13" width="4" height="3.5" rx="1.5"/><rect x="17" y="5" width="4" height="3.5" rx="1.5"/></svg>);
@@ -296,17 +295,45 @@ export default function App(){
 
       <main className={`main${sbCol?' col':''}`}>
         <div className="pw">
+          {view==='inicio'&&(
+            <div style={{padding:'20px 8px'}}>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>
+                {lang==='en'?'Welcome':'Bienvenido'}
+              </div>
+              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.6,marginBottom:20}}>
+                {appMode==='iglesia'?'Tu plataforma de worship':'Tu plataforma para la banda'}
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                {[
+                  {id:'fechas',label:'Fechas',sub:'Ver eventos del mes'},
+                  {id:'misetlist',label:'Próx. Fecha',sub:'Mi setlist y notificación'},
+                  {id:'repertorio',label:vx.repertorioTab,sub:'Mis canciones'},
+                  {id:'backstage',label:'Backstage',sub:'Gestión y configuración'},
+                ].map(it=>(
+                  <button key={it.id} onClick={()=>setView(it.id)}
+                    style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'18px 14px',
+                      cursor:'pointer',textAlign:'left',display:'flex',flexDirection:'column',gap:5}}>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx)'}}>{it.label}</div>
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:200,fontSize:10,color:'var(--tx3)'}}>{it.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
             onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
             onToast={showToast} onSelectDay={setActiveSunday} mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
-          {view==='equipos'&&<EquiposView onToast={showToast} onGestionar={()=>setView('backstage')} mode={appMode} lang={lang} equipos={equipos}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
-          {view==='monitoreo'&&tieneMonitoreo&&<Monitoreo lang={lang} onToast={showToast}/>}
+          {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
             onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}
-            equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}/>}
+            equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}
+            online={online} setOnline={setOnline} firebaseListo={firebaseListo}
+            planId={planId} setPlanId={setPlanId} planActivo={planActivo}
+            tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
+            onNavigate={setView}/>}
           {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
           <Footer/>
         </div>

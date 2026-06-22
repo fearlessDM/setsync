@@ -11,7 +11,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang='es',equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()={}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -617,6 +617,91 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           ))}
         </div>
       </div>
+      <div className="card" style={{padding:14,marginBottom:12}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Idioma · Language</div>
+        <div style={{display:'flex',gap:6}}>
+          {['es','en'].map(l=>(
+            <button key={l} onClick={()=>onToast({text:l==='es'?'Idioma cambiado a Español':'Language changed to English',sub:''})}
+              style={{flex:1,padding:'9px',borderRadius:10,border:`1px solid ${lang===l?'rgba(200,169,126,.5)':'var(--bd)'}`,
+                background:lang===l?'rgba(200,169,126,.1)':'transparent',color:lang===l?'var(--ac)':'var(--tx3)',
+                fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+              {l==='es'?'🇨🇱 Español':'🇺🇸 English'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{padding:14,marginBottom:12}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Plan</div>
+        <div style={{display:'flex',gap:6}}>
+          {['lite','pro','premium'].map(p=>(
+            <button key={p} onClick={()=>{setPlanId(p);onToast(`✓ Plan ${p}`);}}
+              style={{flex:1,padding:'9px',borderRadius:10,
+                border:`1px solid ${planId===p?'rgba(200,169,126,.5)':'var(--bd)'}`,
+                background:planId===p?'rgba(200,169,126,.1)':'transparent',
+                color:planId===p?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,
+                cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",textTransform:'capitalize'}}>
+              {p}
+            </button>
+          ))}
+        </div>
+        {planActivo&&(
+          <div style={{marginTop:8,fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
+            Canciones: {planActivo.limiteCanciones} · Miembros: {planActivo.limiteMiembros===Infinity?'Ilimitados':planActivo.limiteMiembros}
+          </div>
+        )}
+        <div style={{fontSize:10,color:'rgba(255,255,255,.25)',fontFamily:"'Lexend Giga',sans-serif",marginTop:6}}>
+          Selector temporal · cobro real próximamente
+        </div>
+      </div>
+
+      {firebaseListo&&(
+        <div className="card" style={{padding:14,marginBottom:12}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>
+                {online?'En línea':'Sin conexión'}
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>
+                {online?'Sincronizando con Firebase':'Sync pausado — los cambios se guardan localmente'}
+              </div>
+            </div>
+            <button onClick={()=>setOnline(o=>!o)}
+              style={{width:44,height:24,borderRadius:12,border:'none',cursor:'pointer',flexShrink:0,
+                background:online?'var(--gn)':'var(--bd)',position:'relative',transition:'background .2s'}}>
+              <div style={{position:'absolute',top:2,left:online?22:2,width:20,height:20,borderRadius:10,
+                background:'#fff',transition:'left .2s'}}/>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(tienePremiere||tieneMonitoreo)&&(
+        <div className="card" style={{padding:14,marginBottom:12}}>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>
+            Features Pro/Premium
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {tienePremiere&&(
+              <button onClick={()=>{setBsView(null);onNavigate('premiere');}}
+                style={{padding:'10px 12px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
+                  color:'var(--tx)',fontSize:12,fontWeight:700,cursor:'pointer',textAlign:'left',
+                  fontFamily:"'Lexend Giga',sans-serif"}}>
+                ★ Premiere — Estrenos exclusivos
+              </button>
+            )}
+            {tieneMonitoreo&&(
+              <button onClick={()=>{setBsView(null);onNavigate('monitoreo');}}
+                style={{padding:'10px 12px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
+                  color:'var(--tx)',fontSize:12,fontWeight:700,cursor:'pointer',textAlign:'left',
+                  fontFamily:"'Lexend Giga',sans-serif"}}>
+                ⊟ Monitoreo — Mezcla en vivo (UI)
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <div>
