@@ -60,7 +60,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [toast,setToast]=useState(null);
   const [showMonitor,setShowMonitor]=useState(false);
   const [monitorBus,setMonitorBus]=useState(1);
-  const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros','Pad','Fx','Aux L','Aux R'];
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);

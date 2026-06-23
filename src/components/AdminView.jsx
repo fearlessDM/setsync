@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 
-export function MiniCalEvento({mes}){
+export function MiniCalEvento({mes,eventos=[],onSelectDay=()=>{},selectedDay=null}){
   const now=new Date();
   const year=now.getFullYear();
   const month=mes!==undefined?mes:now.getMonth();
@@ -14,7 +14,9 @@ export function MiniCalEvento({mes}){
   const isCurrentMonth=month===now.getMonth();
   const setlistDays=isCurrentMonth?new Set(Object.entries(SETLISTS).filter(([,v])=>v!==null).map(([d])=>parseInt(d))):new Set();
   const especiales=new Set(EVENTOS_ESPECIALES.filter(e=>e.mes===month+1).map(e=>e.dia));
-  const eventDays=new Set([...setlistDays,...especiales]);
+  // Also mark days from the eventos array
+  const eventosDays=new Set(eventos.filter(e=>e.fecha&&new Date(e.fecha).getFullYear()===year&&new Date(e.fecha).getMonth()===month).map(e=>new Date(e.fecha).getDate()));
+  const eventDays=new Set([...setlistDays,...especiales,...eventosDays]);
   const today=isCurrentMonth?now.getDate():0;
 
   const cells=[];
@@ -37,13 +39,19 @@ export function MiniCalEvento({mes}){
             if(!d)return(<div key={ci} style={{height:11}}/>);
             const hasEv=eventDays.has(d);
             const isToday=d===today;
+            const isSel=d===selectedDay;
             return(
-              <div key={ci} style={{height:11,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <div key={ci} onClick={()=>hasEv&&onSelectDay(d)}
+                style={{height:11,display:'flex',alignItems:'center',justifyContent:'center',cursor:hasEv?'pointer':'default'}}>
                 <span style={{
                   fontSize:7,fontWeight:hasEv?900:400,
                   fontFamily:"'Lexend Giga',sans-serif",
-                  color:hasEv?'var(--ac)':isToday?'rgba(255,255,255,.8)':'var(--tx3)',
-                  textDecoration:isToday&&!hasEv?'underline':'none',
+                  color:isSel?'var(--bg)':hasEv?'var(--ac)':isToday?'rgba(255,255,255,.8)':'var(--tx3)',
+                  background:isSel?'var(--ac)':'transparent',
+                  borderRadius:isSel?'50%':'0',
+                  width:isSel?10:undefined,height:isSel?10:undefined,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  textDecoration:isToday&&!hasEv&&!isSel?'underline':'none',
                   lineHeight:1
                 }}>{d}</span>
               </div>
@@ -79,18 +87,28 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
   const allDays=Object.keys(SETLISTS).map(Number).sort((a,b)=>a-b);
   const nextDay=allDays.find(d=>d>=today&&SETLISTS[d]!==null);
 
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
   return(
     <div style={{padding:'0 0 90px'}}>
       <div style={{padding:'12px 8px 10px',display:'flex',alignItems:'flex-start',gap:12}}>
         <div style={{flex:1}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
-            Fechas en <span style={{color:'var(--ac)'}}>{['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNav]}</span>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+            <button onClick={()=>onSelectDay&&onSelectDay(selDay,mesNav-1)} style={{width:28,height:28,borderRadius:8,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:24,color:'var(--tx)',lineHeight:1.05,flex:1}}>
+              {MESES[mesNav]}
+            </div>
+            <button onClick={()=>onSelectDay&&onSelectDay(selDay,mesNav+1)} style={{width:28,height:28,borderRadius:8,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:5}}>
-            {mesNav===new Date().getMonth()?`${diasEvento.filter(e=>e.sl).length} domingos · Toca uno para ver el detalle`:'Eventos del mes seleccionado'}
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5}}>
+            Toca un día o bloque para ver el setlist
           </div>
         </div>
-        <MiniCalEvento mes={mesNav}/>
+        <MiniCalEvento mes={mesNav} eventos={eventos} onSelectDay={(d)=>{setSelDay(d);if(onSelectDay)onSelectDay(d);}} selectedDay={selDay}/>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:10,padding:'0 8px 14px'}}>
         {(mesNav===new Date().getMonth()||mesNav===6)&&Object.entries(SETLISTS).map(([dayStr,sl])=>{
@@ -119,15 +137,15 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                   <div style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
                 </div>
               )}
-            <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
+            <div onClick={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);if(sl&&sl.length>0&&onOpenSong)onOpenSong(0,sl);}} style={{padding:'16px',borderRadius:16,background:isNext?'rgba(255,255,255,.04)':'var(--s1)',border:isNext?'1px solid rgba(255,255,255,.15)':'1px solid var(--bd)',cursor:'pointer',transition:'all .2s',opacity:(day<today&&!isActive)?0.55:1}}>
               <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:18,transition:'font-size .2s'}}>{tx.sunday} {day}</div>
                   <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginTop:4}}>{sl.length} {sl.length===1?tx.song:tx.songs}</div>
                 </div>
                 <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:pub?'1px solid rgba(94,206,160,.35)':'1px solid rgba(255,200,100,.25)',background:pub?'rgba(94,206,160,.08)':'rgba(255,200,100,.06)',color:pub?'var(--gn)':'rgba(255,200,100,.8)',flexShrink:0}}>{pub?tx.published:tx.draft}</span>
-                {isLeader&&(
-                  <button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'7px 12px',borderRadius:10,border:'1px solid rgba(200,169,126,.3)',background:'rgba(94,206,160,.1)',cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)'}}>
+                {isLeader&&sl&&sl.length>0&&(
+                  <button onClick={e=>{e.stopPropagation();if(onOpenSong)onOpenSong(0,sl);}} style={{padding:'7px 12px',borderRadius:10,cursor:'pointer',display:'flex',alignItems:'center',gap:5,flexShrink:0,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:11,color:'var(--gn)',border:'1px solid rgba(94,206,160,.35)',background:'rgba(94,206,160,.1)'}}>
                     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
                     {tx.live}
                   </button>

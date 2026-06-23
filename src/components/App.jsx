@@ -138,7 +138,7 @@ export default function App(){
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
-  const [mesNav,setMesNav]=useState(new Date().getMonth());
+  const [mesNav,setMesNav]=useState(6); // Julio (mes 6, 0-indexed) donde están los datos demo
   const [activeSunday,setActiveSunday]=useState(()=>Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1);
   const contentDB = appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
 
