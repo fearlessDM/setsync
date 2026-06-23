@@ -139,7 +139,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                     <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
                     <span style={{fontSize:10,fontWeight:200,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{eq.name}</span>
                     <span style={{fontSize:9,fontWeight:900,color:eq.color,marginLeft:2,display:'flex',alignItems:'center',gap:1}}>
-                      {eq.miembros.length}
+                      {eq.(miembros||[]).length}
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke={eq.color} strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
                   </div>
@@ -175,7 +175,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                   </button>}
                 </div>
                 <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
-                  {ev.setlist.map((s,j)=>(<span key={j} style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.07)',padding:'2px 7px',borderRadius:100}}>{s.name.split(' ').slice(0,3).join(' ')}</span>))}
+                  {(ev.setlist||[]).map((s,j)=>(<span key={j} style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.07)',padding:'2px 7px',borderRadius:100}}>{s.name.split(' ').slice(0,3).join(' ')}</span>))}
                 </div>
                 <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                   {equipos.map(eq=>(
@@ -207,7 +207,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                 <span style={{padding:'3px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',flexShrink:0,display:'none'}}>Especial</span>
               </div>
               <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-                {ev.setlist.map((s,j)=>(<span key={j} style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',padding:'2px 7px',borderRadius:100}}>{s.name.split(' ').slice(0,3).join(' ')}</span>))}
+                {(ev.setlist||[]).map((s,j)=>(<span key={j} style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.08)',padding:'2px 7px',borderRadius:100}}>{s.name.split(' ').slice(0,3).join(' ')}</span>))}
               </div>
             </div>
           ))}
@@ -428,17 +428,17 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:16,marginBottom:14,overflow:'hidden'}}>
         <div style={{padding:'10px 14px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Equipos convocados</span>
-          <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equipos.reduce((a,e)=>a+e.miembros.length,0)} personas</span>
+          <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equipos.reduce((a,e)=>a+e.(miembros||[]).length,0)} personas</span>
         </div>
         {equipos.map(eq=>(
           <div key={eq.id} style={{borderBottom:'1px solid rgba(255,255,255,.04)'}}>
             <div style={{padding:'8px 14px',display:'flex',alignItems:'center',gap:8}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
               <span style={{fontWeight:900,fontSize:12,color:'var(--tx)',flex:1}}>{eq.name}</span>
-              <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{eq.miembros.length}</span>
+              <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{eq.(miembros||[]).length}</span>
             </div>
             <div style={{padding:'0 14px 8px',display:'flex',flexWrap:'wrap',gap:5}}>
-              {eq.miembros.map(m=>(
+              {eq.(miembros||[]).map(m=>(
                 <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:100,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
                   <div style={{width:16,height:16,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:6,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
                   <span style={{fontSize:10,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>

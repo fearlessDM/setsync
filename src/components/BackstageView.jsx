@@ -113,7 +113,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
               <input type="checkbox" defaultChecked onChange={()=>{}} style={{accentColor:eq.color,width:13,height:13}}/>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
               <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{eq.name}</span>
-              <span style={{fontSize:10,color:'var(--tx3)'}}>{eq.miembros.length}p</span>
+              <span style={{fontSize:10,color:'var(--tx3)'}}>{eq.(miembros||[]).length}p</span>
             </label>
           ))}
         </div>
@@ -322,7 +322,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
 
   if(bsView==='equipos'){
     // Listado de músicos (todos los integrantes únicos)
-    const bandaEquipo=equipos.find(e=>e.name==='Banda'); const listado=(bandaEquipo?bandaEquipo.miembros:[]).filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
+    const bandaEquipo=equipos.find(e=>e.name==='Banda'); const listado=(bandaEquipo?bandaEquipo.(miembros||[]):[]).filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
 
     return(
       <div style={{padding:'10px 8px',paddingBottom:90}}>
@@ -348,7 +348,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
               const nuevoMiembro={id:Date.now(),name:nombre.trim(),role:'Libre'};
               const banda=equipos.find(e=>e.name==='Banda')||equipos[0];
               if(!banda){onToast('Crea una formación primero');return;}
-              const upd={...banda,miembros:[...banda.miembros,nuevoMiembro]};
+              const upd={...banda,miembros:[...banda.(miembros||[]),nuevoMiembro]};
               setEquipos(prev=>prev.map(e=>e.id===banda.id?upd:e));
               persistirEquipo(upd);
               onToast({text:'Músico agregado',sub:nombre.trim()});
@@ -363,7 +363,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
             <div onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)} style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:9,cursor:'pointer'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
               <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
-              <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{eq.miembros.length}</span>
+              <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{eq.(miembros||[]).length}</span>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{transform:activeEq===eq.id?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {activeEq===eq.id&&(
@@ -381,19 +381,19 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                     persistirEquipo(upd);
                   }} style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>+ Rol</button>
                 </div>
-                {eq.miembros.map(m=>(
+                {eq.(miembros||[]).map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
                     <div style={{width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
                     <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.name}</span>
                     <select value={m.role} onChange={e=>{
-                      const upd={...eq,miembros:eq.miembros.map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
+                      const upd={...eq,miembros:eq.(miembros||[]).map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
                       setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
                       persistirEquipo(upd);
                     }} style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
                       {eq.roles.map(r=>(<option key={r} value={r}>{r}</option>))}
                     </select>
                     <button onClick={()=>{
-                      const upd={...eq,miembros:eq.miembros.filter(mm=>mm.id!==m.id)};
+                      const upd={...eq,miembros:eq.(miembros||[]).filter(mm=>mm.id!==m.id)};
                       setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
                       persistirEquipo(upd);
                       onToast({text:'Removido',sub:m.name});
@@ -407,14 +407,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                       if(!e.target.value)return;
                       const persona=listado.find(m=>String(m.id)===e.target.value);
                       if(!persona)return;
-                      const yaTiene=eq.miembros.find(em=>em.id===persona.id);
-                      const upd={...eq,miembros:yaTiene?eq.miembros:[...eq.miembros,{id:persona.id,name:persona.name,role:eq.roles[0]||'General'}]};
+                      const yaTiene=eq.(miembros||[]).find(em=>em.id===persona.id);
+                      const upd={...eq,miembros:yaTiene?eq.(miembros||[]):[...eq.(miembros||[]),{id:persona.id,name:persona.name,role:eq.roles[0]||'General'}]};
                       setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
                       persistirEquipo(upd);
                       onToast({text:'Agregado a '+eq.name,sub:persona.name});
                     }}>
                     <option value="">Agregar persona...</option>
-                    {listado.filter(m=>!eq.miembros.find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+                    {listado.filter(m=>!eq.(miembros||[]).find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
                   </select>
                 </div>
               </div>
@@ -475,7 +475,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <div className="lbl" style={{marginBottom:5}}>Integrante</div>
           <select className="inp" style={{cursor:'pointer'}}>
             <option value="">Seleccionar...</option>
-            {equipos.flatMap(e=>e.miembros).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+            {equipos.flatMap(e=>e.(miembros||[])).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
           </select>
         </div>
         <div style={{marginBottom:14}}>

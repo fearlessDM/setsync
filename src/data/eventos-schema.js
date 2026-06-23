@@ -96,7 +96,13 @@ export function migrarPersonasIglesia(EQUIPOS_DATA){
 }
 
 export function migrarEquiposIglesia(EQUIPOS_DATA){
-  return EQUIPOS_DATA.map(eq=>({id:String(eq.id), name:eq.name, color:eq.color, roles:[...eq.roles]}));
+  return EQUIPOS_DATA.map(eq=>({
+    id:String(eq.id),
+    name:eq.name,
+    color:eq.color,
+    roles:[...(eq.roles||[])],
+    miembros:[...(eq.miembros||[])],
+  }));
 }
 
 export function migrarPersonasBanda(members){
