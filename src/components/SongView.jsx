@@ -544,62 +544,33 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </>
   );
 
-  // ── Layout tablet ≥768px ──────────────────────────────────────────────────
+  // ── Layout tablet ≥768px — sin sidebar de canciones (pantalla completa)──
   if(isTablet){
     return(
-      <div className={`sv${sidebarVisible?' sv-with-sidebar':''}${sidebarCollapsed?' sv-sb-col':''}`} style={{flexDirection:'row',background:svBg,position:'fixed',inset:0,zIndex:100}}>
+      <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
         {showSavePopup&&<PopupGuardar/>}
         {showModePopup&&<PopupModoBloques/>}
         {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
-        <div style={{width:220,flexShrink:0,display:'flex',flexDirection:'column',borderRight:'1px solid var(--bd)',background:'rgba(6,6,14,.95)',backdropFilter:'blur(20px)'}}>
-          <div style={{padding:'12px 14px 10px',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',gap:8}}>
-            <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
-            <div style={{flex:1}}>
-              <div style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)'}}>SetSync</div>
-              <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{songs.length} canciones</div>
+        <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
+          <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+            <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
+              {curKey} · {song.bpm} BPM
+              {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
             </div>
           </div>
-          <div style={{flex:1,overflowY:'auto',scrollbarWidth:'thin'}}>
-            {songs.map((s,i)=>(
-              <div key={i} onClick={()=>setIdx(i)} style={{padding:'11px 14px',borderBottom:'1px solid rgba(255,255,255,.05)',cursor:'pointer',background:i===idx?'rgba(200,169,126,.1)':'transparent',transition:'background .15s',borderLeft:`3px solid ${i===idx?'var(--ac)':'transparent'}`}}>
-                <div style={{fontFamily:"'Outfit',sans-serif",fontWeight:i===idx?900:700,fontSize:12,color:i===idx?'var(--ac)':'var(--tx)',marginBottom:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.name}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',display:'flex',gap:8}}>
-                  <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:700}}>{s.key}</span>
-                  <span>{s.bpm} BPM</span>
-                </div>
-              </div>
-            ))}
+          <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
+            {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'rgba(255,255,255,.25)',transition:'all .3s'}}/>))}
           </div>
-          <div style={{padding:'11px 14px',borderTop:'1px solid var(--bd)',background:'rgba(200,169,126,.04)'}}>
-            <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:4}}>Activa</div>
-            <div style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:12,color:'var(--ac)',marginBottom:4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
-            <div style={{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}}>
-              <span style={{padding:'2px 7px',borderRadius:100,background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.2)',fontSize:10,fontWeight:900,color:'var(--ac)',fontFamily:"'Outfit',sans-serif"}}>{curKey}</span>
-              {capo>0&&<span style={{fontSize:10,color:'var(--gn)',fontWeight:700}}>· Capo {capo} → {sonaKey}</span>}
-            </div>
+          <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+            <ToggleVista/>
+            <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
           </div>
         </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
-          <div style={{padding:'10px 14px',borderBottom:'1px solid var(--bd)',background:'rgba(6,6,14,.85)',display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
-              <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginTop:1}}>
-                {curKey} · {song.bpm} BPM
-                {capo>0&&<span style={{color:'var(--gn)',marginLeft:8}}>· Capo {capo} suena {sonaKey}</span>}
-              </div>
-            </div>
-            <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
-              {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--tx3)',transition:'all .3s'}}/>))}
-            </div>
-            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-              <ToggleVista/>
-              <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
-            </div>
-          </div>
-          <AnnoBar/>
-          <ContentArea/>
-          <NavBar/>
-        </div>
+        <AnnoBar/>
+        <ContentArea/>
+        <NavBar/>
       </div>
     );
   }

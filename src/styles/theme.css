@@ -107,9 +107,9 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .u-name{font-size:11px;font-weight:300;color:var(--tx);white-space:nowrap;font-family:'Lexend Giga',sans-serif;}
 .sb.col .u-inf{opacity:0;}
 /* ── MAIN ── */
-.main{margin-left:180px;transition:margin-left .25s cubic-bezier(.4,0,.2,1);min-height:100vh;position:relative;z-index:1;}
+.main{margin-left:180px;transition:margin-left .25s cubic-bezier(.4,0,.2,1);min-height:100vh;position:relative;z-index:1;background:var(--bg);color:var(--tx);}
 .main.col{margin-left:60px;}
-.pw{padding:10px 8px 90px;}
+.pw{padding:10px 8px 90px;background:var(--bg);color:var(--tx);min-height:100vh;}
 
 /* ── SongView con sidebar visible ──────────────────────────────────────────
    SongView usa position:fixed con inset:0 (pantalla completa), lo cual por
