@@ -530,67 +530,23 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
 
-  // ── Monitor panel — pestaña deslizable desde abajo ──────────────────────
+  // ── Monitor panel — estado centralizado en SongView ─────────────────────
+  const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros 2','Pad','Fx','Aux L','Aux R'];
+  const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
+  const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
+
   const MonitorPanel=()=>{
-    const isTabletH=window.innerWidth>=768&&window.innerWidth>window.innerHeight;
-    const isMobile=window.innerWidth<768;
-    const panelH=isMobile?'50vh':isTabletH?'33.33vh':'33.33vh';
-    const channels=FADER_NAMES.length; // 16
-    const cols=isMobile?4:isTabletH?16:8; // layout columns per layer
-    const rows=isMobile?2:isTabletH?1:2;  // layers
-
-    const Fader=({idx})=>{
-      const [vol,setVol]=useState(75);
-      const [muted,setMuted]=useState(false);
-      return(
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 2px',
-          background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-          borderRadius:8,border:`1px solid ${muted?'rgba(253,128,131,.25)':'rgba(255,255,255,.08)'}`,
-          minWidth:0,flex:1}}>
-          <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'.5px',textAlign:'center',fontFamily:"'Lexend Giga',sans-serif",
-            whiteSpace:'nowrap',overflow:'hidden',width:'100%',textOverflow:'ellipsis',padding:'0 2px'}}>
-            {FADER_NAMES[idx]}
-          </div>
-          <div style={{position:'relative',height:60,width:14,background:'rgba(255,255,255,.08)',
-            borderRadius:7,cursor:'pointer',overflow:'hidden'}}
-            onClick={e=>{
-              const rect=e.currentTarget.getBoundingClientRect();
-              const pct=Math.round(100-(e.clientY-rect.top)/rect.height*100);
-              setVol(Math.max(0,Math.min(100,pct)));
-            }}>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,
-              height:`${vol}%`,background:vol>80?'var(--rd)':vol>50?'var(--gn)':'var(--ac)',
-              borderRadius:7,transition:'height .1s'}}/>
-            <div style={{position:'absolute',bottom:`calc(${vol}% - 6px)`,left:0,right:0,
-              height:4,background:'#fff',borderRadius:2}}/>
-          </div>
-          <div style={{fontSize:8,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
-            fontFamily:"'Lexend Giga',sans-serif"}}>{vol}</div>
-          <button onClick={()=>setMuted(m=>!m)}
-            style={{fontSize:7,fontWeight:900,padding:'2px 5px',borderRadius:5,border:'none',
-              cursor:'pointer',background:muted?'var(--rd)':'rgba(255,255,255,.08)',
-              color:muted?'#fff':'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
-            {muted?'MUTE':'M'}
-          </button>
-        </div>
-      );
-    };
-
-    // Split 16 channels into rows x cols grid
-    const grid=[];
-    for(let r=0;r<rows;r++){
-      const rowChannels=[];
-      for(let c2=0;c2<cols;c2++){
-        const chIdx=r*cols+c2;
-        if(chIdx<channels) rowChannels.push(chIdx);
-      }
-      grid.push(rowChannels);
-    }
+    const w=window.innerWidth,h=window.innerHeight;
+    const isTabletH=w>=768&&w>h;
+    const isMob=w<768;
+    const panelH=isMob?'50vh':'33.33vh';
+    const cols=isMob?4:isTabletH?16:8;
+    const rows=isMob?4:isTabletH?1:2;
+    const grid=Array.from({length:rows},(_,r)=>Array.from({length:cols},(_,cc)=>r*cols+cc).filter(i=>i<16));
 
     return(
       <div style={{position:'fixed',bottom:0,left:0,right:0,height:panelH,
-        background:'rgba(4,4,16,.97)',borderTop:'1px solid rgba(48,192,183,.3)',
+        background:'rgba(4,4,16,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
         backdropFilter:'blur(40px)',zIndex:50,
         transform:showMonitor?'translateY(0)':'translateY(100%)',
         transition:'transform .3s cubic-bezier(.4,0,.2,1)',
@@ -599,39 +555,73 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 14px',
           borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
           <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
-            <div style={{width:7,height:7,borderRadius:'50%',
-              background:'var(--rd)',animation:'rp 1.5s infinite'}}/>
-            <span style={{fontSize:10,fontWeight:900,color:'var(--gn)',
-              fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',
-              letterSpacing:'1px'}}>Monitoreo</span>
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
-              Sin conexión — modo demo
-            </span>
+            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.5s infinite'}}/>
+            <span style={{fontSize:10,fontWeight:900,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>Monitoreo</span>
+            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin conexión · modo demo</span>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus:</span>
+          <div style={{display:'flex',alignItems:'center',gap:5}}>
+            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
             {[1,2,3,4].map(b=>(
               <button key={b} onClick={()=>setMonitorBus(b)}
                 style={{width:22,height:22,borderRadius:6,border:'none',cursor:'pointer',
                   background:monitorBus===b?'var(--gn)':'rgba(255,255,255,.08)',
-                  color:monitorBus===b?'#000':'var(--tx3)',
-                  fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  color:monitorBus===b?'#000':'var(--tx3)',fontSize:9,fontWeight:900}}>
                 {b}
               </button>
             ))}
             <button onClick={()=>setShowMonitor(false)}
               style={{width:22,height:22,borderRadius:6,border:'1px solid rgba(255,255,255,.15)',
-                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
-                display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:16,
+                display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
           </div>
         </div>
-        {/* Channels grid */}
-        <div style={{flex:1,overflowY:'auto',padding:'8px 10px',display:'flex',
-          flexDirection:'column',gap:6}}>
+        {/* Fader grid */}
+        <div style={{flex:1,padding:'8px 10px',display:'flex',flexDirection:'column',gap:5,overflow:'hidden'}}>
           {grid.map((row,ri)=>(
             <div key={ri} style={{display:'flex',gap:4,flex:1}}>
-              {row.map(chIdx=>(
-                <Fader key={chIdx} idx={chIdx}/>
+              {row.map(ci=>(
+                <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,
+                  padding:'4px 2px',borderRadius:8,
+                  background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
+                  border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
+                  minWidth:0,cursor:'pointer'}}>
+                  <div style={{fontSize:6,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                    letterSpacing:'.3px',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',
+                    width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px'}}>
+                    {FADER_NAMES[ci]}
+                  </div>
+                  <div style={{position:'relative',height:50,width:12,background:'rgba(255,255,255,.08)',
+                    borderRadius:6,overflow:'hidden',cursor:'ns-resize'}}
+                    onPointerDown={e=>{
+                      const el=e.currentTarget;
+                      el.setPointerCapture(e.pointerId);
+                      const move=ev=>{
+                        const r=el.getBoundingClientRect();
+                        const pct=Math.round(100-(ev.clientY-r.top)/r.height*100);
+                        setFaderVols(v=>{const n=[...v];n[ci]=Math.max(0,Math.min(100,pct));return n;});
+                      };
+                      const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                      el.addEventListener('pointermove',move);
+                      el.addEventListener('pointerup',up);
+                    }}>
+                    <div style={{position:'absolute',bottom:0,left:0,right:0,
+                      height:`${faderVols[ci]}%`,
+                      background:faderVols[ci]>80?'var(--rd)':faderVols[ci]>50?'var(--gn)':'rgba(255,255,255,.5)',
+                      borderRadius:6}}/>
+                    <div style={{position:'absolute',bottom:`calc(${faderVols[ci]}% - 3px)`,
+                      left:0,right:0,height:3,background:'#fff',borderRadius:2}}/>
+                  </div>
+                  <div style={{fontSize:7,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                    {faderVols[ci]}
+                  </div>
+                  <button onClick={()=>setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}
+                    style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
+                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                      background:faderMutes[ci]?'var(--rd)':'rgba(255,255,255,.08)',
+                      color:faderMutes[ci]?'#fff':'var(--tx3)'}}>
+                    {faderMutes[ci]?'MUTE':'M'}
+                  </button>
+                </div>
               ))}
             </div>
           ))}
@@ -685,6 +675,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <AnnoBar/>
         <ContentArea/>
         <NavBar/>
+        <MonitorPanel/>
       </div>
     );
   }
@@ -712,6 +703,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <AnnoBar/>
       <ContentArea/>
       <NavBar/>
+      <MonitorPanel/>
     </div>
   );
 }
