@@ -370,13 +370,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
               <div style={{borderTop:'1px solid var(--bd)'}}>
                 <div style={{padding:'8px 14px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5,alignItems:'center'}}>
                   <span style={{fontSize:9,fontWeight:700,color:'var(--tx3)',marginRight:4}}>ROLES:</span>
-                  {eq.roles.map(r=>(
+                  {(eq.roles||[]).map(r=>(
                     <span key={r} style={{fontSize:10,fontWeight:700,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'2px 8px',borderRadius:100}}>{r}</span>
                   ))}
                   <button onClick={()=>{
                     const rol=prompt('Nombre del rol nuevo:');
                     if(!rol||!rol.trim())return;
-                    const upd={...eq,roles:[...eq.roles,rol.trim()]};
+                    const upd={...eq,roles:[...(eq.roles||[]),rol.trim()]};
                     setEquipos(prev=>prev.map(e=>e.id===eq.id?upd:e));
                     persistirEquipo(upd);
                   }} style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>+ Rol</button>
@@ -390,7 +390,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                       setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
                       persistirEquipo(upd);
                     }} style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
-                      {eq.roles.map(r=>(<option key={r} value={r}>{r}</option>))}
+                      {(eq.roles||[]).map(r=>(<option key={r} value={r}>{r}</option>))}
                     </select>
                     <button onClick={()=>{
                       const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
@@ -408,7 +408,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
                       const persona=listado.find(m=>String(m.id)===e.target.value);
                       if(!persona)return;
                       const yaTiene=(eq.miembros||[]).find(em=>em.id===persona.id);
-                      const upd={...eq,miembros:yaTiene?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:eq.roles[0]||'General'}]};
+                      const upd={...eq,miembros:yaTiene?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||'General'}]};
                       setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
                       persistirEquipo(upd);
                       onToast({text:'Agregado a '+eq.name,sub:persona.name});

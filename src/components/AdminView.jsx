@@ -166,7 +166,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
                 <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
                   <div style={{flex:1}}>
                     <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:18}}>{ev.label}</div>
-                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:3,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:3,textTransform:'capitalize'}}>{ev.tipo} · {(ev.setlist||[]).length} canciones</div>
                   </div>
                   <span style={{padding:'4px 10px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',display:'none'}}>Especial</span>
                   {isLeader&&<button onClick={e=>{e.stopPropagation();onLive&&onLive();}} style={{padding:'6px 10px',borderRadius:9,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',cursor:'pointer',fontSize:10,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
@@ -202,7 +202,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:16}}>{ev.label}</div>
-                  <div style={{fontSize:11,color:'var(--ac)',marginTop:2,fontWeight:700,textTransform:'capitalize'}}>{ev.tipo} · {ev.setlist.length} canciones</div>
+                  <div style={{fontSize:11,color:'var(--ac)',marginTop:2,fontWeight:700,textTransform:'capitalize'}}>{ev.tipo} · {(ev.setlist||[]).length} canciones</div>
                 </div>
                 <span style={{padding:'3px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.08)',color:'var(--ac)',flexShrink:0,display:'none'}}>Especial</span>
               </div>
@@ -230,7 +230,7 @@ export function AdminView({mode,activeSunday,userRole,onLive,onToast,onSelectDay
               const d=new Date(ev.fecha);
               return(
                 <div key={ev.id} style={{padding:'14px 16px',borderRadius:16,background:'var(--s1)',border:'1px solid var(--bd)',cursor:onOpenSong?'pointer':'default'}}
-                  onClick={()=>onOpenSong&&ev.setlist&&ev.setlist.length>0&&onOpenSong(0,ev.setlist)}>
+                  onClick={()=>onOpenSong&&ev.setlist&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
                     <div style={{width:38,textAlign:'center',flexShrink:0}}>
                       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:18,color:'var(--tx)',lineHeight:1}}>{d.getDate()}</div>
@@ -365,7 +365,8 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
   );
 }
 
-export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang='es'}){
+export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[]}){
+
   const tx=getT(lang);
   const sl=SETLISTS[activeSunday]||[];
   const MESES_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];

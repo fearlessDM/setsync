@@ -296,10 +296,10 @@ export default function App(){
               onNavigate={setView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
-            onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}}
+            onLive={()=>{const sl=SETLISTS[activeSunday]||[];if(sl.length>0){setSongViewSongs(sl);setSongView(0);}}}
             onToast={showToast} onSelectDay={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);}} mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang}/>}
+          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>setSongView(0)} userRole={userRole} onToast={showToast} lang={lang} equipos={equipos}/>}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}

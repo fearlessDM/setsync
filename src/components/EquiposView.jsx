@@ -24,7 +24,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
               <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,background:'var(--s2)',border:'1px solid var(--bd)',padding:'2px 8px',borderRadius:100}}>{(eq.miembros||[]).length} integrantes</span>
             </div>
             <div style={{padding:'8px 15px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5}}>
-              {eq.roles.map(r=><span key={r} style={{fontSize:10,fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 9px',borderRadius:100}}>{r}</span>)}
+              {(eq.roles||[]).map(r=><span key={r} style={{fontSize:10,fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 9px',borderRadius:100}}>{r}</span>)}
             </div>
             <div style={{padding:'0 15px'}}>
               {(eq.miembros||[]).map(m=>(
