@@ -1,11 +1,10 @@
 import { useState, useRef } from 'react';
 import { getModoFeatures } from '../data/modo';
 
-// Imágenes de Unsplash — instrumentos, maderas, metales, atriles, micrófonos
 const BG_IMGS = [
-  'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800&q=80', // guitar close
-  'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80', // music studio
-  'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80', // piano keys
+  'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800&q=80',
+  'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
+  'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
 
 const TIPS = [
@@ -16,11 +15,13 @@ const TIPS = [
   { icon:'🎹', titulo:'Pads ambientales automáticos', cuerpo:'En Vista Escenario (Pro/Premium), el pad ambiental se afina solo a la tonalidad de la canción activa.' },
 ];
 
+// Colores por formación (cycling)
+const EQ_COLORS = ['#30C0B7','#FD8083','#a78bfa','#f59e0b','#34d399','#60a5fa'];
+
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tienePremiere=false, tieneMonitoreo=false, onNavigate=()=>{} }){
   const feat = getModoFeatures(mode);
   const [tipIdx, setTipIdx] = useState(0);
   const [bgIdx] = useState(()=>Math.floor(Math.random()*BG_IMGS.length));
-  const tipsRef = useRef(null);
   const isAdmin = userRole==='superadmin'||userRole==='leader';
   const nombre = 'Daniel';
 
@@ -29,8 +30,6 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const misEquipos = equipos.filter(eq=>(eq.miembros||[]).length>0);
 
   const swipeTip = (dir) => setTipIdx(i=>(i+dir+TIPS.length)%TIPS.length);
-
-  // Touch swipe for tips
   const touchStart = useRef(null);
   const onTouchStart = e => touchStart.current = e.touches[0].clientX;
   const onTouchEnd = e => {
@@ -40,54 +39,68 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     touchStart.current = null;
   };
 
-  const G = ({children, cols=1, onClick}) => (
-    <div onClick={onClick} style={{
-      background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:18,padding:'16px 15px',
-      cursor:onClick?'pointer':'default',gridColumn:`span ${cols}`,
-      transition:'border-color .2s',
-    }}>{children}</div>
+  // Card base con tokens CSS
+  const Card = ({children, cols=1, onClick, style={}}) => (
+    <div
+      onClick={onClick}
+      style={{
+        background:'var(--s1)',
+        border:'1px solid var(--bd)',
+        borderRadius:'var(--rad-lg)',
+        padding:'var(--sp-md) var(--sp-md)',
+        cursor:onClick?'pointer':'default',
+        gridColumn:`span ${cols}`,
+        transition:'border-color .2s, background .15s',
+        ...style,
+      }}
+      onMouseEnter={onClick?e=>{e.currentTarget.style.borderColor='var(--bd2)';e.currentTarget.style.background='var(--s3)'}:undefined}
+      onMouseLeave={onClick?e=>{e.currentTarget.style.borderColor='var(--bd)';e.currentTarget.style.background='var(--s1)'}:undefined}
+    >{children}</div>
   );
 
   const Lbl = ({children}) => (
-    <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-      letterSpacing:'1.5px',marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>{children}</div>
+    <div className="lbl" style={{marginBottom:'var(--sp-xs)'}}>{children}</div>
   );
+
+  const planLabel = { lite:'Lite', pro:'Pro', premium:'Premium' }[planId] || planId;
 
   return (
     <div style={{paddingBottom:90}}>
 
-      {/* ── Hero con imagen de fondo ───────────────────────────── */}
-      <div style={{position:'relative',height:200,overflow:'hidden',marginBottom:0}}>
-        <img src={BG_IMGS[bgIdx]} alt="" style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.35) saturate(.8)'}} loading="lazy"/>
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,transparent 30%,var(--bg) 100%)'}}/>
-        <div style={{position:'absolute',inset:0,padding:'20px 16px',display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'#fff',lineHeight:1.05}}>
+      {/* ── Hero ── */}
+      <div style={{position:'relative',height:210,overflow:'hidden',marginBottom:0}}>
+        <img
+          src={BG_IMGS[bgIdx]} alt=""
+          style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.3) saturate(.7)'}}
+          loading="lazy"
+        />
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,transparent 20%,var(--bg) 100%)'}}/>
+        <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'#fff',lineHeight:1.1}}>
             Hola, <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'rgba(255,255,255,.6)',marginTop:4}}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'rgba(255,255,255,.55)',marginTop:5}}>
             {mode==='iglesia'?'Tu plataforma de worship':'Tu plataforma de banda'} · SetSync
           </div>
         </div>
       </div>
 
-      {/* ── Descripción breve ────────────────────────────────────── */}
-      <div style={{padding:'16px 16px 4px'}}>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7,
-          padding:'12px 14px',background:'var(--s1)',borderRadius:14,border:'1px solid var(--bd)'}}>
-          SetSync centraliza setlists, equipos, repertorio y la experiencia en escenario de tu{' '}
-          {mode==='iglesia'?'equipo de adoración':'banda'} — todo en un solo lugar, en tiempo real.
-        </div>
-      </div>
+      {/* ── Grid principal ── */}
+      <div style={{
+        display:'grid',
+        gridTemplateColumns:'1fr 1fr',
+        gap:'var(--gap)',
+        padding:'var(--sp-md) var(--pw-x,var(--sp-md))',
+      }}>
 
-      {/* ── Grid ─────────────────────────────────────────────────── */}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,padding:'12px 16px'}}>
-
-        {/* Próxima fecha */}
-        <G cols={2} onClick={()=>onNavigate('fechas')}>
+        {/* Próxima fecha — full width */}
+        <Card cols={2} onClick={()=>onNavigate('fechas')}>
           <Lbl>{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
           {proximoEvento ? (
             <>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',marginBottom:3}}>{proximoEvento.nombre}</div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',marginBottom:4,lineHeight:1.1}}>
+                {proximoEvento.nombre}
+              </div>
               <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,color:'var(--tx3)'}}>
                 {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
                 {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
@@ -99,111 +112,167 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <span style={{color:'var(--ac)',cursor:'pointer'}} onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>
             </div>
           )}
-        </G>
+        </Card>
 
-        {/* Mis equipos */}
-        <G cols={2} onClick={()=>onNavigate('backstage')}>
+        {/* Plan */}
+        <Card onClick={()=>onNavigate('backstage')}>
+          <Lbl>Mi plan</Lbl>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:22,color:'var(--ac)',lineHeight:1}}>
+            {planLabel}
+          </div>
+          {planActivo&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:5}}>{planActivo.limiteCanciones} canciones</div>}
+          {planId==='lite'&&(
+            <div style={{fontSize:10,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:7,fontWeight:700}}>
+              ↑ Mejorar plan
+            </div>
+          )}
+        </Card>
+
+        {/* Cancionero */}
+        <Card onClick={()=>onNavigate('repertorio')}>
+          <Lbl>Cancionero</Lbl>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',lineHeight:1.1}}>
+            Repertorio
+          </div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:5}}>
+            {feat.cancioneroUniversal?'+ Universal disponible':'Tus canciones'}
+          </div>
+        </Card>
+
+        {/* Mis formaciones — full width */}
+        <Card cols={2} onClick={()=>onNavigate('backstage')}>
           <Lbl>{isAdmin?'Mis formaciones':'Soy parte de'}</Lbl>
           {misEquipos.length===0 ? (
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
-              {isAdmin?'Aún no creaste ninguna formación.':'No estás asignado a ningún equipo aún.'}
+              {isAdmin?'Aún no creaste ninguna formación — ':<>No estás asignado a ningún equipo aún</>}
+              {isAdmin&&<span style={{color:'var(--ac)',cursor:'pointer'}} onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>}
             </div>
           ) : (
-            <div style={{display:'flex',flexDirection:'column',gap:6}}>
-              {misEquipos.slice(0,3).map(eq=>(
-                <div key={eq.id} style={{display:'flex',alignItems:'center',gap:8}}>
-                  <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
+            <div style={{display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>
+              {misEquipos.slice(0,4).map((eq,i)=>(
+                <div key={eq.id} style={{display:'flex',alignItems:'center',gap:10}}>
+                  <div style={{width:7,height:7,borderRadius:'50%',background:eq.color||EQ_COLORS[i%EQ_COLORS.length],flexShrink:0}}/>
                   <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:700,color:'var(--tx)',flex:1}}>{eq.name}</span>
-                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
+                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)'}}>
+                    {(eq.miembros||[]).length} {(eq.miembros||[]).length===1?'persona':'personas'}
+                  </span>
                 </div>
               ))}
-              {misEquipos.length>3&&<div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>+{misEquipos.length-3} más</div>}
+              {misEquipos.length>4&&(
+                <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  +{misEquipos.length-4} formaciones más
+                </div>
+              )}
             </div>
           )}
-        </G>
+        </Card>
 
-        {/* Plan */}
-        <G onClick={()=>onNavigate('backstage')}>
-          <Lbl>Mi plan</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--ac)',textTransform:'capitalize'}}>{planId}</div>
-          {planActivo&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:4}}>{planActivo.limiteCanciones} canciones</div>}
-          {planId==='lite'&&<div style={{fontSize:10,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:6,fontWeight:700}}>↑ Mejorar plan</div>}
-        </G>
-
-        {/* Cancionero */}
-        <G onClick={()=>onNavigate('repertorio')}>
-          <Lbl>Cancionero</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>Repertorio</div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:4}}>
-            {feat.cancioneroUniversal?'+ Universal disponible':'Tus canciones'}
-          </div>
-        </G>
-
-        {/* Tips — swipeable */}
-        <G cols={2}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+        {/* Tips swipeables — full width */}
+        <Card cols={2}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'var(--sp-sm)'}}>
             <Lbl>Tips de uso</Lbl>
-            <div style={{display:'flex',gap:4}}>
+            <div style={{display:'flex',gap:5}}>
               {TIPS.map((_,i)=>(
-                <div key={i} onClick={()=>setTipIdx(i)} style={{width:i===tipIdx?16:6,height:6,borderRadius:3,cursor:'pointer',background:i===tipIdx?'var(--ac)':'var(--bd)',transition:'all .2s'}}/>
+                <div
+                  key={i}
+                  onClick={()=>setTipIdx(i)}
+                  style={{
+                    width:i===tipIdx?18:6,height:6,borderRadius:3,cursor:'pointer',
+                    background:i===tipIdx?'var(--ac)':'var(--bd)',transition:'all .25s',
+                  }}
+                />
               ))}
             </div>
           </div>
-          <div style={{overflow:'hidden'}}
-            onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            <div style={{display:'flex',gap:20,fontSize:20,marginBottom:8}}>{TIPS[tipIdx].icon}</div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--tx)',marginBottom:6}}>{TIPS[tipIdx].titulo}</div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.6}}>{TIPS[tipIdx].cuerpo}</div>
-            <div style={{display:'flex',justifyContent:'space-between',marginTop:12}}>
+          <div
+            style={{overflow:'hidden'}}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            <div style={{fontSize:22,marginBottom:'var(--sp-xs)'}}>{TIPS[tipIdx].icon}</div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--tx)',marginBottom:6,lineHeight:1.3}}>
+              {TIPS[tipIdx].titulo}
+            </div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
+              {TIPS[tipIdx].cuerpo}
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:'var(--sp-sm)'}}>
               <button onClick={()=>swipeTip(-1)} style={{fontSize:10,fontWeight:700,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Anterior</button>
               <button onClick={()=>swipeTip(1)} style={{fontSize:10,fontWeight:700,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Siguiente →</button>
             </div>
           </div>
-        </G>
+        </Card>
 
         {/* SetSync Premiere */}
-        <G cols={2} onClick={tienePremiere?()=>onNavigate('premiere'):undefined}>
-          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-            <span style={{fontSize:18}}>★</span>
+        <Card cols={2} onClick={tienePremiere?()=>onNavigate('premiere'):undefined}>
+          <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
+            <span style={{fontSize:16,lineHeight:1}}>★</span>
             <Lbl>SetSync Premiere</Lbl>
-            {!tienePremiere&&<span style={{marginLeft:'auto',fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:100,background:'rgba(200,169,126,.1)',color:'var(--ac)',border:'1px solid rgba(200,169,126,.3)',fontFamily:"'Lexend Giga',sans-serif"}}>PRO/PREMIUM</span>}
+            {!tienePremiere&&(
+              <span style={{
+                marginLeft:'auto',fontSize:9,fontWeight:700,
+                padding:'3px 10px',borderRadius:'var(--rad-full)',
+                background:'rgba(200,169,126,.1)',color:'var(--ac)',
+                border:'1px solid rgba(200,169,126,.3)',
+                fontFamily:"'Lexend Giga',sans-serif",
+              }}>PRO / PREMIUM</span>
+            )}
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.6}}>
-            Canciones de bandas de adoración antes que nadie. Acordes, letra y audio desde el día de estreno — disponible para clientes Pro y Premium.
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
+            Canciones de bandas de adoración antes que nadie. Acordes, letra y audio desde el día de estreno.
           </div>
-          {tienePremiere&&<div style={{marginTop:8,fontSize:11,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif"}}>Ver estrenos →</div>}
-        </G>
-
-        {/* Monitoreo */}
-        {tieneMonitoreo&&(
-          <G cols={2} onClick={()=>onNavigate('monitoreo')}>
-            <Lbl>Monitoreo en vivo</Lbl>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.6}}>
-              Controlá los niveles de tu mesa Behringer/Midas X32 o M32 directo desde SetSync. Disponible dentro de cualquier canción en Vista Escenario.
+          {tienePremiere&&(
+            <div style={{marginTop:'var(--sp-xs)',fontSize:11,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              Ver estrenos →
             </div>
-            <div style={{marginTop:8,fontSize:11,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>Abrir Monitoreo →</div>
-          </G>
+          )}
+        </Card>
+
+        {/* Monitoreo — solo si tiene acceso */}
+        {tieneMonitoreo&&(
+          <Card cols={2} onClick={()=>onNavigate('monitoreo')}>
+            <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-xs)'}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:'var(--gn)',boxShadow:'0 0 8px var(--gn)'}}/>
+              <Lbl>Monitoreo en vivo</Lbl>
+            </div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
+              Controlá los niveles de tu mesa Behringer/Midas X32 o M32 directo desde SetSync.
+            </div>
+            <div style={{marginTop:'var(--sp-xs)',fontSize:11,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              Abrir Monitoreo →
+            </div>
+          </Card>
         )}
 
         {/* Accesos rápidos */}
-        <G cols={2}>
+        <Card cols={2}>
           <Lbl>Accesos rápidos</Lbl>
-          <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'var(--sp-xs)'}}>
             {[
               {label:'Ver fechas',view:'fechas'},
               {label:'Próxima fecha',view:'misetlist'},
               {label:'Cancionero',view:'repertorio'},
               {label:'Backstage',view:'backstage'},
             ].map(a=>(
-              <button key={a.label} onClick={()=>onNavigate(a.view)}
-                style={{padding:'7px 14px',borderRadius:100,fontSize:11,fontWeight:700,
-                  border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',
-                  cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+              <button
+                key={a.label}
+                onClick={()=>onNavigate(a.view)}
+                style={{
+                  padding:'7px 15px',borderRadius:'var(--rad-full)',
+                  fontSize:11,fontWeight:700,
+                  border:'1px solid var(--bd)',background:'var(--s2)',
+                  color:'var(--tx)',cursor:'pointer',
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  transition:'all .15s',
+                }}
+                onMouseEnter={e=>{e.target.style.background='var(--s3)';e.target.style.borderColor='var(--bd2)';}}
+                onMouseLeave={e=>{e.target.style.background='var(--s2)';e.target.style.borderColor='var(--bd)';}}
+              >
                 {a.label}
               </button>
             ))}
           </div>
-        </G>
+        </Card>
 
       </div>
     </div>
