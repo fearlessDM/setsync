@@ -58,6 +58,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     ?{americano:'American',latino:'Latin',grados:'Degrees'}
     :{americano:'Americano',latino:'Latino',grados:'Grados'};
   const [toast,setToast]=useState(null);
+  const [showMonitor,setShowMonitor]=useState(false);
+  const [monitorBus,setMonitorBus]=useState(1);
+  const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros','Pad','Fx','Aux L','Aux R'];
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
@@ -525,6 +528,117 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       </div>
     </div>
   );
+
+
+  // ── Monitor panel — pestaña deslizable desde abajo ──────────────────────
+  const MonitorPanel=()=>{
+    const isTabletH=window.innerWidth>=768&&window.innerWidth>window.innerHeight;
+    const isMobile=window.innerWidth<768;
+    const panelH=isMobile?'50vh':isTabletH?'33.33vh':'33.33vh';
+    const channels=FADER_NAMES.length; // 16
+    const cols=isMobile?4:isTabletH?16:8; // layout columns per layer
+    const rows=isMobile?2:isTabletH?1:2;  // layers
+
+    const Fader=({idx})=>{
+      const [vol,setVol]=useState(75);
+      const [muted,setMuted]=useState(false);
+      return(
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,padding:'4px 2px',
+          background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
+          borderRadius:8,border:`1px solid ${muted?'rgba(253,128,131,.25)':'rgba(255,255,255,.08)'}`,
+          minWidth:0,flex:1}}>
+          <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+            letterSpacing:'.5px',textAlign:'center',fontFamily:"'Lexend Giga',sans-serif",
+            whiteSpace:'nowrap',overflow:'hidden',width:'100%',textOverflow:'ellipsis',padding:'0 2px'}}>
+            {FADER_NAMES[idx]}
+          </div>
+          <div style={{position:'relative',height:60,width:14,background:'rgba(255,255,255,.08)',
+            borderRadius:7,cursor:'pointer',overflow:'hidden'}}
+            onClick={e=>{
+              const rect=e.currentTarget.getBoundingClientRect();
+              const pct=Math.round(100-(e.clientY-rect.top)/rect.height*100);
+              setVol(Math.max(0,Math.min(100,pct)));
+            }}>
+            <div style={{position:'absolute',bottom:0,left:0,right:0,
+              height:`${vol}%`,background:vol>80?'var(--rd)':vol>50?'var(--gn)':'var(--ac)',
+              borderRadius:7,transition:'height .1s'}}/>
+            <div style={{position:'absolute',bottom:`calc(${vol}% - 6px)`,left:0,right:0,
+              height:4,background:'#fff',borderRadius:2}}/>
+          </div>
+          <div style={{fontSize:8,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
+            fontFamily:"'Lexend Giga',sans-serif"}}>{vol}</div>
+          <button onClick={()=>setMuted(m=>!m)}
+            style={{fontSize:7,fontWeight:900,padding:'2px 5px',borderRadius:5,border:'none',
+              cursor:'pointer',background:muted?'var(--rd)':'rgba(255,255,255,.08)',
+              color:muted?'#fff':'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+            {muted?'MUTE':'M'}
+          </button>
+        </div>
+      );
+    };
+
+    // Split 16 channels into rows x cols grid
+    const grid=[];
+    for(let r=0;r<rows;r++){
+      const rowChannels=[];
+      for(let c2=0;c2<cols;c2++){
+        const chIdx=r*cols+c2;
+        if(chIdx<channels) rowChannels.push(chIdx);
+      }
+      grid.push(rowChannels);
+    }
+
+    return(
+      <div style={{position:'fixed',bottom:0,left:0,right:0,height:panelH,
+        background:'rgba(4,4,16,.97)',borderTop:'1px solid rgba(48,192,183,.3)',
+        backdropFilter:'blur(40px)',zIndex:50,
+        transform:showMonitor?'translateY(0)':'translateY(100%)',
+        transition:'transform .3s cubic-bezier(.4,0,.2,1)',
+        display:'flex',flexDirection:'column'}}>
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 14px',
+          borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
+            <div style={{width:7,height:7,borderRadius:'50%',
+              background:'var(--rd)',animation:'rp 1.5s infinite'}}/>
+            <span style={{fontSize:10,fontWeight:900,color:'var(--gn)',
+              fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',
+              letterSpacing:'1px'}}>Monitoreo</span>
+            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              Sin conexión — modo demo
+            </span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus:</span>
+            {[1,2,3,4].map(b=>(
+              <button key={b} onClick={()=>setMonitorBus(b)}
+                style={{width:22,height:22,borderRadius:6,border:'none',cursor:'pointer',
+                  background:monitorBus===b?'var(--gn)':'rgba(255,255,255,.08)',
+                  color:monitorBus===b?'#000':'var(--tx3)',
+                  fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                {b}
+              </button>
+            ))}
+            <button onClick={()=>setShowMonitor(false)}
+              style={{width:22,height:22,borderRadius:6,border:'1px solid rgba(255,255,255,.15)',
+                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
+                display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+          </div>
+        </div>
+        {/* Channels grid */}
+        <div style={{flex:1,overflowY:'auto',padding:'8px 10px',display:'flex',
+          flexDirection:'column',gap:6}}>
+          {grid.map((row,ri)=>(
+            <div key={ri} style={{display:'flex',gap:4,flex:1}}>
+              {row.map(chIdx=>(
+                <Fader key={chIdx} idx={chIdx}/>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // ── NavBar — botones flotantes, sin título ───────────────────────────────
   const NavBar=()=>(
