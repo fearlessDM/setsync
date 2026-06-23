@@ -16,6 +16,7 @@ import { EquiposView } from './EquiposView';
 import { BackstageView } from './BackstageView';
 import { Inicio } from './Inicio';
 import { Click } from './Click';
+import { Pads } from './Pads';
 import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
 import { t as getT } from '../i18n';
@@ -162,6 +163,17 @@ export default function App(){
   };
   const handleSaveChords=(name,content)=>{contentDB[name]=content;showToast('✓ Acordes guardados');};
 
+  // ── Guardar setlist en un evento (persiste en Firestore si está disponible) ──
+  const guardarSetlistEnEvento=(eventoId, nuevoSetlist)=>{
+    setEventos(prev=>prev.map(ev=>{
+      if(ev.id!==eventoId) return ev;
+      const updated={...ev, setlist:nuevoSetlist};
+      persistirEvento(updated);
+      return updated;
+    }));
+    showToast({text:'Setlist guardado',sub:`${nuevoSetlist.length} canciones`});
+  };
+
   // Temas: dark es el default desde :root en theme.css
   // gray y cream usan [data-theme] selector en theme.css
   const dataTheme = theme==='dark' ? undefined : theme;
@@ -306,6 +318,7 @@ export default function App(){
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
             onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}
             equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}
+            guardarSetlistEnEvento={guardarSetlistEnEvento}
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
