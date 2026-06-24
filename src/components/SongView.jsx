@@ -537,14 +537,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── ContentArea — Mapa maestro horizontal + contenido ────────────────────
+  // ── ContentArea — Estructura y Tono en misma columna derecha ─────────────
   const ContentArea=()=>(
     <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
-      {/* Mapa Maestro horizontal — solo en vista lineal */}
-      {viewMode==='lineal'&&<MapaMaestro/>}
       {viewMode==='bloques'
         ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} notacion={notacion} curKey={curKey}/>
         :<>
+          {/* Mapa Maestro horizontal — encima del contenido, sticky */}
+          <MapaMaestro/>
           <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
             onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
             onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
@@ -557,7 +557,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </>
       }
-      {/* PanelTono — esquina superior derecha */}
+      {/* PanelTono — esquina superior derecha, mapa ahora es horizontal */}
       <div style={{position:'absolute',right:6,top:6,zIndex:4,pointerEvents:'none'}}>
         <div style={{pointerEvents:'all',width:64}}>
           <PanelTono/>
@@ -572,55 +572,49 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
-  // ── Barra de pestañas inferior (Letra / Monitoreo / Secuencia) + Nav ──────
+  // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
   const BottomTabBar=()=>{
-    // Icono Monitor: WiFi con audífonos superpuestos — se pone verde al conectar
+    const canPrev = idx > 0;
+    const isLast  = idx === songs.length - 1;
+
+    // Icono Monitor: WiFi + audífonos superpuestos
     const IconMonitor=({active})=>{
       const col = mesaConectada ? 'var(--gn)' : active ? 'var(--ac)' : 'var(--tx3)';
       return(
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={col} strokeWidth="1.8"
-          style={mesaConectada?{filter:'drop-shadow(0 0 4px rgba(48,192,183,.7))'}:{}}>
-          {/* WiFi arcs */}
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={col} strokeWidth="1.8">
           <path d="M5 12.5a9.9 9.9 0 0 1 14 0" strokeLinecap="round"/>
-          <path d="M8 15.5a5.5 5.5 0 0 1 8 0" strokeLinecap="round"/>
-          {/* Headphone arc */}
-          <path d="M9.5 18v-1.5a2.5 2.5 0 0 1 5 0V18" strokeLinecap="round"/>
-          {/* Ear cups */}
-          <rect x="7.5" y="17.5" width="2.5" height="3" rx="1"/>
-          <rect x="14" y="17.5" width="2.5" height="3" rx="1"/>
+          <path d="M8 15a5.5 5.5 0 0 1 8 0" strokeLinecap="round"/>
+          <path d="M10 18v-1a2 2 0 0 1 4 0v1" strokeLinecap="round"/>
+          <rect x="8" y="17.5" width="2.5" height="3" rx="1"/>
+          <rect x="13.5" y="17.5" width="2.5" height="3" rx="1"/>
         </svg>
       );
     };
 
-    // Icono Secuencia: soundwave con marcador de posición encima
+    // Icono Secuencia: soundwave + marcador
     const IconSecuencia=({active})=>{
       const col = active ? 'var(--ac)' : 'var(--tx3)';
+      const mk  = active ? 'var(--ac)' : 'var(--tx2)';
       return(
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={col} strokeWidth="1.8">
-          {/* Soundwave bars */}
-          <line x1="3"  y1="15" x2="3"  y2="9"  strokeLinecap="round"/>
-          <line x1="6"  y1="18" x2="6"  y2="6"  strokeLinecap="round"/>
-          <line x1="9"  y1="13" x2="9"  y2="11" strokeLinecap="round"/>
-          <line x1="12" y1="19" x2="12" y2="5"  strokeLinecap="round"/>
-          <line x1="15" y1="13" x2="15" y2="11" strokeLinecap="round"/>
-          <line x1="18" y1="18" x2="18" y2="6"  strokeLinecap="round"/>
-          <line x1="21" y1="15" x2="21" y2="9"  strokeLinecap="round"/>
-          {/* Marcador de posición (línea vertical + triángulo apuntando abajo) */}
-          <line x1="9" y1="2" x2="9" y2="4.5" strokeWidth="1.5" stroke={active?'var(--ac)':'var(--tx2)'}/>
-          <polygon points="6.5,4.5 11.5,4.5 9,7.5" fill={active?'var(--ac)':'var(--tx2)'} stroke="none"/>
+          <line x1="3"  y1="16" x2="3"  y2="9"  strokeLinecap="round"/>
+          <line x1="6"  y1="19" x2="6"  y2="6"  strokeLinecap="round"/>
+          <line x1="9"  y1="14" x2="9"  y2="11" strokeLinecap="round"/>
+          <line x1="12" y1="20" x2="12" y2="5"  strokeLinecap="round"/>
+          <line x1="15" y1="14" x2="15" y2="11" strokeLinecap="round"/>
+          <line x1="18" y1="19" x2="18" y2="6"  strokeLinecap="round"/>
+          <line x1="21" y1="16" x2="21" y2="9"  strokeLinecap="round"/>
+          <line x1="9" y1="2" x2="9" y2="4.5" strokeWidth="1.4" stroke={mk}/>
+          <polygon points="6.5,4.5 11.5,4.5 9,7.5" fill={mk} stroke="none"/>
         </svg>
       );
     };
 
     const tabs=[
-      {id:null,      label:'Letra',    icon:(a)=><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>},
-      {id:'monitor', label:'Monitor',  icon:(a)=><IconMonitor active={a}/>},
-      {id:'secuencia',label:'Secuencia',icon:(a)=><IconSecuencia active={a}/>},
+      {id:null,      label:'Letra',    renderIcon:(a)=>(<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>)},
+      {id:'monitor', label:'Monitor',  renderIcon:(a)=>(<IconMonitor active={a}/>)},
+      {id:'secuencia',label:'Secuencia',renderIcon:(a)=>(<IconSecuencia active={a}/>)},
     ];
-
-    const canPrev = idx > 0;
-    const isLast  = idx === songs.length - 1;
-
     return(
       <div style={{
         position:'fixed',bottom:0,left:0,right:0,
@@ -631,20 +625,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         minHeight:54,
       }}>
         {/* ← Anterior */}
-        <button
-          onClick={()=>canPrev&&setIdx(i=>i-1)}
-          disabled={!canPrev}
-          style={{
-            width:48,border:'none',background:'transparent',
-            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
+        <button onClick={()=>canPrev&&setIdx(i=>i-1)} disabled={!canPrev}
+          style={{width:50,border:'none',background:'transparent',flexShrink:0,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,
             color:canPrev?'var(--tx2)':'rgba(255,255,255,.15)',cursor:canPrev?'pointer':'default',
-            borderTop:'2px solid transparent',flexShrink:0,
-          }}>
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Ant</span>
+            borderTop:'2px solid transparent'}}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',fontFamily:"'Lexend Giga',sans-serif"}}>Ant</span>
         </button>
 
-        {/* Tabs centrales */}
+        {/* Tabs */}
         {tabs.map(tab=>{
           const isOn = bottomTab===tab.id;
           return(
@@ -654,30 +644,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             }} style={{
               flex:1,border:'none',background:'transparent',
               display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
-              color: isOn?'var(--ac)':'var(--tx3)',
-              borderTop: isOn?'2px solid var(--ac)': tab.id==='monitor'&&mesaConectada?'2px solid var(--gn)':'2px solid transparent',
+              color: isOn?'var(--ac)':mesaConectada&&tab.id==='monitor'?'var(--gn)':'var(--tx3)',
+              borderTop: isOn?'2px solid var(--ac)':mesaConectada&&tab.id==='monitor'?'2px solid var(--gn)':'2px solid transparent',
               cursor:'pointer',transition:'all .15s',
               fontFamily:"'Lexend Giga',sans-serif",
-            }}
-            className={tab.id==='monitor'&&mesaConectada&&!isOn?'monitor-connected-icon':''}
-            >
-              <span style={{color:'inherit',display:'flex',alignItems:'center'}}>{tab.icon(isOn)}</span>
+            }}>
+              <span style={{display:'flex',alignItems:'center'}}>{tab.renderIcon(isOn)}</span>
               <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>{tab.label}</span>
             </button>
           );
         })}
 
         {/* Siguiente → */}
-        <button
-          onClick={()=>{ if(isLast) onClose(); else setIdx(i=>i+1); }}
-          style={{
-            width:48,border:'none',background:'transparent',
-            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
-            color:'var(--tx)',cursor:'pointer',
-            borderTop:'2px solid transparent',flexShrink:0,
-          }}>
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{isLast?'Fin':'Sig'}</span>
+        <button onClick={()=>{ if(isLast) onClose(); else setIdx(i=>i+1); }}
+          style={{width:50,border:'none',background:'transparent',flexShrink:0,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,
+            color:'var(--tx)',cursor:'pointer',borderTop:'2px solid transparent'}}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',fontFamily:"'Lexend Giga',sans-serif"}}>{isLast?'Fin':'Sig'}</span>
         </button>
       </div>
     );
@@ -774,19 +758,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     });
   }
 
-  // Seek de secuencia — posición activa al navegar el mapa maestro
-  const [mapaSectionIdx, setMapaSectionIdx] = useState(0);
 
-  // Abreviaciones para el mapa en mobile angosto
-  const ABREV = {
+  // ── Seek de secuencia — posición activa al navegar el mapa maestro ─────────
+  const [mapaSectionIdx, setMapaSectionIdx] = useState(0);
+  const ABREV_MAP = {
     'Intro':'Intro','Verso 1':'V1','Verso 2':'V2','Verso 3':'V3',
     'Pre-Coro':'PC','Coro':'C','Puente':'P','Bridge':'P',
     'Bridge x2':'Px2','Final':'Fin','Outro':'Fin',
     'Coro Final':'CF','Interlude':'Int','Instrumental':'Inst',
   };
-  const abrev=(label,useShort)=>useShort?(ABREV[label]||label.slice(0,3)):label;
+  const abrevLabel=(label,useShort)=>useShort?(ABREV_MAP[label]||label.slice(0,3)):label;
 
-  // Mapa Maestro Horizontal — aparece siempre encima del contenido de Letra
+  // Mapa Maestro Horizontal — sticky encima del contenido de letra
   const MapaMaestro=()=>{
     const guias = seqData?.guias;
     if(!guias||!guias.length) return null;
@@ -794,52 +777,48 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const narrow = window.innerWidth < 400;
     return(
       <div style={{
-        position:'sticky',top:0,zIndex:6,
-        background:'rgba(8,8,9,.95)',borderBottom:'1px solid rgba(255,255,255,.07)',
-        backdropFilter:'blur(20px)',
+        flexShrink:0,
+        background:'rgba(8,8,9,.96)',borderBottom:'1px solid rgba(255,255,255,.07)',
         display:'flex',alignItems:'stretch',
         overflowX:'auto',scrollbarWidth:'none',
         WebkitOverflowScrolling:'touch',
-        minHeight:36,flexShrink:0,
+        minHeight:38,zIndex:5,
       }}>
         {guias.map((g,i)=>{
           const isActive = mapaSectionIdx===i;
-          const w = Math.max(40, Math.round((g.compases/totalComp)*100));
+          const pct = Math.max(7, Math.round((g.compases/totalComp)*100));
           return(
             <button key={i}
               onClick={()=>{
                 setMapaSectionIdx(i);
-                // Scroll a la sección en letra (vistaLineal IDs)
-                const el=document.getElementById(`section-${i}`);
+                const el=document.getElementById('section-'+i);
                 if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
-                // Seek en secuencia cuando hay playback activo
-                // Calcula el compás de inicio de esta sección
                 const compasInicio = guias.slice(0,i).reduce((s,g)=>s+(g.compases||4),0);
-                const msPerCompas = (60000/(seqBpm||120)) * 4; // 4 beats por compás (aprox)
-                const msInicio = compasInicio * msPerCompas;
-                // Emitir evento custom para que el motor de audio haga seek si implementado
-                window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{detail:{sectionIdx:i,compasInicio,msInicio}}));
+                const msPerCompas = (60000/(seqBpm||120))*4;
+                window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{
+                  detail:{sectionIdx:i,compasInicio,msInicio:compasInicio*msPerCompas}
+                }));
               }}
               style={{
                 flexShrink:0,
-                width: `${w}%`,minWidth: narrow?36:50,
+                width:pct+'%',minWidth:narrow?32:48,
                 border:'none',
-                background: isActive ? `${g.color}22` : 'transparent',
-                borderBottom: isActive ? `2px solid ${g.color}` : '2px solid transparent',
-                padding:'4px 6px 2px',
-                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,
+                background:isActive?g.color+'18':'transparent',
+                borderBottom:isActive?'2px solid '+g.color:'2px solid transparent',
+                padding:'3px 4px 1px',
+                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
                 cursor:'pointer',transition:'all .15s',
               }}>
               <span style={{
-                fontSize: narrow?8:9,fontWeight:700,
-                color: isActive?g.color:'var(--tx3)',
+                fontSize:narrow?7:9,fontWeight:700,
+                color:isActive?g.color:'var(--tx3)',
                 fontFamily:"'Lexend Giga',sans-serif",
                 textTransform:'uppercase',letterSpacing:'.3px',
-                whiteSpace:'nowrap',
-              }}>{abrev(g.label,narrow)}</span>
+                whiteSpace:'nowrap',lineHeight:1.2,
+              }}>{abrevLabel(g.label,narrow)}</span>
               <span style={{
-                fontSize:7,color: isActive?g.color+'aa':'rgba(255,255,255,.2)',
-                fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,
+                fontSize:6,color:isActive?g.color+'99':'rgba(255,255,255,.18)',
+                fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,lineHeight:1,
               }}>{g.compases}c</span>
             </button>
           );
@@ -847,6 +826,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       </div>
     );
   };
+
+  const ClickPanel=()=>(
     <div>
       <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
       <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
