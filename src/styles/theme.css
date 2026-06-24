@@ -156,21 +156,24 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .b-pub{background:rgba(48,192,183,.1);color:var(--gn);border:1px solid rgba(48,192,183,.22);}
 
 /* ── SIDEBAR ── */
-.sb{position:fixed;left:0;top:0;bottom:0;width:180px;background:#0e0e10;border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:width .25s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+.sb{position:fixed;left:0;top:0;bottom:0;width:200px;background:#0e0e10;border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:width .25s cubic-bezier(.4,0,.2,1);overflow:hidden;}
 [data-theme=cream] .sb{background:rgba(236,230,218,.97);}
 [data-theme=gray] .sb{background:#0d0d0f;}
-.sb.col{width:60px;}
-.sb-top{display:flex;align-items:center;padding:var(--sp-md) var(--sp-sm);border-bottom:1px solid var(--bd);min-height:68px;flex-shrink:0;position:relative;}
-.logo-mk{width:100%;display:flex;align-items:center;transition:all .25s;}
-.logo-mk img{max-height:36px;object-fit:contain;transition:all .25s;}
-.logo-txt{flex:1;overflow:hidden;transition:opacity .2s;}
-.logo-txt h1{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:15px;color:var(--tx);white-space:nowrap;letter-spacing:1px;}
-.logo-txt span{font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:2px;font-weight:700;white-space:nowrap;font-family:'Lexend Giga',sans-serif;}
-.sb.col .logo-txt,.sb.col .th-sw,.sb.col .sb-section-label{opacity:0;pointer-events:none;}
-.sb-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0;}
-.sb-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--bd);background:var(--s1);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.sb-btn:hover{background:var(--s3);color:var(--tx);}
-.sb-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.sb.col{width:64px;}
+/* Logo = botón de toggle — ocupa todo el sb-top */
+.sb-top{display:flex;align-items:center;padding:0;border-bottom:1px solid var(--bd);min-height:62px;flex-shrink:0;cursor:pointer;transition:background .15s;user-select:none;}
+.sb-top:hover{background:rgba(255,255,255,.03);}
+.logo-area{width:100%;height:100%;display:flex;align-items:center;padding:0 14px;gap:10px;overflow:hidden;}
+.logo-horiz{height:32px;object-fit:contain;flex-shrink:0;transition:opacity .2s;max-width:150px;width:auto;}
+.logo-fav{width:38px;height:38px;object-fit:contain;flex-shrink:0;display:none;}
+.sb.col .logo-horiz{display:none;}
+.sb.col .logo-fav{display:block;}
+.sb.col .logo-area{justify-content:center;padding:0;}
+/* hide legacy elements */
+.sb-btn{display:none!important;}
+.logo-mk{display:none!important;}
+.logo-txt{display:none!important;}
+.sb-r{display:none!important;}
 .th-sw{display:flex;gap:5px;align-items:center;}
 .th-btn{width:14px;height:14px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:all .18s;}
 
@@ -198,14 +201,14 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .sb.col .u-inf{opacity:0;}
 
 /* ── SIDEBAR COLLAPSED ── */
-.sb.col .sb-top{justify-content:center;padding:14px 0;}
-.sb.col .logo-mk{justify-content:center;}
-.sb:not(.col) .logo-mk{justify-content:flex-start;}
+.sb.col .sb-top{justify-content:center;}
+
+
 .logo-txt{display:none;}
 
 /* ── MAIN CONTENT ── */
-.main{margin-left:180px;transition:margin-left .25s cubic-bezier(.4,0,.2,1);min-height:100vh;position:relative;z-index:1;background:var(--bg);color:var(--tx);}
-.main.col{margin-left:60px;}
+.main{margin-left:200px;transition:margin-left .25s cubic-bezier(.4,0,.2,1);min-height:100vh;position:relative;z-index:1;background:var(--bg);color:var(--tx);}
+.main.col{margin-left:64px;}
 
 /* ── PAGE WRAPPER — espaciado responsivo estandarizado ── */
 .pw{
@@ -214,7 +217,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 }
 
 /* ── SongView sidebar override ── */
-.sv.sv-with-sidebar{left:180px!important;}
+.sv.sv-with-sidebar{left:200px!important;}
 .sv.sv-with-sidebar.sv-sb-col{left:60px!important;}
 @media(min-width:768px) and (max-width:1023px){
   .sv.sv-with-sidebar,.sv.sv-with-sidebar.sv-sb-col{left:0!important;}
@@ -350,7 +353,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   .sb{display:flex;width:220px;}
   .sb.col{width:60px;}
   .main{margin-left:180px;}
-  .main.col{margin-left:60px;}
+  .main.col{margin-left:64px;}
   .bot{display:none;}
   .two{grid-template-columns:1fr 1fr;}
   .ph{flex-direction:row;align-items:center;}
@@ -372,7 +375,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   .sb{width:200px;}
   .sb.col{width:60px;}
   .main{margin-left:200px;}
-  .main.col{margin-left:60px;}
+  .main.col{margin-left:64px;}
   .modal{width:680px;}
   .sc-n{font-size:46px;}
   .title{font-size:38px;}
@@ -387,4 +390,12 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   .sb{display:none;}
   .main{margin-left:0!important;}
   .bot{display:flex;}
+}
+
+/* ── Barra de meses: nombre largo en desktop, corto en mobile ── */
+.mes-nombre-corto{display:none;}
+.mes-nombre-largo{display:inline;}
+@media(max-width:767px){
+  .mes-nombre-largo{display:none;}
+  .mes-nombre-corto{display:inline;}
 }

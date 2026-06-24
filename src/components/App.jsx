@@ -262,21 +262,12 @@ export default function App(){
     <div data-theme={dataTheme}>
       <div className="bg-fx"/>
       <nav className={`sb${sbCol?' col':''}`}>
-        <div className="sb-top">
-          {sbCol
-            ?<div style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <img src="/FAVICON SS.png" alt="SS" style={{width:44,height:44,objectFit:'contain',margin:'0 auto'}}/>
-              <button className="sb-btn" onClick={()=>setSbCol(c=>!c)} style={{position:'absolute',right:6,top:10}}>
-                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-              </button>
-            </div>
-            :<div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-              <img src="/LOGO horiz blanco.png" alt="SetSync" style={{height:36,objectFit:'contain',flex:1,maxWidth:'calc(100% - 36px)'}}/>
-              <button className="sb-btn" onClick={()=>setSbCol(c=>!c)} style={{flexShrink:0,width:26,height:26}}>
-                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
-          }
+        {/* Logo = botón de toggle */}
+        <div className="sb-top" onClick={()=>setSbCol(c=>!c)} title={sbCol?'Expandir menú':'Colapsar menú'}>
+          <div className="logo-area">
+            <img className="logo-horiz" src="/LOGO horiz blanco.png" alt="SetSync"/>
+            <img className="logo-fav"   src="/FAVICON SS.png"        alt="SS"/>
+          </div>
         </div>
         <div className="sb-nav">
           {BNS.map(n=>(
