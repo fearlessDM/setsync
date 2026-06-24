@@ -1,4 +1,5 @@
 import { transposeChord, chordToAmericano, chordToLatino, chordToNashville } from '../../utils/music';
+import { getColorBloque } from './estructura';
 
 // ── Vista lineal: renderiza letra/acordes en formato continuo ───────────────
 // Función pura: no usa estado de React, recibe todo por parámetro.
@@ -324,17 +325,26 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
           }
         }
 
+        const blkColor = blk.label ? getColorBloque(blk.label) : 'rgba(255,255,255,.06)';
         return(
-          <div key={bi} id={`section-${bi}`} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
-            {/* Título del bloque: franja angosta PROPIA arriba del bloque,
-                no más como columna lateral fija en cada línea (pedido de
-                Danny: la columna lateral le robaba ancho horizontal a la
-                letra en TODAS las líneas, no solo en la primera, aunque el
-                texto del título solo aparecía una vez). Ahora cada línea de
-                letra usa el 100% del ancho disponible, alineada a la
-                izquierda desde el borde real del contenedor. */}
+          <div key={bi} id={`section-${bi}`} style={{
+            marginTop:bi===0?0:fs*0.6,
+            background:blk.label?`${blkColor}0d`:'transparent',
+            border:blk.label?`1px solid ${blkColor}40`:'none',
+            borderRadius:blk.label?12:0,
+            padding:blk.label?'8px 10px 10px':'0',
+            boxSizing:'border-box',
+          }}>
             {blk.label&&(
-              <div style={{fontSize:Math.max(8,sFs-1),fontWeight:900,color:'var(--tx3)',fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.5px',whiteSpace:'nowrap',opacity:.7,marginBottom:Math.max(3,fs*0.25)}}>
+              <div style={{
+                fontSize:Math.max(8,sFs-1),fontWeight:900,
+                color:blkColor,
+                fontFamily:FONT,textTransform:'uppercase',letterSpacing:'1.5px',
+                whiteSpace:'nowrap',
+                marginBottom:Math.max(4,fs*0.25),
+                borderBottom:`1px solid ${blkColor}30`,
+                paddingBottom:4,
+              }}>
                 {blk.label}
               </div>
             )}

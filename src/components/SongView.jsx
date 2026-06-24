@@ -51,6 +51,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [editedSongs,setEditedSongs]=useState({});
   const [showSavePopup,setShowSavePopup]=useState(false);
   const [capoOpen,setCapoOpen]=useState(false);
+  const [tonoOpen,setTonoOpen]=useState(false);
+  const tonoBtnRef=useRef(null);
+  const [tonoPos,setTonoPos]=useState(null);
   const [notacionOpen,setNotacionOpen]=useState(false);
   const [notacionPos,setNotacionPos]=useState(null);
   const notacionBtnRef=useRef(null);
@@ -373,6 +376,66 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             dropdown directamente en document.body, fuera del árbol DOM
             del contenedor con overflow, posicionado con coordenadas fijas
             calculadas desde getBoundingClientRect() del botón real. */}
+        {/* Botón de Tono/Capo desplegable */}
+        <div style={{position:'relative',flexShrink:0}}>
+          <button ref={tonoBtnRef} onClick={()=>{
+            if(!tonoOpen){
+              const r=tonoBtnRef.current.getBoundingClientRect();
+              setTonoPos({top:r.bottom+6,right:window.innerWidth-r.right});
+            }
+            setTonoOpen(o=>!o);
+          }} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,
+            border:(tpOff!==0||capo>0)?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
+            background:(tpOff!==0||capo>0)?'rgba(200,169,126,.12)':'rgba(255,255,255,.04)',
+            color:(tpOff!==0||capo>0)?'var(--ac)':'var(--tx3)',
+            cursor:'pointer',fontSize:12,fontWeight:900,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
+            <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13}}>{curKey}</span>
+            {capo>0&&<span style={{fontSize:9,color:'var(--gn)',fontWeight:700}}>·{sonaKey}</span>}
+            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"
+              style={{transform:tonoOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          {tonoOpen&&tonoPos&&createPortal(
+            <>
+              <div onClick={()=>setTonoOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+              <div style={{position:'fixed',top:tonoPos.top,right:tonoPos.right,
+                background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',
+                border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
+                minWidth:200,boxShadow:'0 8px 32px rgba(0,0,0,.6)'}}>
+                {/* Transposición */}
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Transposición</div>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+                  <button onClick={()=>doTp(-1)} style={{width:36,height:36,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center',fontStyle:'italic'}}>b</button>
+                  <div style={{flex:1,textAlign:'center'}}>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,color:svAc,lineHeight:1}}>{curKey}</div>
+                    {tpOff!==0&&<div style={{fontSize:9,color:'var(--tx3)',fontWeight:700,marginTop:2}}>{tpOff>0?'+':''}{tpOff}st</div>}
+                  </div>
+                  <button onClick={()=>doTp(1)} style={{width:36,height:36,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>#</button>
+                </div>
+                {tpOff!==0&&<button onClick={()=>{setTpOff(0);setToast({text:`♩ ${song.key}`,sub:tx.original});}} style={{width:'100%',padding:'6px',borderRadius:8,border:'1px solid var(--bd)',background:'rgba(255,255,255,.05)',color:'var(--tx3)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Outfit',sans-serif",marginBottom:10}}>Restaurar original</button>}
+                {/* Capo */}
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Capo</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5}}>
+                  {[0,1,2,3,4,5,6,7].map(c=>{
+                    const notaSuena=c===0?curKey:tpKey(curKey,-c);
+                    const isOn=capo===c;
+                    return(
+                      <button key={c} onClick={()=>{setCapo(c);setCapoOpen(false);setToast(c===0?{text:tx.noCapo,sub:tx.original}:{text:`Capo ${c}`,sub:`Suena en ${notaSuena}`});}}
+                        style={{padding:'6px 4px',borderRadius:8,border:isOn?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
+                          background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',
+                          cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,transition:'all .15s'}}>
+                        <span style={{fontSize:12,fontWeight:900,color:isOn?'var(--ac)':'var(--tx)',fontFamily:"'Outfit',sans-serif"}}>{c===0?'—':c}</span>
+                        <span style={{fontSize:8,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'Outfit',sans-serif",fontWeight:700}}>{notaSuena}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>,
+            document.body
+          )}
+        </div>
         {perm.modoNashville&&(
           <div style={{position:'relative',flexShrink:0}}>
             <button ref={notacionBtnRef} onClick={()=>{
@@ -537,32 +600,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── ContentArea — Estructura y Tono en misma columna derecha ─────────────
+  // ── ContentArea — layout correcto con MapaMaestro sticky ─────────────────
   const ContentArea=()=>(
-    <div style={{flex:1,position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}}>
+    <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
       {viewMode==='bloques'
         ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} notacion={notacion} curKey={curKey}/>
         :<>
-          {/* Mapa Maestro horizontal — encima del contenido, sticky */}
+          {/* Mapa Maestro — flexShrink:0 para que no se aplaste */}
           <MapaMaestro/>
-          <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
-            onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
-            onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
-          />
-          <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
-            {song.docId
-              ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
-              :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
-            }
+          {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
+          <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+            <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
+              onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
+              onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
+            />
+            <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
+              {song.docId
+                ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
+                :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
+              }
+            </div>
           </div>
         </>
       }
-      {/* PanelTono — esquina superior derecha, mapa ahora es horizontal */}
-      <div style={{position:'absolute',right:6,top:6,zIndex:4,pointerEvents:'none'}}>
-        <div style={{pointerEvents:'all',width:64}}>
-          <PanelTono/>
-        </div>
-      </div>
     </div>
   );
 
@@ -809,7 +869,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         display:'flex',alignItems:'stretch',
         overflowX:'auto',scrollbarWidth:'none',
         WebkitOverflowScrolling:'touch',
-        minHeight:38,zIndex:5,
+        minHeight:32,zIndex:5,
       }}>
         {guias.map((g,i)=>{
           const isActive = mapaSectionIdx===i;
@@ -839,15 +899,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {/* Chip de color — mismo estilo que los de Secuencia */}
               <div style={{
                 width:'calc(100% - 4px)',
-                minHeight:24,
-                borderRadius:6,
+                minHeight:20,
+                borderRadius:5,
                 background:isActive?g.color+'33':g.color+'14',
                 border:'1px solid '+(isActive?g.color+'88':g.color+'33'),
                 display:'flex',alignItems:'center',justifyContent:'center',
                 padding:'2px 4px',
               }}>
                 <span style={{
-                  fontSize:narrow?7:9,fontWeight:900,
+                  fontSize:narrow?6:8,fontWeight:900,
                   color:isActive?g.color:g.color+'99',
                   fontFamily:"'Lexend Giga',sans-serif",
                   textTransform:'uppercase',letterSpacing:'.3px',
@@ -855,7 +915,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 }}>{abrevLabel(g.label,narrow)}</span>
               </div>
               <span style={{
-                fontSize:6,color:isActive?g.color:'rgba(255,255,255,.25)',
+                fontSize:5,color:isActive?g.color:'rgba(255,255,255,.25)',
                 fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,lineHeight:1,
               }}>{g.compases}c</span>
             </button>
