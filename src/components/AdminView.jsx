@@ -272,7 +272,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
 
 // ── Vista principal ────────────────────────────────────────────────────────
 export function AdminView({mode, activeSunday, userRole, onLive, onToast,
-  onSelectDay, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[]}){
+  onSelectDay, onOpenFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[]}){
   const tx = getT(lang);
   const [selDay, setSelDay] = useState(activeSunday);
   const [showPicker, setShowPicker] = useState(false);
@@ -368,7 +368,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   badge={pub ? tx.published : tx.draft}
                   isLeader={isLeader}
                   tx={tx}
-                  onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);if(sl&&sl.length>0&&onOpenSong)onOpenSong(0,sl);}}
+                  onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);if(onOpenFecha)onOpenFecha(day,mesNav);}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
                 />
               </div>
@@ -400,7 +400,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   equipos={equipos}
                   isLeader={isLeader}
                   tx={tx}
-                  onOpen={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
+                  onOpen={()=>{if(onOpenFecha)onOpenFecha(ev.dia||new Date(ev.fecha).getDate(),mesNav);}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                 />
               );
@@ -432,7 +432,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 equipos={equipos}
                 isLeader={isLeader}
                 tx={tx}
-                onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);if(onOpenSong&&(ev.setlist||[]).length>0)onOpenSong(0,ev.setlist);}}
+                onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);if(onOpenFecha)onOpenFecha(ev.dia,mesNav);}}
                 onLive={()=>{onLive&&onLive();}}
               />
             ))}

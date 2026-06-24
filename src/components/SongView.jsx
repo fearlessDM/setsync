@@ -646,6 +646,74 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(audioCtxRef.current){ audioCtxRef.current.close(); audioCtxRef.current=null; }
   };
 
+  // ── Panel de Click con BPM y cifra editables ─────────────────────────────
+  const CIFRAS = ['4/4','3/4','6/8','2/4','5/4','12/8'];
+  const [seqBpm, setSeqBpm] = useState(()=>seqData?.click.bpm||song?.bpm||120);
+  const [seqCifra, setSeqCifra] = useState(()=>seqData?.click.compas||'4/4');
+  // sync when song changes
+  const prevSongRef = useRef(null);
+  if(song?.name !== prevSongRef.current){ prevSongRef.current=song?.name; }
+
+  const ClickPanel=()=>(
+    <div>
+      <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
+      <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
+        {/* BPM editable */}
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+          <div style={{display:'flex',alignItems:'center',gap:4}}>
+            <button onClick={()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
+              style={{width:24,height:24,borderRadius:6,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
+            <input
+              type="number" min="40" max="300"
+              value={seqBpm}
+              onChange={e=>{const v=Math.max(40,Math.min(300,Number(e.target.value)||120));setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
+              style={{width:52,textAlign:'center',fontFamily:"'Special Gothic Expanded One',sans-serif",
+                fontSize:28,color:clickActivo?'var(--gn)':'var(--ac)',
+                background:'transparent',border:'none',outline:'none',
+                MozAppearance:'textfield',lineHeight:1}}
+            />
+            <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
+              style={{width:24,height:24,borderRadius:6,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+          </div>
+          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>BPM</div>
+        </div>
+        {/* Cifra / compás */}
+        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>CIFRA</div>
+          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+            {CIFRAS.map(c=>(
+              <button key={c} onClick={()=>setSeqCifra(c)}
+                style={{padding:'4px 8px',borderRadius:8,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,
+                  fontFamily:"'Outfit',sans-serif",
+                  background:seqCifra===c?'var(--ac)':'rgba(255,255,255,.07)',
+                  color:seqCifra===c?'#000':'var(--tx3)',transition:'all .15s'}}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{flex:1}}/>
+        {/* Play/Stop */}
+        <button
+          onClick={()=>{
+            const next=!clickActivo;
+            setClickActivo(next);
+            if(next) startClick(seqBpm);
+            else stopClick();
+          }}
+          style={{width:48,height:48,borderRadius:'50%',border:'none',flexShrink:0,
+            background:clickActivo?'var(--rd)':'var(--gn)',
+            color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
+            transition:'all .2s',boxShadow:clickActivo?'0 0 20px rgba(253,128,131,.5)':'0 0 20px rgba(48,192,183,.3)'}}>
+          {clickActivo
+            ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          }
+        </button>
+      </div>
+    </div>
+  );
+
   // ── Panel de Secuencia ────────────────────────────────────────────────────
   const SecuenciaPanel=()=>(
     <div style={{
@@ -659,42 +727,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       display:'flex',flexDirection:'column',gap:14,
     }}>
 
-      {/* ── Click / Metrónomo ── */}
-      <div>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
-        <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
-          <div style={{display:'flex',flexDirection:'column'}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:34,color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1,transition:'color .2s'}}>
-              {seqData?.click.bpm || song?.bpm || 120}
-            </div>
-            <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
-              BPM · {seqData?.click.compas||'4/4'}
-            </div>
-          </div>
-          {seqData?.click.intro&&(
-            <div style={{padding:'4px 10px',borderRadius:100,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)'}}>
-              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>Intro {seqData.click.intro} comp.</span>
-            </div>
-          )}
-          <div style={{flex:1}}/>
-          <button
-            onClick={()=>{
-              const next=!clickActivo;
-              setClickActivo(next);
-              if(next) startClick(seqData?.click.bpm||song?.bpm||120);
-              else stopClick();
-            }}
-            style={{width:48,height:48,borderRadius:'50%',border:'none',
-              background:clickActivo?'var(--rd)':'var(--gn)',
-              color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
-              transition:'all .2s',boxShadow:clickActivo?'0 0 20px rgba(253,128,131,.5)':'0 0 20px rgba(48,192,183,.3)'}}>
-            {clickActivo
-              ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            }
-          </button>
-        </div>
-      </div>
+      {/* ── Click / Metrónomo con BPM y cifra editables ── */}
+      <ClickPanel/>
 
       {/* ── Guías de estructura ── */}
       {seqData?.guias&&(
@@ -827,19 +861,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   {/* Fader track — ocupa todo el espacio disponible */}
                   <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
                     <div className="fader-track"
-                      style={{position:'relative',width:16,height:'100%',minHeight:60,
-                        background:'rgba(255,255,255,.08)',borderRadius:4}}
+                      style={{position:'relative',width:22,height:'100%',minHeight:60,
+                        background:'rgba(255,255,255,.08)',borderRadius:4,
+                        touchAction:'none',userSelect:'none',WebkitUserSelect:'none'}}
                       onPointerDown={e=>{
+                        e.preventDefault();
                         const el=e.currentTarget;
                         el.setPointerCapture(e.pointerId);
+                        const rect=el.getBoundingClientRect();
                         const move=ev=>{
-                          const r=el.getBoundingClientRect();
-                          const pct=Math.round(100-(ev.clientY-r.top)/r.height*100);
-                          setFaderVols(v=>{const n=[...v];n[ci]=Math.max(0,Math.min(100,pct));return n;});
+                          const pct=Math.round(100-Math.max(0,Math.min(1,(ev.clientY-rect.top)/rect.height))*100);
+                          setFaderVols(v=>{const n=[...v];n[ci]=pct;return n;});
                         };
-                        const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
-                        el.addEventListener('pointermove',move);
+                        const up=()=>{el.releasePointerCapture(e.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                        el.addEventListener('pointermove',move,{passive:false});
                         el.addEventListener('pointerup',up);
+                        move(e); // update on first touch
                       }}>
                       {/* Fill */}
                       <div className="fader-fill" style={{

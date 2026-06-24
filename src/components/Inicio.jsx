@@ -24,7 +24,7 @@ const TIPS = [
 // Colores por formación (cycling)
 const EQ_COLORS = ['#30C0B7','#FD8083','#a78bfa','#f59e0b','#34d399','#60a5fa'];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tienePremiere=false, tieneMonitoreo=false, onNavigate=()=>{} }){
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }){
   const feat = getModoFeatures(mode);
   const [tipIdx, setTipIdx] = useState(0);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
@@ -99,6 +99,21 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         gap:'var(--gap)',
         padding:'var(--sp-md) var(--pw-x,var(--sp-md))',
       }}>
+
+        {/* ── Hero marketing — primera impresión ── */}
+        <Card cols={2}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--ac)',marginBottom:8,letterSpacing:'.3px'}}>
+            Todo lo que necesitas, en una sola pantalla.
+          </div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.9}}>
+            SetSync es tu centro de operaciones para tocar en vivo — letras, acordes, monitoreo en tiempo real, click y secuencias sincronizadas. Gestiona equipos, crea setlists, convoca músicos y lleva el control de cada fecha desde el backstage hasta el escenario.
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:12}}>
+            {['🎛 Monitoreo OSC','🎵 Setlists','📅 Gestión de fechas','🎹 Secuencias','👥 Equipos','📜 Letras & Acordes'].map(t=>(
+              <span key={t} style={{fontSize:9,fontWeight:700,padding:'3px 10px',borderRadius:'var(--rad-full)',background:'rgba(255,255,255,.06)',border:'1px solid var(--bd)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{t}</span>
+            ))}
+          </div>
+        </Card>
 
         {/* Próxima fecha — full width */}
         <Card cols={2} onClick={()=>onNavigate('fechas')}>
@@ -209,33 +224,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             </div>
           </div>
         </Card>
-
-        {/* SetSync Premiere */}
-        <Card cols={2} onClick={tienePremiere?()=>onNavigate('premiere'):undefined}>
-          <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
-            <span style={{fontSize:16,lineHeight:1}}>★</span>
-            <Lbl>SetSync Premiere</Lbl>
-            {!tienePremiere&&(
-              <span style={{
-                marginLeft:'auto',fontSize:9,fontWeight:700,
-                padding:'3px 10px',borderRadius:'var(--rad-full)',
-                background:'rgba(200,169,126,.1)',color:'var(--ac)',
-                border:'1px solid rgba(200,169,126,.3)',
-                fontFamily:"'Lexend Giga',sans-serif",
-              }}>PRO / PREMIUM</span>
-            )}
-          </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
-            Canciones de bandas de adoración antes que nadie. Acordes, letra y audio desde el día de estreno.
-          </div>
-          {tienePremiere&&(
-            <div style={{marginTop:'var(--sp-xs)',fontSize:11,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif"}}>
-              Ver estrenos →
-            </div>
-          )}
-        </Card>
-
-        {/* Monitoreo — solo si tiene acceso */}
+{/* Monitoreo — solo si tiene acceso */}
         {tieneMonitoreo&&(
           <Card cols={2} onClick={()=>onNavigate('monitoreo')}>
             <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-xs)'}}>
