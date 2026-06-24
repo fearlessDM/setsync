@@ -577,28 +577,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
 
-    // Icono Monitor: headphone SVG del logo + barras WiFi coloreadas al conectar
+    // Icono Monitor: headphone (logo) + barras WiFi verdes al conectar
     const IconMonitor=({active})=>{
-      const baseCol = mesaConectada ? 'var(--gn)' : active ? 'var(--ac)' : 'var(--tx3)';
-      // Barras WiFi: 4 arcos de radio creciente, verdes cuando conectado
-      const bars = [
-        {r:3.5, sw:1.4},
-        {r:6,   sw:1.6},
-        {r:8.5, sw:1.8},
+      const col = mesaConectada?'var(--gn)':active?'var(--ac)':'var(--tx3)';
+      // 3 arcos de WiFi sobre la parte superior del auricular
+      const wifiArcs=[
+        {cx:12,cy:10,r:2.2,da:3.5},
+        {cx:12,cy:10,r:4.2,da:6.7},
+        {cx:12,cy:10,r:6.2,da:9.8},
       ];
       return(
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
-          {/* Auricular — headphone path del logo adaptado a 24x24 */}
-          <path d="M12 4a8 8 0 0 0-8 8v4a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H6v-0.1A6 6 0 0 1 18 14v0h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-4a8 8 0 0 0-8-8z"
-            fill={baseCol} opacity="0.9"/>
-          {/* Barras WiFi encima — salen del top del arco */}
-          {mesaConectada&&bars.map((b,i)=>(
-            <circle key={i} cx="12" cy="12" r={b.r}
-              stroke="var(--gn)" strokeWidth={b.sw}
-              fill="none" opacity={0.25+i*0.25}
-              strokeDasharray={`${Math.PI*b.r*0.55} ${Math.PI*b.r*1.45}`}
-              strokeDashoffset={Math.PI*b.r*0.72}
-              strokeLinecap="round"
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+          {/* Auricular — forma del logo: arco superior + ear cups */}
+          <path
+            d="M5 14v-2a7 7 0 0 1 14 0v2"
+            stroke={col} strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+          {/* Ear cup izquierdo */}
+          <rect x="3" y="13" width="3.5" height="5" rx="1.5"
+            fill={col} opacity="0.9"/>
+          {/* Ear cup derecho */}
+          <rect x="17.5" y="13" width="3.5" height="5" rx="1.5"
+            fill={col} opacity="0.9"/>
+          {/* Barras WiFi — solo cuando conectado */}
+          {mesaConectada&&wifiArcs.map((a,i)=>(
+            <path key={i}
+              d={`M ${a.cx-a.r*0.71} ${a.cy-a.r*0.71} A ${a.r} ${a.r} 0 0 1 ${a.cx+a.r*0.71} ${a.cy-a.r*0.71}`}
+              stroke="var(--gn)" strokeWidth={1.4+i*0.2}
+              strokeLinecap="round" fill="none"
+              opacity={0.5+i*0.2}
             />
           ))}
         </svg>
@@ -729,19 +735,26 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const clickIntervalRef = useRef(null);
 
   // ── Motor de Click con Web Audio API ──────────────────────────────────────
-  const startClick = (bpm) => {
+  // Parsear beats por compás desde la cifra (ej: '6/8' → 6, '4/4' → 4)
+  const beatsFromCifra=(c)=>{
+    const n=parseInt((c||'4/4').split('/')[0]);
+    return isNaN(n)?4:n;
+  };
+
+  const startClick = (bpm, cifra) => {
     if(clickIntervalRef.current) clearInterval(clickIntervalRef.current);
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     audioCtxRef.current = ctx;
+    const beats = beatsFromCifra(cifra||seqCifra);
     let beat = 0;
     const playBeat = () => {
       const now = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      // Downbeat: higher pitch + more volume; upbeats: lower
-      osc.frequency.value = beat % 4 === 0 ? 1400 : 900;
-      gain.gain.setValueAtTime(beat % 4 === 0 ? 0.5 : 0.25, now);
+      const isDown = beat % beats === 0;
+      osc.frequency.value = isDown ? 1400 : 900;
+      gain.gain.setValueAtTime(isDown ? 0.5 : 0.25, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
       osc.start(now); osc.stop(now + 0.08);
       beat++;
@@ -815,23 +828,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               }}
               style={{
                 flexShrink:0,
-                width:pct+'%',minWidth:narrow?32:48,
+                width:pct+'%',minWidth:narrow?36:52,
                 border:'none',
-                background:isActive?g.color+'18':'transparent',
+                background:'transparent',
                 borderBottom:isActive?'2px solid '+g.color:'2px solid transparent',
-                padding:'3px 4px 1px',
-                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
+                padding:'4px 3px 2px',
+                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
                 cursor:'pointer',transition:'all .15s',
               }}>
+              {/* Chip de color — mismo estilo que los de Secuencia */}
+              <div style={{
+                width:'calc(100% - 4px)',
+                minHeight:24,
+                borderRadius:6,
+                background:isActive?g.color+'33':g.color+'14',
+                border:'1px solid '+(isActive?g.color+'88':g.color+'33'),
+                display:'flex',alignItems:'center',justifyContent:'center',
+                padding:'2px 4px',
+              }}>
+                <span style={{
+                  fontSize:narrow?7:9,fontWeight:900,
+                  color:isActive?g.color:g.color+'99',
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  textTransform:'uppercase',letterSpacing:'.3px',
+                  whiteSpace:'nowrap',lineHeight:1.1,textAlign:'center',
+                }}>{abrevLabel(g.label,narrow)}</span>
+              </div>
               <span style={{
-                fontSize:narrow?7:9,fontWeight:700,
-                color:isActive?g.color:'var(--tx3)',
-                fontFamily:"'Lexend Giga',sans-serif",
-                textTransform:'uppercase',letterSpacing:'.3px',
-                whiteSpace:'nowrap',lineHeight:1.2,
-              }}>{abrevLabel(g.label,narrow)}</span>
-              <span style={{
-                fontSize:6,color:isActive?g.color+'99':'rgba(255,255,255,.18)',
+                fontSize:6,color:isActive?g.color:'rgba(255,255,255,.25)',
                 fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,lineHeight:1,
               }}>{g.compases}c</span>
             </button>
@@ -878,20 +902,36 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               :<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
           </button>
         </div>
-        {/* Fila 2: Cifra */}
-        <div>
-          <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,marginBottom:6}}>CIFRA</div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:5}}>
-            {CIFRAS.map(c=>(
-              <button key={c} onClick={()=>setSeqCifra(c)}
-                style={{padding:'6px 2px',borderRadius:8,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,
-                  fontFamily:"'Outfit',sans-serif",
-                  background:seqCifra===c?'var(--ac)':'rgba(255,255,255,.07)',
-                  color:seqCifra===c?'#000':'var(--tx3)',transition:'all .15s',textAlign:'center'}}>
-                {c}
-              </button>
-            ))}
-          </div>
+        {/* Fila 2: Cifra como selector */}
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>CIFRA</span>
+          <select
+            value={seqCifra}
+            onChange={e=>{
+              const c=e.target.value;
+              setSeqCifra(c);
+              // Reiniciar click con nueva cifra si está activo
+              if(clickActivo){ stopClick(); startClick(seqBpm,c); }
+            }}
+            style={{
+              flex:1,
+              padding:'8px 12px',
+              borderRadius:10,
+              border:'1px solid rgba(255,255,255,.12)',
+              background:'rgba(255,255,255,.07)',
+              color:'var(--ac)',
+              fontSize:16,fontWeight:700,
+              fontFamily:"'Special Gothic Expanded One',sans-serif",
+              cursor:'pointer',
+              outline:'none',
+              appearance:'none',WebkitAppearance:'none',
+            }}>
+            {CIFRAS.map(c=>(<option key={c} value={c} style={{background:'#0a0a0a',color:'#fff',fontWeight:700}}>{c}</option>))}
+          </select>
+          {/* Flecha decorativa */}
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0,pointerEvents:'none',marginLeft:-32}}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>
       </div>
     </div>
