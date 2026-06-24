@@ -310,32 +310,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
         display:'flex', alignItems:'flex-start', gap:'var(--sp-sm)',
       }}>
         <div style={{flex:1}}>
-          <div style={{display:'flex', alignItems:'center', gap:'var(--sp-xs)', marginBottom:4}}>
-            <button
-              onClick={()=>handleMesChange(Math.max(0, mesNav-1))}
-              disabled={mesNav===0}
-              style={{width:28,height:28,borderRadius:'var(--rad-xs)',border:'1px solid var(--bd)',
-                background:'transparent',color:'var(--tx3)',cursor:mesNav===0?'not-allowed':'pointer',
-                display:'flex',alignItems:'center',justifyContent:'center',opacity:mesNav===0?.3:1}}
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-            </button>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
-              fontSize:24,color:'var(--tx)',lineHeight:1.05,flex:1}}>{MESES_LARGO[mesNav]}</div>
-            <button
-              onClick={()=>handleMesChange(Math.min(11, mesNav+1))}
-              disabled={mesNav===11}
-              style={{width:28,height:28,borderRadius:'var(--rad-xs)',border:'1px solid var(--bd)',
-                background:'transparent',color:'var(--tx3)',cursor:mesNav===11?'not-allowed':'pointer',
-                display:'flex',alignItems:'center',justifyContent:'center',opacity:mesNav===11?.3:1}}
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </button>
-          </div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
+            fontSize:24,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{MESES_LARGO[mesNav]}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'var(--tx3)',lineHeight:1.5}}>
             {sinEventos ? 'Sin eventos este mes' : 'Toca un bloque para ver el setlist'}
@@ -381,7 +357,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 )}
                 <TarjetaFecha
                   titulo={`${tx.sunday} ${day}`}
-                  subtitulo={`${sl.length} ${sl.length===1?tx.song:tx.songs}`}
+                  subtitulo={`Setlist · ${sl.length} ${sl.length===1?tx.song:tx.songs}`}
                   lugar="Iglesia Central"
                   hora="10:00"
                   setlist={sl}
@@ -417,7 +393,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 <TarjetaFecha
                   key={ev.id}
                   titulo={ev.nombre}
-                  subtitulo={`${(ev.setlist||[]).length} canciones`}
+                  subtitulo={`Setlist · ${(ev.setlist||[]).length} canciones`}
                   lugar={ev.lugar||''}
                   hora={ev.hora||''}
                   setlist={ev.setlist||[]}
@@ -449,7 +425,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
               <TarjetaFecha
                 key={i}
                 titulo={ev.label}
-                subtitulo={`${ev.tipo} · ${(ev.setlist||[]).length} canciones`}
+                subtitulo={`Setlist · ${(ev.setlist||[]).length} canciones`}
                 lugar={ev.lugar||''}
                 hora={ev.hora||''}
                 setlist={ev.setlist||[]}

@@ -44,7 +44,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   const [pastorNotas,setPastorNotas]=useState('');
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -189,7 +189,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
     };
 
     return(
-      <div style={{padding:'10px 8px',paddingBottom:90}}>
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -325,7 +325,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
     const bandaEquipo=equipos.find(e=>e.name==='Banda'); const listado=(bandaEquipo?(bandaEquipo.miembros||[]):[]).filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
 
     return(
-      <div style={{padding:'10px 8px',paddingBottom:90}}>
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -444,7 +444,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
 
     // ── DELEGAR PERMISOS ──
   if(bsView==='permisos')return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -499,7 +499,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
 
   // ── NOTIFICACIONES ──
   if(bsView==='notif')return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -541,7 +541,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
 
   // ── CONFIGURACIÓN ──
   if(bsView==='config')return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -732,7 +732,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
 
   // ── PALABRA DEL PASTOR ──
   if(bsView==='pastor')return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
@@ -778,7 +778,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   });
 
   return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>Backstage</div>

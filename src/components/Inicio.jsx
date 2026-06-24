@@ -1,7 +1,13 @@
 import { useState, useRef } from 'react';
 import { getModoFeatures } from '../data/modo';
 
-const BG_IMGS = [
+// Imágenes por modo — iglesia: escenarios de worship / banda: palcos y ensayos
+const BG_IMGS_IGLESIA = [
+  'https://images.unsplash.com/photo-1519677584237-752f8853252e?w=800&q=80', // luces de escenario worship
+  'https://images.unsplash.com/photo-1533854775446-95c4609da544?w=800&q=80', // iglesia con luces
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', // escenario con multitud
+];
+const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800&q=80',
   'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
@@ -21,7 +27,8 @@ const EQ_COLORS = ['#30C0B7','#FD8083','#a78bfa','#f59e0b','#34d399','#60a5fa'];
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tienePremiere=false, tieneMonitoreo=false, onNavigate=()=>{} }){
   const feat = getModoFeatures(mode);
   const [tipIdx, setTipIdx] = useState(0);
-  const [bgIdx] = useState(()=>Math.floor(Math.random()*BG_IMGS.length));
+  const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
+  const [bgIdx] = useState(()=>Math.floor(Math.random()*3));
   const isAdmin = userRole==='superadmin'||userRole==='leader';
   const nombre = 'Daniel';
 
@@ -70,7 +77,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       {/* ── Hero ── */}
       <div style={{position:'relative',height:210,overflow:'hidden',marginBottom:0}}>
         <img
-          src={BG_IMGS[bgIdx]} alt=""
+          src={BG_IMGS[bgIdx % BG_IMGS.length]} alt=""
           style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.3) saturate(.7)'}}
           loading="lazy"
         />

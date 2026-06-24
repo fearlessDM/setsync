@@ -57,7 +57,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
   // MODAL CREAR CANCIÓN
   if(showCrear)return(
-    <div style={{padding:'10px 8px',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       {/* Header */}
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}}
         onClick={()=>{setShowCrear(false);setCrearModo(null);}}>
@@ -406,7 +406,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
 
   return(
-    <div>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Cancionero</div>

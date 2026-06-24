@@ -60,6 +60,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [toast,setToast]=useState(null);
   const [showMonitor,setShowMonitor]=useState(false);
   const [monitorBus,setMonitorBus]=useState(1);
+  const [bottomTab,setBottomTab]=useState(null); // null | 'monitor' | 'secuencia'
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
@@ -534,6 +535,92 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
+  // ── Barra de pestañas inferior (Letra / Monitoreo / Secuencia) ────────────
+  const BottomTabBar=()=>{
+    const tabs=[
+      {id:null,     label:'Letra',     icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>},
+      {id:'monitor', label:'Monitor',   icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>},
+      {id:'secuencia',label:'Secuencia',icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="5 3 19 12 5 21 5 3"/><line x1="19" y1="3" x2="19" y2="21"/></svg>},
+    ];
+    return(
+      <div style={{
+        position:'fixed',bottom:0,left:0,right:0,
+        background:'rgba(8,8,9,.97)',borderTop:'1px solid rgba(255,255,255,.1)',
+        backdropFilter:'blur(20px)',zIndex:55,
+        display:'flex',alignItems:'stretch',height:52,
+      }}>
+        {tabs.map(tab=>{
+          const isOn = bottomTab===tab.id;
+          return(
+            <button key={String(tab.id)} onClick={()=>{
+              if(tab.id==='monitor') setShowMonitor(v=>!v);
+              setBottomTab(isOn?null:tab.id);
+            }} style={{
+              flex:1,border:'none',background:'transparent',
+              display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
+              color: isOn?'var(--ac)':'var(--tx3)',
+              borderTop: isOn?'2px solid var(--ac)':'2px solid transparent',
+              cursor:'pointer',transition:'all .15s',
+              fontFamily:"'Lexend Giga',sans-serif",
+            }}>
+              <span style={{color:'inherit',display:'flex',alignItems:'center'}}>{tab.icon}</span>
+              <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // ── Panel de Secuencia (Click + Pads + Multitracks) ────────────────────────
+  const SecuenciaPanel=()=>(
+    <div style={{
+      position:'fixed',bottom:52,left:0,right:0,
+      background:'rgba(4,4,18,.97)',borderTop:'1px solid rgba(255,255,255,.1)',
+      backdropFilter:'blur(40px)',zIndex:50,
+      maxHeight:'55vh',overflowY:'auto',
+      transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
+      transition:'transform .3s cubic-bezier(.4,0,.2,1)',
+      padding:'16px 16px 20px',
+      display:'flex',flexDirection:'column',gap:16,
+    }}>
+      {/* Click / Metrónomo */}
+      <div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,color:'var(--ac)',lineHeight:1}}>{song?.bpm||120}</div>
+          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:4}}>BPM</div>
+          <div style={{flex:1}}/>
+          <button style={{width:44,height:44,borderRadius:'50%',border:'none',background:'var(--gn)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>
+      </div>
+      {/* Pads ambientales */}
+      <div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Pads Ambientales · {curKey}</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
+          {['Calmo','Tenso','Gloria','Lluvia'].map((pad,i)=>(
+            <button key={i} style={{padding:'10px 6px',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',color:'var(--tx2)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
+              {pad}
+            </button>
+          ))}
+        </div>
+        <div style={{fontSize:9,color:'var(--tx3)',marginTop:8,fontFamily:"'Lexend Giga',sans-serif"}}>Afinado en {curKey} · Próximamente: conexión OSC</div>
+      </div>
+      {/* Multitracks */}
+      <div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Multitracks</div>
+        <div style={{padding:'20px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
+          <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.7}}>
+            Sin pistas para esta canción.<br/>
+            <span style={{color:'var(--ac)',cursor:'pointer'}}>Importar desde Google Drive →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const MonitorPanel=()=>{
     const w=window.innerWidth,h=window.innerHeight;
     const isTabletH=w>=768&&w>h;
@@ -544,10 +631,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const grid=Array.from({length:rows},(_,r)=>Array.from({length:cols},(_,cc)=>r*cols+cc).filter(i=>i<16));
 
     return(
-      <div style={{position:'fixed',bottom:0,left:0,right:0,height:panelH,
+      <div style={{position:'fixed',bottom:52,left:0,right:0,height:panelH,
         background:'rgba(4,4,16,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
         backdropFilter:'blur(40px)',zIndex:50,
-        transform:showMonitor?'translateY(0)':'translateY(100%)',
+        transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
         transition:'transform .3s cubic-bezier(.4,0,.2,1)',
         display:'flex',flexDirection:'column'}}>
         {/* Header */}
@@ -675,6 +762,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <ContentArea/>
         <NavBar/>
         <MonitorPanel/>
+        <SecuenciaPanel/>
+        <BottomTabBar/>
       </div>
     );
   }
@@ -703,6 +792,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <ContentArea/>
       <NavBar/>
       <MonitorPanel/>
+      <SecuenciaPanel/>
+      <BottomTabBar/>
     </div>
   );
 }
