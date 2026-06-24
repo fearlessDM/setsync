@@ -29,6 +29,7 @@ const PERMISOS_TOTAL={
   autoScroll:true,
 };
 
+const POPUP_SEEN_KEY='ss_bloques_popup_seen';
 export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
@@ -117,6 +118,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
+  const [viewMode,setViewMode]=useState('lineal'); // mantener para compatibilidad interna
   const [showModePopup,setShowModePopup]=useState(false);
   const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
   const [showSpeedPopup,setShowSpeedPopup]=useState(false);
