@@ -61,6 +61,58 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [showMonitor,setShowMonitor]=useState(false);
   const [monitorBus,setMonitorBus]=useState(1);
   const [bottomTab,setBottomTab]=useState(null); // null | 'monitor' | 'secuencia'
+
+  // ── Estado de conexión de la mesa (demo: sin conexión) ────────────────────
+  const [mesaConectada] = useState(false);
+  const [mesaNombre] = useState('Behringer X32');
+  const [wifiStrength] = useState(3); // 0-4
+
+  // Chip de estado de monitoreo — aparece en sidebar (desktop) o en tab (mobile)
+  const MonitorStatusChip=({compact=false})=>{
+    const bars=[0,1,2,3];
+    return(
+      <div style={{
+        display:'flex',alignItems:'center',gap:compact?6:8,
+        padding:compact?'5px 8px':'8px 10px',
+        borderRadius:compact?8:10,
+        background:mesaConectada?'rgba(48,192,183,.1)':'rgba(255,255,255,.04)',
+        border:'1px solid '+(mesaConectada?'rgba(48,192,183,.25)':'rgba(255,255,255,.08)'),
+      }}>
+        {/* Headphones icon */}
+        <svg viewBox="0 0 24 24" width={compact?12:14} height={compact?12:14} fill="none"
+          stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+        </svg>
+        {!compact&&(
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:9,fontWeight:900,color:mesaConectada?'var(--gn)':'var(--tx3)',
+              textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1}}>
+              {mesaConectada?'Conectado':'Sin conexión'}
+            </div>
+            <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2,
+              overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+              {mesaConectada?mesaNombre:'modo demo'}
+            </div>
+          </div>
+        )}
+        {/* WiFi bars */}
+        <div style={{display:'flex',alignItems:'flex-end',gap:1.5,flexShrink:0}}>
+          {bars.map(b=>(
+            <div key={b} style={{
+              width:3,
+              height: 4+b*3,
+              borderRadius:1,
+              background:mesaConectada&&b<=wifiStrength
+                ?'var(--gn)':'rgba(255,255,255,.15)',
+              transition:'background .3s',
+            }}/>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
@@ -538,7 +590,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const BottomTabBar=()=>{
     const tabs=[
       {id:null,     label:'Letra',     icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>},
-      {id:'monitor', label:'Monitor',   icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>},
+      {id:'monitor', label:'Monitor',   icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>},
       {id:'secuencia',label:'Secuencia',icon:<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="5 3 19 12 5 21 5 3"/><line x1="19" y1="3" x2="19" y2="21"/></svg>},
     ];
     return(
@@ -822,9 +874,25 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 14px',
           borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
           <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
-            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.5s infinite'}}/>
-            <span style={{fontSize:10,fontWeight:900,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>Monitoreo</span>
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin conexión · modo demo</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            </svg>
+            <div>
+              <div style={{fontSize:10,fontWeight:900,color:mesaConectada?'var(--gn)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px',lineHeight:1}}>
+                {mesaConectada?'Conectado':'Monitoreo'}
+              </div>
+              <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>
+                {mesaConectada?mesaNombre:'Sin conexión · modo demo'}
+              </div>
+            </div>
+            {/* WiFi bars */}
+            <div style={{display:'flex',alignItems:'flex-end',gap:1.5,marginLeft:4}}>
+              {[0,1,2,3].map(b=>(
+                <div key={b} style={{width:3,height:4+b*3,borderRadius:1,
+                  background:mesaConectada&&b<=wifiStrength?'var(--gn)':'rgba(255,255,255,.15)'}}/>
+              ))}
+            </div>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:5}}>
             <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
@@ -985,6 +1053,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       </div>
       <AnnoBar/>
       <ContentArea/>
+      {/* Monitor status — floating chip in top right when not in monitor tab */}
+      {bottomTab!=='monitor'&&(
+        <div style={{position:'fixed',top:8,right:8,zIndex:51}}>
+          <MonitorStatusChip compact={true}/>
+        </div>
+      )}
       <NavBar/>
       <MonitorPanel/>
       <SecuenciaPanel/>

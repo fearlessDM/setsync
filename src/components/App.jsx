@@ -19,7 +19,7 @@ import { Click } from './Click';
 import { Pads } from './Pads';
 import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
-import { t as getT } from '../i18n';
+import { t as getT, LANGS } from '../i18n';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
@@ -227,12 +227,16 @@ export default function App(){
           <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:160,height:'auto',objectFit:'contain'}}/>
         </div>
         <div style={{marginBottom:32,display:'inline-flex',gap:0,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',overflow:'hidden'}}>
-          {['es','en'].map(l=>(
-            <button key={l} onClick={()=>setLang(l)}
-              style={{padding:'7px 20px',border:'none',cursor:'pointer',background:lang===l?'rgba(255,255,255,.1)':'transparent',
-                color:lang===l?'#f3f1ed':'rgba(255,255,255,.3)',fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
-                textTransform:'uppercase',letterSpacing:'1px'}}>
-              {l==='es'?'ES':'EN'}
+          {LANGS.map(l=>(
+            <button key={l.code} onClick={()=>setLang(l.code)}
+              style={{padding:'7px 16px',border:'none',cursor:'pointer',
+                background:lang===l.code?'rgba(255,255,255,.12)':'transparent',
+                color:lang===l.code?'#f3f1ed':'rgba(255,255,255,.35)',
+                fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+                display:'flex',alignItems:'center',gap:5,letterSpacing:'.5px',
+                borderRight:l.code!=='en'?'1px solid rgba(255,255,255,.06)':'none'}}>
+              <span style={{fontSize:13}}>{l.flag}</span>
+              <span>{l.code.toUpperCase()}</span>
             </button>
           ))}
         </div>
@@ -312,7 +316,7 @@ export default function App(){
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
             onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}
             equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}
-            guardarSetlistEnEvento={guardarSetlistEnEvento}
+            guardarSetlistEnEvento={guardarSetlistEnEvento} onLangChange={setLang}
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}

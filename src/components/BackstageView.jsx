@@ -1,4 +1,4 @@
-import { t as getT } from '../i18n';
+import { t as getT, LANGS } from '../i18n';
 // BackstageView: panel completo de backstage para Iglesia — gestión de eventos,
 // setlists, equipos, permisos, notificaciones y configuración de tema.
 // NOTA: candidato a refactor con reducer/contexto en una sesión futura para
@@ -11,7 +11,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -649,14 +649,18 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Idioma · Language</div>
-        <div style={{display:'flex',gap:6}}>
-          {['es','en'].map(l=>(
-            <button key={l} onClick={()=>onToast({text:l==='es'?'Idioma cambiado a Español':'Language changed to English',sub:''})}
-              style={{flex:1,padding:'9px',borderRadius:10,border:`1px solid ${lang===l?'rgba(200,169,126,.5)':'var(--bd)'}`,
-                background:lang===l?'rgba(200,169,126,.1)':'transparent',color:lang===l?'var(--ac)':'var(--tx3)',
-                fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-              {l==='es'?'🇨🇱 Español':'🇺🇸 English'}
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>País · Idioma</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
+          {LANGS.map(l=>(
+            <button key={l.code} onClick={()=>onLangChange&&onLangChange(l.code)}
+              style={{padding:'9px 6px',borderRadius:10,
+                border:`1px solid ${lang===l.code?'rgba(200,169,126,.4)':'var(--bd)'}`,
+                background:lang===l.code?'rgba(200,169,126,.1)':'transparent',
+                color:lang===l.code?'var(--ac)':'var(--tx3)',
+                fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                display:'flex',alignItems:'center',gap:6}}>
+              <span style={{fontSize:14}}>{l.flag}</span>
+              <span style={{lineHeight:1.2}}>{l.label}</span>
             </button>
           ))}
         </div>

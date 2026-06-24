@@ -152,8 +152,8 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--rad-full);font-size:10px;font-weight:700;font-family:'Lexend Giga',sans-serif;}
 .bdot{width:4px;height:4px;border-radius:50%;background:currentColor;}
-.b-draft{background:rgba(90,86,110,.2);color:var(--tx3);border:1px solid rgba(90,86,110,.25);}
-.b-pub{background:rgba(48,192,183,.1);color:var(--gn);border:1px solid rgba(48,192,183,.22);}
+.b-draft{background:rgba(90,86,110,.2);color:var(--tx3);border:1px solid transparent;}
+.b-pub{background:rgba(48,192,183,.1);color:var(--gn);border:1px solid transparent;}
 
 /* ── SIDEBAR ── */
 .sb{position:fixed;left:0;top:0;bottom:0;width:200px;background:#0e0e10;border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:width .25s cubic-bezier(.4,0,.2,1);overflow:hidden;}
@@ -433,3 +433,6 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   border-radius:1px;
   box-shadow:0 -4px 0 rgba(0,0,0,.25),0 4px 0 rgba(0,0,0,.25);
 }
+
+/* ── No colored card borders globally ── */
+.card{ border-color: var(--bd) !important; }
