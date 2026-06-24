@@ -546,7 +546,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         position:'fixed',bottom:0,left:0,right:0,
         background:'rgba(8,8,9,.97)',borderTop:'1px solid rgba(255,255,255,.1)',
         backdropFilter:'blur(20px)',zIndex:55,
-        display:'flex',alignItems:'stretch',height:52,
+        display:'flex',alignItems:'stretch',
+        paddingBottom:'env(safe-area-inset-bottom,0px)',
+        minHeight:52,
       }}>
         {tabs.map(tab=>{
           const isOn = bottomTab===tab.id;
@@ -615,6 +617,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const seqData = SECUENCIA_DATA[song?.name] || null;
   const [clickActivo, setClickActivo] = useState(false);
   const [padActivo, setPadActivo] = useState(null);
+  const audioCtxRef = useRef(null);
+  const clickIntervalRef = useRef(null);
+
+  // ── Motor de Click con Web Audio API ──────────────────────────────────────
+  const startClick = (bpm) => {
+    if(clickIntervalRef.current) clearInterval(clickIntervalRef.current);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtxRef.current = ctx;
+    let beat = 0;
+    const playBeat = () => {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      // Downbeat: higher pitch + more volume; upbeats: lower
+      osc.frequency.value = beat % 4 === 0 ? 1400 : 900;
+      gain.gain.setValueAtTime(beat % 4 === 0 ? 0.5 : 0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now); osc.stop(now + 0.08);
+      beat++;
+    };
+    playBeat();
+    clickIntervalRef.current = setInterval(playBeat, 60000 / bpm);
+  };
+  const stopClick = () => {
+    if(clickIntervalRef.current){ clearInterval(clickIntervalRef.current); clickIntervalRef.current=null; }
+    if(audioCtxRef.current){ audioCtxRef.current.close(); audioCtxRef.current=null; }
+  };
 
   // ── Panel de Secuencia ────────────────────────────────────────────────────
   const SecuenciaPanel=()=>(
@@ -648,7 +678,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
           <div style={{flex:1}}/>
           <button
-            onClick={()=>setClickActivo(v=>!v)}
+            onClick={()=>{
+              const next=!clickActivo;
+              setClickActivo(next);
+              if(next) startClick(seqData?.click.bpm||song?.bpm||120);
+              else stopClick();
+            }}
             style={{width:48,height:48,borderRadius:'50%',border:'none',
               background:clickActivo?'var(--rd)':'var(--gn)',
               color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
@@ -737,7 +772,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const isTabletH=w>=768&&w>h;
     const isMob=w<768;
     // Siempre 2 filas × 8 columnas — faders lo suficientemente grandes para deslizar con el dedo
-    const panelH=isMob?'52vh':'42vh';
+    const panelH=isMob?'58vh':'50vh';
     const cols=8;
     const rows=2;
     const grid=Array.from({length:rows},(_,r)=>Array.from({length:cols},(_,cc)=>r*cols+cc).filter(i=>i<16));
@@ -778,43 +813,54 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {grid.map((row,ri)=>(
             <div key={ri} style={{display:'flex',gap:4,flex:1}}>
               {row.map(ci=>(
-                <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,
-                  padding:'4px 2px',borderRadius:8,
+                <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
+                  padding:'5px 2px 4px',borderRadius:8,
                   background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                   border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
-                  minWidth:0,cursor:'pointer'}}>
+                  minWidth:0}}>
+                  {/* Canal label */}
                   <div style={{fontSize:6,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
                     letterSpacing:'.3px',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',
-                    width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px'}}>
+                    width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px',flexShrink:0}}>
                     {FADER_NAMES[ci]}
                   </div>
-                  <div style={{position:'relative',height:isMob?70:55,width:14,background:'rgba(255,255,255,.08)',
-                    borderRadius:6,overflow:'hidden',cursor:'ns-resize'}}
-                    onPointerDown={e=>{
-                      const el=e.currentTarget;
-                      el.setPointerCapture(e.pointerId);
-                      const move=ev=>{
-                        const r=el.getBoundingClientRect();
-                        const pct=Math.round(100-(ev.clientY-r.top)/r.height*100);
-                        setFaderVols(v=>{const n=[...v];n[ci]=Math.max(0,Math.min(100,pct));return n;});
-                      };
-                      const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
-                      el.addEventListener('pointermove',move);
-                      el.addEventListener('pointerup',up);
-                    }}>
-                    <div style={{position:'absolute',bottom:0,left:0,right:0,
-                      height:`${faderVols[ci]}%`,
-                      background:faderVols[ci]>80?'var(--rd)':faderVols[ci]>50?'var(--gn)':'rgba(255,255,255,.5)',
-                      borderRadius:6}}/>
-                    <div style={{position:'absolute',bottom:`calc(${faderVols[ci]}% - 3px)`,
-                      left:0,right:0,height:3,background:'#fff',borderRadius:2}}/>
+                  {/* Fader track — ocupa todo el espacio disponible */}
+                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
+                    <div className="fader-track"
+                      style={{position:'relative',width:16,height:'100%',minHeight:60,
+                        background:'rgba(255,255,255,.08)',borderRadius:4}}
+                      onPointerDown={e=>{
+                        const el=e.currentTarget;
+                        el.setPointerCapture(e.pointerId);
+                        const move=ev=>{
+                          const r=el.getBoundingClientRect();
+                          const pct=Math.round(100-(ev.clientY-r.top)/r.height*100);
+                          setFaderVols(v=>{const n=[...v];n[ci]=Math.max(0,Math.min(100,pct));return n;});
+                        };
+                        const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                        el.addEventListener('pointermove',move);
+                        el.addEventListener('pointerup',up);
+                      }}>
+                      {/* Fill */}
+                      <div className="fader-fill" style={{
+                        height:`${faderVols[ci]}%`,
+                        background:faderVols[ci]>80?'rgba(253,128,131,.5)':faderVols[ci]>50?'rgba(48,192,183,.6)':'rgba(255,255,255,.2)',
+                      }}/>
+                      {/* Thumb estilo X32 */}
+                      <div className="fader-thumb" style={{
+                        bottom:`calc(${faderVols[ci]}% - 11px)`,
+                      }}/>
+                    </div>
                   </div>
-                  <div style={{fontSize:7,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {/* Valor */}
+                  <div style={{fontSize:7,fontWeight:700,color:faderMutes[ci]?'var(--rd)':'var(--tx3)',
+                    fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                     {faderVols[ci]}
                   </div>
-                  <button onClick={()=>setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}
-                    style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
-                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                  {/* Mute */}
+                  <button onClick={e=>{e.stopPropagation();setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}}
+                    style={{fontSize:6,fontWeight:900,padding:'2px 5px',borderRadius:4,border:'none',
+                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
                       background:faderMutes[ci]?'var(--rd)':'rgba(255,255,255,.08)',
                       color:faderMutes[ci]?'#fff':'var(--tx3)'}}>
                     {faderMutes[ci]?'MUTE':'M'}

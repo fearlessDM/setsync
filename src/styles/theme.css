@@ -235,7 +235,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 }
 
 /* ── BOTTOM NAV (mobile) ── */
-.bot{display:none;position:fixed;bottom:0;left:0;right:0;background:#0e0e10;backdrop-filter:blur(26px);border-top:1px solid var(--bd);z-index:20;padding:7px 0 11px;justify-content:space-around;align-items:center;}
+.bot{display:none;position:fixed;bottom:0;left:0;right:0;background:#0e0e10;backdrop-filter:blur(26px);border-top:1px solid var(--bd);z-index:20;padding:7px 0 calc(env(safe-area-inset-bottom,0px) + 8px);justify-content:space-around;align-items:center;}
 [data-theme=cream] .bot{background:rgba(236,230,218,.97);}
 [data-theme=gray] .bot{background:#0d0d0f;}
 .bn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 7px;color:var(--tx3);transition:all .15s;font-family:'Lexend Giga',sans-serif;}
@@ -398,4 +398,38 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 @media(max-width:767px){
   .mes-nombre-largo{display:none;}
   .mes-nombre-corto{display:inline;}
+}
+
+/* ── Safe area para bottom tab bar (SongView) ── */
+.sv-tab-bar{
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
+}
+/* ── Fader track X32-style: vertical, ancho, thumb grande ── */
+.fader-track{
+  position:relative;
+  border-radius:4px;
+  cursor:ns-resize;
+  touch-action:none;
+}
+.fader-fill{
+  position:absolute;bottom:0;left:0;right:0;
+  border-radius:4px;
+  transition:height .05s;
+}
+.fader-thumb{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:calc(100% + 12px);
+  height:22px;
+  background:linear-gradient(180deg,#d0d0d0 0%,#a0a0a0 40%,#888 50%,#a0a0a0 60%,#d0d0d0 100%);
+  border-radius:5px;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 2px 8px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.3);
+  pointer-events:none;
+}
+.fader-thumb::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:60%;height:2px;
+  background:rgba(0,0,0,.4);
+  border-radius:1px;
+  box-shadow:0 -4px 0 rgba(0,0,0,.25),0 4px 0 rgba(0,0,0,.25);
 }

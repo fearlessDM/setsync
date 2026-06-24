@@ -44,12 +44,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   const [pastorNotas,setPastorNotas]=useState('');
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Crear <span style={{color:'var(--ac)'}}>evento</span></div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{`Crear `}<span style={{color:'var(--ac)'}}>{vx.evento.singular.toLowerCase()}</span></div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Nombre del evento</div>
@@ -66,15 +66,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Fecha</div>
         <div style={{display:'flex',gap:8}}>
-          <select className="inp" style={{flex:1,cursor:'pointer'}} value={evFecha.split('-')[2]||''} onChange={e=>{const d=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[2]=d.padStart(2,'0');return parts.join('-');});}}>
+          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value={evFecha.split('-')[2]||''} onChange={e=>{const d=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[2]=d.padStart(2,'0');return parts.join('-');});}}>
             <option value="">Día</option>
             {Array.from({length:31},(_,i)=>i+1).map(d=>(<option key={d} value={d}>{d}</option>))}
           </select>
-          <select className="inp" style={{flex:1.4,cursor:'pointer'}} value={evFecha.split('-')[1]||''} onChange={e=>{const m=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[1]=m.padStart(2,'0');return parts.join('-');});}}>
+          <select className="inp" style={{flex:1.4,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value={evFecha.split('-')[1]||''} onChange={e=>{const m=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[1]=m.padStart(2,'0');return parts.join('-');});}}>
             <option value="">Mes</option>
             {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
           </select>
-          <select className="inp" style={{flex:1,cursor:'pointer'}} value={evFecha.split('-')[0]||''} onChange={e=>{const y=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[0]=y;return parts.join('-');});}}>
+          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value={evFecha.split('-')[0]||''} onChange={e=>{const y=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[0]=y;return parts.join('-');});}}>
             <option value="">Año</option>
             {['2025','2026','2027'].map(y=>(<option key={y} value={y}>{y}</option>))}
           </select>
@@ -553,7 +553,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
         <input className="inp" placeholder="Nombre de la iglesia o banda" style={{marginBottom:8}} defaultValue="Iglesia"/>
         <div style={{display:'flex',gap:8,marginBottom:8}}>
           <input className="inp" placeholder="Ciudad" style={{flex:1}}/>
-          <select className="inp" style={{flex:1,cursor:'pointer'}}>
+          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}}>
             {['Chile','Argentina','Colombia','México','Perú','España','Venezuela','Ecuador','Bolivia','Uruguay','Paraguay','Costa Rica','Guatemala'].map(p=>(<option key={p} value={p}>{p}</option>))}
           </select>
         </div>

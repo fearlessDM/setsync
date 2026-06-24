@@ -3,9 +3,9 @@ import { getModoFeatures } from '../data/modo';
 
 // Imágenes por modo — iglesia: escenarios de worship / banda: palcos y ensayos
 const BG_IMGS_IGLESIA = [
-  'https://images.unsplash.com/photo-1519677584237-752f8853252e?w=800&q=80', // luces de escenario worship
-  'https://images.unsplash.com/photo-1533854775446-95c4609da544?w=800&q=80', // iglesia con luces
-  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', // escenario con multitud
+  'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80', // crowd hands raised worship
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', // concert stage backlit
+  'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80', // worship stage lights
 ];
 const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800&q=80',

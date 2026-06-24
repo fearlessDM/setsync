@@ -8,11 +8,11 @@
 export const MODO_TEXTOS = {
   iglesia: {
     es: {
-      evento:        { singular:'Culto',   plural:'Cultos' },
+      evento:        { singular:'Fecha',   plural:'Fechas' },
       equipoPersona: { singular:'Equipo de adoración', plural:'Equipos de adoración' },
       lider:         'Líder de alabanza',
       repertorioTab: 'Cancionero',
-      backstageSub:  'Cultos · Setlists · Equipos de alabanza',
+      backstageSub:  'Fechas · Setlists · Equipos de adoración',
     },
     en: {
       evento:        { singular:'Service', plural:'Services' },
@@ -91,7 +91,7 @@ export function getModoFeatures(accountMode){
 export const TIPOS_EVENTO_POR_MODO = {
   iglesia: {
     es: [
-      {tipo:'culto',    label:'Culto Dominical'},
+      {tipo:'culto',    label:'Culto / Domingo'},
       {tipo:'especial', label:'Noche de Adoración'},
       {tipo:'ensayo',   label:'Ensayo'},
       {tipo:'especial', label:'Fecha Especial'},
