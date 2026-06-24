@@ -244,9 +244,9 @@ export default function App(){
       <div style={{minHeight:'100vh',background:'#09090b',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:"'Lexend Giga',sans-serif",overflowY:'auto',position:'relative',overflowX:'hidden'}}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
-          @keyframes textura-drift { 0%{transform:translate(0,0) rotate(0deg) scale(1.08);} 50%{transform:translate(-18px,12px) rotate(.8deg) scale(1.12);} 100%{transform:translate(0,0) rotate(0deg) scale(1.08);} }
-          @keyframes textura-drift2 { 0%{transform:translate(0,0) rotate(0deg) scale(1.1);} 50%{transform:translate(14px,-10px) rotate(-.5deg) scale(1.05);} 100%{transform:translate(0,0) rotate(0deg) scale(1.1);} }
-          @keyframes textura-fade { 0%,100%{opacity:.07;} 50%{opacity:.12;} }
+          @keyframes textura-drift { 0%{transform:translate(0,0) rotate(0deg) scale(1.15);} 33%{transform:translate(-30px,20px) rotate(1.2deg) scale(1.08);} 66%{transform:translate(20px,-15px) rotate(-.6deg) scale(1.18);} 100%{transform:translate(0,0) rotate(0deg) scale(1.15);} }
+          @keyframes textura-drift2 { 0%{transform:translate(0,0) rotate(0deg) scale(1.12);} 40%{transform:translate(25px,-18px) rotate(-1deg) scale(1.06);} 80%{transform:translate(-15px,22px) rotate(.8deg) scale(1.14);} 100%{transform:translate(0,0) rotate(0deg) scale(1.12);} }
+          @keyframes textura-fade { 0%,100%{opacity:.06;} 50%{opacity:.18;} }
           @keyframes wheel-glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 20px 2px rgba(255,255,255,.06);} }
           .wheel-item { transition: all .3s cubic-bezier(.4,0,.2,1); }
           .mode-card { transition: transform .2s, box-shadow .2s, border-color .2s; }
@@ -254,49 +254,57 @@ export default function App(){
         `}</style>
 
         {/* ── Fondo animado con texturas musicales ── */}
-        <div style={{position:'fixed',inset:0,zIndex:0,overflow:'hidden',pointerEvents:'none'}}>
-          {/* Textura 1: rejilla de amplificador / Tolex negro */}
-          <div style={{position:'absolute',inset:'-10%',
-            backgroundImage:`radial-gradient(circle at 1px 1px, rgba(255,255,255,.18) 1px, transparent 0)`,
-            backgroundSize:'28px 28px',
-            animation:'textura-drift 18s ease-in-out infinite',
-            opacity:.08,
+        <div style={{position:'fixed',inset:0,zIndex:0,overflow:'hidden',pointerEvents:'none',background:'#09090b'}}>
+          {/* Capa 1: dot grid — cuero de amplificador */}
+          <div style={{
+            position:'absolute',inset:'-20%',
+            backgroundImage:'radial-gradient(circle, rgba(255,255,255,0.22) 1.5px, transparent 1.5px)',
+            backgroundSize:'32px 32px',
+            animation:'textura-drift 20s ease-in-out infinite',
+            opacity:0.13,
           }}/>
-          {/* Textura 2: diagonal de platillos / rejilla hex */}
-          <div style={{position:'absolute',inset:'-10%',
-            backgroundImage:`repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0,rgba(255,255,255,.06) 1px,transparent 0,transparent 50%)`,
-            backgroundSize:'18px 18px',
-            animation:'textura-drift2 24s ease-in-out infinite',
-            opacity:.12,
+          {/* Capa 2: líneas diagonales — rejilla micrófono vintage */}
+          <div style={{
+            position:'absolute',inset:'-20%',
+            backgroundImage:'repeating-linear-gradient(55deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 22px)',
+            animation:'textura-drift2 28s ease-in-out infinite',
+            opacity:0.5,
           }}/>
-          {/* Glow central suave */}
-          <div style={{position:'absolute',top:'40%',left:'50%',transform:'translate(-50%,-50%)',
-            width:'60vw',height:'60vw',maxWidth:600,maxHeight:600,
-            background:'radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)',
-            animation:'textura-fade 8s ease-in-out infinite',
+          {/* Capa 3: líneas horizontales — platillos/escenario */}
+          <div style={{
+            position:'absolute',inset:'-20%',
+            backgroundImage:'repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(255,255,255,0.04) 48px, rgba(255,255,255,0.04) 49px)',
+            animation:'textura-drift 35s linear infinite',
+            opacity:1,
           }}/>
-          {/* Líneas de escenario — bottom sweep */}
-          <div style={{position:'absolute',bottom:0,left:'50%',transform:'translateX(-50%)',
-            width:'120%',height:'45%',
-            background:'linear-gradient(to top,rgba(255,255,255,.02) 0%,transparent 100%)',
-            backgroundImage:`repeating-linear-gradient(to top,transparent,transparent 40px,rgba(255,255,255,.025) 40px,rgba(255,255,255,.025) 41px)`,
-            animation:'textura-drift 30s linear infinite',
+          {/* Glow central */}
+          <div style={{
+            position:'absolute',top:'35%',left:'50%',transform:'translate(-50%,-50%)',
+            width:'80vw',height:'80vw',maxWidth:700,maxHeight:700,
+            background:'radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 65%)',
+            animation:'textura-fade 10s ease-in-out infinite',
+          }}/>
+          {/* Viñeta bordes */}
+          <div style={{
+            position:'absolute',inset:0,
+            background:'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)',
           }}/>
         </div>
 
         {/* ── Contenido ── */}
-        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:480,padding:'0 20px',display:'flex',flexDirection:'column',alignItems:'center'}}>
+        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'min(760px,95vw)',padding:'0 clamp(16px,4vw,40px)',display:'flex',flexDirection:'column',alignItems:'center'}}>
 
-          {/* Logo */}
-          <div style={{paddingTop:52,paddingBottom:28,display:'flex',flexDirection:'column',alignItems:'center'}}>
-            <img src="/LOGO2 horiz blanco.png" alt="SetSync" style={{height:36,objectFit:'contain'}}/>
+          {/* Logo vertical — visible con tagline */}
+          <div style={{paddingTop:48,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
+              height:110,width:'auto',objectFit:'contain',
+              filter:'drop-shadow(0 0 40px rgba(255,255,255,0.12))',
+            }}/>
           </div>
 
           {/* Selector de idioma tipo rueda */}
           <div style={{marginBottom:36,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-            <div style={{fontSize:8,fontWeight:900,color:'rgba(255,255,255,.25)',textTransform:'uppercase',letterSpacing:'2px'}}>
-              Región · Region
-            </div>
+
             <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l,i)=>{
                 const isActive=lang===l.code;
@@ -329,28 +337,28 @@ export default function App(){
           </div>
 
           {/* Tarjetas de modo — Banda izquierda, Iglesia derecha */}
-          <div style={{width:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:20,marginBottom:16}}>
+          <div style={{width:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginTop:20,marginBottom:16}}>
             {[{id:'banda',data:tl.banda},{id:'iglesia',data:tl.iglesia}].map(item=>(
               <button key={item.id} onClick={()=>setAppMode(item.id)}
                 className="mode-card"
                 style={{
-                  padding:'20px 14px 16px',borderRadius:18,
+                  padding:'clamp(20px,3vw,36px) clamp(14px,2.5vw,28px) clamp(16px,2.5vw,28px)',borderRadius:18,
                   border:'1px solid rgba(255,255,255,.1)',
                   background:'rgba(255,255,255,.04)',
                   cursor:'pointer',textAlign:'left',
                   backdropFilter:'blur(20px)',
                 }}>
-                <div style={{fontSize:8,fontWeight:900,color:'rgba(255,255,255,.3)',letterSpacing:'2px',marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>
+                <div style={{fontSize:'clamp(7px,1.2vw,10px)',fontWeight:900,color:'rgba(255,255,255,.35)',letterSpacing:'2px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>
                   {item.data.tag}
                 </div>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'#fff',marginBottom:12,lineHeight:1}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'clamp(22px,4vw,32px)',color:'#fff',marginBottom:14,lineHeight:1}}>
                   {item.data.title}
                 </div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   {item.data.lines.map((line,i)=>(
                     <div key={i} style={{display:'flex',alignItems:'flex-start',gap:6}}>
                       <div style={{width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.3)',flexShrink:0,marginTop:5}}/>
-                      <span style={{fontSize:9,color:'rgba(255,255,255,.5)',lineHeight:1.5,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>{line}</span>
+                      <span style={{fontSize:'clamp(9px,1.3vw,12px)',color:'rgba(255,255,255,.5)',lineHeight:1.6,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>{line}</span>
                     </div>
                   ))}
                 </div>

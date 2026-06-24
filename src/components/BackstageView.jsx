@@ -42,6 +42,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [pastorVersiculo,setPastorVersiculo]=useState('');
   const [pastorTexto,setPastorTexto]=useState('');
   const [pastorNotas,setPastorNotas]=useState('');
+  const [lideresActuales,setLideresActuales]=useState([
+    {name:'Cony Saavedra',av:'CS',rol:'Líder Banda',permisos:['editar setlist','convocar equipo']},
+    {name:'Mauro Pizarro',av:'MP',rol:'Líder Proyecciones',permisos:['gestionar equipo']},
+  ]);
+  const personas=equipos.flatMap(eq=>(eq.miembros||[]));
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh'}}>
