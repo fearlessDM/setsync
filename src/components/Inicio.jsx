@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { getModoFeatures } from '../data/modo';
 
 // Imágenes por modo — iglesia: escenarios de worship / banda: palcos y ensayos
@@ -65,8 +65,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     >{children}</div>
   );
 
-  const Lbl = ({children}) => (
-    <div className="lbl" style={{marginBottom:'var(--sp-xs)'}}>{children}</div>
+  const Lbl = ({children, color}) => (
+    <div className="lbl" style={{marginBottom:'var(--sp-xs)',color:color||'var(--tx3)'}}>{children}</div>
   );
 
   const planLabel = { lite:'Lite', pro:'Pro', premium:'Premium' }[planId] || planId;
@@ -109,7 +109,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             SetSync es tu centro de operaciones para tocar en vivo — letras, acordes, monitoreo en tiempo real, click y secuencias sincronizadas. Gestiona equipos, crea setlists, convoca músicos y lleva el control de cada fecha desde el backstage hasta el escenario.
           </div>
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:12}}>
-            {['🎛 Monitoreo OSC','🎵 Setlists','📅 Gestión de fechas','🎹 Secuencias','👥 Equipos','📜 Letras & Acordes'].map(t=>(
+            {['🎛 Monitoreo OSC','🎵 Setlists','📅 Fechas','🎹 Secuencias','👥 Equipos','📜 Letras & Acordes','💬 Chat de equipo'].map(t=>(
               <span key={t} style={{fontSize:9,fontWeight:700,padding:'3px 10px',borderRadius:'var(--rad-full)',background:'rgba(255,255,255,.06)',border:'1px solid var(--bd)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{t}</span>
             ))}
           </div>
@@ -117,7 +117,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
         {/* Próxima fecha — full width */}
         <Card cols={2} onClick={()=>onNavigate('fechas')}>
-          <Lbl>{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
+          <Lbl color="var(--ac)">{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
           {proximoEvento ? (
             <>
               <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',marginBottom:4,lineHeight:1.1}}>
@@ -138,7 +138,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
         {/* Plan */}
         <Card onClick={()=>onNavigate('backstage')}>
-          <Lbl>Mi plan</Lbl>
+          <Lbl color="var(--ac)">Mi plan</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:22,color:'var(--ac)',lineHeight:1}}>
             {planLabel}
           </div>
@@ -152,7 +152,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
         {/* Cancionero */}
         <Card onClick={()=>onNavigate('repertorio')}>
-          <Lbl>Cancionero</Lbl>
+          <Lbl color="var(--ac)">Cancionero</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',lineHeight:1.1}}>
             Repertorio
           </div>
@@ -161,9 +161,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
         </Card>
 
-        {/* Mis formaciones — full width */}
+        {/* Mis equipos — full width */}
         <Card cols={2} onClick={()=>onNavigate('backstage')}>
-          <Lbl>{isAdmin?'Mis formaciones':'Soy parte de'}</Lbl>
+          <Lbl>{isAdmin?'Mis equipos':'Soy parte de'}</Lbl>
           {misEquipos.length===0 ? (
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
               {isAdmin?'Aún no creaste ninguna formación — ':<>No estás asignado a ningún equipo aún</>}
@@ -182,7 +182,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               ))}
               {misEquipos.length>4&&(
                 <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
-                  +{misEquipos.length-4} formaciones más
+                  +{misEquipos.length-4} equipos más
                 </div>
               )}
             </div>
@@ -192,7 +192,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         {/* Tips swipeables — full width */}
         <Card cols={2}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'var(--sp-sm)'}}>
-            <Lbl>Tips de uso</Lbl>
+            <Lbl color="var(--tx3)">Tips de uso</Lbl>
             <div style={{display:'flex',gap:5}}>
               {TIPS.map((_,i)=>(
                 <div
@@ -242,7 +242,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
         {/* Accesos rápidos */}
         <Card cols={2}>
-          <Lbl>Accesos rápidos</Lbl>
+          <Lbl color="var(--ac)">Accesos rápidos</Lbl>
           <div style={{display:'flex',flexWrap:'wrap',gap:'var(--sp-xs)'}}>
             {[
               {label:'Ver fechas',view:'fechas'},
@@ -267,6 +267,58 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 {a.label}
               </button>
             ))}
+          </div>
+        </Card>
+
+        {/* ── Planes ── */}
+        <Card cols={2}>
+          <Lbl color="var(--ac)">Planes SetSync</Lbl>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:4}}>
+            {[
+              {name:'Lite',price:'Gratis',color:'var(--tx3)',features:['1 equipo','10 canciones','Setlists básicos']},
+              {name:'Pro',price:'$7.90/mo',color:'var(--gn)',features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Notificaciones']},
+              {name:'Premium',price:'$19.90/mo',color:'var(--ac)',features:['Todo Pro +','Secuencias','Multitracks','Soporte prioritario']},
+            ].map(p=>(
+              <div key={p.name} style={{padding:'10px 8px',borderRadius:12,border:`1px solid ${p.color}30`,background:`${p.color}08`,display:'flex',flexDirection:'column',gap:4}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,color:p.color,fontWeight:400}}>{p.name}</div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,color:'var(--tx)',marginBottom:4}}>{p.price}</div>
+                {p.features.map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
+                    <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>
+                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{f}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:10,textAlign:'center'}}>
+            <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
+              Ver planes completos y mejorar →
+            </span>
+          </div>
+        </Card>
+
+        {/* ── FAQ / Tutoriales ── */}
+        <Card cols={2}>
+          <Lbl color="var(--ac)">Tutoriales & Preguntas frecuentes</Lbl>
+          <div style={{display:'flex',flexDirection:'column',gap:0}}>
+            {[
+              {q:'¿Cómo creo mi primer setlist?',a:'Ve a Backstage → Crear setlist. Agrega canciones y asígnalo a una fecha.'},
+              {q:'¿Cómo funciona el Monitoreo?',a:'Conecta tu mesa X32/M32 a la misma red WiFi. En Vista Escenario → Monitor activa la conexión OSC.'},
+              {q:'¿Puedo usar SetSync sin internet?',a:'Sí, en modo offline. Los cambios se sincronizan automáticamente cuando vuelves a conectarte.'},
+              {q:'¿Cómo convoco al equipo?',a:'En Backstage → Notificaciones selecciona el evento y tu equipo recibe un aviso.'},
+            ].map((faq,i)=>{
+              const [open,setOpen]=React.useState(false);
+              return(
+                <div key={i} style={{borderBottom:i<3?'1px solid rgba(255,255,255,.05)':'none'}}>
+                  <button onClick={()=>setOpen(v=>!v)} style={{width:'100%',background:'none',border:'none',textAlign:'left',padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+                    <span style={{fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{faq.q}</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0,transform:open?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  {open&&<div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>}
+                </div>
+              );
+            })}
           </div>
         </Card>
 

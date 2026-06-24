@@ -265,7 +265,7 @@ export default function App(){
         {/* Logo = botón de toggle */}
         <div className="sb-top" onClick={()=>setSbCol(c=>!c)} title={sbCol?'Expandir menú':'Colapsar menú'}>
           <div className="logo-area">
-            <img className="logo-horiz" src="/LOGO horiz blanco.png" alt="SetSync"/>
+            <img className="logo-horiz" src={theme==='cream'?'/LOGO2 horiz gris.png':'/LOGO2 horiz blanco.png'} alt="SetSync"/>
             <img className="logo-fav"   src="/FAVICON SS.png"        alt="SS"/>
           </div>
         </div>

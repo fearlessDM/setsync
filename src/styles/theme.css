@@ -163,7 +163,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 /* Logo = botón de toggle — ocupa todo el sb-top */
 .sb-top{display:flex;align-items:center;padding:0;border-bottom:1px solid var(--bd);min-height:62px;flex-shrink:0;cursor:pointer;transition:background .15s;user-select:none;}
 .sb-top:hover{background:rgba(255,255,255,.03);}
-.logo-area{width:100%;height:100%;display:flex;align-items:center;padding:0 12px;gap:10px;overflow:hidden;}
+.logo-area{width:100%;height:100%;display:flex;align-items:center;padding:0 10px;overflow:hidden;}
 .logo-horiz{height:auto;width:100%;max-height:44px;object-fit:contain;object-position:left center;flex-shrink:0;transition:opacity .2s;display:block;}
 .logo-fav{width:38px;height:38px;object-fit:contain;flex-shrink:0;display:none;}
 .sb.col .logo-horiz{display:none;}

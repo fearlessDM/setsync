@@ -337,7 +337,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           <div style={{display:'flex',flexWrap:'wrap',gap:7,marginBottom:10}}>
             {listado.map(m=>(
               <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',borderRadius:100,background:'var(--s2)',border:'1px solid var(--bd)'}}>
-                <div style={{width:22,height:22,borderRadius:'50%',background:'linear-gradient(135deg,rgba(139,114,212,.6),var(--ac))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
+                <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
                 <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
               </div>
             ))}
@@ -443,61 +443,92 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   }
 
     // ── DELEGAR PERMISOS ──
-  if(bsView==='permisos')return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+    if(bsView==='permisos')return(
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Delegar Permisos</div>
-      <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.6,marginBottom:18}}>Asigna líderes para que gestionen su área sin necesitar tu aprobación. </div>
-      <div className="card" style={{padding:16,marginBottom:14}}>
-        <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Líderes actuales</div>
-        {[{av:'CS',name:'Cony Saavedra',eq:'Banda',perms:['editar setlist','convocar equipo']},{av:'MP',name:'Mauro Pizarro',eq:'Proyecciones',perms:['gestionar equipo']}].map(l=>(
-          <div key={l.av} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--bd)'}}>
-            <div style={{width:36,height:36,borderRadius:'50%',background:'linear-gradient(135deg,#4a3a8a,var(--ac))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'#fff',flexShrink:0}}>{l.av}</div>
-            <div style={{flex:1}}>
-              <div style={{fontWeight:700,fontSize:13,color:'var(--tx)'}}>{l.name}</div>
-              <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,marginTop:1}}>Líder {l.eq}</div>
-              <div style={{display:'flex',gap:4,flexWrap:'wrap',marginTop:4}}>
-                {l.perms.map(p=>(<span key={p} style={{fontSize:9,color:'var(--tx3)',background:'var(--s2)',border:'1px solid var(--bd)',padding:'1px 6px',borderRadius:100,fontWeight:700}}>{p}</span>))}
-              </div>
-            </div>
-            <button onClick={()=>onToast({text:'Editando permisos',sub:l.name})} style={{width:28,height:28,borderRadius:7,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-          </div>
-        ))}
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+        Delegar <span style={{color:'var(--ac)'}}>permisos</span>
       </div>
-      <div className="card" style={{padding:16,marginBottom:16}}>
-        <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Agregar nuevo líder</div>
-        <div style={{marginBottom:10}}>
-          <div className="lbl" style={{marginBottom:5}}>Integrante</div>
-          <select className="inp" style={{cursor:'pointer'}}>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.6,marginBottom:20}}>
+        Asigna líderes para que gestionen su área sin necesitar tu aprobación.
+      </div>
+
+      {/* Líderes actuales */}
+      {lideresActuales.length>0&&(
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:12}}>Líderes activos</div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {lideresActuales.map((l,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+                {/* Avatar texto plano — sin gradiente */}
+                <div style={{width:36,height:36,borderRadius:10,background:'rgba(255,255,255,.08)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {l.av}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:13,color:'var(--tx)'}}>{l.name}</div>
+                  <div style={{fontSize:10,color:'var(--tx3)',marginBottom:6,marginTop:1}}>{l.rol}</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                    {l.permisos.map(p=>(
+                      <span key={p} style={{fontSize:9,padding:'2px 8px',borderRadius:100,border:'1px solid rgba(48,192,183,.3)',background:'rgba(48,192,183,.08)',color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{p}</span>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={()=>setLideresActuales(v=>v.filter((_,j)=>j!==i))}
+                  style={{width:28,height:28,borderRadius:8,border:'1px solid rgba(253,128,131,.3)',background:'rgba(253,128,131,.06)',color:'var(--rd)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Agregar nuevo líder */}
+      <div style={{padding:'16px 14px',borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>Agregar líder</div>
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:6}}>Integrante</div>
+          <select className="inp" style={{background:'var(--s1)',color:'var(--tx)',cursor:'pointer'}}>
             <option value="">Seleccionar...</option>
-            {equipos.flatMap(e=>(e.miembros||[])).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+            {personas.filter(p=>!lideresActuales.find(l=>l.name===p.name)).map(p=>(
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
           </select>
         </div>
         <div style={{marginBottom:14}}>
-          <div className="lbl" style={{marginBottom:8}}>Permisos</div>
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {[{id:'setlist',label:'Editar setlist'},{id:'convocar',label:'Convocar equipo'},{id:'notif',label:'Enviar notificaciones'},{id:'itinerario',label:'Editar itinerario'}].map(p=>(
-              <label key={p.id} style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
-                <input type="checkbox" style={{width:16,height:16,accentColor:'var(--ac)',cursor:'pointer'}}/>
-                <span style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{p.label}</span>
+          <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Permisos</div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {[
+              {id:'setlist',label:'Editar setlist',desc:'Agregar o reordenar canciones'},
+              {id:'convocar',label:'Convocar equipo',desc:'Invitar y confirmar asistencia'},
+              {id:'notif',label:'Enviar notificaciones',desc:'Avisar al equipo'},
+              {id:'itinerario',label:'Editar itinerario',desc:'Modificar horarios del evento'},
+            ].map(perm=>(
+              <label key={perm.id} style={{display:'flex',alignItems:'center',gap:12,cursor:'pointer',padding:'8px 10px',borderRadius:8,border:'1px solid transparent',transition:'all .15s'}}
+                onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}
+                onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <div style={{width:18,height:18,borderRadius:5,border:'2px solid var(--bd)',background:'var(--s2)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                </div>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{perm.label}</div>
+                  <div style={{fontSize:10,color:'var(--tx3)',marginTop:1}}>{perm.desc}</div>
+                </div>
               </label>
             ))}
           </div>
         </div>
-        <button className="btn btn-p" style={{width:'100%'}} onClick={()=>onToast({text:'Líder asignado',sub:'Permisos guardados'})}>
-          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <button className="btn btn-live" style={{width:'100%',justifyContent:'center'}}
+          onClick={()=>onToast({text:'Líder agregado',sub:'Permisos activados'})}>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           Guardar líder
         </button>
       </div>
     </div>
   );
 
-  // ── NOTIFICACIONES ──
   if(bsView==='notif')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -755,6 +786,26 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
           rows={5} style={{width:'100%',resize:'vertical',fontFamily:"'Lexend Giga',sans-serif",fontSize:13,lineHeight:1.6}}
           value={pastorNotas||''} onChange={e=>setPastorNotas(e.target.value)}/>
       </div>
+      <div className="card" style={{padding:14,marginBottom:12}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Archivos para multimedia</div>
+        <div style={{fontSize:11,color:'var(--tx2)',marginBottom:12,lineHeight:1.6}}>PPT, imágenes o PDF que el equipo de proyecciones necesita para el servicio.</div>
+        <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',background:'rgba(255,255,255,.03)',cursor:'pointer',transition:'all .2s'}}
+          onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}
+          onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.03)'}>
+          <input type="file" accept=".ppt,.pptx,.pdf,.jpg,.jpeg,.png,.gif" multiple style={{display:'none'}}
+            onChange={e=>{
+              const files=Array.from(e.target.files||[]);
+              if(files.length) onToast({text:`${files.length} archivo${files.length>1?'s':''} listo${files.length>1?'s':''}`,sub:'El equipo multimedia puede verlo'});
+            }}/>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--ac)'}}>Subir archivos</div>
+            <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>PPT · PDF · Imágenes</div>
+          </div>
+        </label>
+      </div>
       <div style={{display:'flex',gap:8,marginTop:4}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
         <button className="btn btn-p" style={{flex:2}} onClick={()=>{onToast({text:'Guardado',sub:'Palabra del Pastor actualizada'});setBsView(null);}}>
@@ -765,13 +816,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,event
   );
 
       const ITEMS=[
-    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:`Nuevo ${vx.evento.singular.toLowerCase()} o fecha especial`,icon:'calendar',adminOnly:false},
-    {id:'setlist',label:'Crear setlist',sub:slGuardados.length>0?`${slGuardados.length} setlist${slGuardados.length>1?'s':''} guardado${slGuardados.length>1?'s':''}`:eventos.length>0?`${eventos.length} evento${eventos.length>1?'s':''} disponible${eventos.length>1?'s':''}`:' Arma y asigna a un evento',icon:'music',adminOnly:false},
-    {id:'equipos',label:'Gestión de equipos',sub:'Crear equipos y roles',icon:'team',adminOnly:true},
-    {id:'permisos',label:'Delegar permisos',sub:`Asignar ${vx.lider.toLowerCase()}s`,icon:'shield',adminOnly:true},
-    {id:'notif',label:'Notificaciones',sub:'Avisar al equipo',icon:'bell',adminOnly:false},
-    {id:'config',label:'Configuración',sub:'Ajustes y preferencias',icon:'settings',adminOnly:false},
-    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo y PPT del domingo',icon:'book',adminOnly:true}]:[]),
+    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',adminOnly:false},
+    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',adminOnly:false},
+    {id:'equipos',label:'Gestión de equipos',sub:'Formaciones, roles y personas',icon:'team',adminOnly:true},
+    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',adminOnly:true},
+    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',adminOnly:false},
+    {id:'config',label:'Configuración',sub:'Tema, plan, idioma y conexiones',icon:'settings',adminOnly:false},
+    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',adminOnly:true}]:[]),
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;
