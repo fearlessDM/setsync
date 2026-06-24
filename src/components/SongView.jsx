@@ -380,7 +380,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <button ref={tonoBtnRef} onClick={()=>{
             if(!tonoOpen){
               const r=tonoBtnRef.current.getBoundingClientRect();
-              setTonoPos({top:r.bottom+6,right:window.innerWidth-r.right});
+              const panelW=Math.min(260,window.innerWidth-24);
+              const leftIdeal=r.left+(r.width/2)-(panelW/2);
+              const left=Math.max(12,Math.min(leftIdeal,window.innerWidth-panelW-12));
+              setTonoPos({top:r.bottom+6,left,width:panelW});
             }
             setTonoOpen(o=>!o);
           }} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,
@@ -399,10 +402,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {tonoOpen&&tonoPos&&createPortal(
             <>
               <div onClick={()=>setTonoOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
-              <div style={{position:'fixed',top:tonoPos.top,right:tonoPos.right,
+              <div style={{position:'fixed',top:tonoPos.top,left:tonoPos.left,
+                width:tonoPos.width,
                 background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',
                 border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
-                minWidth:220,boxShadow:'0 8px 32px rgba(0,0,0,.6)'}}>
+                boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
                 {/* Transposición */}
                 <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Transposición</div>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
@@ -634,35 +638,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
 
-    // Icono Monitor: headphone (logo) + barras WiFi verdes al conectar
+    // Icono Monitor: headphone + WiFi arcs — verde con glow cuando conectado
     const IconMonitor=({active})=>{
-      const col = mesaConectada?'var(--gn)':active?'var(--ac)':'var(--tx3)';
-      // 3 arcos de WiFi sobre la parte superior del auricular
-      const wifiArcs=[
-        {cx:12,cy:10,r:2.2,da:3.5},
-        {cx:12,cy:10,r:4.2,da:6.7},
-        {cx:12,cy:10,r:6.2,da:9.8},
-      ];
+      const connected = mesaConectada;
+      const col = connected?'var(--gn)':active?'var(--ac)':'var(--tx3)';
       return(
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-          {/* Auricular — forma del logo: arco superior + ear cups */}
-          <path
-            d="M5 14v-2a7 7 0 0 1 14 0v2"
-            stroke={col} strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-          {/* Ear cup izquierdo */}
-          <rect x="3" y="13" width="3.5" height="5" rx="1.5"
-            fill={col} opacity="0.9"/>
-          {/* Ear cup derecho */}
-          <rect x="17.5" y="13" width="3.5" height="5" rx="1.5"
-            fill={col} opacity="0.9"/>
-          {/* Barras WiFi — solo cuando conectado */}
-          {mesaConectada&&wifiArcs.map((a,i)=>(
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+          style={connected?{filter:'drop-shadow(0 0 5px rgba(48,192,183,.9)) drop-shadow(0 0 10px rgba(48,192,183,.5))'}:{}}>
+          {/* Auricular */}
+          <path d="M5 15v-3a7 7 0 0 1 14 0v3"
+            stroke={col} strokeWidth="2" strokeLinecap="round"/>
+          <rect x="3" y="13.5" width="4" height="5.5" rx="2"
+            fill={col} opacity={connected?1:.7}/>
+          <rect x="17" y="13.5" width="4" height="5.5" rx="2"
+            fill={col} opacity={connected?1:.7}/>
+          {/* WiFi arcos — 3 niveles, visibles solo cuando conectado */}
+          {connected&&[
+            {r:3,  sw:1.5, op:.5},
+            {r:5,  sw:1.8, op:.7},
+            {r:7,  sw:2,   op:.9},
+          ].map(({r,sw,op},i)=>(
             <path key={i}
-              d={`M ${a.cx-a.r*0.71} ${a.cy-a.r*0.71} A ${a.r} ${a.r} 0 0 1 ${a.cx+a.r*0.71} ${a.cy-a.r*0.71}`}
-              stroke="var(--gn)" strokeWidth={1.4+i*0.2}
-              strokeLinecap="round" fill="none"
-              opacity={0.5+i*0.2}
-            />
+              d={`M ${12-r*0.707} ${8-r*0.707} A ${r} ${r} 0 0 1 ${12+r*0.707} ${8-r*0.707}`}
+              stroke="var(--gn)" strokeWidth={sw} strokeLinecap="round" fill="none" opacity={op}/>
           ))}
         </svg>
       );
@@ -688,7 +686,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     };
 
     const tabs=[
-      {id:null,      label:'Letra',    renderIcon:(a)=>(<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>)},
       {id:'referencia',label:'Referencia',renderIcon:(a)=>(<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)},
       {id:'monitor', label:'Monitor',  renderIcon:(a)=>(<IconMonitor active={a}/>)},
       {id:'secuencia',label:'Secuencia',renderIcon:(a)=>(<IconSecuencia active={a}/>)},
@@ -1239,17 +1236,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
               </button>
               <button onClick={()=>{
-                if(refLoopIn!=null&&refLoopOut!=null){
-                  const next=!refLooping;setRefLooping(next);
-                  if(next&&audio){audio.currentTime=refLoopIn;audio.play();setRefPlaying(true);}
+                if(refLoopIn==null||refLoopOut==null)return;
+                const next=!refLooping;
+                setRefLooping(next);
+                if(next){
+                  const a=refPlayerRef.current;
+                  if(a){a.currentTime=refLoopIn??0;a.play().then(()=>setRefPlaying(true)).catch(()=>{});}
                 }
               }} disabled={refLoopIn==null||refLoopOut==null}
-                style={{width:60,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLooping?'rgba(48,192,183,.5)':'rgba(255,255,255,.1)'}`,
-                  background:refLooping?'rgba(48,192,183,.15)':'rgba(255,255,255,.05)',
-                  color:refLooping?'var(--gn)':'var(--tx3)',cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
+                style={{width:60,padding:'6px 8px',borderRadius:8,
+                  border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
+                  background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
+                  color:refLooping?'var(--gn)':'var(--tx3)',
+                  cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
                   fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
-                  opacity:refLoopIn==null||refLoopOut==null?.4:1}}>
-                {refLooping?'↻ ON':'↻ LOOP'}
+                  opacity:refLoopIn==null||refLoopOut==null?.4:1,
+                  boxShadow:refLooping?'0 0 8px rgba(48,192,183,.4)':'none',
+                  transition:'all .2s'}}>
+                {refLooping?'↻ ON':'↻'}
               </button>
               {(refLoopIn!=null||refLoopOut!=null)&&(
                 <button onClick={clearLoop}
@@ -1286,50 +1290,86 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Multitracks</div>
         {seqData?.multitracks?(
-          <div style={{display:'flex',flexDirection:'column',gap:5}}>
+          <div style={{display:'flex',flexDirection:'row',gap:6,overflowX:'auto',scrollbarWidth:'none',paddingBottom:4,paddingTop:2}}>
             {seqData.multitracks.map((tr,i)=>{
               const vol = trackVols[i]??80;
               const muted = trackMutes[i]??false;
               return(
-                <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:10,
+                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,
+                  padding:'8px 6px 6px',borderRadius:10,minWidth:52,
                   background:muted?'rgba(253,128,131,.05)':'rgba(255,255,255,.04)',
                   border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.07)'}`}}>
                   {/* Dot color */}
-                  <div style={{width:8,height:8,borderRadius:'50%',background:muted?'rgba(253,128,131,.4)':tr.color,flexShrink:0}}/>
-                  {/* Label */}
-                  <span style={{fontSize:11,color:muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,flex:1,minWidth:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{tr.label}</span>
-                  {/* Fader táctil horizontal */}
-                  <div style={{width:100,height:28,position:'relative',flexShrink:0,touchAction:'none',userSelect:'none'}}
-                    onPointerDown={e=>{
+                  <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.4)':tr.color,flexShrink:0}}/>
+                  {/* Fader vertical táctil — patrón bottom/height */}
+                  <div
+                    id={`ftrack-${i}`}
+                    style={{width:36,height:80,position:'relative',flexShrink:0,
+                      touchAction:'none',userSelect:'none',cursor:'pointer',
+                      background:'rgba(255,255,255,.06)',borderRadius:18,
+                      boxShadow:'inset 0 4px 8px rgba(0,0,0,.5)',overflow:'hidden'}}
+                    onMouseDown={e=>{
                       e.preventDefault();
                       const el=e.currentTarget;
-                      el.setPointerCapture(e.pointerId);
                       const calc=ev=>{
                         const r=el.getBoundingClientRect();
-                        return Math.round(Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*100);
+                        const y=Math.max(0,Math.min(ev.clientY-r.top,r.height));
+                        return Math.round((1-y/r.height)*100);
                       };
                       setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
-                      const move=ev=>{ev.preventDefault();setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
-                      const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
-                      el.addEventListener('pointermove',move,{passive:false});
-                      el.addEventListener('pointerup',up,{once:true});
+                      const move=ev=>{setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
+                      const up=()=>{window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
+                      window.addEventListener('mousemove',move);
+                      window.addEventListener('mouseup',up,{once:true});
+                    }}
+                    onTouchStart={e=>{
+                      e.preventDefault();
+                      const el=e.currentTarget;
+                      const t=e.touches[0];
+                      const calc=touch=>{
+                        const r=el.getBoundingClientRect();
+                        const y=Math.max(0,Math.min(touch.clientY-r.top,r.height));
+                        return Math.round((1-y/r.height)*100);
+                      };
+                      setTrackVols(v=>{const n=[...v];n[i]=calc(t);return n;});
+                      const move=ev=>{
+                        ev.preventDefault();
+                        setTrackVols(v=>{const n=[...v];n[i]=calc(ev.touches[0]);return n;});
+                      };
+                      const up=()=>{window.removeEventListener('touchmove',move);window.removeEventListener('touchend',up);};
+                      window.addEventListener('touchmove',move,{passive:false});
+                      window.addEventListener('touchend',up,{once:true});
                     }}>
-                    {/* Track */}
-                    <div style={{position:'absolute',top:'50%',left:0,right:0,height:4,transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',borderRadius:2}}/>
-                    {/* Fill */}
-                    <div style={{position:'absolute',top:'50%',left:0,width:`${vol}%`,height:4,transform:'translateY(-50%)',
-                      background:muted?'rgba(253,128,131,.4)':tr.color||'var(--gn)',borderRadius:2,transition:'width .05s'}}/>
+                    {/* Fill — de abajo hacia arriba */}
+                    <div style={{
+                      position:'absolute',bottom:0,left:0,right:0,
+                      height:`${vol}%`,
+                      background:muted?'rgba(253,128,131,.5)':`linear-gradient(to top,${tr.color||'#30C0B7'},${tr.color||'#30C0B7'}99)`,
+                      borderRadius:'0 0 18px 18px',
+                      pointerEvents:'none',
+                      transition:'height .04s',
+                    }}/>
                     {/* Thumb */}
-                    <div style={{position:'absolute',top:'50%',left:`calc(${vol}% - 10px)`,transform:'translateY(-50%)',
-                      width:20,height:20,borderRadius:'50%',background:'var(--tx)',
-                      boxShadow:'0 2px 8px rgba(0,0,0,.6)',border:'2px solid rgba(255,255,255,.3)',
-                      cursor:'grab'}}/>
+                    <div style={{
+                      position:'absolute',
+                      bottom:`calc(${vol}% - 10px)`,
+                      left:-10,right:-10,
+                      height:20,
+                      background:'#e0e0e0',
+                      borderRadius:5,
+                      boxShadow:'0 2px 5px rgba(0,0,0,.6)',
+                      pointerEvents:'none',
+                      transition:'bottom .04s',
+                    }}/>
                   </div>
                   {/* Vol % */}
-                  <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,width:22,textAlign:'right',flexShrink:0}}>{vol}</span>
+                  <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>{vol}</span>
+                  {/* Label */}
+                  <span style={{fontSize:8,color:muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,
+                    maxWidth:48,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',textAlign:'center'}}>{tr.label}</span>
                   {/* Mute */}
                   <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                    style={{width:24,height:24,borderRadius:6,border:'none',cursor:'pointer',flexShrink:0,
+                    style={{width:28,height:16,borderRadius:4,border:'none',cursor:'pointer',
                       background:muted?'var(--rd)':'rgba(255,255,255,.08)',
                       color:muted?'#fff':'var(--tx3)',fontSize:7,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
                     M
