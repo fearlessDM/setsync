@@ -211,51 +211,160 @@ export default function App(){
     return null;
   };
 
-  // ── Pantalla de bienvenida: idioma + modo (una sola vez, sin vuelta atrás) ──
+  // ── Pantalla de bienvenida: idioma + modo ─────────────────────────────────
   if(appMode===null){
     const T={
-      es:{choose:'Elige tu modo de uso',forever:'Esta elección define el modo permanente de tu cuenta. No se puede cambiar entre modos una vez elegido.',
-        iglesia:{title:'Iglesia',sub:'Cultos · Setlists · Equipos de alabanza'},banda:{title:'Banda',sub:'Gigs · Repertorio · Equipo técnico · Rider'}},
-      en:{choose:'Choose your mode',forever:'This permanently defines your account mode. You cannot switch between modes once chosen.',
-        iglesia:{title:'Church',sub:'Services · Setlists · Worship Teams'},banda:{title:'Band',sub:'Gigs · Repertoire · Technical crew · Rider'}},
+      es:{ choose:'¿Cómo usas SetSync?', sub:'Dos interfaces diseñadas para distintos equipos.', canChange:'Puedes cambiarlo en cualquier momento desde Backstage → Configuración.',
+        iglesia:{title:'Iglesia', tag:'ADORACIÓN & WORSHIP',
+          lines:['Setlists y letras para el equipo','Gestión de equipos de alabanza','Monitoreo en vivo con tu mesa digital']},
+        banda:{title:'Banda', tag:'ESCENARIO & SHOWS',
+          lines:['Repertorio, setlists y rider técnico','Fechas, gigs y producción','Monitor personal y secuencias de show']},
+      },
+      ar:{ choose:'¿Cómo usás SetSync?', sub:'Dos interfaces diseñadas para distintos equipos.', canChange:'Podés cambiarlo desde Backstage en cualquier momento.',
+        iglesia:{title:'Iglesia', tag:'ADORACIÓN & WORSHIP',
+          lines:['Setlists y letras para el equipo','Gestión de equipos de alabanza','Monitoreo en vivo con tu mesa digital']},
+        banda:{title:'Banda', tag:'ESCENARIO & SHOWS',
+          lines:['Repertorio, setlists y rider técnico','Fechas, gigs y producción','Monitor personal y secuencias de show']},
+      },
+      pt:{ choose:'Como você usa o SetSync?', sub:'Duas interfaces para times diferentes.', canChange:'Você pode mudar isso em Backstage → Configurações.',
+        iglesia:{title:'Igreja', tag:'ADORAÇÃO & WORSHIP',
+          lines:['Setlists e letras para o time','Gestão de equipes de louvor','Monitor ao vivo com sua mesa digital']},
+        banda:{title:'Banda', tag:'PALCO & SHOWS',
+          lines:['Repertório, setlists e rider técnico','Datas, shows e produção','Monitor pessoal e sequências de show']},
+      },
+      en:{ choose:'How do you use SetSync?', sub:'Two interfaces designed for different teams.', canChange:'You can change this anytime in Backstage → Settings.',
+        iglesia:{title:'Church', tag:'WORSHIP & PRAISE',
+          lines:['Setlists and lyrics for your team','Worship team management','Live monitor with your digital console']},
+        banda:{title:'Band', tag:'STAGE & SHOWS',
+          lines:['Repertoire, setlists and tech rider','Gigs, dates and production','Personal monitor and show sequences']},
+      },
     };
-    const t=T[lang]||T.es;
+    const tl=T[lang]||T.es;
     return(
-      <div style={{minHeight:'100vh',background:'#13141a',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:"'Lexend Giga',sans-serif",overflowY:'auto'}}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');`}</style>
-        <div style={{paddingTop:64,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center'}}>
-          <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:160,height:'auto',objectFit:'contain'}}/>
+      <div style={{minHeight:'100vh',background:'#09090b',display:'flex',flexDirection:'column',alignItems:'center',fontFamily:"'Lexend Giga',sans-serif",overflowY:'auto',position:'relative',overflowX:'hidden'}}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+          @keyframes textura-drift { 0%{transform:translate(0,0) rotate(0deg) scale(1.08);} 50%{transform:translate(-18px,12px) rotate(.8deg) scale(1.12);} 100%{transform:translate(0,0) rotate(0deg) scale(1.08);} }
+          @keyframes textura-drift2 { 0%{transform:translate(0,0) rotate(0deg) scale(1.1);} 50%{transform:translate(14px,-10px) rotate(-.5deg) scale(1.05);} 100%{transform:translate(0,0) rotate(0deg) scale(1.1);} }
+          @keyframes textura-fade { 0%,100%{opacity:.07;} 50%{opacity:.12;} }
+          @keyframes wheel-glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 20px 2px rgba(255,255,255,.06);} }
+          .wheel-item { transition: all .3s cubic-bezier(.4,0,.2,1); }
+          .mode-card { transition: transform .2s, box-shadow .2s, border-color .2s; }
+          .mode-card:hover { transform:translateY(-2px); }
+        `}</style>
+
+        {/* ── Fondo animado con texturas musicales ── */}
+        <div style={{position:'fixed',inset:0,zIndex:0,overflow:'hidden',pointerEvents:'none'}}>
+          {/* Textura 1: rejilla de amplificador / Tolex negro */}
+          <div style={{position:'absolute',inset:'-10%',
+            backgroundImage:`radial-gradient(circle at 1px 1px, rgba(255,255,255,.18) 1px, transparent 0)`,
+            backgroundSize:'28px 28px',
+            animation:'textura-drift 18s ease-in-out infinite',
+            opacity:.08,
+          }}/>
+          {/* Textura 2: diagonal de platillos / rejilla hex */}
+          <div style={{position:'absolute',inset:'-10%',
+            backgroundImage:`repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0,rgba(255,255,255,.06) 1px,transparent 0,transparent 50%)`,
+            backgroundSize:'18px 18px',
+            animation:'textura-drift2 24s ease-in-out infinite',
+            opacity:.12,
+          }}/>
+          {/* Glow central suave */}
+          <div style={{position:'absolute',top:'40%',left:'50%',transform:'translate(-50%,-50%)',
+            width:'60vw',height:'60vw',maxWidth:600,maxHeight:600,
+            background:'radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%)',
+            animation:'textura-fade 8s ease-in-out infinite',
+          }}/>
+          {/* Líneas de escenario — bottom sweep */}
+          <div style={{position:'absolute',bottom:0,left:'50%',transform:'translateX(-50%)',
+            width:'120%',height:'45%',
+            background:'linear-gradient(to top,rgba(255,255,255,.02) 0%,transparent 100%)',
+            backgroundImage:`repeating-linear-gradient(to top,transparent,transparent 40px,rgba(255,255,255,.025) 40px,rgba(255,255,255,.025) 41px)`,
+            animation:'textura-drift 30s linear infinite',
+          }}/>
         </div>
-        <div style={{marginBottom:32,display:'inline-flex',gap:0,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',overflow:'hidden'}}>
-          {LANGS.map(l=>(
-            <button key={l.code} onClick={()=>setLang(l.code)}
-              style={{padding:'7px 16px',border:'none',cursor:'pointer',
-                background:lang===l.code?'rgba(255,255,255,.12)':'transparent',
-                color:lang===l.code?'#f3f1ed':'rgba(255,255,255,.35)',
-                fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
-                display:'flex',alignItems:'center',gap:5,letterSpacing:'.5px',
-                borderRight:l.code!=='en'?'1px solid rgba(255,255,255,.06)':'none'}}>
-              <span style={{fontSize:13}}>{l.flag}</span>
-              <span>{l.code.toUpperCase()}</span>
-            </button>
-          ))}
-        </div>
-        <div style={{textAlign:'center',marginBottom:20,padding:'0 24px'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:18,color:'#f3f1ed',marginBottom:6}}>{t.choose}</div>
-          <div style={{fontSize:11,color:'#6b6f77',lineHeight:1.6,maxWidth:300,margin:'0 auto'}}>{t.forever}</div>
-        </div>
-        <div style={{width:'100%',maxWidth:400,padding:'0 20px 60px'}}>
-          {[{id:'iglesia',data:t.iglesia},{id:'banda',data:t.banda}].map(item=>(
-            <button key={item.id} onClick={()=>setAppMode(item.id)}
-              style={{width:'100%',padding:'18px 20px',marginBottom:10,borderRadius:16,display:'flex',alignItems:'center',gap:16,
-                border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.03)',cursor:'pointer',textAlign:'left'}}>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'#ffffff',marginBottom:3}}>{item.data.title}</div>
-                <div style={{fontSize:11,color:'rgba(255,255,255,.4)',lineHeight:1.4,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{item.data.sub}</div>
-              </div>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          ))}
+
+        {/* ── Contenido ── */}
+        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:480,padding:'0 20px',display:'flex',flexDirection:'column',alignItems:'center'}}>
+
+          {/* Logo */}
+          <div style={{paddingTop:52,paddingBottom:28,display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <img src="/LOGO2 horiz blanco.png" alt="SetSync" style={{height:36,objectFit:'contain'}}/>
+          </div>
+
+          {/* Selector de idioma tipo rueda */}
+          <div style={{marginBottom:36,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+            <div style={{fontSize:8,fontWeight:900,color:'rgba(255,255,255,.25)',textTransform:'uppercase',letterSpacing:'2px'}}>
+              Región · Region
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',animation:'wheel-glow 4s ease-in-out infinite'}}>
+              {LANGS.map((l,i)=>{
+                const isActive=lang===l.code;
+                return(
+                  <button key={l.code} onClick={()=>setLang(l.code)}
+                    className="wheel-item"
+                    style={{
+                      padding:isActive?'8px 16px':'6px 10px',
+                      borderRadius:40,border:'none',cursor:'pointer',
+                      background:isActive?'rgba(255,255,255,.15)':'transparent',
+                      display:'flex',alignItems:'center',gap:isActive?6:0,
+                      overflow:'hidden',
+                    }}>
+                    <span style={{fontSize:isActive?16:14,lineHeight:1,transition:'font-size .25s'}}>{l.flag}</span>
+                    {isActive&&<span style={{fontSize:10,fontWeight:700,color:'#f3f1ed',whiteSpace:'nowrap',fontFamily:"'Lexend Giga',sans-serif"}}>{l.label}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Título */}
+          <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:22,color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
+              {tl.choose}
+            </div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
+              {tl.sub}
+            </div>
+          </div>
+
+          {/* Tarjetas de modo — Banda izquierda, Iglesia derecha */}
+          <div style={{width:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:20,marginBottom:16}}>
+            {[{id:'banda',data:tl.banda},{id:'iglesia',data:tl.iglesia}].map(item=>(
+              <button key={item.id} onClick={()=>setAppMode(item.id)}
+                className="mode-card"
+                style={{
+                  padding:'20px 14px 16px',borderRadius:18,
+                  border:'1px solid rgba(255,255,255,.1)',
+                  background:'rgba(255,255,255,.04)',
+                  cursor:'pointer',textAlign:'left',
+                  backdropFilter:'blur(20px)',
+                }}>
+                <div style={{fontSize:8,fontWeight:900,color:'rgba(255,255,255,.3)',letterSpacing:'2px',marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {item.data.tag}
+                </div>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'#fff',marginBottom:12,lineHeight:1}}>
+                  {item.data.title}
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  {item.data.lines.map((line,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                      <div style={{width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.3)',flexShrink:0,marginTop:5}}/>
+                      <span style={{fontSize:9,color:'rgba(255,255,255,.5)',lineHeight:1.5,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>{line}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:14,fontSize:10,fontWeight:700,color:'rgba(255,255,255,.7)',display:'flex',alignItems:'center',gap:4,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Entrar <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Nota: se puede cambiar */}
+          <div style={{fontSize:9,color:'rgba(255,255,255,.25)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
+            {tl.canChange}
+          </div>
         </div>
       </div>
     );

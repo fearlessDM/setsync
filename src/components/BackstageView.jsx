@@ -442,8 +442,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     );
   }
 
-    // ── DELEGAR PERMISOS ──
-    if(bsView==='permisos')return(
+  // ── DELEGAR PERMISOS ──
+  if(bsView==='permisos')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>

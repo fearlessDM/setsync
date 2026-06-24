@@ -934,24 +934,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         touchAction:'none',userSelect:'none',WebkitUserSelect:'none'}}
                       onPointerDown={e=>{
                         e.preventDefault();
+                        e.stopPropagation();
                         const el=e.currentTarget;
                         el.setPointerCapture(e.pointerId);
-                        const rect=el.getBoundingClientRect();
-                        const move=ev=>{
-                          const pct=Math.round(100-Math.max(0,Math.min(1,(ev.clientY-rect.top)/rect.height))*100);
-                          setFaderVols(v=>{const n=[...v];n[ci]=pct;return n;});
+                        // Get fresh rect on every event for scroll-safe accuracy
+                        const calc=ev=>{
+                          const r=el.getBoundingClientRect();
+                          const raw=(ev.clientY-r.top)/r.height;
+                          return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
                         };
-                        const up=()=>{el.releasePointerCapture(e.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                        setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;}); // instant on touch
+                        const move=ev=>{
+                          ev.preventDefault();
+                          setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});
+                        };
+                        const up=ev=>{
+                          el.releasePointerCapture(ev.pointerId);
+                          el.removeEventListener('pointermove',move);
+                          el.removeEventListener('pointerup',up);
+                        };
                         el.addEventListener('pointermove',move,{passive:false});
-                        el.addEventListener('pointerup',up);
-                        move(e); // update on first touch
+                        el.addEventListener('pointerup',up,{once:true});
                       }}>
                       {/* Fill */}
                       <div className="fader-fill" style={{
                         height:`${faderVols[ci]}%`,
                         background:faderVols[ci]>80?'rgba(253,128,131,.5)':faderVols[ci]>50?'rgba(48,192,183,.6)':'rgba(255,255,255,.2)',
                       }}/>
-                      {/* Thumb estilo X32 */}
+                      {/* Thumb estilo X32 — sin transition para respuesta inmediata */}
                       <div className="fader-thumb" style={{
                         bottom:`calc(${faderVols[ci]}% - 11px)`,
                       }}/>

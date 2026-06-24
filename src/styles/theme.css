@@ -414,7 +414,6 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 .fader-fill{
   position:absolute;bottom:0;left:0;right:0;
   border-radius:4px;
-  transition:height .05s;
 }
 .fader-thumb{
   position:absolute;left:50%;transform:translateX(-50%);
