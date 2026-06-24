@@ -297,8 +297,8 @@ export default function App(){
           {/* Logo vertical — visible con tagline */}
           <div style={{paddingTop:48,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center'}}>
             <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
-              height:110,width:'auto',objectFit:'contain',
-              filter:'drop-shadow(0 0 40px rgba(255,255,255,0.12))',
+              height:'clamp(160px,28vw,240px)',width:'auto',objectFit:'contain',
+              filter:'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
             }}/>
           </div>
 

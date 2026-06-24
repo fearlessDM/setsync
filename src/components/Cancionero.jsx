@@ -425,35 +425,35 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         </button>
       </div>
       <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
-        <button onClick={()=>setTab('mi')} style={{padding:'5px 11px',borderRadius:100,border:tab==='mi'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tab==='mi'?'rgba(200,169,126,.1)':'transparent',color:tab==='mi'?'var(--ac)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Mi cancionero</button>
-        {feat.cancioneroUniversal&&<button onClick={()=>setTab('universal')} style={{padding:'5px 11px',borderRadius:100,border:tab==='universal'?'1px solid rgba(94,206,160,.4)':'1px solid var(--bd)',background:tab==='universal'?'rgba(94,206,160,.1)':'transparent',color:tab==='universal'?'var(--gn)':'var(--tx3)',fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
-          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          Universal
-        </button>}
-        <button onClick={()=>setTab('partituras')} style={{padding:'5px 11px',borderRadius:100,
-          border:tab==='partituras'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
-          background:tab==='partituras'?'rgba(200,169,126,.1)':'transparent',
-          color:tab==='partituras'?'var(--ac)':'var(--tx3)',
-          fontWeight:600,fontSize:10,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
-          display:'flex',alignItems:'center',gap:4}}>
-          <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>
-          </svg>
-          Partituras
-        </button>
+        
+        {/* ── Chips de tab con colores ── */}
+        {[
+          {id:'mi',    label:'Mi cancionero', color:'#c8a97e', bg:'rgba(200,169,126,.12)',
+           icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
+          {id:'universal', label:'Universal', color:'var(--gn)', bg:'rgba(48,192,183,.12)', show:feat.cancioneroUniversal,
+           icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
+          {id:'partituras',label:'Partituras', color:'#a78bfa', bg:'rgba(167,139,250,.12)',
+           icon:<svg viewBox="0 0 50 60" width="10" height="11" fill="currentColor"><path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/></svg>},
+          {id:'drive', label:'Subir por Drive', color:'var(--tx3)', bg:'rgba(255,255,255,.06)',
+           icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>},
+        ].filter(t=>t.show!==false).map(t=>(
+          <button key={t.id}
+            onClick={()=>{if(t.id==='drive'){setShowCrear(true);setCrearModo('drive');}else setTab(t.id);}}
+            style={{
+              padding:'5px 12px',borderRadius:100,
+              border:`1px solid ${tab===t.id?t.color+'60':'rgba(255,255,255,.1)'}`,
+              background:tab===t.id?t.bg:'transparent',
+              color:tab===t.id?t.color:'var(--tx3)',
+              fontWeight:700,fontSize:10,cursor:'pointer',
+              fontFamily:"'Lexend Giga',sans-serif",
+              display:'flex',alignItems:'center',gap:5,flexShrink:0,
+              transition:'all .15s',
+            }}>
+            <span style={{color:'inherit',display:'flex'}}>{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
         <div style={{flex:1}}/>
-        <button onClick={()=>{setShowCrear(true);setCrearModo('drive');}}
-          style={{display:'flex',alignItems:'center',gap:4,padding:'5px 10px',
-            borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.04)',color:'var(--tx3)',
-            fontWeight:600,fontSize:10,cursor:'pointer',
-            fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="10" height="10" fill="none"
-            stroke="currentColor" strokeWidth="2.5">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
-          Subir por Drive
-        </button>
       </div>
 
       <div style={{display:'flex',gap:8,marginBottom:14}}>
@@ -504,200 +504,58 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
       {tab==='partituras'&&(
         <div>
-          <div style={{fontSize:20,fontWeight:900,color:'var(--tx)',
-            fontFamily:"'Special Gothic Expanded One',sans-serif",marginBottom:4}}>Partituras</div>
-          <div style={{fontSize:12,color:'var(--tx3)',marginBottom:20,lineHeight:1.5}}>
-            Sube partituras en formato <strong style={{color:'var(--ac)'}}>MusicXML</strong> o <strong style={{color:'var(--ac)'}}>PDF</strong>.
-            MusicXML permite transposición automática y reproducción MIDI.
-            PDF es para visualización directa.
-          </div>
-
-          {/* Zona de subida */}
-          {isAdmin&&(
-            <label style={{
-              display:'flex',flexDirection:'column',alignItems:'center',
-              justifyContent:'center',gap:10,
-              padding:'24px 16px',borderRadius:14,
-              border:'2px dashed rgba(200,169,126,.3)',
-              background:'rgba(200,169,126,.04)',
-              cursor:'pointer',marginBottom:20,
-            }}>
-              <input type="file" accept=".xml,.mxl,.musicxml,.pdf"
-                style={{display:'none'}}
-                onChange={e=>{
-                  const file=e.target.files[0];
-                  if(!file)return;
-                  const tipo=file.name.endsWith('.pdf')?'pdf':'musicxml';
-                  const url=URL.createObjectURL(file);
-                  setPartituras(prev=>[...prev,{
-                    id:Date.now(),nombre:file.name.replace(/\.[^.]+$/,''),
-                    tipo,url,size:(file.size/1024).toFixed(0)+'kb'
-                  }]);
-                }}/>
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none"
-                stroke="rgba(200,169,126,.5)" strokeWidth="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <div style={{textAlign:'center'}}>
-                <div style={{fontSize:13,fontWeight:700,color:'var(--ac)'}}>
-                  Subir partitura
-                </div>
-                <div style={{fontSize:11,color:'var(--tx3)',marginTop:4}}>
-                  Formatos aceptados:
-                </div>
-                <div style={{display:'flex',gap:6,justifyContent:'center',marginTop:6,flexWrap:'wrap'}}>
-                  {[
-                    {ext:'MusicXML',desc:'Transposición + MIDI'},
-                    {ext:'PDF',desc:'Visualización directa'},
-                  ].map(f=>(
-                    <span key={f.ext} style={{fontSize:10,fontWeight:700,
-                      padding:'3px 8px',borderRadius:10,
-                      background:'rgba(200,169,126,.1)',color:'var(--ac)',
-                      border:'1px solid rgba(200,169,126,.2)'}}>
-                      {f.ext} <span style={{opacity:.6,fontWeight:400}}>— {f.desc}</span>
-                    </span>
-                  ))}
-                </div>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>Partituras disponibles</div>
+          {/* Demo partituras */}
+          {[
+            {title:'YESHUA',autor:'Maverick City Music',tipo:'PDF',paginas:4,tonalidad:'D',desc:'Partitura completa para piano, guitarra, bajo y batería. Incluye lead sheet.'},
+            {title:'GLORIA EN GLORIA',autor:'Bethel Music',tipo:'MusicXML',paginas:6,tonalidad:'D',desc:'Partitura interactiva con transposición automática. Compatible con MuseScore.'},
+            {title:'LA BONDAD DE DIOS',autor:'Bethel Music',tipo:'PDF',paginas:3,tonalidad:'C',desc:'Lead sheet con cifrado y letra. Versión para todos los instrumentos.'},
+          ].map((p,i)=>(
+            <div key={i} style={{display:'flex',gap:12,padding:'14px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',marginBottom:8,cursor:'pointer'}}
+              onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.4)'}
+              onMouseLeave={e=>e.currentTarget.style.borderColor='var(--bd)'}>
+              {/* Icono clave de sol */}
+              <div style={{width:44,height:44,borderRadius:10,background:'rgba(167,139,250,.1)',border:'1px solid rgba(167,139,250,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <svg viewBox="0 0 50 60" width="20" height="24" fill="rgba(167,139,250,0.9)">
+                  <path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/>
+                </svg>
               </div>
-            </label>
-          )}
-
-          {/* Lista de partituras */}
-          {partituras.length===0?(
-            <div style={{textAlign:'center',padding:'30px 0',color:'var(--tx3)',fontSize:13}}>
-              {isAdmin?'Aún no hay partituras. Sube una usando el botón de arriba.':'Sin partituras disponibles.'}
-            </div>
-          ):partituras.map(p=>(
-            <div key={p.id} style={{display:'flex',alignItems:'center',gap:12,
-              padding:'12px',borderRadius:12,border:'1px solid var(--bd)',
-              background:'var(--s1)',marginBottom:8}}>
-              {/* Ícono por tipo */}
-              <div style={{width:40,height:40,borderRadius:10,flexShrink:0,
-                background:p.tipo==='pdf'?'rgba(196,64,16,.1)':'rgba(200,169,126,.1)',
-                display:'flex',alignItems:'center',justifyContent:'center'}}>
-                {p.tipo==='pdf'?(
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-                    stroke="var(--rd)" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="9" y1="15" x2="15" y2="15"/>
-                  </svg>
-                ):(
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-                    stroke="var(--ac)" strokeWidth="1.5">
-                    <path d="M9 18V5l12-2v13"/>
-                    <circle cx="6" cy="18" r="3"/>
-                    <circle cx="18" cy="16" r="3"/>
-                  </svg>
-                )}
-              </div>
-              {/* Info */}
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:800,color:'var(--tx)',
-                  fontFamily:"'Lexend Giga',sans-serif",whiteSpace:'nowrap',
-                  overflow:'hidden',textOverflow:'ellipsis'}}>{p.nombre}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
-                  {p.tipo==='pdf'?'PDF':'MusicXML'} · {p.size}
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
+                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--tx)'}}>{p.title}</span>
+                  <span style={{fontSize:8,fontWeight:900,padding:'2px 7px',borderRadius:100,
+                    background:p.tipo==='MusicXML'?'rgba(48,192,183,.12)':'rgba(167,139,250,.12)',
+                    color:p.tipo==='MusicXML'?'var(--gn)':'#a78bfa',
+                    border:`1px solid ${p.tipo==='MusicXML'?'rgba(48,192,183,.3)':'rgba(167,139,250,.3)'}`,
+                    fontFamily:"'Lexend Giga',sans-serif"}}>{p.tipo}</span>
                 </div>
+                <div style={{fontSize:10,color:'var(--tx3)',marginBottom:4,fontFamily:"'Lexend Giga',sans-serif"}}>{p.autor} · {p.tonalidad} · {p.paginas} págs.</div>
+                <div style={{fontSize:10,color:'var(--tx2)',lineHeight:1.5,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{p.desc}</div>
               </div>
-              {/* Acciones */}
-              <div style={{display:'flex',gap:6,flexShrink:0}}>
-                {p.tipo==='pdf'?(
-                  <a href={p.url} target="_blank" rel="noreferrer"
-                    style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
-                      border:'1px solid var(--bd)',background:'transparent',
-                      color:'var(--tx2)',cursor:'pointer',textDecoration:'none',
-                      fontFamily:"'Lexend Giga',sans-serif"}}>
-                    Ver PDF
-                  </a>
-                ):(
-                  <button onClick={()=>setPartituraSel(p)}
-                    style={{padding:'5px 10px',borderRadius:8,fontSize:11,fontWeight:700,
-                      border:'1px solid var(--ac)',background:'rgba(200,169,126,.08)',
-                      color:'var(--ac)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-                    Leer
-                  </button>
-                )}
-                {isAdmin&&(
-                  <button onClick={()=>setPartituras(prev=>prev.filter(x=>x.id!==p.id))}
-                    style={{padding:'5px 8px',borderRadius:8,fontSize:11,
-                      border:'1px solid var(--bd)',background:'transparent',
-                      color:'var(--tx3)',cursor:'pointer'}}>
-                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                      stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                    </svg>
-                  </button>
-                )}
+              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:6,flexShrink:0}}>
+                <button style={{padding:'5px 10px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:9,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Ver
+                </button>
+                <button style={{padding:'5px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx3)',fontSize:9,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  ↓ PDF
+                </button>
               </div>
             </div>
           ))}
-
-          {/* Lector MusicXML con MIDI */}
-          {partituraSel&&(
-            <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:100,
-              display:'flex',flexDirection:'column'}}>
-              <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',
-                borderBottom:'1px solid var(--bd)',flexShrink:0}}>
-                <button onClick={()=>{setPartituraSel(null);setMidiPlaying(false);}}
-                  style={{background:'transparent',border:'none',cursor:'pointer',
-                    color:'var(--tx3)',display:'flex',alignItems:'center'}}>
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-                    stroke="currentColor" strokeWidth="2">
-                    <polyline points="15 18 9 12 15 6"/>
-                  </svg>
-                </button>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:900,color:'var(--tx)',
-                    fontFamily:"'Lexend Giga',sans-serif"}}>{partituraSel.nombre}</div>
-                  <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,
-                    textTransform:'uppercase',letterSpacing:'1px'}}>
-                    MusicXML · Reproducción MIDI
-                  </div>
-                </div>
-                <button onClick={()=>{
-                  if(midiPlaying){
-                    setMidiPlaying(false);
-                    window.__midiStop&&window.__midiStop();
-                  } else {
-                    setMidiPlaying(true);
-                    playMusicXML(partituraSel.url, ()=>setMidiPlaying(false));
-                  }
-                }} style={{
-                  display:'flex',alignItems:'center',gap:6,
-                  padding:'7px 14px',borderRadius:10,border:'none',
-                  background:midiPlaying?'rgba(196,64,16,.15)':'rgba(200,169,126,.12)',
-                  color:midiPlaying?'var(--rd)':'var(--ac)',
-                  fontSize:12,fontWeight:700,cursor:'pointer',
-                  fontFamily:"'Lexend Giga',sans-serif",
-                }}>
-                  {midiPlaying?(
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">
-                      <rect x="6" y="4" width="4" height="16"/>
-                      <rect x="14" y="4" width="4" height="16"/>
-                    </svg>
-                  ):(
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                  )}
-                  {midiPlaying?'Detener':'Reproducir MIDI'}
-                </button>
+          {/* Upload zone */}
+          {isAdmin&&(
+            <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:12,border:'1px dashed rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',cursor:'pointer',marginTop:8}}
+              onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.6)'}
+              onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.3)'}>
+              <input type="file" accept=".pdf,.xml,.mxl,.musicxml" style={{display:'none'}}/>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#a78bfa" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:'#a78bfa'}}>Subir partitura</div>
+                <div style={{fontSize:9,color:'var(--tx3)',marginTop:1}}>PDF · MusicXML · .mxl</div>
               </div>
-              <div style={{flex:1,overflowY:'auto',padding:'20px',
-                display:'flex',alignItems:'flex-start',justifyContent:'center'}}>
-                <MusicXMLViewer url={partituraSel.url}/>
-              </div>
-              <div style={{padding:'12px 16px',borderTop:'1px solid var(--bd)',
-                background:'var(--s1)',fontSize:11,color:'var(--tx3)',textAlign:'center',
-                lineHeight:1.5}}>
-                El sonido MIDI es una aproximación sintética de la partitura.
-                No representa el sonido real del instrumento.
-              </div>
-            </div>
+            </label>
           )}
         </div>
       )}

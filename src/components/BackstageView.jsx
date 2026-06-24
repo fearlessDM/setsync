@@ -42,6 +42,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [pastorVersiculo,setPastorVersiculo]=useState('');
   const [pastorTexto,setPastorTexto]=useState('');
   const [pastorNotas,setPastorNotas]=useState('');
+  const [selectedPermisos,setSelectedPermisos]=useState([]);
+  const [selectedIntegrante,setSelectedIntegrante]=useState('');
   const [lideresActuales,setLideresActuales]=useState([
     {name:'Cony Saavedra',av:'CS',rol:'Líder Banda',permisos:['editar setlist','convocar equipo']},
     {name:'Mauro Pizarro',av:'MP',rol:'Líder Proyecciones',permisos:['gestionar equipo']},
@@ -326,126 +328,188 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   }
 
   if(bsView==='equipos'){
-    // Listado de músicos (todos los integrantes únicos)
-    const bandaEquipo=equipos.find(e=>e.name==='Banda'); const listado=(bandaEquipo?(bandaEquipo.miembros||[]):[]).filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
-
     return(
-      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh'}}>
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Gestión de <span style={{color:'var(--ac)'}}>equipos</span></div>
-        <div style={{fontSize:12,color:'var(--tx2)',marginBottom:18}}>Crea equipos de trabajo y los roles dentro de cada uno. También puedes crear una nómina de músicos para cada evento o crear varias bandas desde un grupo grande de músicos.</div>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Listado de músicos · {listado.length} personas</div>
-        <div className="card" style={{padding:14,marginBottom:14}}>
-          <div style={{display:'flex',flexWrap:'wrap',gap:7,marginBottom:10}}>
-            {listado.map(m=>(
-              <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',borderRadius:100,background:'var(--s2)',border:'1px solid var(--bd)'}}>
-                <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
-                <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
-              </div>
-            ))}
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:26,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+          Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
+        </div>
+        <div style={{fontSize:11,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
+          Organiza tu gente en equipos de trabajo. Agrega miembros, asigna roles y gestiona la convocatoria de cada fecha.
+        </div>
+
+        {/* ── Miembros registrados ── */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>
+            Miembros · {personas.length} personas
           </div>
-          <button className="btn btn-g btn-sm" style={{width:'100%',justifyContent:'center'}} onClick={()=>{
-              const nombre=prompt('Nombre del músico:');
-              if(!nombre||!nombre.trim())return;
-              const nuevoMiembro={id:Date.now(),name:nombre.trim(),role:'Libre'};
-              const banda=equipos.find(e=>e.name==='Banda')||equipos[0];
-              if(!banda){onToast('Crea una formación primero');return;}
-              const upd={...banda,miembros:[...(banda.miembros||[]),nuevoMiembro]};
-              setEquipos(prev=>prev.map(e=>e.id===banda.id?upd:e));
+          <button
+            onClick={()=>{
+              const nombre=prompt('Nombre del nuevo miembro:');
+              if(!nombre?.trim())return;
+              const equipo=equipos[0];
+              if(!equipo){onToast({text:'Crea un equipo primero'});return;}
+              const nuevo={id:Date.now(),name:nombre.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
+              const upd={...equipo,miembros:[...(equipo.miembros||[]),nuevo]};
+              setEquipos(prev=>prev.map(e=>e.id===equipo.id?upd:e));
               persistirEquipo(upd);
-              onToast({text:'Músico agregado',sub:nombre.trim()});
-            }}>
-            <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-            Agregar músico
+              onToast({text:'Miembro agregado',sub:nombre.trim()});
+            }}
+            className="btn btn-g btn-xs">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            Agregar miembro
           </button>
         </div>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Formaciones · {equipos.length} equipos</div>
-        {equipos.map(eq=>(
-          <div key={eq.id} className="eq-card" style={{marginBottom:10}}>
-            <div onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)} style={{padding:'12px 14px',display:'flex',alignItems:'center',gap:9,cursor:'pointer'}}>
-              <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-              <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)',flex:1}}>{eq.name}</span>
-              <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{transform:activeEq===eq.id?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
+        {/* Pills de miembros con foto */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:20}}>
+          {personas.map(m=>(
+            <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',borderRadius:100,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+              {m.foto
+                ?<img src={m.foto} alt={m.name} style={{width:22,height:22,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
+                :<div style={{width:22,height:22,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
+              }
+              <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
             </div>
-            {activeEq===eq.id&&(
-              <div style={{borderTop:'1px solid var(--bd)'}}>
-                <div style={{padding:'8px 14px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5,alignItems:'center'}}>
-                  <span style={{fontSize:9,fontWeight:700,color:'var(--tx3)',marginRight:4}}>ROLES:</span>
-                  {(eq.roles||[]).map(r=>(
-                    <span key={r} style={{fontSize:10,fontWeight:700,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'2px 8px',borderRadius:100}}>{r}</span>
-                  ))}
-                  <button onClick={()=>{
-                    const rol=prompt('Nombre del rol nuevo:');
-                    if(!rol||!rol.trim())return;
-                    const upd={...eq,roles:[...(eq.roles||[]),rol.trim()]};
-                    setEquipos(prev=>prev.map(e=>e.id===eq.id?upd:e));
-                    persistirEquipo(upd);
-                  }} style={{fontSize:10,color:'var(--tx3)',background:'var(--s2)',border:'1px dashed var(--bd)',padding:'2px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>+ Rol</button>
-                </div>
-                {(eq.miembros||[]).map(m=>(
-                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
-                    <div style={{width:28,height:28,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
-                    <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.name}</span>
-                    <select value={m.role} onChange={e=>{
-                      const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
-                      setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-                      persistirEquipo(upd);
-                    }} style={{fontSize:10,color:eq.color,background:eq.color+'15',border:'1px solid '+eq.color+'30',padding:'3px 8px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
-                      {(eq.roles||[]).map(r=>(<option key={r} value={r}>{r}</option>))}
-                    </select>
-                    <button onClick={()=>{
-                      const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
-                      setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-                      persistirEquipo(upd);
-                      onToast({text:'Removido',sub:m.name});
-                    }} style={{width:22,height:22,borderRadius:6,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
+          ))}
+          {personas.length===0&&(
+            <div style={{fontSize:11,color:'var(--tx3)',fontStyle:'italic'}}>Agrega tu primer miembro →</div>
+          )}
+        </div>
+
+        {/* ── Equipos en grid 2 columnas ── */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>
+            Equipos · {equipos.length}
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+          {equipos.map(eq=>(
+            <div key={eq.id}
+              onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}
+              style={{
+                borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)',
+                overflow:'hidden',cursor:'pointer',
+                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none',
+              }}>
+              {/* Card header */}
+              <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,boxShadow:`0 0 8px ${eq.color}80`}}/>
+                <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:12,color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
+                <span style={{fontSize:9,fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{(eq.miembros||[]).length}</span>
+              </div>
+              {/* Miembros en pills */}
+              <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
+                {(eq.miembros||[]).slice(0,4).map(m=>(
+                  <div key={m.id} style={{fontSize:8,fontWeight:700,padding:'2px 7px',borderRadius:100,
+                    background:eq.color+'18',color:eq.color,border:`1px solid ${eq.color}30`,
+                    fontFamily:"'Lexend Giga',sans-serif",whiteSpace:'nowrap'}}>
+                    {m.name.split(' ')[0]}
                   </div>
                 ))}
-                <div style={{padding:'8px 14px'}}>
-                  <select className="inp" style={{fontSize:11,cursor:'pointer'}} value="" onChange={e=>{
-                      if(!e.target.value)return;
-                      const persona=listado.find(m=>String(m.id)===e.target.value);
-                      if(!persona)return;
-                      const yaTiene=(eq.miembros||[]).find(em=>em.id===persona.id);
-                      const upd={...eq,miembros:yaTiene?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||'General'}]};
-                      setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-                      persistirEquipo(upd);
-                      onToast({text:'Agregado a '+eq.name,sub:persona.name});
-                    }}>
-                    <option value="">Agregar persona...</option>
-                    {listado.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
-                  </select>
-                </div>
+                {(eq.miembros||[]).length>4&&(
+                  <div style={{fontSize:8,color:'var(--tx3)',padding:'2px 6px',fontFamily:"'Lexend Giga',sans-serif"}}>+{(eq.miembros||[]).length-4}</div>
+                )}
+                {(eq.miembros||[]).length===0&&(
+                  <div style={{fontSize:8,color:'var(--tx3)',fontStyle:'italic',fontFamily:"'Lexend Giga',sans-serif"}}>Sin miembros</div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-        <div className="card" style={{padding:14}}>
-          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:10}}>Nueva formación</div>
-          <input className="inp" placeholder="Nombre de la nueva banda o equipo..." value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8}}/>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Detalle del equipo activo ── */}
+        {activeEq&&(()=>{
+          const eq=equipos.find(e=>e.id===activeEq);
+          if(!eq)return null;
+          return(
+            <div style={{borderRadius:14,background:'var(--s1)',border:`1px solid ${eq.color}40`,padding:14,marginBottom:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`}}/>
+                <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:14,color:'var(--tx)',flex:1}}>{eq.name}</span>
+                <button onClick={e=>{e.stopPropagation();setActiveEq(null);}} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
+              </div>
+              {/* Miembros del equipo */}
+              {(eq.miembros||[]).map(m=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+                  {m.foto
+                    ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
+                    :<div style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
+                  }
+                  <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.name}</span>
+                  <select value={m.role} onChange={e=>{
+                    const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
+                    setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
+                  }} style={{fontSize:9,color:eq.color,background:eq.color+'12',border:`1px solid ${eq.color}30`,padding:'3px 7px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
+                    {(eq.roles||[]).map(r=>(<option key={r} value={r}>{r}</option>))}
+                  </select>
+                  <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0}}>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
+                      const file=e.target.files?.[0];
+                      if(!file)return;
+                      const reader=new FileReader();
+                      reader.onload=ev=>{
+                        const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,foto:ev.target.result}:mm)};
+                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
+                      };
+                      reader.readAsDataURL(file);
+                    }}/>
+                    <div style={{width:22,height:22,borderRadius:6,border:'1px solid var(--bd)',background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--tx3)'}}>
+                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </div>
+                  </label>
+                  <button onClick={()=>{
+                    const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
+                    setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
+                    onToast({text:'Removido',sub:m.name});
+                  }} style={{width:22,height:22,borderRadius:6,border:'1px solid rgba(253,128,131,.2)',background:'transparent',color:'var(--rd)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              ))}
+              {/* Agregar miembro al equipo */}
+              <select className="inp" style={{marginTop:10,fontSize:11,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value="" onChange={e=>{
+                if(!e.target.value)return;
+                const persona=personas.find(m=>String(m.id)===e.target.value);
+                if(!persona)return;
+                const ya=(eq.miembros||[]).find(em=>em.id===persona.id);
+                const upd={...eq,miembros:ya?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||'General',foto:null}]};
+                setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
+                onToast({text:'Agregado a '+eq.name,sub:persona.name});
+              }}>
+                <option value="">Agregar miembro al equipo...</option>
+                {personas.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+              </select>
+            </div>
+          );
+        })()}
+
+        {/* ── Crear nuevo equipo ── */}
+        <div style={{padding:14,borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:10}}>Nuevo equipo</div>
+          <input className="inp" placeholder="Nombre del equipo..." value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8}}/>
           <button className="btn btn-p btn-sm" style={{width:'100%',justifyContent:'center'}} onClick={()=>{
-              if(!nuevaBanda.trim())return;
-              const colores=['#EE227D','#30C0B7','#FD8083','#7b68ee','#5ecea0','#e07820'];
-              const color=colores[equipos.length%colores.length];
-              const nuevoEq={id:`eq${Date.now()}`,name:nuevaBanda.trim(),color,roles:['General'],miembros:[]};
-              setEquipos(prev=>[...prev,nuevoEq]);
-              persistirEquipo(nuevoEq);
-              onToast({text:'Formación creada',sub:nuevaBanda});
-              setNuevaBanda('');
-            }}>
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Crear formación
+            if(!nuevaBanda.trim())return;
+            const colores=['#EE227D','#30C0B7','#FD8083','#7b68ee','#5ecea0','#e07820'];
+            const color=colores[equipos.length%colores.length];
+            const nuevoEq={id:`eq${Date.now()}`,name:nuevaBanda.trim(),color,roles:['General','Líder'],miembros:[]};
+            setEquipos(prev=>[...prev,nuevoEq]);persistirEquipo(nuevoEq);
+            onToast({text:'Equipo creado',sub:nuevaBanda});setNuevaBanda('');
+          }}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Crear equipo
           </button>
         </div>
       </div>
     );
   }
+
 
   // ── DELEGAR PERMISOS ──
   if(bsView==='permisos')return(
@@ -496,7 +560,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>Agregar líder</div>
         <div style={{marginBottom:12}}>
           <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:6}}>Integrante</div>
-          <select className="inp" style={{background:'var(--s1)',color:'var(--tx)',cursor:'pointer'}}>
+          <select className="inp" style={{background:'var(--s1)',color:'var(--tx)',cursor:'pointer'}}
+            value={selectedIntegrante} onChange={e=>setSelectedIntegrante(e.target.value)}>
             <option value="">Seleccionar...</option>
             {personas.filter(p=>!lideresActuales.find(l=>l.name===p.name)).map(p=>(
               <option key={p.id} value={p.id}>{p.name}</option>
@@ -505,28 +570,50 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
         <div style={{marginBottom:14}}>
           <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Permisos</div>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {[
-              {id:'setlist',label:'Editar setlist',desc:'Agregar o reordenar canciones'},
-              {id:'convocar',label:'Convocar equipo',desc:'Invitar y confirmar asistencia'},
-              {id:'notif',label:'Enviar notificaciones',desc:'Avisar al equipo'},
+              {id:'setlist',label:'Editar setlist',desc:'Agregar, reordenar y publicar canciones'},
+              {id:'convocar',label:'Convocar equipo',desc:'Invitar y confirmar asistencia de miembros'},
+              {id:'notif',label:'Enviar notificaciones',desc:'Avisar al equipo por push y email'},
               {id:'itinerario',label:'Editar itinerario',desc:'Modificar horarios del evento'},
-            ].map(perm=>(
-              <label key={perm.id} style={{display:'flex',alignItems:'center',gap:12,cursor:'pointer',padding:'8px 10px',borderRadius:8,border:'1px solid transparent',transition:'all .15s'}}
-                onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}
-                onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <div style={{width:18,height:18,borderRadius:5,border:'2px solid var(--bd)',background:'var(--s2)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                </div>
-                <div>
-                  <div style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{perm.label}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',marginTop:1}}>{perm.desc}</div>
-                </div>
-              </label>
-            ))}
+              {id:'equipos',label:'Gestionar equipos',desc:'Agregar y remover miembros de su área'},
+              {id:'pastor',label:'Palabra del pastor',desc:'Editar versículo y notas del mensaje'},
+              {id:'backstage_view',label:'Ver Backstage',desc:'Acceso de solo lectura a todos los eventos'},
+            ].map(perm=>{
+              const isOn=selectedPermisos.includes(perm.id);
+              return(
+                <label key={perm.id}
+                  onClick={()=>setSelectedPermisos(prev=>isOn?prev.filter(x=>x!==perm.id):[...prev,perm.id])}
+                  style={{display:'flex',alignItems:'center',gap:12,cursor:'pointer',
+                    padding:'9px 10px',borderRadius:8,
+                    border:`1px solid ${isOn?'rgba(48,192,183,.3)':'transparent'}`,
+                    background:isOn?'rgba(48,192,183,.06)':'transparent',
+                    transition:'all .15s'}}>
+                  <div style={{width:18,height:18,borderRadius:5,
+                    border:`2px solid ${isOn?'var(--gn)':'var(--bd)'}`,
+                    background:isOn?'var(--gn)':'var(--s2)',
+                    flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
+                    transition:'all .15s'}}>
+                    {isOn&&<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#000" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:isOn?'var(--tx)':'var(--tx2)'}}>{perm.label}</div>
+                    <div style={{fontSize:9,color:'var(--tx3)',marginTop:1,fontFamily:"'Lexend Giga',sans-serif"}}>{perm.desc}</div>
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </div>
         <button className="btn btn-live" style={{width:'100%',justifyContent:'center'}}
-          onClick={()=>onToast({text:'Líder agregado',sub:'Permisos activados'})}>
+          onClick={()=>{
+            const p=personas.find(x=>String(x.id)===selectedIntegrante);
+            if(!p){onToast({text:'Selecciona un integrante',sub:''});return;}
+            if(selectedPermisos.length===0){onToast({text:'Selecciona al menos un permiso',sub:''});return;}
+            setLideresActuales(prev=>[...prev,{name:p.name,av:p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),rol:'Líder',permisos:selectedPermisos.map(id=>id.replace('_',' '))}]);
+            setSelectedPermisos([]);setSelectedIntegrante('');
+            onToast({text:'Líder agregado',sub:p.name});
+          }}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           Guardar líder
         </button>
@@ -827,7 +914,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       const ITEMS=[
     {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',adminOnly:false},
     {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',adminOnly:false},
-    {id:'equipos',label:'Gestión de equipos',sub:'Formaciones, roles y personas',icon:'team',adminOnly:true},
+    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',adminOnly:true},
     {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',adminOnly:true},
     {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',adminOnly:false},
     {id:'config',label:'Configuración',sub:'Tema, plan, idioma y conexiones',icon:'settings',adminOnly:false},

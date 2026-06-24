@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
 
 // Imágenes por modo — iglesia: escenarios de worship / banda: palcos y ensayos
@@ -153,11 +154,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         {/* Cancionero */}
         <Card onClick={()=>onNavigate('repertorio')}>
           <Lbl color="var(--ac)">Cancionero</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',lineHeight:1.1}}>
-            Repertorio
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--ac)',lineHeight:1}}>
+            {CANCIONES.length}
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:5}}>
-            {feat.cancioneroUniversal?'+ Universal disponible':'Tus canciones'}
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx)',fontWeight:700,marginTop:3}}>
+            canciones
+          </div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,color:'var(--tx3)',marginTop:3}}>
+            {feat.cancioneroUniversal?'+ Universal disponible':'En tu cancionero'}
           </div>
         </Card>
 
@@ -239,49 +243,20 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             </div>
           </Card>
         )}
-
-        {/* Accesos rápidos */}
-        <Card cols={2}>
-          <Lbl color="var(--ac)">Accesos rápidos</Lbl>
-          <div style={{display:'flex',flexWrap:'wrap',gap:'var(--sp-xs)'}}>
-            {[
-              {label:'Ver fechas',view:'fechas'},
-              {label:'Próxima fecha',view:'misetlist'},
-              {label:'Cancionero',view:'repertorio'},
-              {label:'Backstage',view:'backstage'},
-            ].map(a=>(
-              <button
-                key={a.label}
-                onClick={()=>onNavigate(a.view)}
-                style={{
-                  padding:'7px 15px',borderRadius:'var(--rad-full)',
-                  fontSize:11,fontWeight:700,
-                  border:'1px solid var(--bd)',background:'var(--s2)',
-                  color:'var(--tx)',cursor:'pointer',
-                  fontFamily:"'Lexend Giga',sans-serif",
-                  transition:'all .15s',
-                }}
-                onMouseEnter={e=>{e.target.style.background='var(--s3)';e.target.style.borderColor='var(--bd2)';}}
-                onMouseLeave={e=>{e.target.style.background='var(--s2)';e.target.style.borderColor='var(--bd)';}}
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        {/* ── Planes ── */}
+{/* ── Planes ── */}
         <Card cols={2}>
           <Lbl color="var(--ac)">Planes SetSync</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:4}}>
             {[
-              {name:'Lite',price:'Gratis',color:'var(--tx3)',features:['1 equipo','10 canciones','Setlists básicos']},
-              {name:'Pro',price:'$7.90/mo',color:'var(--gn)',features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Notificaciones']},
-              {name:'Premium',price:'$19.90/mo',color:'var(--ac)',features:['Todo Pro +','Secuencias','Multitracks','Soporte prioritario']},
+              {name:'Lite',price:'Gratis',color:'var(--tx3)',sub:'Para empezar',features:['1 equipo · 5 miembros','10 canciones','Setlists básicos','Notificaciones por email']},
+              {name:'Pro',price:'$7.90',period:'/mes',color:'var(--gn)',sub:'El más popular',features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC en vivo','Notificaciones push','Secuencias & Click','Chat de equipo','30% off en Classync']},
+              {name:'Premium',price:'$19.90',period:'/mes',color:'var(--ac)',sub:'Para producción pro',features:['Todo en Pro +','Multitracks','Partituras','Multi-banda','Soporte prioritario 24h','API & integraciones']},
             ].map(p=>(
               <div key={p.name} style={{padding:'10px 8px',borderRadius:12,border:`1px solid ${p.color}30`,background:`${p.color}08`,display:'flex',flexDirection:'column',gap:4}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,color:p.color,fontWeight:400}}>{p.name}</div>
-                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,color:'var(--tx)',marginBottom:4}}>{p.price}</div>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13,color:p.color,fontWeight:400,marginBottom:2}}>{p.name}</div>
+                {p.sub&&<div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.7,marginBottom:6,textTransform:'uppercase',letterSpacing:'1px'}}>{p.sub}</div>}
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,color:'var(--tx)',marginBottom:p.period?0:6,lineHeight:1}}>{p.price}</div>
+                {p.period&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,color:'var(--tx3)',marginBottom:6}}>{p.period}</div>}
                 {p.features.map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
                     <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>

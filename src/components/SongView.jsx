@@ -700,11 +700,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // ── Panel de Click con BPM y cifra editables ─────────────────────────────
   const CIFRAS = ['4/4','3/4','6/8','2/4','5/4','12/8'];
-  const [seqBpm, setSeqBpm] = useState(()=>seqData?.click.bpm||song?.bpm||120);
-  const [seqCifra, setSeqCifra] = useState(()=>seqData?.click.compas||'4/4');
-  // sync when song changes
+  const defaultBpm = SECUENCIA_DATA[song?.name]?.click.bpm || song?.bpm || 120;
+  const defaultCifra = SECUENCIA_DATA[song?.name]?.click.compas || '4/4';
+  const [seqBpm, setSeqBpm] = useState(defaultBpm);
+  const [seqCifra, setSeqCifra] = useState(defaultCifra);
+  // Sync when song changes (using ref to detect change)
   const prevSongRef = useRef(null);
-  if(song?.name !== prevSongRef.current){ prevSongRef.current=song?.name; }
+  if(song?.name !== prevSongRef.current){
+    prevSongRef.current = song?.name;
+    if(clickActivo){ stopClick(); setClickActivo(false); }
+    // Defer state updates to avoid mid-render setState
+    Promise.resolve().then(()=>{
+      setSeqBpm(SECUENCIA_DATA[song?.name]?.click.bpm || song?.bpm || 120);
+      setSeqCifra(SECUENCIA_DATA[song?.name]?.click.compas || '4/4');
+    });
+  }
 
   const ClickPanel=()=>(
     <div>
