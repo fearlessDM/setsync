@@ -577,16 +577,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
 
-    // Icono Monitor: WiFi + audífonos superpuestos
+    // Icono Monitor: headphone SVG del logo + barras WiFi coloreadas al conectar
     const IconMonitor=({active})=>{
-      const col = mesaConectada ? 'var(--gn)' : active ? 'var(--ac)' : 'var(--tx3)';
+      const baseCol = mesaConectada ? 'var(--gn)' : active ? 'var(--ac)' : 'var(--tx3)';
+      // Barras WiFi: 4 arcos de radio creciente, verdes cuando conectado
+      const bars = [
+        {r:3.5, sw:1.4},
+        {r:6,   sw:1.6},
+        {r:8.5, sw:1.8},
+      ];
       return(
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={col} strokeWidth="1.8">
-          <path d="M5 12.5a9.9 9.9 0 0 1 14 0" strokeLinecap="round"/>
-          <path d="M8 15a5.5 5.5 0 0 1 8 0" strokeLinecap="round"/>
-          <path d="M10 18v-1a2 2 0 0 1 4 0v1" strokeLinecap="round"/>
-          <rect x="8" y="17.5" width="2.5" height="3" rx="1"/>
-          <rect x="13.5" y="17.5" width="2.5" height="3" rx="1"/>
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
+          {/* Auricular — headphone path del logo adaptado a 24x24 */}
+          <path d="M12 4a8 8 0 0 0-8 8v4a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H6v-0.1A6 6 0 0 1 18 14v0h-1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-4a8 8 0 0 0-8-8z"
+            fill={baseCol} opacity="0.9"/>
+          {/* Barras WiFi encima — salen del top del arco */}
+          {mesaConectada&&bars.map((b,i)=>(
+            <circle key={i} cx="12" cy="12" r={b.r}
+              stroke="var(--gn)" strokeWidth={b.sw}
+              fill="none" opacity={0.25+i*0.25}
+              strokeDasharray={`${Math.PI*b.r*0.55} ${Math.PI*b.r*1.45}`}
+              strokeDashoffset={Math.PI*b.r*0.72}
+              strokeLinecap="round"
+            />
+          ))}
         </svg>
       );
     };
@@ -830,59 +844,55 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const ClickPanel=()=>(
     <div>
       <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
-      <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
-        {/* BPM editable */}
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-          <div style={{display:'flex',alignItems:'center',gap:4}}>
+      <div style={{borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',padding:'12px 14px',display:'flex',flexDirection:'column',gap:12}}>        {/* Fila 1: BPM + Play */}
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          {/* BPM */}
+          <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
             <button onClick={()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
-              style={{width:24,height:24,borderRadius:6,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>−</button>
-            <input
-              type="number" min="40" max="300"
-              value={seqBpm}
-              onChange={e=>{const v=Math.max(40,Math.min(300,Number(e.target.value)||120));setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
-              style={{width:52,textAlign:'center',fontFamily:"'Special Gothic Expanded One',sans-serif",
-                fontSize:28,color:clickActivo?'var(--gn)':'var(--ac)',
-                background:'transparent',border:'none',outline:'none',
-                MozAppearance:'textfield',lineHeight:1}}
-            />
+              style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
+              <input
+                type="number" min="40" max="300"
+                value={seqBpm}
+                onChange={e=>{const v=Math.max(40,Math.min(300,Number(e.target.value)||120));setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
+                style={{width:'100%',maxWidth:90,textAlign:'center',
+                  fontFamily:"'Special Gothic Expanded One',sans-serif",
+                  fontSize:36,color:clickActivo?'var(--gn)':'var(--ac)',
+                  background:'transparent',border:'none',outline:'none',
+                  WebkitAppearance:'none',MozAppearance:'textfield',
+                  lineHeight:1,display:'block'}}
+              />
+              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,marginTop:2}}>BPM</span>
+            </div>
             <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
-              style={{width:24,height:24,borderRadius:6,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>+</button>
+              style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
           </div>
-          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>BPM</div>
+          {/* Play/Stop */}
+          <button onClick={()=>{const next=!clickActivo;setClickActivo(next);if(next)startClick(seqBpm);else stopClick();}}
+            style={{width:52,height:52,borderRadius:'50%',border:'none',flexShrink:0,
+              background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
+              display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
+              boxShadow:clickActivo?'0 0 20px rgba(253,128,131,.5)':'0 0 20px rgba(48,192,183,.3)'}}>
+            {clickActivo
+              ?<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              :<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
+          </button>
         </div>
-        {/* Cifra / compás */}
-        <div style={{display:'flex',flexDirection:'column',gap:4}}>
-          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>CIFRA</div>
-          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+        {/* Fila 2: Cifra */}
+        <div>
+          <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,marginBottom:6}}>CIFRA</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:5}}>
             {CIFRAS.map(c=>(
               <button key={c} onClick={()=>setSeqCifra(c)}
-                style={{padding:'4px 8px',borderRadius:8,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,
+                style={{padding:'6px 2px',borderRadius:8,border:'none',cursor:'pointer',fontSize:11,fontWeight:700,
                   fontFamily:"'Outfit',sans-serif",
                   background:seqCifra===c?'var(--ac)':'rgba(255,255,255,.07)',
-                  color:seqCifra===c?'#000':'var(--tx3)',transition:'all .15s'}}>
+                  color:seqCifra===c?'#000':'var(--tx3)',transition:'all .15s',textAlign:'center'}}>
                 {c}
               </button>
             ))}
           </div>
         </div>
-        <div style={{flex:1}}/>
-        {/* Play/Stop */}
-        <button
-          onClick={()=>{
-            const next=!clickActivo;
-            setClickActivo(next);
-            if(next) startClick(seqBpm);
-            else stopClick();
-          }}
-          style={{width:48,height:48,borderRadius:'50%',border:'none',flexShrink:0,
-            background:clickActivo?'var(--rd)':'var(--gn)',
-            color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',
-            transition:'all .2s',boxShadow:clickActivo?'0 0 20px rgba(253,128,131,.5)':'0 0 20px rgba(48,192,183,.3)'}}>
-          {clickActivo
-            ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          }
-        </button>
       </div>
     </div>
   );
@@ -903,22 +913,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {/* ── Click / Metrónomo con BPM y cifra editables ── */}
       <ClickPanel/>
 
-      {/* ── Guías de estructura ── */}
-      {seqData?.guias&&(
-        <div>
-          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Estructura · Guías</div>
-          <div style={{display:'flex',gap:6,overflowX:'auto',scrollbarWidth:'none',paddingBottom:4}}>
-            {seqData.guias.map((g,i)=>(
-              <div key={i} style={{flexShrink:0,display:'flex',flexDirection:'column',gap:4,alignItems:'center',minWidth:52}}>
-                <div style={{width:'100%',height:28,borderRadius:6,background:g.color+'22',border:`1px solid ${g.color}55`,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <span style={{fontSize:8,fontWeight:900,color:g.color,fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',lineHeight:1.1,padding:'0 4px'}}>{g.label}</span>
-                </div>
-                <span style={{fontSize:7,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{g.compases}c</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── Multitracks ── */}
       <div>
