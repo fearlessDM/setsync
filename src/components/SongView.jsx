@@ -6,13 +6,11 @@ import { createPortal } from 'react-dom';
 import { tpKey } from '../utils/music';
 import { Toast } from './common';
 import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
-import { VistaBloques } from './songview/VistaBloques';
 import { useMapaCancion } from './songview/useMapaCancion';
 import { useAnotaciones } from './songview/useAnotaciones';
 import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
 import { PanelEstructura } from './songview/PanelEstructura';
 
-const POPUP_SEEN_KEY = 'ss_bloques_popup_seen';
 
 // renderSongContent re-exportado para no romper imports externos existentes
 // (Tanda 1 — refactor de carpeta, ahora vive en ./songview/vistaLineal.jsx)
@@ -119,7 +117,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
   const [autoScroll,setAutoScroll]=useState(false);
   const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
-  const [viewMode,setViewMode]=useState('lineal');
   const [showModePopup,setShowModePopup]=useState(false);
   const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
   const [showSpeedPopup,setShowSpeedPopup]=useState(false);
@@ -391,6 +388,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             cursor:'pointer',fontSize:12,fontWeight:900,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13}}>{curKey}</span>
             {capo>0&&<span style={{fontSize:9,color:'var(--gn)',fontWeight:700}}>·{sonaKey}</span>}
+            {notacion!=='americano'&&<span style={{fontSize:8,color:'#a78bfa',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{NOTACION_LABELS[notacion].slice(0,3)}</span>}
             <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"
               style={{transform:tonoOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
               <polyline points="6 9 12 15 18 9"/>
@@ -402,10 +400,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div style={{position:'fixed',top:tonoPos.top,right:tonoPos.right,
                 background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',
                 border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
-                minWidth:200,boxShadow:'0 8px 32px rgba(0,0,0,.6)'}}>
+                minWidth:220,boxShadow:'0 8px 32px rgba(0,0,0,.6)'}}>
                 {/* Transposición */}
                 <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Transposición</div>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
                   <button onClick={()=>doTp(-1)} style={{width:36,height:36,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center',fontStyle:'italic'}}>b</button>
                   <div style={{flex:1,textAlign:'center'}}>
                     <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,color:svAc,lineHeight:1}}>{curKey}</div>
@@ -416,12 +414,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {tpOff!==0&&<button onClick={()=>{setTpOff(0);setToast({text:`♩ ${song.key}`,sub:tx.original});}} style={{width:'100%',padding:'6px',borderRadius:8,border:'1px solid var(--bd)',background:'rgba(255,255,255,.05)',color:'var(--tx3)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Outfit',sans-serif",marginBottom:10}}>Restaurar original</button>}
                 {/* Capo */}
                 <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Capo</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5,marginBottom:14}}>
                   {[0,1,2,3,4,5,6,7].map(c=>{
                     const notaSuena=c===0?curKey:tpKey(curKey,-c);
                     const isOn=capo===c;
                     return(
-                      <button key={c} onClick={()=>{setCapo(c);setCapoOpen(false);setToast(c===0?{text:tx.noCapo,sub:tx.original}:{text:`Capo ${c}`,sub:`Suena en ${notaSuena}`});}}
+                      <button key={c} onClick={()=>{setCapo(c);setToast(c===0?{text:tx.noCapo,sub:tx.original}:{text:`Capo ${c}`,sub:`Suena en ${notaSuena}`});}}
                         style={{padding:'6px 4px',borderRadius:8,border:isOn?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
                           background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',
                           cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,transition:'all .15s'}}>
@@ -431,47 +429,33 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     );
                   })}
                 </div>
+                {/* Notación */}
+                <div style={{borderTop:'1px solid rgba(255,255,255,.08)',paddingTop:10}}>
+                  <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notación</div>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {['americano','latino','grados'].map(opt=>{
+                      const isOn=notacion===opt;
+                      return(
+                        <button key={opt} onClick={()=>setNotacion(opt)}
+                          style={{padding:'7px 10px',border:'none',borderRadius:8,
+                            background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',
+                            cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
+                          {isOn
+                            ?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            :<div style={{width:10,flexShrink:0}}/>
+                          }
+                          <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'#a78bfa':'var(--tx)',lineHeight:1}}>{NOTACION_LABELS[opt]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </>,
             document.body
           )}
         </div>
-        {perm.modoNashville&&(
-          <div style={{position:'relative',flexShrink:0}}>
-            <button ref={notacionBtnRef} onClick={()=>{
-                if(!notacionOpen){
-                  const r=notacionBtnRef.current.getBoundingClientRect();
-                  setNotacionPos({top:r.bottom+6,right:window.innerWidth-r.right});
-                }
-                setNotacionOpen(o=>!o);
-              }} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:notacion!=='americano'?'1px solid rgba(167,139,250,.5)':'1px solid var(--bd)',background:notacion!=='americano'?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',color:notacion!=='americano'?'#a78bfa':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",transition:'all .2s'}}>
-              {NOTACION_LABELS[notacion]}
-              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:notacionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            {notacionOpen&&notacionPos&&createPortal(
-              <>
-                {/* Capa invisible para cerrar el dropdown al tocar fuera */}
-                <div onClick={()=>setNotacionOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
-                <div style={{position:'fixed',top:notacionPos.top,right:notacionPos.right,background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:14,padding:8,zIndex:999,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
-                  <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8,padding:'0 4px'}}>
-                    {lang==='en'?'Show notes as:':'Notas en:'}
-                  </div>
-                  {['americano','latino','grados'].map(opt=>{
-                    const isOn=notacion===opt;
-                    return(
-                      <button key={opt} onClick={()=>{setNotacion(opt);setNotacionOpen(false);}}
-                        style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
-                        {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10,flexShrink:0}}/>}
-                        <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'#a78bfa':'var(--tx)',lineHeight:1}}>{NOTACION_LABELS[opt]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>,
-              document.body
-            )}
-          </div>
-        )}
+
         {perm.verAcordes&&(
           <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             {showChords?tx.lyricsOnly:tx.withChords}
@@ -603,9 +587,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── ContentArea — layout correcto con MapaMaestro sticky ─────────────────
   const ContentArea=()=>(
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
-      {viewMode==='bloques'
-        ?<VistaBloques secuencia={getBloquesCancion()} tpOff={tpOff} showChords={showChords} notacion={notacion} curKey={curKey}/>
-        :<>
+      <>
           {/* Mapa Maestro — flexShrink:0 para que no se aplaste */}
           <MapaMaestro/>
           {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
@@ -621,8 +603,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               }
             </div>
           </div>
-        </>
-      }
+      </>
     </div>
   );
 
@@ -630,6 +611,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── Monitor panel — estado centralizado en SongView ─────────────────────
   const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros 2','Pad','Fx','Aux L','Aux R'];
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
+  const [trackVols,setTrackVols]=useState(()=>Array(20).fill(80));
+  const [trackMutes,setTrackMutes]=useState(()=>Array(20).fill(false));
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
@@ -706,12 +689,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       }}>
         {/* ← Anterior */}
         <button onClick={()=>canPrev&&setIdx(i=>i-1)} disabled={!canPrev}
-          style={{width:50,border:'none',background:'transparent',flexShrink:0,
-            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,
-            color:canPrev?'var(--tx2)':'rgba(255,255,255,.15)',cursor:canPrev?'pointer':'default',
-            borderTop:'2px solid transparent'}}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',fontFamily:"'Lexend Giga',sans-serif"}}>Ant</span>
+          style={{width:64,border:'none',background:'transparent',flexShrink:0,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
+            cursor:canPrev?'pointer':'default',borderTop:'2px solid transparent',padding:'0 4px'}}>
+          <div style={{
+            display:'flex',alignItems:'center',gap:3,
+            padding:'5px 10px',borderRadius:20,
+            background:canPrev?'rgba(255,255,255,.1)':'transparent',
+            border:canPrev?'1px solid rgba(255,255,255,.2)':'1px solid transparent',
+            transition:'all .2s',
+          }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={canPrev?'var(--tx)':'rgba(255,255,255,.15)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',
+              fontFamily:"'Lexend Giga',sans-serif",color:canPrev?'var(--tx)':'rgba(255,255,255,.15)'}}>Ant</span>
+          </div>
         </button>
 
         {/* Tabs */}
@@ -719,8 +710,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           const isOn = bottomTab===tab.id;
           return(
             <button key={String(tab.id)} onClick={()=>{
-              if(tab.id==='monitor') setShowMonitor(v=>!v);
-              setBottomTab(isOn?null:tab.id);
+              if(tab.id==='monitor'){
+                setShowMonitor(true);
+                setBottomTab(isOn?null:tab.id);
+              } else {
+                setBottomTab(isOn?null:tab.id);
+              }
             }} style={{
               flex:1,border:'none',background:'transparent',
               display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
@@ -737,11 +732,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Siguiente → */}
         <button onClick={()=>{ if(isLast) onClose(); else setIdx(i=>i+1); }}
-          style={{width:50,border:'none',background:'transparent',flexShrink:0,
-            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2,
-            color:'var(--tx)',cursor:'pointer',borderTop:'2px solid transparent'}}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          <span style={{fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',fontFamily:"'Lexend Giga',sans-serif"}}>{isLast?'Fin':'Sig'}</span>
+          style={{width:64,border:'none',background:'transparent',flexShrink:0,
+            display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
+            cursor:'pointer',borderTop:'2px solid transparent',padding:'0 4px'}}>
+          <div style={{
+            display:'flex',alignItems:'center',gap:3,
+            padding:'5px 10px',borderRadius:20,
+            background:isLast?'rgba(253,128,131,.2)':'rgba(48,192,183,.2)',
+            border:isLast?'1px solid rgba(253,128,131,.5)':'1px solid rgba(48,192,183,.5)',
+            transition:'all .2s',
+          }}>
+            <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',
+              fontFamily:"'Lexend Giga',sans-serif",color:isLast?'var(--rd)':'var(--gn)'}}>
+              {isLast?'Fin':'Sig'}
+            </span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={isLast?'var(--rd)':'var(--gn)'} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
         </button>
       </div>
     );
@@ -879,7 +885,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               onClick={()=>{
                 setMapaSectionIdx(i);
                 const el=document.getElementById('section-'+i);
-                if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+                const cont=wrapRef.current;
+                if(el&&cont){const elTop=el.getBoundingClientRect().top;const cTop=cont.getBoundingClientRect().top;cont.scrollBy({top:elTop-cTop-12,behavior:'smooth'});}
                 const compasInicio = guias.slice(0,i).reduce((s,g)=>s+(g.compases||4),0);
                 const msPerCompas = (60000/(seqBpm||120))*4;
                 window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{
@@ -1014,26 +1021,66 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <ClickPanel/>
 
 
-      {/* ── Multitracks ── */}
+      {/* ── Multitracks con faders ── */}
       <div>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Multitracks</div>
         {seqData?.multitracks?(
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {seqData.multitracks.map((tr,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
-                <div style={{width:8,height:8,borderRadius:'50%',background:tr.color,flexShrink:0}}/>
-                <span style={{fontSize:11,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,flex:1}}>{tr.label}</span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </div>
-            ))}
+          <div style={{display:'flex',flexDirection:'column',gap:5}}>
+            {seqData.multitracks.map((tr,i)=>{
+              const vol = trackVols[i]??80;
+              const muted = trackMutes[i]??false;
+              return(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:10,
+                  background:muted?'rgba(253,128,131,.05)':'rgba(255,255,255,.04)',
+                  border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.07)'}`}}>
+                  {/* Dot color */}
+                  <div style={{width:8,height:8,borderRadius:'50%',background:muted?'rgba(253,128,131,.4)':tr.color,flexShrink:0}}/>
+                  {/* Label */}
+                  <span style={{fontSize:11,color:muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,flex:1,minWidth:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{tr.label}</span>
+                  {/* Fader táctil horizontal */}
+                  <div style={{width:100,height:28,position:'relative',flexShrink:0,touchAction:'none',userSelect:'none'}}
+                    onPointerDown={e=>{
+                      e.preventDefault();
+                      const el=e.currentTarget;
+                      el.setPointerCapture(e.pointerId);
+                      const calc=ev=>{
+                        const r=el.getBoundingClientRect();
+                        return Math.round(Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*100);
+                      };
+                      setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
+                      const move=ev=>{ev.preventDefault();setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
+                      const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                      el.addEventListener('pointermove',move,{passive:false});
+                      el.addEventListener('pointerup',up,{once:true});
+                    }}>
+                    {/* Track */}
+                    <div style={{position:'absolute',top:'50%',left:0,right:0,height:4,transform:'translateY(-50%)',background:'rgba(255,255,255,.1)',borderRadius:2}}/>
+                    {/* Fill */}
+                    <div style={{position:'absolute',top:'50%',left:0,width:`${vol}%`,height:4,transform:'translateY(-50%)',
+                      background:muted?'rgba(253,128,131,.4)':tr.color||'var(--gn)',borderRadius:2,transition:'width .05s'}}/>
+                    {/* Thumb */}
+                    <div style={{position:'absolute',top:'50%',left:`calc(${vol}% - 10px)`,transform:'translateY(-50%)',
+                      width:20,height:20,borderRadius:'50%',background:'var(--tx)',
+                      boxShadow:'0 2px 8px rgba(0,0,0,.6)',border:'2px solid rgba(255,255,255,.3)',
+                      cursor:'grab'}}/>
+                  </div>
+                  {/* Vol % */}
+                  <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,width:22,textAlign:'right',flexShrink:0}}>{vol}</span>
+                  {/* Mute */}
+                  <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
+                    style={{width:24,height:24,borderRadius:6,border:'none',cursor:'pointer',flexShrink:0,
+                      background:muted?'var(--rd)':'rgba(255,255,255,.08)',
+                      color:muted?'#fff':'var(--tx3)',fontSize:7,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                    M
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ):(
           <div style={{padding:'20px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
             <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.7}}>
-              Sin pistas para esta canción.<br/>
-              <span style={{color:'var(--ac)',cursor:'pointer'}}>Importar desde Google Drive →</span>
+              Sin pistas para esta canción.
             </div>
           </div>
         )}
@@ -1200,8 +1247,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return(
       <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
         {showSavePopup&&<PopupGuardar/>}
-        {showModePopup&&<PopupModoBloques/>}
-        {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
+                {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
         <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
           <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
           <div style={{flex:1,minWidth:0}}>
@@ -1215,7 +1261,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'rgba(255,255,255,.25)',transition:'all .3s'}}/>))}
           </div>
           <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-            <ToggleVista/>
             <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
           </div>
         </div>
@@ -1232,8 +1277,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   return(
     <div className={`sv${sidebarVisible?' sv-with-sidebar':''}${sidebarCollapsed?' sv-sb-col':''}`} style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
       {showSavePopup&&<PopupGuardar/>}
-      {showModePopup&&<PopupModoBloques/>}
-      {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
+            {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
