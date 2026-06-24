@@ -325,7 +325,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
         }
 
         return(
-          <div key={bi} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
+          <div key={bi} id={`section-${bi}`} style={{marginTop:bi===0?0:fs*0.85,background:'transparent',borderTop:bi===0?'none':'1px solid rgba(255,255,255,.06)',paddingTop:bi===0?0:4}}>
             {/* Título del bloque: franja angosta PROPIA arriba del bloque,
                 no más como columna lateral fija en cada línea (pedido de
                 Danny: la columna lateral le robaba ancho horizontal a la

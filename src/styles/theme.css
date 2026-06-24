@@ -27,7 +27,7 @@
 --gap:14px;
 
 /* ── Padding de página (sobrescritos en breakpoints) ── */
---pw-x:14px;
+--pw-x:10px;
 --pw-y:var(--sp-sm);
 }
 
@@ -84,7 +84,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
   background:var(--s1);
   backdrop-filter:blur(40px) saturate(180%);
   -webkit-backdrop-filter:blur(40px) saturate(180%);
-  border:1px solid var(--bd);
+  border:1px solid transparent;
   border-radius:var(--rad-lg);
   position:relative;overflow:hidden;
 }
@@ -333,7 +333,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 /* ── TABLET VERTICAL (768-1023px) ── */
 @media(min-width:768px) and (max-width:1023px){
   :root{
-    --pw-x:18px;
+    --pw-x:14px;
     --pw-y:var(--sp-md);
   }
   .sb{display:none;}
@@ -346,7 +346,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 /* ── DESKTOP (>=1024px) ── */
 @media(min-width:1024px){
   :root{
-    --pw-x:22px;
+    --pw-x:18px;
     --pw-y:var(--sp-lg);
     --gap:16px;
   }
@@ -368,7 +368,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 /* ── DESKTOP GRANDE (>=1440px) ── */
 @media(min-width:1440px){
   :root{
-    --pw-x:28px;
+    --pw-x:22px;
     --pw-y:var(--sp-xl);
     --gap:18px;
   }
@@ -384,7 +384,7 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 /* ── MÓVIL (<768px) ── */
 @media(max-width:767px){
   :root{
-    --pw-x:14px;
+    --pw-x:10px;
     --pw-y:var(--sp-sm);
   }
   .sb{display:none;}
@@ -435,3 +435,12 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 
 /* ── No colored card borders globally ── */
 .card{ border-color: var(--bd) !important; }
+
+/* ── Monitor conectado: pulso verde en el icono ── */
+@keyframes monitor-pulse {
+  0%,100%{ opacity:1; filter:drop-shadow(0 0 3px rgba(48,192,183,.6)); }
+  50%{ opacity:.7; filter:drop-shadow(0 0 8px rgba(48,192,183,1)); }
+}
+.monitor-connected-icon {
+  animation: monitor-pulse 1.8s ease-in-out infinite;
+}
