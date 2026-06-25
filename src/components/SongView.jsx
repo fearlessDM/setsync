@@ -1322,33 +1322,37 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
                     width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                     padding:'0 2px',flexShrink:0}}>{tr.label}</div>
-                  {/* Fader — mismo patrón que MonitorPanel */}
+                  {/* Fader Secuencia — track delgado + knob rectangular táctil */}
                   <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',minHeight:60}}>
                     <div className="fader-track"
-                      style={{position:'relative',width:22,height:'100%',minHeight:60,
-                        background:'rgba(255,255,255,.08)',borderRadius:4,
-                        touchAction:'none',userSelect:'none',WebkitUserSelect:'none'}}
-                      onPointerDown={e=>{
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const el=e.currentTarget;
-                        el.setPointerCapture(e.pointerId);
-                        const calc=ev=>{
-                          const r=el.getBoundingClientRect();
-                          const raw=(ev.clientY-r.top)/r.height;
-                          return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
-                        };
-                        setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
-                        const move=ev=>{ev.preventDefault();setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
-                        const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
-                        el.addEventListener('pointermove',move,{passive:false});
-                        el.addEventListener('pointerup',up,{once:true});
-                      }}>
-                      <div className="fader-fill" style={{
-                        height:`${vol}%`,
-                        background:vol>80?'rgba(253,128,131,.5)':vol>50?`${tr.color}99`:'rgba(255,255,255,.2)',
-                      }}/>
-                      <div className="fader-thumb" style={{bottom:`calc(${vol}% - 11px)`}}/>
+                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none'}}>
+                      <div className="fader-knob"
+                        style={{bottom:`calc(${vol}% - 14px)`}}
+                        onPointerDown={e=>{
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const knob=e.currentTarget;
+                          const track=knob.parentElement;
+                          knob.setPointerCapture(e.pointerId);
+                          const calc=ev=>{
+                            const r=track.getBoundingClientRect();
+                            const raw=(ev.clientY-r.top)/r.height;
+                            return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
+                          };
+                          setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
+                          const move=ev=>{
+                            ev.preventDefault();
+                            setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});
+                          };
+                          const up=ev=>{
+                            knob.releasePointerCapture(ev.pointerId);
+                            knob.removeEventListener('pointermove',move);
+                            knob.removeEventListener('pointerup',up);
+                          };
+                          knob.addEventListener('pointermove',move,{passive:false});
+                          knob.addEventListener('pointerup',up,{once:true});
+                        }}
+                      />
                     </div>
                   </div>
                   {/* Valor */}
@@ -1450,43 +1454,37 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   </div>
                   {/* Fader track — ocupa todo el espacio disponible */}
                   <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
+                    {/* Track decorativo — línea delgada, no interactiva */}
                     <div className="fader-track"
-                      style={{position:'relative',width:22,height:'100%',minHeight:60,
-                        background:'rgba(255,255,255,.08)',borderRadius:4,
-                        touchAction:'none',userSelect:'none',WebkitUserSelect:'none'}}
-                      onPointerDown={e=>{
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const el=e.currentTarget;
-                        el.setPointerCapture(e.pointerId);
-                        // Get fresh rect on every event for scroll-safe accuracy
-                        const calc=ev=>{
-                          const r=el.getBoundingClientRect();
-                          const raw=(ev.clientY-r.top)/r.height;
-                          return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
-                        };
-                        setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;}); // instant on touch
-                        const move=ev=>{
-                          ev.preventDefault();
-                          setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});
-                        };
-                        const up=ev=>{
-                          el.releasePointerCapture(ev.pointerId);
-                          el.removeEventListener('pointermove',move);
-                          el.removeEventListener('pointerup',up);
-                        };
-                        el.addEventListener('pointermove',move,{passive:false});
-                        el.addEventListener('pointerup',up,{once:true});
-                      }}>
-                      {/* Fill */}
-                      <div className="fader-fill" style={{
-                        height:`${faderVols[ci]}%`,
-                        background:faderVols[ci]>80?'rgba(253,128,131,.5)':faderVols[ci]>50?'rgba(48,192,183,.6)':'rgba(255,255,255,.2)',
-                      }}/>
-                      {/* Thumb estilo X32 — sin transition para respuesta inmediata */}
-                      <div className="fader-thumb" style={{
-                        bottom:`calc(${faderVols[ci]}% - 11px)`,
-                      }}/>
+                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none'}}>
+                      {/* Knob — único elemento táctil */}
+                      <div className="fader-knob"
+                        style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
+                        onPointerDown={e=>{
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const knob=e.currentTarget;
+                          const track=knob.parentElement;
+                          knob.setPointerCapture(e.pointerId);
+                          const calc=ev=>{
+                            const r=track.getBoundingClientRect();
+                            const raw=(ev.clientY-r.top)/r.height;
+                            return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
+                          };
+                          setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
+                          const move=ev=>{
+                            ev.preventDefault();
+                            setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});
+                          };
+                          const up=ev=>{
+                            knob.releasePointerCapture(ev.pointerId);
+                            knob.removeEventListener('pointermove',move);
+                            knob.removeEventListener('pointerup',up);
+                          };
+                          knob.addEventListener('pointermove',move,{passive:false});
+                          knob.addEventListener('pointerup',up,{once:true});
+                        }}
+                      />
                     </div>
                   </div>
                   {/* Valor */}

@@ -407,30 +407,65 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{
   position:relative;
-  border-radius:4px;
   cursor:ns-resize;
   touch-action:none;
+  /* Track: línea delgada oscura — solo referencia visual, no se toca */
+  width:4px !important;
+  background:rgba(255,255,255,.12) !important;
+  border-radius:2px;
 }
 .fader-fill{
-  position:absolute;bottom:0;left:0;right:0;
-  border-radius:4px;
+  display:none; /* Sin fill de color */
 }
-.fader-thumb{
-  position:absolute;left:50%;transform:translateX(-50%);
-  width:calc(100% + 12px);
-  height:22px;
-  background:linear-gradient(180deg,#d0d0d0 0%,#a0a0a0 40%,#888 50%,#a0a0a0 60%,#d0d0d0 100%);
-  border-radius:5px;
-  border:1px solid rgba(255,255,255,.15);
-  box-shadow:0 2px 8px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.3);
-  pointer-events:none;
+.fader-knob{
+  /* Knob rectangular grande — esto es lo que se toca y desliza */
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;
+  height:28px;
+  border-radius:7px;
+  background:linear-gradient(180deg,
+    #e8e8e8 0%,
+    #d0d0d0 20%,
+    #b8b8b8 48%,
+    #c8c8c8 52%,
+    #d8d8d8 80%,
+    #e0e0e0 100%
+  );
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.8),
+    0 1px 0 rgba(255,255,255,.4) inset,
+    0 -1px 0 rgba(0,0,0,.3) inset;
+  border:1px solid rgba(0,0,0,.4);
+  cursor:grab;
+  touch-action:none;
+  /* Grip lines via pseudo-elements */
 }
-.fader-thumb::before{
-  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:60%;height:2px;
-  background:rgba(0,0,0,.4);
+.fader-knob::before{
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:65%;height:2px;
+  background:rgba(0,0,0,.35);
   border-radius:1px;
-  box-shadow:0 -4px 0 rgba(0,0,0,.25),0 4px 0 rgba(0,0,0,.25);
+  box-shadow:
+    0 -5px 0 rgba(0,0,0,.3),
+    0 5px 0 rgba(0,0,0,.3),
+    0 -10px 0 rgba(0,0,0,.15),
+    0 10px 0 rgba(0,0,0,.15);
+}
+.fader-knob:active{
+  cursor:grabbing;
+  background:linear-gradient(180deg,
+    #f0f0f0 0%,
+    #dcdcdc 20%,
+    #c4c4c4 48%,
+    #d4d4d4 52%,
+    #e4e4e4 80%,
+    #ececec 100%
+  );
 }
 
 /* ── No colored card borders globally ── */

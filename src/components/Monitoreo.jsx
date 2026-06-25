@@ -68,66 +68,12 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
         </div>
       </div>
 
-      <div style={{display:'inline-flex',gap:0,borderRadius:20,border:'1px solid var(--bd)',overflow:'hidden',marginBottom:16}}>
-        {['A','B'].map(l=>(
-          <button key={l} onClick={()=>setLayer(l)}
-            style={{padding:'7px 20px',border:'none',cursor:'pointer',
-              background:layer===l?'rgba(255,255,255,.08)':'transparent',
-              color:layer===l?'var(--tx)':'var(--tx3)',fontSize:12,fontWeight:700,
-              fontFamily:"'Lexend Giga',sans-serif"}}>
-            {lang==='en'?'Layer':'Capa'} {l} <span style={{opacity:.5,fontWeight:400}}>{l==='A'?'1–8':'9–16'}</span>
-          </button>
-        ))}
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
-        {visibles.map(c=>(
-          <div key={c.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,
-            padding:'10px 5px 8px',borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',minHeight:200}}>
-            <span style={{fontSize:8,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>CH {c.id}</span>
-            <span style={{fontSize:9,fontWeight:700,color:c.muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
-              textAlign:'center',lineHeight:1.2,height:28,display:'flex',alignItems:'center',overflow:'hidden'}}>{c.nombre}</span>
-            {/* Fader — patrón idéntico al MonitorPanel de SongView */}
-            <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
-              <div className="fader-track"
-                style={{position:'relative',width:28,height:'100%',minHeight:80,
-                  background:'rgba(255,255,255,.08)',borderRadius:4,
-                  touchAction:'none',userSelect:'none',WebkitUserSelect:'none',opacity:c.muted?.35:1}}
-                onPointerDown={e=>{
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const el=e.currentTarget;
-                  el.setPointerCapture(e.pointerId);
-                  const calc=ev=>{
-                    const r=el.getBoundingClientRect();
-                    const raw=(ev.clientY-r.top)/r.height;
-                    return Math.max(0,Math.min(1,1-raw));
-                  };
-                  setNivel(c.id,calc(e));
-                  const move=ev=>{ev.preventDefault();setNivel(c.id,calc(ev));};
-                  const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
-                  el.addEventListener('pointermove',move,{passive:false});
-                  el.addEventListener('pointerup',up,{once:true});
-                }}>
-                <div className="fader-fill" style={{
-                  height:`${Math.round(c.nivel*100)}%`,
-                  background:c.nivel>0.8?'rgba(253,128,131,.5)':c.nivel>0.5?'rgba(48,192,183,.6)':'rgba(255,255,255,.2)',
-                }}/>
-                <div className="fader-thumb" style={{bottom:`calc(${Math.round(c.nivel*100)}% - 11px)`}}/>
-              </div>
-            </div>
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>
-              {Math.round(c.nivel*100)}%
-            </span>
-            <button onClick={()=>toggleMute(c.id)}
-              style={{fontSize:9,fontWeight:700,padding:'4px 10px',borderRadius:6,cursor:'pointer',
-                border:`1px solid ${c.muted?'var(--rd)':'var(--bd)'}`,
-                background:c.muted?'rgba(253,128,131,.12)':'transparent',
-                color:c.muted?'var(--rd)':'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
-              {c.muted?'MUTED':'MUTE'}
-            </button>
-          </div>
-        ))}
+      <div style={{padding:'20px',borderRadius:14,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center',marginTop:8}}>
+        <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
+          {lang==='en'
+            ?'Monitor mixing will be available once the OSC bridge is connected.'
+            :'La mezcla de monitoreo estará disponible una vez conectado el puente OSC.'}
+        </div>
       </div>
     </div>
   );
