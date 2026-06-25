@@ -1580,11 +1580,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           const knob=e.currentTarget;
                           const track=knob.parentElement;
                           knob.setPointerCapture(e.pointerId);
-                          const calc=ev=>{
-                            const r=track.getBoundingClientRect();
-                            const raw=(ev.clientY-r.top)/r.height;
-                            return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
-                          };
+                          // Capturar rect UNA VEZ — no recalcular en cada move
+                          const r=track.getBoundingClientRect();
+                          const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
                           setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
                           const move=ev=>{
                             ev.preventDefault();
@@ -1707,7 +1705,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{flex:1,padding:'4px 10px 8px',display:'flex',gap:4,overflow:'hidden'}}>
           {Array.from({length:8},(_,li)=>{
             const ci=monitorLayer==='A'?li:li+8;
-            const trackH=Math.max(60, (window.innerHeight*0.45)-60);
+            const trackH=Math.max(50, (window.innerHeight*0.28)-20); // más bajo para dejar aire
             return(
               <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
                 padding:'5px 2px 4px',borderRadius:8,overflow:'visible',
@@ -1719,11 +1717,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px',flexShrink:0}}>
                   {FADER_NAMES[ci]}
                 </div>
-                {/* Fader con altura fija en px */}
-                <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',
-                  justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
+                {/* Fader + VU meter */}
+                <div style={{flex:1,display:'flex',alignItems:'center',
+                  justifyContent:'center',gap:4,padding:'4px 0',overflow:'visible'}}>
+                  {/* VU meter LED — 12 segmentos verde/amarillo/rojo */}
+                  <div style={{display:'flex',flexDirection:'column-reverse',gap:2,height:trackH,justifyContent:'flex-start',flexShrink:0}}>
+                    {Array.from({length:12},(_,li)=>{
+                      const threshold=(li/11)*100;
+                      const lit=!faderMutes[ci]&&(faderVols[ci]>threshold);
+                      const col=li>=10?'#FD8083':li>=8?'#f59e0b':'#30C0B7';
+                      return(
+                        <div key={li} style={{
+                          width:4,flexShrink:0,
+                          height:Math.floor((trackH-22)/12),
+                          borderRadius:1,
+                          background:lit?col:'rgba(255,255,255,.08)',
+                          boxShadow:lit?`0 0 3px ${col}`:'none',
+                          transition:'background .06s',
+                        }}/>
+                      );
+                    })}
+                  </div>
                   <div className="fader-track"
-                    style={{height:trackH,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
+                    style={{height:trackH}}>
                     <div className="fader-knob"
                       style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
                       onPointerDown={e=>{
@@ -1731,10 +1747,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         const knob=e.currentTarget;
                         const track=knob.parentElement;
                         knob.setPointerCapture(e.pointerId);
-                        const calc=ev=>{
-                          const r=track.getBoundingClientRect();
-                          return Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                        };
+                        // Capturar rect UNA VEZ — no recalcular en cada move
+                        const r=track.getBoundingClientRect();
+                        const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
                         setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
                         const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
                         const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
