@@ -616,6 +616,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros 2','Pad','Fx','Aux L','Aux R'];
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
   const [trackVols,setTrackVols]=useState(()=>Array(20).fill(80));
+  const [trackMutes,setTrackMutes]=useState(()=>Array(20).fill(false));
+  const [seqLayer,setSeqLayer]=useState('A'); // 'A' primeros 8, 'B' segundos 8
   // ── Referencia (audio player) ───────────────────────────────────────────
   const [refAudio,setRefAudio]=useState(null);       // File object
   const [refUrl,setRefUrl]=useState(null);           // object URL
@@ -1286,103 +1288,88 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <ClickPanel/>
 
 
-      {/* ── Multitracks con faders ── */}
+      {/* ── Multitracks con faders (8+8) ── */}
       <div>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Multitracks</div>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
+          {/* Selector Capa A/B */}
+          <div style={{display:'inline-flex',borderRadius:16,border:'1px solid var(--bd)',overflow:'hidden'}}>
+            {['A','B'].map(l=>(
+              <button key={l} onClick={()=>setSeqLayer(l)}
+                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  background:seqLayer===l?'rgba(255,255,255,.12)':'transparent',
+                  color:seqLayer===l?'var(--tx)':'var(--tx3)'}}>
+                {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         {seqData?.multitracks?(
-          <div style={{display:'flex',flexDirection:'row',gap:6,overflowX:'auto',scrollbarWidth:'none',paddingBottom:4,paddingTop:2}}>
-            {seqData.multitracks.map((tr,i)=>{
+          <div style={{display:'grid',gridTemplateColumns:'repeat(8,1fr)',gap:5}}>
+            {(seqLayer==='A'?seqData.multitracks.slice(0,8):seqData.multitracks.slice(8,16)).map((tr,li)=>{
+              const i = seqLayer==='A'?li:li+8;
               const vol = trackVols[i]??80;
               const muted = trackMutes[i]??false;
               return(
-                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,
-                  padding:'8px 6px 6px',borderRadius:10,minWidth:52,
-                  background:muted?'rgba(253,128,131,.05)':'rgba(255,255,255,.04)',
-                  border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.07)'}`}}>
+                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
+                  padding:'6px 3px 5px',borderRadius:10,
+                  background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
+                  border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
                   {/* Dot color */}
-                  <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.4)':tr.color,flexShrink:0}}/>
-                  {/* Fader vertical táctil — patrón bottom/height */}
-                  <div
-                    id={`ftrack-${i}`}
-                    style={{width:36,height:80,position:'relative',flexShrink:0,
-                      touchAction:'none',userSelect:'none',cursor:'pointer',
-                      background:'rgba(255,255,255,.06)',borderRadius:18,
-                      boxShadow:'inset 0 4px 8px rgba(0,0,0,.5)',overflow:'hidden'}}
-                    onMouseDown={e=>{
-                      e.preventDefault();
-                      const el=e.currentTarget;
-                      const calc=ev=>{
-                        const r=el.getBoundingClientRect();
-                        const y=Math.max(0,Math.min(ev.clientY-r.top,r.height));
-                        return Math.round((1-y/r.height)*100);
-                      };
-                      setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
-                      const move=ev=>{setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
-                      const up=()=>{window.removeEventListener('mousemove',move);window.removeEventListener('mouseup',up);};
-                      window.addEventListener('mousemove',move);
-                      window.addEventListener('mouseup',up,{once:true});
-                    }}
-                    onTouchStart={e=>{
-                      e.preventDefault();
-                      const el=e.currentTarget;
-                      const t=e.touches[0];
-                      const calc=touch=>{
-                        const r=el.getBoundingClientRect();
-                        const y=Math.max(0,Math.min(touch.clientY-r.top,r.height));
-                        return Math.round((1-y/r.height)*100);
-                      };
-                      setTrackVols(v=>{const n=[...v];n[i]=calc(t);return n;});
-                      const move=ev=>{
-                        ev.preventDefault();
-                        setTrackVols(v=>{const n=[...v];n[i]=calc(ev.touches[0]);return n;});
-                      };
-                      const up=()=>{window.removeEventListener('touchmove',move);window.removeEventListener('touchend',up);};
-                      window.addEventListener('touchmove',move,{passive:false});
-                      window.addEventListener('touchend',up,{once:true});
-                    }}>
-                    {/* Fill — de abajo hacia arriba */}
-                    <div style={{
-                      position:'absolute',bottom:0,left:0,right:0,
-                      height:`${vol}%`,
-                      background:muted?'rgba(253,128,131,.5)':`linear-gradient(to top,${tr.color||'#30C0B7'},${tr.color||'#30C0B7'}99)`,
-                      borderRadius:'0 0 18px 18px',
-                      pointerEvents:'none',
-                      transition:'height .04s',
-                    }}/>
-                    {/* Thumb */}
-                    <div style={{
-                      position:'absolute',
-                      bottom:`calc(${vol}% - 10px)`,
-                      left:-10,right:-10,
-                      height:20,
-                      background:'#e0e0e0',
-                      borderRadius:5,
-                      boxShadow:'0 2px 5px rgba(0,0,0,.6)',
-                      pointerEvents:'none',
-                      transition:'bottom .04s',
-                    }}/>
-                  </div>
-                  {/* Vol % */}
-                  <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>{vol}</span>
+                  <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
                   {/* Label */}
-                  <span style={{fontSize:8,color:muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,
-                    maxWidth:48,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',textAlign:'center'}}>{tr.label}</span>
+                  <div style={{fontSize:6,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
+                    fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
+                    width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
+                    padding:'0 2px',flexShrink:0}}>{tr.label}</div>
+                  {/* Fader — mismo patrón que MonitorPanel */}
+                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',minHeight:60}}>
+                    <div className="fader-track"
+                      style={{position:'relative',width:22,height:'100%',minHeight:60,
+                        background:'rgba(255,255,255,.08)',borderRadius:4,
+                        touchAction:'none',userSelect:'none',WebkitUserSelect:'none'}}
+                      onPointerDown={e=>{
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const el=e.currentTarget;
+                        el.setPointerCapture(e.pointerId);
+                        const calc=ev=>{
+                          const r=el.getBoundingClientRect();
+                          const raw=(ev.clientY-r.top)/r.height;
+                          return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
+                        };
+                        setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
+                        const move=ev=>{ev.preventDefault();setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});};
+                        const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                        el.addEventListener('pointermove',move,{passive:false});
+                        el.addEventListener('pointerup',up,{once:true});
+                      }}>
+                      <div className="fader-fill" style={{
+                        height:`${vol}%`,
+                        background:vol>80?'rgba(253,128,131,.5)':vol>50?`${tr.color}99`:'rgba(255,255,255,.2)',
+                      }}/>
+                      <div className="fader-thumb" style={{bottom:`calc(${vol}% - 11px)`}}/>
+                    </div>
+                  </div>
+                  {/* Valor */}
+                  <div style={{fontSize:7,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
+                    fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
                   {/* Mute */}
                   <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                    style={{width:28,height:16,borderRadius:4,border:'none',cursor:'pointer',
+                    style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
+                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
                       background:muted?'var(--rd)':'rgba(255,255,255,.08)',
-                      color:muted?'#fff':'var(--tx3)',fontSize:7,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
-                    M
+                      color:muted?'#fff':'var(--tx3)'}}>
+                    {muted?'MUTE':'M'}
                   </button>
                 </div>
               );
             })}
           </div>
         ):(
-          <div style={{padding:'20px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.7}}>
-              Sin pistas para esta canción.
-            </div>
+          <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
+            <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
           </div>
         )}
       </div>

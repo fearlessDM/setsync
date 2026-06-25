@@ -80,27 +80,47 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
         ))}
       </div>
 
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
         {visibles.map(c=>(
-          <div key={c.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8,
-            padding:'12px 6px',borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
-            <span style={{fontSize:9,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>CH {c.id}</span>
-            <span style={{fontSize:10,fontWeight:600,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
-              textAlign:'center',height:26,display:'flex',alignItems:'center'}}>{c.nombre}</span>
-
-            <div style={{height:120,width:28,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <input type="range" min="0" max="1" step="0.01" value={c.nivel}
-                onChange={e=>setNivel(c.id,Number(e.target.value))}
-                style={{width:110,accentColor:c.muted?'var(--tx3)':'var(--ac)',
-                  transform:'rotate(-90deg)',opacity:c.muted?0.35:1}}/>
+          <div key={c.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,
+            padding:'10px 5px 8px',borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',minHeight:200}}>
+            <span style={{fontSize:8,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>CH {c.id}</span>
+            <span style={{fontSize:9,fontWeight:700,color:c.muted?'var(--tx3)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
+              textAlign:'center',lineHeight:1.2,height:28,display:'flex',alignItems:'center',overflow:'hidden'}}>{c.nombre}</span>
+            {/* Fader — patrón idéntico al MonitorPanel de SongView */}
+            <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
+              <div className="fader-track"
+                style={{position:'relative',width:28,height:'100%',minHeight:80,
+                  background:'rgba(255,255,255,.08)',borderRadius:4,
+                  touchAction:'none',userSelect:'none',WebkitUserSelect:'none',opacity:c.muted?.35:1}}
+                onPointerDown={e=>{
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const el=e.currentTarget;
+                  el.setPointerCapture(e.pointerId);
+                  const calc=ev=>{
+                    const r=el.getBoundingClientRect();
+                    const raw=(ev.clientY-r.top)/r.height;
+                    return Math.max(0,Math.min(1,1-raw));
+                  };
+                  setNivel(c.id,calc(e));
+                  const move=ev=>{ev.preventDefault();setNivel(c.id,calc(ev));};
+                  const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);};
+                  el.addEventListener('pointermove',move,{passive:false});
+                  el.addEventListener('pointerup',up,{once:true});
+                }}>
+                <div className="fader-fill" style={{
+                  height:`${Math.round(c.nivel*100)}%`,
+                  background:c.nivel>0.8?'rgba(253,128,131,.5)':c.nivel>0.5?'rgba(48,192,183,.6)':'rgba(255,255,255,.2)',
+                }}/>
+                <div className="fader-thumb" style={{bottom:`calc(${Math.round(c.nivel*100)}% - 11px)`}}/>
+              </div>
             </div>
-
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>
               {Math.round(c.nivel*100)}%
             </span>
-
             <button onClick={()=>toggleMute(c.id)}
-              style={{fontSize:9,fontWeight:700,padding:'3px 10px',borderRadius:6,cursor:'pointer',
+              style={{fontSize:9,fontWeight:700,padding:'4px 10px',borderRadius:6,cursor:'pointer',
                 border:`1px solid ${c.muted?'var(--rd)':'var(--bd)'}`,
                 background:c.muted?'rgba(253,128,131,.12)':'transparent',
                 color:c.muted?'var(--rd)':'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
