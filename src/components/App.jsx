@@ -400,22 +400,6 @@ export default function App(){
           ))}
         </div>
         <div className="sb-foot">
-          {/* Selector de tema simplificado — pills de color */}
-          <div style={{display:'flex',gap:5,padding:'8px 12px',justifyContent:'center'}}>
-            {[
-              {id:'dark',    bg:'#0f0f0f', ac:'#EE227D'},
-              {id:'gray',    bg:'#22232a', ac:'#e07820'},
-              {id:'cream',   bg:'#EDE8DC', ac:'#D4500A'},
-              {id:'cosmos',  bg:'#07081a', ac:'#a78bfa'},
-              {id:'bubblegum',bg:'#0d1f1f',ac:'#FF69B4'},
-            ].map(t=>(
-              <button key={t.id} onClick={()=>setTheme(t.id)} title={t.id}
-                style={{width:18,height:18,borderRadius:'50%',border:'none',cursor:'pointer',
-                  background:`radial-gradient(circle at 35% 35%, ${t.ac}cc, ${t.bg})`,
-                  outline:theme===t.id?`2px solid var(--ac)`:'2px solid transparent',
-                  outlineOffset:2,transition:'all .2s',flexShrink:0}}/>
-            ))}
-          </div>
           <div className="u-chip">
             <div className="u-av">DM</div>
             <div className="u-inf">
@@ -457,26 +441,6 @@ export default function App(){
           <Footer/>
         </div>
       </main>
-
-      {/* Selector de tema mobile — pills sobre el BottomTabBar */}
-      <div style={{position:'fixed',bottom:52,right:10,zIndex:99,
-        display:'flex',gap:5,padding:'5px 8px',
-        background:'rgba(8,8,9,.85)',borderRadius:20,
-        backdropFilter:'blur(10px)',border:'1px solid rgba(255,255,255,.08)'}}>
-        {[
-          {id:'dark',    bg:'#0f0f0f', ac:'#EE227D'},
-          {id:'gray',    bg:'#22232a', ac:'#e07820'},
-          {id:'cream',   bg:'#EDE8DC', ac:'#D4500A'},
-          {id:'cosmos',  bg:'#07081a', ac:'#a78bfa'},
-          {id:'bubblegum',bg:'#0d1f1f',ac:'#FF69B4'},
-        ].map(t=>(
-          <button key={t.id} onClick={()=>setTheme(t.id)} title={t.id}
-            style={{width:16,height:16,borderRadius:'50%',border:'none',cursor:'pointer',
-              background:`radial-gradient(circle at 35% 35%, ${t.ac}cc, ${t.bg})`,
-              outline:theme===t.id?`2px solid white`:'2px solid transparent',
-              outlineOffset:2,transition:'all .2s',flexShrink:0}}/>
-        ))}
-      </div>
       <nav className="bot">
         {BNS.map(n=>(
           <div key={n.id} className={`bn${view===n.id?' on':''}`} onClick={()=>setView(n.id)}>

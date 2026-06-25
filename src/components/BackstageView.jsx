@@ -58,10 +58,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{`Crear `}<span style={{color:'var(--ac)'}}>{vx.evento.singular.toLowerCase()}</span></div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{`Crear `}<span style={{color:'var(--ac)'}}>{vx.evento.singular.toLowerCase()}</span></div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Nombre del evento</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Nombre del evento</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
           {tipos.map(t=>t.label).map(op=>(
             <button key={op} onClick={()=>setEvNombre(op)}
@@ -73,7 +73,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <input className="inp" placeholder="O escribe un nombre personalizado..." value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Fecha</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Fecha</div>
         <div style={{display:'flex',gap:8}}>
           <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}} value={evFecha.split('-')[2]||''} onChange={e=>{const d=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[2]=d.padStart(2,'0');return parts.join('-');});}}>
             <option value="">Día</option>
@@ -90,7 +90,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Setlist</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Setlist</div>
         <input className="inp" placeholder="Buscar canción..." value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:8}}/>
         {evSetlist.length>0&&(
           <div style={{marginBottom:8}}>
@@ -115,7 +115,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Equipos convocados</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Equipos convocados</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
           {equipos.map(eq=>(
             <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',transition:'all .15s'}}>
@@ -138,11 +138,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Itinerario</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Itinerario</div>
         <ItinerarioEditor/>
       </div>
       <div className="card" style={{padding:14,marginBottom:18}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Notas del evento</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notas del evento</div>
         <textarea className="inp" value={evNotas} onChange={e=>setEvNotas(e.target.value)}
           style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:12}}
           placeholder={"Ej: Llegar 30 min antes del ensayo. Revisar las canciones con tiempo.\nContactar a Cony para confirmar el equipo de proyecciones.\nFecha límite para cambios en el setlist: jueves en la noche."}/>
@@ -710,17 +710,17 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     </div>
   );
 
-  // ── CONFIGURACIÓN ──
-  if(bsView==='config')return(
+  // ── PERSONALIZACIÓN ──
+  if(bsView==='personalizar')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Ajustes</div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Personaliza la app a tu estilo</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Personalización</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Logo, tema visual e idioma a tu estilo</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Mi organización</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Mi organización</div>
         <input className="inp" placeholder="Nombre de la iglesia o banda" style={{marginBottom:8}} defaultValue="Iglesia"/>
         <div style={{display:'flex',gap:8,marginBottom:8}}>
           <input className="inp" placeholder="Ciudad" style={{flex:1}}/>
@@ -741,7 +741,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Tema visual</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Tema visual</div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10}}>
           {[
             {id:'dark',      label:'Oscuro',           sub:'Gris/violeta · Rosa neón',
@@ -789,7 +789,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>País · Idioma</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Idioma</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
           {LANGS.map(l=>(
             <button key={l.code} onClick={()=>onLangChange&&onLangChange(l.code)}
@@ -807,7 +807,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
 
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>Plan</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Plan</div>
         <div style={{display:'flex',gap:6}}>
           {['lite','pro','premium'].map(p=>(
             <button key={p} onClick={()=>{setPlanId(p);onToast(`✓ Plan ${p}`);}}
@@ -965,7 +965,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',adminOnly:true},
     {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',adminOnly:true},
     {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',adminOnly:false},
-    {id:'config',label:'Configuración',sub:'Tema, plan, idioma y conexiones',icon:'settings',adminOnly:false},
+    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',adminOnly:false},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',adminOnly:true}]:[]),
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
@@ -989,6 +989,76 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
           </button>
         ))}
+      </div>
+
+      {/* ── Sesión, Plan y Conexión — siempre visibles abajo ── */}
+      <div style={{marginTop:20,display:'flex',flexDirection:'column',gap:8}}>
+
+        {/* Sesión */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'12px 14px',borderRadius:12,background:'var(--s1)',
+          border:'1px solid var(--bd)'}}>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              Daniel Miranda
+            </div>
+            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
+              dmiranda@fearless.cl · Super Admin
+            </div>
+          </div>
+          <button onClick={()=>onToast({text:'Cerrando sesión...',sub:'Hasta pronto'})}
+            style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(253,128,131,.3)',
+              background:'rgba(253,128,131,.06)',color:'var(--rd)',cursor:'pointer',
+              fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+              display:'flex',alignItems:'center',gap:5}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Salir
+          </button>
+        </div>
+
+        {/* Plan actual */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'10px 14px',borderRadius:12,background:'var(--s1)',
+          border:'1px solid var(--bd)'}}>
+          <div>
+            <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>Plan actual</div>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",
+              textTransform:'capitalize'}}>{planId}</div>
+          </div>
+          <button onClick={()=>{}}
+            style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(48,192,183,.3)',
+              background:'rgba(48,192,183,.07)',color:'var(--gn)',cursor:'pointer',
+              fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+            Mejorar plan
+          </button>
+        </div>
+
+        {/* Firebase / conexión */}
+        {firebaseListo&&(
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+            padding:'10px 14px',borderRadius:12,background:'var(--s1)',
+            border:'1px solid var(--bd)'}}>
+            <div>
+              <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>Sincronización</div>
+              <div style={{fontSize:11,color:online?'var(--gn)':'var(--tx3)',
+                fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+                {online?'En línea · Firebase activo':'Sin conexión · modo local'}
+              </div>
+            </div>
+            <button onClick={()=>setOnline(o=>!o)}
+              style={{width:40,height:22,borderRadius:11,border:'none',cursor:'pointer',flexShrink:0,
+                background:online?'var(--gn)':'rgba(255,255,255,.1)',position:'relative',transition:'background .2s'}}>
+              <div style={{position:'absolute',top:2,left:online?20:2,width:18,height:18,borderRadius:9,
+                background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,.3)'}}/>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
