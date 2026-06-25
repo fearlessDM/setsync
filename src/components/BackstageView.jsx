@@ -473,6 +473,45 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   </button>
                 </div>
               ))}
+              {/* Editar roles del equipo */}
+              <div style={{marginTop:12,padding:'10px 0',borderTop:'1px solid rgba(255,255,255,.06)'}}>
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  letterSpacing:'1.5px',marginBottom:6,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Roles del equipo
+                </div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:8}}>
+                  {(eq.roles||['General']).map((r,ri)=>(
+                    <div key={ri} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px 4px 10px',
+                      borderRadius:100,background:eq.color+'18',border:`1px solid ${eq.color}30`}}>
+                      <span style={{fontSize:10,fontWeight:700,color:eq.color,
+                        fontFamily:"'Lexend Giga',sans-serif"}}>{r}</span>
+                      <button onClick={()=>{
+                        const upd={...eq,roles:(eq.roles||[]).filter((_,j)=>j!==ri)};
+                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
+                      }} style={{width:14,height:14,borderRadius:'50%',border:'none',
+                        background:'rgba(255,255,255,.1)',color:'var(--tx3)',cursor:'pointer',
+                        fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',
+                        lineHeight:1}}>×</button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{display:'flex',gap:6}}>
+                  <input
+                    placeholder="Nuevo rol..."
+                    onKeyDown={e=>{
+                      if(e.key==='Enter'&&e.target.value.trim()){
+                        const upd={...eq,roles:[...(eq.roles||[]),e.target.value.trim()]};
+                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
+                        e.target.value='';
+                      }
+                    }}
+                    style={{flex:1,padding:'6px 10px',borderRadius:8,border:'1px solid var(--bd)',
+                      background:'var(--s2)',color:'var(--tx)',fontSize:11,outline:'none',
+                      fontFamily:"'Lexend Giga',sans-serif"}}/>
+                  <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
+                    display:'flex',alignItems:'center'}}>↵ Enter</div>
+                </div>
+              </div>
               {/* Agregar miembro al equipo */}
               <select className="inp" style={{marginTop:10,fontSize:11,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value="" onChange={e=>{
                 if(!e.target.value)return;
@@ -494,13 +533,20 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{padding:14,borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)'}}>
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:10}}>Nuevo equipo</div>
           <input className="inp" placeholder="Nombre del equipo..." value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8}}/>
+          <input className="inp" placeholder="Roles separados por coma (ej: Líder, Músico, Técnico)" value={nuevosRoles} onChange={e=>setNuevosRoles(e.target.value)} style={{marginBottom:8}}/>
+          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
+            Los roles se asignan a cada miembro del equipo. Se pueden editar después.
+          </div>
           <button className="btn btn-p btn-sm" style={{width:'100%',justifyContent:'center'}} onClick={()=>{
             if(!nuevaBanda.trim())return;
             const colores=['#EE227D','#30C0B7','#FD8083','#7b68ee','#5ecea0','#e07820'];
             const color=colores[equipos.length%colores.length];
-            const nuevoEq={id:`eq${Date.now()}`,name:nuevaBanda.trim(),color,roles:['General','Líder'],miembros:[]};
+            const roles=nuevosRoles.trim()
+              ?nuevosRoles.split(',').map(r=>r.trim()).filter(Boolean)
+              :['General','Líder'];
+            const nuevoEq={id:`eq${Date.now()}`,name:nuevaBanda.trim(),color,roles,miembros:[]};
             setEquipos(prev=>[...prev,nuevoEq]);persistirEquipo(nuevoEq);
-            onToast({text:'Equipo creado',sub:nuevaBanda});setNuevaBanda('');
+            onToast({text:'Equipo creado',sub:nuevaBanda});setNuevaBanda('');setNuevosRoles('');
           }}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Crear equipo

@@ -253,38 +253,128 @@ function TutorialPage({ tut, onClose }) {
 }
 
 // ── Notas ─────────────────────────────────────────────────────────────────
-function NotasBlock() {
-  const [notas, setNotas] = useState('');
-  const [editando, setEditando] = useState(false);
+function NotasPage({notas,onClose,onDelete,onCreate}) {
   return (
-    <div style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',padding:'var(--sp-md)'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-          letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Ideas & Notas</div>
-        <button onClick={()=>setEditando(v=>!v)}
-          style={{fontSize:9,fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',background:'none',
-            border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-          {editando?'Guardar':'Editar'}
-        </button>
-      </div>
-      {editando ? (
-        <textarea value={notas} onChange={e=>setNotas(e.target.value)}
-          placeholder="Escribe aquí tus ideas, notas del ensayo, pendientes..."
-          style={{width:'100%',minHeight:80,background:'rgba(255,255,255,.04)',
-            border:'1px solid rgba(255,255,255,.1)',borderRadius:8,
-            color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,
-            fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'vertical',outline:'none',
-            boxSizing:'border-box'}}/>
-      ) : (
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
-          color:notas?'var(--tx2)':'var(--tx3)',lineHeight:1.7,minHeight:40,
-          whiteSpace:'pre-wrap',cursor:'pointer'}} onClick={()=>setEditando(true)}>
-          {notas||'Toca para agregar una nota...'}
+    <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',paddingBottom:80}}>
+      <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
+        borderBottom:'1px solid rgba(255,255,255,.08)',padding:'12px 14px',
+        display:'flex',alignItems:'center',gap:10,zIndex:1}}>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',fontSize:18,
+          display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
+        <div style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,fontWeight:400}}>
+          Ideas & Notas
         </div>
-      )}
+        <button onClick={onCreate}
+          style={{padding:'6px 14px',borderRadius:8,border:'none',background:'var(--ac)',
+            color:'#000',cursor:'pointer',fontSize:10,fontWeight:700,
+            fontFamily:"'Lexend Giga',sans-serif"}}>+ Nueva</button>
+      </div>
+      <div style={{padding:'14px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+        {notas.length===0?(
+          <div style={{gridColumn:'span 3',textAlign:'center',padding:'40px 0',
+            fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
+            Aún no hay notas
+          </div>
+        ):notas.map((n,i)=>(
+          <div key={i} style={{padding:'12px 10px',borderRadius:12,
+            background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',
+            cursor:'pointer',position:'relative'}}>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,
+              color:'var(--tx)',marginBottom:4,lineHeight:1.3,
+              overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
+              {n.texto.slice(0,40)||(n.texto.trim().split('
+')[0])||'Sin título'}
+            </div>
+            <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              {n.fecha}
+            </div>
+            <button onClick={e=>{e.stopPropagation();onDelete(i);}}
+              style={{position:'absolute',top:6,right:6,width:18,height:18,borderRadius:4,
+                border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:12,
+                display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+
+function NotasBlock() {
+  const HOY = new Date().toLocaleDateString('es-CL',{day:'numeric',month:'short',year:'numeric'});
+  const [notas, setNotas] = useState([]);
+  const [editando, setEditando] = useState(false);
+  const [texto, setTexto] = useState('');
+  const [verTodas, setVerTodas] = useState(false);
+  const ultima = notas[notas.length-1];
+
+  const guardar = () => {
+    if(!texto.trim()){setEditando(false);return;}
+    setNotas(v=>[...v,{texto:texto.trim(),fecha:HOY}]);
+    setTexto('');setEditando(false);
+  };
+  const borrar = (i) => setNotas(v=>v.filter((_,j)=>j!==i));
+
+  return (
+    <>
+      {verTodas&&<NotasPage notas={notas} onClose={()=>setVerTodas(false)}
+        onDelete={borrar} onCreate={()=>{setVerTodas(false);setEditando(true);}}/>}
+      <div style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',padding:'var(--sp-md)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+          <Lbl2>Ideas & Notas</Lbl2>
+          <div style={{display:'flex',gap:8}}>
+            {notas.length>0&&(
+              <button onClick={()=>setVerTodas(true)}
+                style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'none',
+                  border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                Ver todas ({notas.length})
+              </button>
+            )}
+            <button onClick={()=>editando?guardar():setEditando(true)}
+              style={{fontSize:9,fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',
+                background:'none',border:'none',cursor:'pointer',
+                fontFamily:"'Lexend Giga',sans-serif"}}>
+              {editando?'Guardar':'+ Nueva'}
+            </button>
+          </div>
+        </div>
+        {editando ? (
+          <textarea value={texto} onChange={e=>setTexto(e.target.value)}
+            autoFocus
+            placeholder="Escribe tu idea, nota o pendiente..."
+            style={{width:'100%',minHeight:72,background:'rgba(255,255,255,.04)',
+              border:'1px solid rgba(255,255,255,.12)',borderRadius:8,
+              color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,
+              fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'none',outline:'none',
+              boxSizing:'border-box'}}/>
+        ) : ultima ? (
+          <div onClick={()=>setEditando(true)} style={{cursor:'pointer'}}>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+              color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>
+              {ultima.texto.length>120?ultima.texto.slice(0,120)+'…':ultima.texto}
+            </div>
+            <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:5}}>
+              {ultima.fecha}
+            </div>
+          </div>
+        ) : (
+          <div onClick={()=>setEditando(true)}
+            style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+              color:'var(--tx3)',lineHeight:1.7,cursor:'pointer',minHeight:36,
+              display:'flex',alignItems:'center'}}>
+            Toca para agregar una nota...
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Helper Lbl para NotasBlock (no usa la prop color)
+const Lbl2 = ({children}) => (
+  <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+    letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{children}</div>
+);
 
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }) {
   const feat = getModoFeatures(mode);
@@ -325,8 +415,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     >{children}</div>
   );
 
-  const Lbl = ({children,color}) => (
-    <div style={{fontSize:9,fontWeight:900,color:color||'var(--tx3)',textTransform:'uppercase',
+  const Lbl = ({children}) => (
+    <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
       letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>{children}</div>
   );
 
@@ -338,7 +428,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'proximo': return (
         <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
-          <Lbl color="var(--ac)">{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
+          <Lbl>{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
           {proximoEvento ? (<>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,
               color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
@@ -384,7 +474,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'cancionero': return (
         <Card onClick={()=>onNavigate('repertorio')} key="cancionero">
-          <Lbl color="var(--ac)">Cancionero</Lbl>
+          <Lbl>Cancionero</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',
@@ -398,7 +488,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'plan': return (
         <Card onClick={()=>onNavigate('backstage')} key="plan">
-          <Lbl color="var(--ac)">Mi plan</Lbl>
+          <Lbl>Mi plan</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:26,
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{planLabel}</div>
           {planId==='lite'&&(
@@ -416,7 +506,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'tutoriales': return (
         <Card cols={2} key="tutoriales">
-          <Lbl color="var(--ac)">Tutoriales</Lbl>
+          <Lbl>Tutoriales</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
             {TUTORIALES.map(tut=>(
               <div key={tut.slug}
@@ -441,7 +531,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'faqs': return (
         <Card cols={2} key="faqs">
-          <Lbl color="var(--ac)">Preguntas frecuentes</Lbl>
+          <Lbl>Preguntas frecuentes</Lbl>
           <div style={{display:'flex',flexDirection:'column',gap:0}}>
             {FAQS.map((faq,i)=>(
               <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid rgba(255,255,255,.05)':'none'}}>
@@ -468,7 +558,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'planes': return (
         <Card cols={2} key="planes">
-          <Lbl color="var(--ac)">Planes SetSync</Lbl>
+          <Lbl>Planes SetSync</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:4}}>
             {[
               {name:'Lite',price:'Gratis',color:'var(--tx3)',sub:'Para empezar',
@@ -531,11 +621,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
             fontSize:26,color:'#fff',lineHeight:1.1}}>
-            Hola, <span style={{color:'var(--ac)'}}>{nombre}</span>
+            Hola <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,
             color:'rgba(255,255,255,.45)',marginTop:4}}>
-            {mode==='iglesia'?'Plataforma de worship':'Plataforma de banda'} · SetSync
+            SetSync · {mode==='iglesia'?'Tu plataforma de worship profesional':'Tu plataforma para bandas en vivo'}
           </div>
         </div>
       </div>

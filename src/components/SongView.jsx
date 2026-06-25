@@ -68,6 +68,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [mesaConectada] = useState(false);
   const [mesaNombre] = useState('Behringer X32');
   const [wifiStrength] = useState(3); // 0-4
+  const [monitorLayer,setMonitorLayer]=useState('A');
 
   // Chip de estado de monitoreo — aparece en sidebar (desktop) o en tab (mobile)
   const MonitorStatusChip=({compact=false})=>{
