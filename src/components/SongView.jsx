@@ -1326,12 +1326,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       position:'fixed',bottom:54,left:0,right:0,
       background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
       backdropFilter:'blur(40px)',zIndex:50,
-      maxHeight:'70vh',overflowY:'auto',scrollbarWidth:'none',
+      maxHeight:'72vh',
       transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
       transition:'transform .3s cubic-bezier(.4,0,.2,1)',
       display:'flex',flexDirection:'column',
+      overflow:'hidden',
     }}>
 
+      {/* Área scrollable: mapa + waveform + controles + BPM */}
+      <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
       {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
       {guias&&guias.length>0&&(
         <div style={{display:'flex',height:34,borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
@@ -1527,9 +1530,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </button>
       </div>
 
-      <div style={{padding:'0 14px 14px',display:'flex',flexDirection:'column',gap:14}}>
-
-
+      </div>{/* fin área scrollable */}
+      {/* ── Multitracks FUERA del scroll para touch libre ── */}
+      <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid rgba(255,255,255,.06)'}}>
       {/* ── Multitracks con faders (8+8) ── */}
       <div>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
@@ -1595,7 +1598,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.addEventListener('pointermove',move,{passive:false});
                           knob.addEventListener('pointerup',up,{once:true});
                         }}
-                      >{/* knob — no self-closing */}</div>
+                        onTouchStart={e=>e.stopPropagation()}
+                      >{/* knob */}</div>
                     </div>
                   </div>
                   {/* Valor */}
@@ -1737,6 +1741,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         knob.addEventListener('pointermove',move,{passive:false});
                         knob.addEventListener('pointerup',up,{once:true});
                       }}
+                      onTouchStart={e=>e.stopPropagation()}
                     >{/* knob */}</div>
                   </div>
                 </div>
