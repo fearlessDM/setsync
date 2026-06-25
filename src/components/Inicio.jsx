@@ -283,8 +283,7 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,
               color:'var(--tx)',marginBottom:4,lineHeight:1.3,
               overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
-              {n.texto.slice(0,40)||(n.texto.trim().split('
-')[0])||'Sin título'}
+              {n.texto.slice(0,40)||(n.texto.trim().split(/\n/)[0])||'Sin título'}
             </div>
             <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
               {n.fecha}
