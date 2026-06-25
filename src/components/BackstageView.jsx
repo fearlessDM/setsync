@@ -22,6 +22,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const isLeader=userRole==='leader'||isAdmin;
   const [activeEq,setActiveEq]=useState(null);
   const [nuevaBanda,setNuevaBanda]=useState('');
+  const [nuevosRoles,setNuevosRoles]=useState('');
   const [evNombre,setEvNombre]=useState('');
   const [evTipo,setEvTipo]=useState('domingo');
   const [evFecha,setEvFecha]=useState('');
