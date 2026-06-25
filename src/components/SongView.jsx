@@ -593,8 +593,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── ContentArea — layout correcto con MapaMaestro sticky ─────────────────
   const ContentArea=()=>(
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
-      {/* Mapa Maestro — flexShrink:0 para que no aplaste el contenido */}
-      <MapaMaestro/>
       {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
       <div style={{flex:1,position:'relative',overflow:'hidden'}}>
         <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
@@ -1425,13 +1423,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
           onPointerDown={e=>{
             e.preventDefault();
+            const btn=e.currentTarget;
             const fire=()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
             fire();
-            const t=setTimeout(()=>{const iv=setInterval(fire,80);e.currentTarget._iv=iv;},400);
-            e.currentTarget._t=t;
+            btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
           }}
-          onPointerUp={e=>{clearTimeout(e.currentTarget._t);clearInterval(e.currentTarget._iv);}}
-          onPointerLeave={e=>{clearTimeout(e.currentTarget._t);clearInterval(e.currentTarget._iv);}}>−</button>
+          onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
+          onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
 
         <div style={{textAlign:'center',padding:'0 6px'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,
@@ -1445,13 +1443,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
           onPointerDown={e=>{
             e.preventDefault();
+            const btn=e.currentTarget;
             const fire=()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
             fire();
-            const t=setTimeout(()=>{const iv=setInterval(fire,80);e.currentTarget._iv=iv;},400);
-            e.currentTarget._t=t;
+            btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
           }}
-          onPointerUp={e=>{clearTimeout(e.currentTarget._t);clearInterval(e.currentTarget._iv);}}
-          onPointerLeave={e=>{clearTimeout(e.currentTarget._t);clearInterval(e.currentTarget._iv);}}>+</button>
+          onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
+          onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>+</button>
 
         {/* Divisor */}
         <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
@@ -1682,74 +1680,77 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
           </div>
         </div>
-        {/* Fader grid */}
-        <div style={{flex:1,padding:'8px 10px',display:'flex',flexDirection:'column',gap:5,overflow:'hidden'}}>
-          {grid.map((row,ri)=>(
-            <div key={ri} style={{display:'flex',gap:4,flex:1}}>
-              {row.map(ci=>(
-                <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-                  padding:'5px 2px 4px',borderRadius:8,
-                  background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-                  border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
-                  minWidth:0}}>
-                  {/* Canal label */}
-                  <div style={{fontSize:6,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-                    letterSpacing:'.3px',textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',
-                    width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px',flexShrink:0}}>
-                    {FADER_NAMES[ci]}
-                  </div>
-                  {/* Fader track — ocupa todo el espacio disponible */}
-                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
-                    {/* Track decorativo — línea delgada, no interactiva */}
-                    <div className="fader-track"
-                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
-                      {/* Knob — único elemento táctil */}
-                      <div className="fader-knob"
-                        style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
-                        onPointerDown={e=>{
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const knob=e.currentTarget;
-                          const track=knob.parentElement;
-                          knob.setPointerCapture(e.pointerId);
-                          const calc=ev=>{
-                            const r=track.getBoundingClientRect();
-                            const raw=(ev.clientY-r.top)/r.height;
-                            return Math.round((1-Math.max(0,Math.min(1,raw)))*100);
-                          };
-                          setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
-                          const move=ev=>{
-                            ev.preventDefault();
-                            setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});
-                          };
-                          const up=ev=>{
-                            knob.releasePointerCapture(ev.pointerId);
-                            knob.removeEventListener('pointermove',move);
-                            knob.removeEventListener('pointerup',up);
-                          };
-                          knob.addEventListener('pointermove',move,{passive:false});
-                          knob.addEventListener('pointerup',up,{once:true});
-                        }}
-                      >{/* knob — no self-closing */}</div>
-                    </div>
-                  </div>
-                  {/* Valor */}
-                  <div style={{fontSize:7,fontWeight:700,color:faderMutes[ci]?'var(--rd)':'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-                    {faderVols[ci]}
-                  </div>
-                  {/* Mute */}
-                  <button onClick={e=>{e.stopPropagation();setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}}
-                    style={{fontSize:6,fontWeight:900,padding:'2px 5px',borderRadius:4,border:'none',
-                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
-                      background:faderMutes[ci]?'var(--rd)':'rgba(255,255,255,.08)',
-                      color:faderMutes[ci]?'#fff':'var(--tx3)'}}>
-                    {faderMutes[ci]?'MUTE':'M'}
-                  </button>
+        {/* Selector capa A/B */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+          padding:'5px 12px 4px',flexShrink:0}}>
+          <div style={{fontSize:8,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>
+            Monitor personal
+          </div>
+          <div style={{display:'inline-flex',borderRadius:16,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
+            {['A','B'].map(l=>(
+              <button key={l} onClick={()=>setMonitorLayer(l)}
+                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  background:monitorLayer===l?'rgba(48,192,183,.2)':'transparent',
+                  color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
+                {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Fader grid — 8 canales por capa */}
+        <div style={{flex:1,padding:'4px 10px 8px',display:'flex',gap:4,overflow:'hidden'}}>
+          {Array.from({length:8},(_,li)=>{
+            const ci=monitorLayer==='A'?li:li+8;
+            const trackH=Math.max(60, (window.innerHeight*0.45)-60);
+            return(
+              <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
+                padding:'5px 2px 4px',borderRadius:8,
+                background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
+                border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
+                minWidth:0}}>
+                <div style={{fontSize:6,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',
+                  width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px',flexShrink:0}}>
+                  {FADER_NAMES[ci]}
                 </div>
-              ))}
-            </div>
-          ))}
+                {/* Fader con altura fija en px */}
+                <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',
+                  justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
+                  <div className="fader-track"
+                    style={{height:trackH,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
+                    <div className="fader-knob"
+                      style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
+                      onPointerDown={e=>{
+                        e.preventDefault();e.stopPropagation();
+                        const knob=e.currentTarget;
+                        const track=knob.parentElement;
+                        knob.setPointerCapture(e.pointerId);
+                        const calc=ev=>{
+                          const r=track.getBoundingClientRect();
+                          return Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
+                        };
+                        setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
+                        const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
+                        const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
+                        knob.addEventListener('pointermove',move,{passive:false});
+                        knob.addEventListener('pointerup',up,{once:true});
+                      }}
+                    >{/* knob */}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:7,fontWeight:700,color:faderMutes[ci]?'var(--rd)':'var(--tx3)',
+                  fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{faderVols[ci]}</div>
+                <button onClick={e=>{e.stopPropagation();setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}}
+                  style={{fontSize:6,fontWeight:900,padding:'2px 5px',borderRadius:4,border:'none',
+                    cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
+                    background:faderMutes[ci]?'var(--rd)':'rgba(255,255,255,.08)',
+                    color:faderMutes[ci]?'#fff':'var(--tx3)'}}>
+                  {faderMutes[ci]?'MUTE':'M'}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     );

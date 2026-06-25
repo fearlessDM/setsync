@@ -1,12 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
 
-// Imágenes por modo — iglesia: escenarios de worship / banda: palcos y ensayos
 const BG_IMGS_IGLESIA = [
-  'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80', // crowd hands raised worship
-  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', // concert stage backlit
-  'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80', // worship stage lights
+  'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80',
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80',
+  'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80',
 ];
 const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?w=800&q=80',
@@ -14,289 +13,554 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
 
-const TIPS = [
-  { icon:'🎛️', titulo:'Conectar Monitoreo con tu mesa', cuerpo:'SetSync puede enviar comandos a una Behringer o Midas X32/M32 en tiempo real via OSC/WebSocket. Próximamente en Configuración → Monitoreo.' },
-  { icon:'🎵', titulo:'Cancionero Universal', cuerpo:'Accede a canciones compartidas por otras iglesias de la comunidad. Acordes, cifrado Nashville y transporte automático. Ve a Cancionero → Universal.' },
-  { icon:'📅', titulo:'Crear y asignar un setlist', cuerpo:'Backstage → Crear setlist, elegí las canciones, asignalo a un evento y tu equipo lo verá automáticamente en Próxima Fecha.' },
-  { icon:'🔔', titulo:'Notificar al equipo', cuerpo:'Desde Backstage → Notificaciones podés avisar a todo el equipo o a una formación específica.' },
-  { icon:'🎹', titulo:'Pads ambientales automáticos', cuerpo:'En Vista Escenario (Pro/Premium), el pad ambiental se afina solo a la tonalidad de la canción activa.' },
+const FAQS = [
+  {q:'¿Cómo creo mi primer setlist?', a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
+  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión OSC. Cada músico controla su propio bus desde su teléfono.'},
+  {q:'¿Puedo usar SetSync sin internet?', a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
+  {q:'¿Cómo convoco al equipo?', a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
+  {q:'¿Cómo transpongo una canción?', a:'En SongView toca el botón de nota (ej. "D") en la barra de herramientas. Ahí puedes subir/bajar semitonos y agregar capo.'},
+  {q:'¿Qué es el Cancionero Universal?', a:'Una biblioteca compartida de canciones con acordes verificados. Disponible en planes Pro y Premium. Ve a Cancionero → pestaña Universal.'},
+  {q:'¿Cómo funciona la Secuencia?', a:'En SongView → pestaña Secuencia encontrarás el waveform de la canción, los multitracks con faders individuales y el click sincronizado.'},
+  {q:'¿Qué formatos de audio acepta Referencia?', a:'MP3, AAC, WAV, M4A. Puedes subir el audio desde tu dispositivo y hacer loop de cualquier sección para ensayar.'},
 ];
 
-// Colores por formación (cycling)
+const TUTORIALES = [
+  {
+    slug:'monitoreo',
+    titulo:'Conexión a Monitoreo Inalámbrico',
+    icon:'🎛️',
+    resumen:'Conecta SetSync a tu mesa Behringer X32, XR18 o Midas M32 para controlar el monitor de cada músico desde su teléfono.',
+    contenido:`
+# Conexión a Monitoreo Inalámbrico
+
+SetSync usa el protocolo OSC (Open Sound Control) para comunicarse con tu mesa digital. El proceso es simple: la mesa y los teléfonos deben estar en la misma red WiFi.
+
+## Mesas compatibles
+- Behringer X32 / X32 Compact / X32 Rack
+- Behringer XR18 / XR16 / XR12
+- Midas M32 / M32C / MR18
+
+## Pasos de conexión
+
+**1. Conectar la mesa al WiFi**
+Conecta un router al puerto Ethernet de la mesa. La mesa creará una red o se unirá a la existente. Anota la IP de la mesa (aparece en el menú Setup → Network).
+
+**2. Conectar los teléfonos**
+Todos los músicos deben conectar su teléfono a la misma red WiFi de la mesa.
+
+**3. Activar en SetSync**
+Abre una canción → pestaña Monitor → ingresa la IP de la mesa → conectar.
+
+**4. Asignar bus**
+Cada músico selecciona su bus de monitor (Bus 1, 2, 3...) y controla los niveles desde su pantalla.
+
+## Importante
+La conexión OSC real requiere SetSync como app nativa (próximamente en App Store). En la versión web actual, la UI está disponible pero la señal OSC necesita el bridge de red local.
+    `
+  },
+  {
+    slug:'secuencias',
+    titulo:'Cómo Lanzar las Secuencias',
+    icon:'▶️',
+    resumen:'Aprende a cargar multitracks, sincronizar el click y navegar la estructura de la canción durante el ensayo o el servicio.',
+    contenido:`
+# Cómo Lanzar las Secuencias
+
+La pestaña Secuencia en SongView es tu centro de control durante la ejecución de una canción con pistas.
+
+## Qué encontrarás
+
+**Mapa de estructura**
+La barra horizontal con las secciones (Intro, V1, Coro...) te muestra exactamente dónde estás. Toca cualquier sección para saltar a ese punto.
+
+**Waveform general**
+Muestra la forma de onda de la canción completa. Al tocar una sección en el mapa, se ilumina ese segmento en el waveform. Puedes arrastrar el playhead para hacer seek.
+
+**Controles**
+- ⏮ Sección anterior
+- ▶ / ⏸ Play / Pausa del click
+- ⏭ Sección siguiente
+
+**BPM y Cifra**
+Ajusta el tempo y el compás. Mantén presionado − o + para cambio rápido.
+
+**Multitracks**
+8 canales por capa (A y B). Cada fader controla el volumen de una pista. Desliza el knob con el dedo para ajustar.
+
+## Flujo recomendado
+1. Carga tus archivos de audio en la pestaña Referencia
+2. En Secuencia, ajusta el BPM y la cifra
+3. Usa el mapa de estructura para navegar
+4. Los músicos ven la misma posición en sus pantallas
+    `
+  },
+  {
+    slug:'agregar-cancion',
+    titulo:'Cómo Ingresar una Canción',
+    icon:'🎵',
+    resumen:'Agrega canciones al cancionero con letra, acordes y toda la información necesaria para tu equipo.',
+    contenido:`
+# Cómo Ingresar una Canción
+
+## Desde el Cancionero
+Ve a Cancionero → botón "+" → Nueva canción.
+
+## Datos básicos
+- **Nombre**: el título de la canción
+- **Artista / Autor**: quién la compuso
+- **Tonalidad original**: la nota en la que está (Ej: D, Am, G)
+- **BPM**: el tempo en beats por minuto
+- **Compás**: 4/4, 3/4, 6/8, etc.
+
+## Letra y acordes
+El editor acepta el formato estándar de acordes sobre letra:
+
+\`\`\`
+G                    D
+Mi orgullo me sacó del jardín
+Em              C
+Su humildad colocó el jardín en mí
+\`\`\`
+
+Los acordes se ponen en la línea inmediatamente antes de la letra. SetSync los detecta automáticamente.
+
+## Secciones
+Agrega etiquetas de sección entre corchetes:
+\`\`\`
+[VERSO 1]
+...letra...
+
+[CORO]
+...letra...
+\`\`\`
+
+## Transposición automática
+Una vez ingresada la tonalidad original, SetSync puede transponer automáticamente a cualquier otra tonalidad para cualquier músico.
+    `
+  },
+  {
+    slug:'cancionero-universal',
+    titulo:'Cómo Funciona el Cancionero Universal',
+    icon:'📚',
+    resumen:'Accede a miles de canciones de worship con acordes verificados, compartidas por la comunidad SetSync.',
+    contenido:`
+# El Cancionero Universal
+
+El Cancionero Universal es una biblioteca compartida mantenida por la comunidad de iglesias y bandas que usan SetSync.
+
+## Qué incluye
+- Canciones de worship en español e inglés
+- Acordes verificados por la comunidad
+- Tonalidades originales
+- BPM y compás
+
+## Cómo acceder
+Cancionero → pestaña "Universal" (disponible en planes Pro y Premium).
+
+## Buscar una canción
+Usa el buscador por nombre, artista o tonalidad. Los resultados muestran la canción con su información completa.
+
+## Agregar al cancionero propio
+Toca la canción → "Agregar a mi cancionero". Aparecerá en tu biblioteca personal donde puedes editarla, ajustar los acordes y agregar notas.
+
+## Contribuir
+Si tienes una canción bien cifrada, puedes contribuirla a la comunidad desde Cancionero → tu canción → "Compartir con comunidad".
+
+## Transposición
+Como cualquier canción en SetSync, las del Universal se pueden transponer a cualquier tonalidad en tiempo real durante el ensayo o el servicio.
+    `
+  },
+];
+
 const EQ_COLORS = ['#30C0B7','#FD8083','#a78bfa','#f59e0b','#34d399','#60a5fa'];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }){
+// ── Bloque arrastrable por filas ─────────────────────────────────────────
+function useDragRows(initialOrder) {
+  const [order, setOrder] = useState(initialOrder);
+  const dragging = useRef(null);
+  const dragOver = useRef(null);
+
+  const onDragStart = (idx) => { dragging.current = idx; };
+  const onDragEnter = (idx) => { dragOver.current = idx; };
+  const onDragEnd = () => {
+    if(dragging.current===null||dragOver.current===null||dragging.current===dragOver.current) {
+      dragging.current=null; dragOver.current=null; return;
+    }
+    const newOrder = [...order];
+    const [removed] = newOrder.splice(dragging.current, 1);
+    newOrder.splice(dragOver.current, 0, removed);
+    setOrder(newOrder);
+    dragging.current=null; dragOver.current=null;
+  };
+
+  return { order, onDragStart, onDragEnter, onDragEnd };
+}
+
+// ── Tutorial page ─────────────────────────────────────────────────────────
+function TutorialPage({ tut, onClose }) {
+  const lines = tut.contenido.trim().split('\n');
+  return (
+    <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',
+      paddingBottom:80}}>
+      <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
+        borderBottom:'1px solid rgba(255,255,255,.08)',padding:'12px 14px',
+        display:'flex',alignItems:'center',gap:10,zIndex:1}}>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',fontSize:18,
+          display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,fontWeight:400,color:'var(--tx)'}}>
+          {tut.titulo}
+        </div>
+      </div>
+      <div style={{padding:'20px 16px',maxWidth:600,margin:'0 auto'}}>
+        {lines.map((line,i) => {
+          if(line.startsWith('# ')) return (
+            <div key={i} style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+              fontSize:20,fontWeight:400,color:'var(--ac)',marginBottom:16,marginTop:i?24:0,lineHeight:1.2}}>
+              {line.slice(2)}
+            </div>
+          );
+          if(line.startsWith('## ')) return (
+            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",
+              fontSize:12,fontWeight:700,color:'var(--tx)',marginBottom:8,marginTop:20,
+              textTransform:'uppercase',letterSpacing:'1px'}}>
+              {line.slice(3)}
+            </div>
+          );
+          if(line.startsWith('**')&&line.endsWith('**')) return (
+            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:700,
+              color:'var(--tx)',marginBottom:4,marginTop:10}}>
+              {line.slice(2,-2)}
+            </div>
+          );
+          if(line.startsWith('- ')) return (
+            <div key={i} style={{display:'flex',gap:8,marginBottom:4}}>
+              <span style={{color:'var(--ac)',flexShrink:0,marginTop:2}}>·</span>
+              <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+                color:'var(--tx2)',lineHeight:1.7}}>{line.slice(2)}</span>
+            </div>
+          );
+          if(line.startsWith('```')||line==='\`\`\`') return null;
+          if(line.trim()==='') return <div key={i} style={{height:6}}/>;
+          return (
+            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+              color:'var(--tx2)',lineHeight:1.8,marginBottom:4}}>{line}</div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Notas ─────────────────────────────────────────────────────────────────
+function NotasBlock() {
+  const [notas, setNotas] = useState('');
+  const [editando, setEditando] = useState(false);
+  return (
+    <div style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',padding:'var(--sp-md)'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+          letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Ideas & Notas</div>
+        <button onClick={()=>setEditando(v=>!v)}
+          style={{fontSize:9,fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',background:'none',
+            border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+          {editando?'Guardar':'Editar'}
+        </button>
+      </div>
+      {editando ? (
+        <textarea value={notas} onChange={e=>setNotas(e.target.value)}
+          placeholder="Escribe aquí tus ideas, notas del ensayo, pendientes..."
+          style={{width:'100%',minHeight:80,background:'rgba(255,255,255,.04)',
+            border:'1px solid rgba(255,255,255,.1)',borderRadius:8,
+            color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,
+            fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'vertical',outline:'none',
+            boxSizing:'border-box'}}/>
+      ) : (
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+          color:notas?'var(--tx2)':'var(--tx3)',lineHeight:1.7,minHeight:40,
+          whiteSpace:'pre-wrap',cursor:'pointer'}} onClick={()=>setEditando(true)}>
+          {notas||'Toca para agregar una nota...'}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }) {
   const feat = getModoFeatures(mode);
-  const [tipIdx, setTipIdx] = useState(0);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
   const [bgIdx] = useState(()=>Math.floor(Math.random()*3));
   const isAdmin = userRole==='superadmin'||userRole==='leader';
   const nombre = 'Daniel';
+  const [tutorialActivo, setTutorialActivo] = useState(null);
+  const [faqsOpen, setFaqsOpen] = useState({});
 
   const hoy = new Date();
-  const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy).sort((a,b)=>new Date(a.fecha)-new Date(b.fecha))[0]||null;
+  const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
+    .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha))[0]||null;
   const misEquipos = equipos.filter(eq=>(eq.miembros||[]).length>0);
+  const planLabel = {lite:'Lite',pro:'Pro',premium:'Premium'}[planId]||planId;
 
-  const swipeTip = (dir) => setTipIdx(i=>(i+dir+TIPS.length)%TIPS.length);
-  const touchStart = useRef(null);
-  const onTouchStart = e => touchStart.current = e.touches[0].clientX;
-  const onTouchEnd = e => {
-    if(!touchStart.current) return;
-    const dx = e.changedTouches[0].clientX - touchStart.current;
-    if(Math.abs(dx)>40) swipeTip(dx<0?1:-1);
-    touchStart.current = null;
-  };
+  // Bloques con orden arrastrable (por filas de 2)
+  // Cada "row" es un índice de bloque
+  const BLOCK_ROWS = [
+    ['proximo'],
+    ['equipo'],
+    ['cancionero','plan'],
+    ['notas'],
+    ['tutoriales'],
+    ['faqs'],
+    ['planes'],
+  ];
+  const { order, onDragStart, onDragEnter, onDragEnd } = useDragRows(BLOCK_ROWS.map((_,i)=>i));
 
-  // Card base con tokens CSS
   const Card = ({children, cols=1, onClick, style={}}) => (
-    <div
-      onClick={onClick}
-      style={{
-        background:'var(--s1)',
-        border:'1px solid var(--bd)',
-        borderRadius:'var(--rad-lg)',
-        padding:'var(--sp-md) var(--sp-md)',
-        cursor:onClick?'pointer':'default',
-        gridColumn:`span ${cols}`,
-        transition:'border-color .2s, background .15s',
-        ...style,
-      }}
-      onMouseEnter={onClick?e=>{e.currentTarget.style.borderColor='var(--bd2)';e.currentTarget.style.background='var(--s3)'}:undefined}
-      onMouseLeave={onClick?e=>{e.currentTarget.style.borderColor='var(--bd)';e.currentTarget.style.background='var(--s1)'}:undefined}
+    <div onClick={onClick} style={{
+      background:'var(--s1)',borderRadius:'var(--rad-lg)',
+      padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
+      gridColumn:`span ${cols}`,transition:'background .15s',...style,
+    }}
+    onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
+    onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
     >{children}</div>
   );
 
-  const Lbl = ({children, color}) => (
-    <div className="lbl" style={{marginBottom:'var(--sp-xs)',color:color||'var(--tx3)'}}>{children}</div>
+  const Lbl = ({children,color}) => (
+    <div style={{fontSize:9,fontWeight:900,color:color||'var(--tx3)',textTransform:'uppercase',
+      letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>{children}</div>
   );
 
-  const planLabel = { lite:'Lite', pro:'Pro', premium:'Premium' }[planId] || planId;
+  const toggleFaq = i => setFaqsOpen(v=>({...v,[i]:!v[i]}));
 
-  return (
-    <div style={{paddingBottom:90}}>
+  // Renderizar cada bloque por key
+  const renderBlock = (key) => {
+    switch(key) {
 
-      {/* ── Hero ── */}
-      <div style={{position:'relative',height:210,overflow:'hidden',marginBottom:0}}>
-        <img
-          src={BG_IMGS[bgIdx % BG_IMGS.length]} alt=""
-          style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.3) saturate(.7)'}}
-          loading="lazy"
-        />
-        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,transparent 20%,var(--bg) 100%)'}}/>
-        <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'#fff',lineHeight:1.1}}>
-            Hola, <span style={{color:'var(--ac)'}}>{nombre}</span>
-          </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'rgba(255,255,255,.55)',marginTop:5}}>
-            {mode==='iglesia'?'Tu plataforma de worship':'Tu plataforma de banda'} · SetSync
-          </div>
-        </div>
-      </div>
+      case 'proximo': return (
+        <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
+          <Lbl color="var(--ac)">{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
+          {proximoEvento ? (<>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,
+              color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
+              {proximoEvento.nombre}
+            </div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,color:'var(--tx3)',fontWeight:300}}>
+              {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
+              {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
+            </div>
+          </>) : (
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)',fontWeight:300}}>
+              Sin fechas próximas —{' '}
+              <span style={{color:'var(--ac)',cursor:'pointer'}}
+                onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>
+            </div>
+          )}
+        </Card>
+      );
 
-      {/* ── Grid principal ── */}
-      <div style={{
-        display:'grid',
-        gridTemplateColumns:'1fr 1fr',
-        gap:'var(--gap)',
-        padding:'var(--sp-md) var(--pw-x,var(--sp-md))',
-      }}>
-
-        {/* ── Hero marketing — primera impresión ── */}
-        <Card cols={2}>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--ac)',marginBottom:8,letterSpacing:'.3px'}}>
-            Todo lo que necesitas, en una sola pantalla.
-          </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.9}}>
-            SetSync es tu centro de operaciones para tocar en vivo — letras, acordes, monitoreo en tiempo real, click y secuencias sincronizadas. Gestiona equipos, crea setlists, convoca músicos y lleva el control de cada fecha desde el backstage hasta el escenario.
-          </div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:12}}>
-            {['🎛 Monitoreo OSC','🎵 Setlists','📅 Fechas','🎹 Secuencias','👥 Equipos','📜 Letras & Acordes','💬 Chat de equipo'].map(t=>(
-              <span key={t} style={{fontSize:9,fontWeight:700,padding:'3px 10px',borderRadius:'var(--rad-full)',background:'rgba(255,255,255,.06)',border:'1px solid var(--bd)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{t}</span>
+      case 'equipo': return (
+        <Card cols={2} key="equipo">
+          <Lbl>Mi equipo</Lbl>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+            {[
+              {label:'Personas',val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
+              {label:'Equipos',val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
+              {label:'Líderes',val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
+            ].map(({label,val,color,onClick})=>(
+              <div key={label} onClick={onClick}
+                style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
+                  background:'rgba(255,255,255,.04)',cursor:'pointer',
+                  border:'1px solid rgba(255,255,255,.06)'}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                  fontSize:28,color,lineHeight:1,fontWeight:400}}>{val}</div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,
+                  color:'var(--tx3)',fontWeight:700,marginTop:4,textTransform:'uppercase',
+                  letterSpacing:'1px'}}>{label}</div>
+              </div>
             ))}
           </div>
         </Card>
+      );
 
-        {/* Próxima fecha — full width */}
-        <Card cols={2} onClick={()=>onNavigate('fechas')}>
-          <Lbl color="var(--ac)">{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
-          {proximoEvento ? (
-            <>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:'var(--tx)',marginBottom:4,lineHeight:1.1}}>
-                {proximoEvento.nombre}
-              </div>
-              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,color:'var(--tx3)'}}>
-                {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
-                {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
-              </div>
-            </>
-          ) : (
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
-              No hay fechas próximas —{' '}
-              <span style={{color:'var(--ac)',cursor:'pointer'}} onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>
-            </div>
-          )}
-        </Card>
-
-        {/* Plan */}
-        <Card onClick={()=>onNavigate('backstage')}>
-          <Lbl color="var(--ac)">Mi plan</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:22,color:'var(--ac)',lineHeight:1}}>
-            {planLabel}
-          </div>
-          {planActivo&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',marginTop:5}}>{planActivo.limiteCanciones} canciones</div>}
-          {planId==='lite'&&(
-            <div style={{fontSize:10,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:7,fontWeight:700}}>
-              ↑ Mejorar plan
-            </div>
-          )}
-        </Card>
-
-        {/* Cancionero */}
-        <Card onClick={()=>onNavigate('repertorio')}>
+      case 'cancionero': return (
+        <Card onClick={()=>onNavigate('repertorio')} key="cancionero">
           <Lbl color="var(--ac)">Cancionero</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:28,color:'var(--ac)',lineHeight:1}}>
-            {CANCIONES.length}
-          </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx)',fontWeight:700,marginTop:3}}>
-            canciones
-          </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,color:'var(--tx3)',marginTop:3}}>
-            {feat.cancioneroUniversal?'+ Universal disponible':'En tu cancionero'}
-          </div>
-        </Card>
-
-        {/* Mis equipos — full width */}
-        <Card cols={2} onClick={()=>onNavigate('backstage')}>
-          <Lbl>{isAdmin?'Mis equipos':'Soy parte de'}</Lbl>
-          {misEquipos.length===0 ? (
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
-              {isAdmin?'Aún no creaste ninguna formación — ':<>No estás asignado a ningún equipo aún</>}
-              {isAdmin&&<span style={{color:'var(--ac)',cursor:'pointer'}} onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>}
-            </div>
-          ) : (
-            <div style={{display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>
-              {misEquipos.slice(0,4).map((eq,i)=>(
-                <div key={eq.id} style={{display:'flex',alignItems:'center',gap:10}}>
-                  <div style={{width:7,height:7,borderRadius:'50%',background:eq.color||EQ_COLORS[i%EQ_COLORS.length],flexShrink:0}}/>
-                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:700,color:'var(--tx)',flex:1}}>{eq.name}</span>
-                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)'}}>
-                    {(eq.miembros||[]).length} {(eq.miembros||[]).length===1?'persona':'personas'}
-                  </span>
-                </div>
-              ))}
-              {misEquipos.length>4&&(
-                <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
-                  +{misEquipos.length-4} equipos más
-                </div>
-              )}
-            </div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,
+            color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',
+            fontWeight:300,marginTop:4}}>canciones</div>
+          {feat.cancioneroUniversal&&(
+            <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
+              fontWeight:700,marginTop:6}}>+ Universal ✓</div>
           )}
         </Card>
+      );
 
-        {/* Tips swipeables — full width */}
-        <Card cols={2}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'var(--sp-sm)'}}>
-            <Lbl color="var(--tx3)">Tips de uso</Lbl>
-            <div style={{display:'flex',gap:5}}>
-              {TIPS.map((_,i)=>(
-                <div
-                  key={i}
-                  onClick={()=>setTipIdx(i)}
-                  style={{
-                    width:i===tipIdx?18:6,height:6,borderRadius:3,cursor:'pointer',
-                    background:i===tipIdx?'var(--ac)':'var(--bd)',transition:'all .25s',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          <div
-            style={{overflow:'hidden'}}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
-            <div style={{fontSize:22,marginBottom:'var(--sp-xs)'}}>{TIPS[tipIdx].icon}</div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:13,color:'var(--tx)',marginBottom:6,lineHeight:1.3}}>
-              {TIPS[tipIdx].titulo}
-            </div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
-              {TIPS[tipIdx].cuerpo}
-            </div>
-            <div style={{display:'flex',justifyContent:'space-between',marginTop:'var(--sp-sm)'}}>
-              <button onClick={()=>swipeTip(-1)} style={{fontSize:10,fontWeight:700,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Anterior</button>
-              <button onClick={()=>swipeTip(1)} style={{fontSize:10,fontWeight:700,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Siguiente →</button>
-            </div>
+      case 'plan': return (
+        <Card onClick={()=>onNavigate('backstage')} key="plan">
+          <Lbl color="var(--ac)">Mi plan</Lbl>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:26,
+            color:'var(--ac)',lineHeight:1,fontWeight:400}}>{planLabel}</div>
+          {planId==='lite'&&(
+            <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
+              fontWeight:700,marginTop:8}}>↑ Mejorar</div>
+          )}
+        </Card>
+      );
+
+      case 'notas': return (
+        <div key="notas" style={{gridColumn:'span 2'}}>
+          <NotasBlock/>
+        </div>
+      );
+
+      case 'tutoriales': return (
+        <Card cols={2} key="tutoriales">
+          <Lbl color="var(--ac)">Tutoriales</Lbl>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {TUTORIALES.map(tut=>(
+              <div key={tut.slug}
+                onClick={()=>setTutorialActivo(tut)}
+                style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
+                  background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',
+                  display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
+                onPointerEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}
+                onPointerLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}>
+                <div style={{fontSize:18}}>{tut.icon}</div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,
+                  color:'var(--tx)',lineHeight:1.3}}>{tut.titulo}</div>
+                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:300,
+                  color:'var(--tx3)',lineHeight:1.5}}>{tut.resumen}</div>
+                <div style={{fontSize:9,color:'var(--ac)',fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>Ver más →</div>
+              </div>
+            ))}
           </div>
         </Card>
-{/* Monitoreo — solo si tiene acceso */}
-        {tieneMonitoreo&&(
-          <Card cols={2} onClick={()=>onNavigate('monitoreo')}>
-            <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-xs)'}}>
-              <div style={{width:8,height:8,borderRadius:'50%',background:'var(--gn)',boxShadow:'0 0 8px var(--gn)'}}/>
-              <Lbl>Monitoreo en vivo</Lbl>
-            </div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.7}}>
-              Controlá los niveles de tu mesa Behringer/Midas X32 o M32 directo desde SetSync.
-            </div>
-            <div style={{marginTop:'var(--sp-xs)',fontSize:11,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>
-              Abrir Monitoreo →
-            </div>
-          </Card>
-        )}
-{/* ── Planes ── */}
-        <Card cols={2}>
+      );
+
+      case 'faqs': return (
+        <Card cols={2} key="faqs">
+          <Lbl color="var(--ac)">Preguntas frecuentes</Lbl>
+          <div style={{display:'flex',flexDirection:'column',gap:0}}>
+            {FAQS.map((faq,i)=>(
+              <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid rgba(255,255,255,.05)':'none'}}>
+                <button onClick={()=>toggleFaq(i)}
+                  style={{width:'100%',background:'none',border:'none',textAlign:'left',
+                    padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
+                    justifyContent:'space-between',gap:8}}>
+                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:700,
+                    color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
+                    strokeWidth="2" style={{flexShrink:0,transform:faqsOpen[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                {faqsOpen[i]&&(
+                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,color:'var(--tx2)',
+                    fontWeight:300,lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+
+      case 'planes': return (
+        <Card cols={2} key="planes">
           <Lbl color="var(--ac)">Planes SetSync</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:4}}>
             {[
-              {name:'Lite',price:'Gratis',color:'var(--tx3)',sub:'Para empezar',features:['1 equipo · 5 miembros','10 canciones','Setlists básicos','Notificaciones por email']},
-              {name:'Pro',price:'$7.90',period:'/mes',color:'var(--gn)',sub:'El más popular',features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC en vivo','Notificaciones push','Secuencias & Click','Chat de equipo','30% off en Classync']},
-              {name:'Premium',price:'$19.90',period:'/mes',color:'var(--ac)',sub:'Para producción pro',features:['Todo en Pro +','Multitracks','Partituras','Multi-banda','Soporte prioritario 24h','API & integraciones']},
+              {name:'Lite',price:'Gratis',color:'var(--tx3)',sub:'Para empezar',
+                features:['1 equipo · 5 miembros','10 canciones','Setlists básicos']},
+              {name:'Pro',price:'$7.90',period:'/mes',color:'var(--gn)',sub:'El más popular',
+                features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Secuencias & Click']},
+              {name:'Premium',price:'$19.90',period:'/mes',color:'var(--ac)',sub:'Producción pro',
+                features:['Todo en Pro +','Multitracks','Partituras','Multi-banda']},
             ].map(p=>(
-              <div key={p.name} style={{padding:'10px 8px',borderRadius:12,border:`1px solid ${p.color}30`,background:`${p.color}08`,display:'flex',flexDirection:'column',gap:4}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13,color:p.color,fontWeight:400,marginBottom:2}}>{p.name}</div>
-                {p.sub&&<div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.7,marginBottom:6,textTransform:'uppercase',letterSpacing:'1px'}}>{p.sub}</div>}
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,color:'var(--tx)',marginBottom:p.period?0:6,lineHeight:1}}>{p.price}</div>
-                {p.period&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,color:'var(--tx3)',marginBottom:6}}>{p.period}</div>}
+              <div key={p.name} style={{padding:'10px 8px',borderRadius:12,
+                border:`1px solid ${p.color}30`,background:`${p.color}08`,
+                display:'flex',flexDirection:'column',gap:4}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                  fontSize:13,color:p.color,fontWeight:400,marginBottom:2}}>{p.name}</div>
+                {p.sub&&<div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",
+                  fontWeight:700,opacity:.7,marginBottom:4,textTransform:'uppercase',
+                  letterSpacing:'1px'}}>{p.sub}</div>}
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                  fontSize:18,color:'var(--tx)',lineHeight:1}}>{p.price}</div>
+                {p.period&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,
+                  color:'var(--tx3)',marginBottom:4}}>{p.period}</div>}
                 {p.features.map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
                     <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>
-                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{f}</span>
+                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",
+                      fontWeight:300,lineHeight:1.4}}>{f}</span>
                   </div>
                 ))}
               </div>
             ))}
           </div>
           <div style={{marginTop:10,textAlign:'center'}}>
-            <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
-              Ver planes completos y mejorar →
+            <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',
+              fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
+              Ver planes completos →
             </span>
           </div>
         </Card>
+      );
 
-        {/* ── FAQ / Tutoriales ── */}
-        <Card cols={2}>
-          <Lbl color="var(--ac)">Tutoriales & Preguntas frecuentes</Lbl>
-          <div style={{display:'flex',flexDirection:'column',gap:0}}>
-            {[
-              {q:'¿Cómo creo mi primer setlist?',a:'Ve a Backstage → Crear setlist. Agrega canciones y asígnalo a una fecha.'},
-              {q:'¿Cómo funciona el Monitoreo?',a:'Conecta tu mesa X32/M32 a la misma red WiFi. En Vista Escenario → Monitor activa la conexión OSC.'},
-              {q:'¿Puedo usar SetSync sin internet?',a:'Sí, en modo offline. Los cambios se sincronizan automáticamente cuando vuelves a conectarte.'},
-              {q:'¿Cómo convoco al equipo?',a:'En Backstage → Notificaciones selecciona el evento y tu equipo recibe un aviso.'},
-            ].map((faq,i)=>{
-              const [open,setOpen]=React.useState(false);
-              return(
-                <div key={i} style={{borderBottom:i<3?'1px solid rgba(255,255,255,.05)':'none'}}>
-                  <button onClick={()=>setOpen(v=>!v)} style={{width:'100%',background:'none',border:'none',textAlign:'left',padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-                    <span style={{fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{faq.q}</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0,transform:open?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                  {open&&<div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>}
-                </div>
-              );
-            })}
+      default: return null;
+    }
+  };
+
+  return (
+    <div style={{paddingBottom:90}}>
+      {/* Tutorial overlay */}
+      {tutorialActivo&&(
+        <TutorialPage tut={tutorialActivo} onClose={()=>setTutorialActivo(null)}/>
+      )}
+
+      {/* Hero */}
+      <div style={{position:'relative',height:200,overflow:'hidden'}}>
+        <img src={BG_IMGS[bgIdx%BG_IMGS.length]} alt=""
+          style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.28) saturate(.6)'}}
+          loading="lazy"/>
+        <div style={{position:'absolute',inset:0,
+          background:'linear-gradient(180deg,transparent 20%,var(--bg) 100%)'}}/>
+        <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',
+          display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
+            fontSize:26,color:'#fff',lineHeight:1.1}}>
+            Hola, <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
-        </Card>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,
+            color:'rgba(255,255,255,.45)',marginTop:4}}>
+            {mode==='iglesia'?'Plataforma de worship':'Plataforma de banda'} · SetSync
+          </div>
+        </div>
+      </div>
 
+      {/* Grid con bloques arrastrables */}
+      <div style={{padding:'var(--sp-md) var(--pw-x,var(--sp-md))'}}>
+        {order.map((rowIdx,dragIdx)=>{
+          const keys = BLOCK_ROWS[rowIdx];
+          return (
+            <div key={rowIdx}
+              draggable
+              onDragStart={()=>onDragStart(dragIdx)}
+              onDragEnter={()=>onDragEnter(dragIdx)}
+              onDragEnd={onDragEnd}
+              style={{
+                display:'grid',
+                gridTemplateColumns:'1fr 1fr',
+                gap:'var(--gap,10px)',
+                marginBottom:'var(--gap,10px)',
+                cursor:'grab',
+              }}>
+              {keys.map(key=>renderBlock(key))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
