@@ -1705,7 +1705,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{flex:1,padding:'4px 10px 8px',display:'flex',gap:4,overflow:'hidden'}}>
           {Array.from({length:8},(_,li)=>{
             const ci=monitorLayer==='A'?li:li+8;
-            const trackH=Math.max(50, (window.innerHeight*0.28)-20); // más bajo para dejar aire
+            const trackH=Math.max(35, (window.innerHeight*0.196)-14); // -30% del anterior
             return(
               <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
                 padding:'5px 2px 4px',borderRadius:8,overflow:'visible',
@@ -1719,27 +1719,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 {/* Fader + VU meter */}
                 <div style={{flex:1,display:'flex',alignItems:'center',
-                  justifyContent:'center',gap:4,padding:'4px 0',overflow:'visible'}}>
-                  {/* VU meter LED — 12 segmentos verde/amarillo/rojo */}
-                  <div style={{display:'flex',flexDirection:'column-reverse',gap:2,height:trackH,justifyContent:'flex-start',flexShrink:0}}>
+                  justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
+                  <div className="fader-track"
+                    style={{height:trackH}}>
+                  {/* LED overlay dentro del track — columna izquierda */}
+                  <div style={{position:'absolute',top:4,bottom:4,left:2,
+                    display:'flex',flexDirection:'column-reverse',gap:1.5,
+                    zIndex:1,pointerEvents:'none'}}>
                     {Array.from({length:12},(_,li)=>{
                       const threshold=(li/11)*100;
                       const lit=!faderMutes[ci]&&(faderVols[ci]>threshold);
                       const col=li>=10?'#FD8083':li>=8?'#f59e0b':'#30C0B7';
                       return(
                         <div key={li} style={{
-                          width:4,flexShrink:0,
-                          height:Math.floor((trackH-22)/12),
+                          width:3,
+                          flex:1,
                           borderRadius:1,
-                          background:lit?col:'rgba(255,255,255,.08)',
+                          background:lit?col:'rgba(255,255,255,.1)',
                           boxShadow:lit?`0 0 3px ${col}`:'none',
                           transition:'background .06s',
                         }}/>
                       );
                     })}
                   </div>
-                  <div className="fader-track"
-                    style={{height:trackH}}>
                     <div className="fader-knob"
                       style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
                       onPointerDown={e=>{
