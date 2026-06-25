@@ -1,4 +1,5 @@
 import { t as getT, LANGS } from '../i18n';
+import { CANCIONES } from '../data/constants';
 // BackstageView: panel completo de backstage para Iglesia — gestión de eventos,
 // setlists, equipos, permisos, notificaciones y configuración de tema.
 // NOTA: candidato a refactor con reducer/contexto en una sesión futura para
