@@ -632,7 +632,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const refInputRef=useRef(null);
   const refWaveRef=useRef(null);
   const refAnimRef=useRef(null);
-  const [trackMutes,setTrackMutes]=useState(()=>Array(20).fill(false));
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
