@@ -1620,6 +1620,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         )}
       </div>
+      </div>
     </div>
     );
   };
