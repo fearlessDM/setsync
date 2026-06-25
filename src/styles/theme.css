@@ -406,20 +406,27 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 }
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{
+  /* Contenedor real del fader — ancho del knob, altura explícita */
   position:relative;
-  cursor:ns-resize;
-  touch-action:none;
-  overflow:visible !important;   /* knob de 44px sobresale sin recortarse */
-  /* Track: línea delgada oscura — solo referencia visual */
-  width:4px !important;
-  background:rgba(255,255,255,.12) !important;
+  width:48px;           /* ancho real = ancho del knob + margen */
   border-radius:2px;
+  touch-action:none;
+  overflow:visible;
 }
-.fader-fill{
-  display:none; /* Sin fill de color */
+.fader-track::before{
+  /* La línea delgada decorativa — pseudo-element, no interactiva */
+  content:'';
+  position:absolute;
+  top:0;bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:4px;
+  background:rgba(255,255,255,.12);
+  border-radius:2px;
+  pointer-events:none;
 }
+.fader-fill{ display:none; }
 .fader-knob{
-  /* Knob rectangular grande — esto es lo que se toca y desliza */
   position:absolute;
   left:50%;
   transform:translateX(-50%);
@@ -427,21 +434,17 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   height:28px;
   border-radius:7px;
   background:linear-gradient(180deg,
-    #e8e8e8 0%,
-    #d0d0d0 20%,
-    #b8b8b8 48%,
-    #c8c8c8 52%,
-    #d8d8d8 80%,
-    #e0e0e0 100%
+    #e8e8e8 0%,#d0d0d0 20%,#b8b8b8 48%,
+    #c8c8c8 52%,#d8d8d8 80%,#e0e0e0 100%
   );
-  box-shadow:
-    0 4px 12px rgba(0,0,0,.8),
+  box-shadow:0 4px 12px rgba(0,0,0,.8),
     0 1px 0 rgba(255,255,255,.4) inset,
     0 -1px 0 rgba(0,0,0,.3) inset;
   border:1px solid rgba(0,0,0,.4);
   cursor:grab;
   touch-action:none;
-  /* Grip lines via pseudo-elements */
+  user-select:none;
+  -webkit-user-select:none;
 }
 .fader-knob::before{
   content:'';
@@ -451,23 +454,10 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   width:65%;height:2px;
   background:rgba(0,0,0,.35);
   border-radius:1px;
-  box-shadow:
-    0 -5px 0 rgba(0,0,0,.3),
-    0 5px 0 rgba(0,0,0,.3),
-    0 -10px 0 rgba(0,0,0,.15),
-    0 10px 0 rgba(0,0,0,.15);
+  box-shadow:0 -5px 0 rgba(0,0,0,.3),0 5px 0 rgba(0,0,0,.3),
+    0 -10px 0 rgba(0,0,0,.15),0 10px 0 rgba(0,0,0,.15);
 }
-.fader-knob:active{
-  cursor:grabbing;
-  background:linear-gradient(180deg,
-    #f0f0f0 0%,
-    #dcdcdc 20%,
-    #c4c4c4 48%,
-    #d4d4d4 52%,
-    #e4e4e4 80%,
-    #ececec 100%
-  );
-}
+.fader-knob:active{ cursor:grabbing; }
 
 /* ── No colored card borders globally ── */
 .card{ border-color: var(--bd) !important; }

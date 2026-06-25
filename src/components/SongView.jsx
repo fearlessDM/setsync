@@ -1555,7 +1555,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               const muted = trackMutes[i]??false;
               return(
                 <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
-                  padding:'6px 3px 5px',borderRadius:10,
+                  padding:'6px 3px 5px',borderRadius:10,overflow:'visible',
                   background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                   border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
                   {/* Dot color */}
@@ -1565,10 +1565,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
                     width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                     padding:'0 2px',flexShrink:0}}>{tr.label}</div>
-                  {/* Fader Secuencia — track delgado + knob rectangular táctil */}
-                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',overflow:'visible'}}>
+                  {/* Fader Secuencia */}
+                  <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',overflow:'visible'}}>
                     <div className="fader-track"
-                      style={{height:72,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
+                      style={{height:72}}>
                       <div className="fader-knob"
                         style={{bottom:`calc(${vol}% - 11px)`}}
                         onPointerDown={e=>{
@@ -1706,7 +1706,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             const trackH=Math.max(60, (window.innerHeight*0.45)-60);
             return(
               <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-                padding:'5px 2px 4px',borderRadius:8,
+                padding:'5px 2px 4px',borderRadius:8,overflow:'visible',
                 background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                 border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
                 minWidth:0}}>
