@@ -1323,9 +1323,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                     padding:'0 2px',flexShrink:0}}>{tr.label}</div>
                   {/* Fader Secuencia — track delgado + knob rectangular táctil */}
-                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',minHeight:60}}>
+                  <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',minHeight:60,overflow:'visible'}}>
                     <div className="fader-track"
-                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none'}}>
+                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
                       <div className="fader-knob"
                         style={{bottom:`calc(${vol}% - 14px)`}}
                         onPointerDown={e=>{
@@ -1352,7 +1352,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.addEventListener('pointermove',move,{passive:false});
                           knob.addEventListener('pointerup',up,{once:true});
                         }}
-                      />
+                      >{/* knob — no self-closing */}</div>
                     </div>
                   </div>
                   {/* Valor */}
@@ -1456,7 +1456,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   <div style={{flex:1,width:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0'}}>
                     {/* Track decorativo — línea delgada, no interactiva */}
                     <div className="fader-track"
-                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none'}}>
+                      style={{height:'100%',minHeight:60,userSelect:'none',WebkitUserSelect:'none',overflow:'visible'}}>
                       {/* Knob — único elemento táctil */}
                       <div className="fader-knob"
                         style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
@@ -1484,7 +1484,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.addEventListener('pointermove',move,{passive:false});
                           knob.addEventListener('pointerup',up,{once:true});
                         }}
-                      />
+                      >{/* knob — no self-closing */}</div>
                     </div>
                   </div>
                   {/* Valor */}

@@ -409,7 +409,8 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   position:relative;
   cursor:ns-resize;
   touch-action:none;
-  /* Track: línea delgada oscura — solo referencia visual, no se toca */
+  overflow:visible !important;   /* knob de 44px sobresale sin recortarse */
+  /* Track: línea delgada oscura — solo referencia visual */
   width:4px !important;
   background:rgba(255,255,255,.12) !important;
   border-radius:2px;
