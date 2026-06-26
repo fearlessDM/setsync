@@ -1626,150 +1626,191 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     );
   };
 
+
+  // Conversión vol (0-100) → dB display
+  const volToDB=v=>{
+    if(v<=0) return '-∞';
+    const db=40*Math.log10(v/75);
+    if(db>=0) return '+'+db.toFixed(1);
+    return db.toFixed(1);
+  };
+
+  // Escala de dB para el track visual
+  const DB_MARKS=[{db:10,pct:100},{db:5,pct:91},{db:0,pct:75},{db:-5,pct:65},{db:-10,pct:55},{db:-20,pct:40},{db:-30,pct:28},{db:-50,pct:14}];
   const MonitorPanel=()=>{
-    const w=window.innerWidth,h=window.innerHeight;
-    const isTabletH=w>=768&&w>h;
-    const isMob=w<768;
-    // Siempre 2 filas × 8 columnas — faders lo suficientemente grandes para deslizar con el dedo
-    const panelH=isMob?'58vh':'50vh';
-    const cols=8;
-    const rows=2;
-    const grid=Array.from({length:rows},(_,r)=>Array.from({length:cols},(_,cc)=>r*cols+cc).filter(i=>i<16));
+    const h=window.innerHeight;
+    const trackH=Math.max(100, h*0.32);   // altura generosa para deslizar bien
 
     return(
-      <div style={{position:'fixed',bottom:52,left:0,right:0,height:panelH,
-        background:'rgba(4,4,16,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
+      <div style={{position:'fixed',bottom:54,left:0,right:0,
+        background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
         backdropFilter:'blur(40px)',zIndex:50,
         transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
         transition:'transform .3s cubic-bezier(.4,0,.2,1)',
-        display:'flex',flexDirection:'column'}}>
+        display:'flex',flexDirection:'column',
+        maxHeight:'70vh',
+      }}>
+
         {/* Header */}
-        <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 14px',
+        <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
           borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
-          <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
-              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-            </svg>
-            <div>
-              <div style={{fontSize:10,fontWeight:900,color:mesaConectada?'var(--gn)':'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px',lineHeight:1}}>
-                {mesaConectada?'Conectado':'Monitoreo'}
-              </div>
-              <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>
-                {mesaConectada?mesaNombre:'Sin conexión · modo demo'}
-              </div>
-            </div>
-            {/* WiFi bars */}
-            <div style={{display:'flex',alignItems:'flex-end',gap:1.5,marginLeft:4}}>
-              {[0,1,2,3].map(b=>(
-                <div key={b} style={{width:3,height:4+b*3,borderRadius:1,
-                  background:mesaConectada&&b<=wifiStrength?'var(--gn)':'rgba(255,255,255,.15)'}}/>
-              ))}
-            </div>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
+            stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+          </svg>
+          <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':'var(--tx3)',
+            fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
+            {mesaConectada?`Conectado · ${mesaNombre}`:'Monitor · Sin conexión'}
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:5}}>
-            <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
+          {/* Bus selector */}
+          <div style={{display:'flex',alignItems:'center',gap:3}}>
+            <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
             {[1,2,3,4].map(b=>(
               <button key={b} onClick={()=>setMonitorBus(b)}
-                style={{width:22,height:22,borderRadius:6,border:'none',cursor:'pointer',
+                style={{width:20,height:20,borderRadius:5,border:'none',cursor:'pointer',
                   background:monitorBus===b?'var(--gn)':'rgba(255,255,255,.08)',
-                  color:monitorBus===b?'#000':'var(--tx3)',fontSize:9,fontWeight:900}}>
+                  color:monitorBus===b?'#000':'var(--tx3)',fontSize:8,fontWeight:900}}>
                 {b}
               </button>
             ))}
-            <button onClick={()=>setShowMonitor(false)}
-              style={{width:22,height:22,borderRadius:6,border:'1px solid rgba(255,255,255,.15)',
-                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:16,
-                display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
           </div>
-        </div>
-        {/* Selector capa A/B */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-          padding:'5px 12px 4px',flexShrink:0}}>
-          <div style={{fontSize:8,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>
-            Monitor personal
-          </div>
-          <div style={{display:'inline-flex',borderRadius:16,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
+          {/* Capa A/B */}
+          <div style={{display:'inline-flex',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
               <button key={l} onClick={()=>setMonitorLayer(l)}
-                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
+                style={{padding:'2px 8px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
                   fontFamily:"'Lexend Giga',sans-serif",
-                  background:monitorLayer===l?'rgba(48,192,183,.2)':'transparent',
+                  background:monitorLayer===l?'rgba(48,192,183,.25)':'transparent',
                   color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
-                {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
+                {l}
               </button>
             ))}
           </div>
+          <button onClick={()=>setShowMonitor(false)}
+            style={{width:20,height:20,borderRadius:5,border:'1px solid rgba(255,255,255,.1)',
+              background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
+              display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
         </div>
-        {/* Fader grid — 8 canales por capa */}
-        <div style={{flex:1,padding:'4px 10px 8px',display:'flex',gap:4,overflow:'hidden'}}>
+
+        {/* Grid de 8 faders */}
+        <div style={{flex:1,display:'flex',gap:2,padding:'6px 8px 8px',overflow:'hidden',minHeight:0}}>
           {Array.from({length:8},(_,li)=>{
             const ci=monitorLayer==='A'?li:li+8;
-            const trackH=Math.max(35, (window.innerHeight*0.196)-14); // -30% del anterior
+            const vol=faderVols[ci];
+            const muted=faderMutes[ci];
+            const dbStr=volToDB(muted?0:vol);
+            // VU meter: cuántos segmentos iluminar (0-12)
+            const vuLit=muted?0:Math.round((vol/100)*12);
+
             return(
-              <div key={ci} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,
-                padding:'5px 2px 4px',borderRadius:8,overflow:'visible',
-                background:faderMutes[ci]?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-                border:`1px solid ${faderMutes[ci]?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`,
-                minWidth:0}}>
-                <div style={{fontSize:6,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-                  textAlign:'center',overflow:'hidden',whiteSpace:'nowrap',
-                  width:'100%',textOverflow:'ellipsis',fontFamily:"'Lexend Giga',sans-serif",padding:'0 2px',flexShrink:0}}>
-                  {FADER_NAMES[ci]}
+              <div key={ci} style={{
+                flex:1,display:'flex',flexDirection:'column',alignItems:'center',
+                gap:2,minWidth:0,
+                padding:'4px 2px 4px',
+                borderRadius:6,
+                background:muted?'rgba(253,128,131,.06)':'rgba(255,255,255,.03)',
+                border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.06)'}`,
+                overflow:'visible',
+              }}>
+
+                {/* dB value — top */}
+                <div style={{fontSize:7,fontWeight:700,
+                  color:muted?'var(--rd)':vol>90?'#FD8083':vol>75?'#f59e0b':'var(--tx)',
+                  fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.3px',
+                  flexShrink:0,minWidth:0,textAlign:'center'}}>
+                  {dbStr}
                 </div>
-                {/* Fader + VU meter */}
-                <div style={{flex:1,display:'flex',alignItems:'center',
-                  justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
-                  <div className="fader-track"
-                    style={{height:trackH}}>
-                  {/* LED overlay dentro del track — columna izquierda */}
-                  <div style={{position:'absolute',top:4,bottom:4,left:2,
-                    display:'flex',flexDirection:'column-reverse',gap:1.5,
-                    zIndex:1,pointerEvents:'none'}}>
-                    {Array.from({length:12},(_,li)=>{
-                      const threshold=(li/11)*100;
-                      const lit=!faderMutes[ci]&&(faderVols[ci]>threshold);
-                      const col=li>=10?'#FD8083':li>=8?'#f59e0b':'#30C0B7';
-                      return(
-                        <div key={li} style={{
-                          width:3,
-                          flex:1,
-                          borderRadius:1,
-                          background:lit?col:'rgba(255,255,255,.1)',
-                          boxShadow:lit?`0 0 3px ${col}`:'none',
-                          transition:'background .06s',
-                        }}/>
-                      );
-                    })}
+
+                {/* Fader + VU + escala dB */}
+                <div style={{flex:1,display:'flex',alignItems:'stretch',gap:2,
+                  width:'100%',overflow:'visible',justifyContent:'center'}}>
+
+                  {/* Escala dB — izquierda */}
+                  <div style={{position:'relative',width:10,flexShrink:0,pointerEvents:'none'}}>
+                    {DB_MARKS.map(({db,pct})=>(
+                      <div key={db} style={{
+                        position:'absolute',right:0,
+                        bottom:`${pct}%`,
+                        fontSize:4.5,color:'rgba(255,255,255,.3)',
+                        fontFamily:"'Lexend Giga',sans-serif",
+                        lineHeight:1,transform:'translateY(50%)',
+                        textAlign:'right',
+                      }}>{db>0?'+'+db:db}</div>
+                    ))}
                   </div>
-                    <div className="fader-knob"
-                      style={{bottom:`calc(${faderVols[ci]}% - 14px)`}}
-                      onPointerDown={e=>{
-                        e.preventDefault();e.stopPropagation();
-                        const knob=e.currentTarget;
-                        const track=knob.parentElement;
-                        knob.setPointerCapture(e.pointerId);
-                        // Capturar rect UNA VEZ — no recalcular en cada move
-                        const r=track.getBoundingClientRect();
-                        const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                        setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
-                        const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
-                        const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
-                        knob.addEventListener('pointermove',move,{passive:false});
-                        knob.addEventListener('pointerup',up,{once:true});
-                      }}
-                      onTouchStart={e=>e.stopPropagation()}
-                    >{/* knob */}</div>
+
+                  {/* Track + Knob + LED */}
+                  <div style={{position:'relative',display:'flex',
+                    alignItems:'center',justifyContent:'center',
+                    overflow:'visible',flex:1}}>
+                    {/* El track real — contenedor táctil */}
+                    <div className="fader-track" style={{height:trackH}}
+                      ref={el=>{
+                        if(!el)return;
+                        el._ci=ci;
+                      }}>
+                      {/* VU meter — dentro del track, lado derecho */}
+                      <div style={{
+                        position:'absolute',top:3,bottom:3,right:3,
+                        width:4,display:'flex',flexDirection:'column-reverse',
+                        gap:1,zIndex:1,pointerEvents:'none',
+                      }}>
+                        {Array.from({length:12},(_,si)=>{
+                          const lit=si<vuLit;
+                          const col=si>=10?'#FD8083':si>=8?'#f59e0b':'#30C0B7';
+                          return(
+                            <div key={si} style={{
+                              flex:1,borderRadius:.5,
+                              background:lit?col:'rgba(255,255,255,.08)',
+                              boxShadow:lit&&si>=8?`0 0 3px ${col}`:'none',
+                            }}/>
+                          );
+                        })}
+                      </div>
+                      {/* Knob */}
+                      <div className="fader-knob"
+                        style={{bottom:`calc(${vol}% - 15px)`}}
+                        onPointerDown={e=>{
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const knob=e.currentTarget;
+                          const track=knob.parentElement;
+                          knob.setPointerCapture(e.pointerId);
+                          const r=track.getBoundingClientRect();
+                          const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
+                          setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
+                          const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
+                          const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
+                          knob.addEventListener('pointermove',move,{passive:false});
+                          knob.addEventListener('pointerup',up,{once:true});
+                        }}>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div style={{fontSize:7,fontWeight:700,color:faderMutes[ci]?'var(--rd)':'var(--tx3)',
-                  fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{faderVols[ci]}</div>
-                <button onClick={e=>{e.stopPropagation();setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;})}}
-                  style={{fontSize:6,fontWeight:900,padding:'2px 5px',borderRadius:4,border:'none',
-                    cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
-                    background:faderMutes[ci]?'var(--rd)':'rgba(255,255,255,.08)',
-                    color:faderMutes[ci]?'#fff':'var(--tx3)'}}>
-                  {faderMutes[ci]?'MUTE':'M'}
+
+                {/* Canal número */}
+                <div style={{fontSize:6,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
+                  fontWeight:700,flexShrink:0,letterSpacing:'.5px'}}>
+                  CH {ci+1}
+                </div>
+
+                {/* MUTE */}
+                <button onClick={e=>{
+                  e.stopPropagation();
+                  setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;});
+                }} style={{
+                  width:'100%',padding:'3px 0',borderRadius:4,border:'none',
+                  cursor:'pointer',flexShrink:0,
+                  background:muted?'#8B0000':'rgba(255,255,255,.06)',
+                  color:muted?'#ff4444':'var(--tx3)',
+                  fontSize:7,fontWeight:900,
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  letterSpacing:'.5px',
+                  boxShadow:muted?'0 0 8px rgba(255,68,68,.4)':'none',
+                }}>
+                  MUTE
                 </button>
               </div>
             );

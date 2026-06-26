@@ -406,23 +406,21 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
 }
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{
-  /* Contenedor real del fader — ancho del knob, altura explícita */
   position:relative;
-  width:48px;           /* ancho real = ancho del knob + margen */
+  width:48px;
   border-radius:2px;
   touch-action:none;
   overflow:visible;
+  cursor:ns-resize;
 }
 .fader-track::before{
-  /* La línea delgada decorativa — pseudo-element, no interactiva */
   content:'';
   position:absolute;
-  top:0;bottom:0;
-  left:50%;
+  top:0;bottom:0;left:50%;
   transform:translateX(-50%);
-  width:4px;
-  background:rgba(255,255,255,.12);
-  border-radius:2px;
+  width:5px;
+  background:rgba(255,255,255,.1);
+  border-radius:3px;
   pointer-events:none;
 }
 .fader-fill{ display:none; }
@@ -431,33 +429,43 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
   left:50%;
   transform:translateX(-50%);
   width:44px;
-  height:28px;
-  border-radius:7px;
+  height:30px;
+  border-radius:6px;
   background:linear-gradient(180deg,
-    #e8e8e8 0%,#d0d0d0 20%,#b8b8b8 48%,
-    #c8c8c8 52%,#d8d8d8 80%,#e0e0e0 100%
+    #e0e0e0 0%,#cecece 15%,#b5b5b5 45%,
+    #c2c2c2 55%,#d5d5d5 85%,#dfdfdf 100%
   );
-  box-shadow:0 4px 12px rgba(0,0,0,.8),
-    0 1px 0 rgba(255,255,255,.4) inset,
-    0 -1px 0 rgba(0,0,0,.3) inset;
-  border:1px solid rgba(0,0,0,.4);
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.9),
+    0 2px 0 rgba(255,255,255,.5) inset,
+    0 -2px 0 rgba(0,0,0,.4) inset,
+    2px 0 0 rgba(255,255,255,.15) inset,
+    -2px 0 0 rgba(0,0,0,.2) inset;
+  border:1px solid rgba(0,0,0,.5);
   cursor:grab;
   touch-action:none;
   user-select:none;
   -webkit-user-select:none;
+  z-index:2;
 }
 .fader-knob::before{
   content:'';
   position:absolute;
   top:50%;left:50%;
   transform:translate(-50%,-50%);
-  width:65%;height:2px;
-  background:rgba(0,0,0,.35);
+  width:60%;height:2px;
+  background:rgba(0,0,0,.4);
   border-radius:1px;
   box-shadow:0 -5px 0 rgba(0,0,0,.3),0 5px 0 rgba(0,0,0,.3),
     0 -10px 0 rgba(0,0,0,.15),0 10px 0 rgba(0,0,0,.15);
 }
-.fader-knob:active{ cursor:grabbing; }
+.fader-knob:active{
+  cursor:grabbing;
+  box-shadow:
+    0 3px 10px rgba(0,0,0,.9),
+    0 2px 0 rgba(255,255,255,.5) inset,
+    0 -2px 0 rgba(0,0,0,.4) inset;
+}
 
 /* ── No colored card borders globally ── */
 .card{ border-color: var(--bd) !important; }
