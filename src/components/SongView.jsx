@@ -1322,7 +1322,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 
     return(
-    <div style={{
+    <div
+      onTouchStart={e=>e.stopPropagation()}
+      onTouchMove={e=>e.stopPropagation()}
+      style={{
       position:'fixed',bottom:54,left:0,right:0,
       background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
       backdropFilter:'blur(40px)',zIndex:50,
@@ -1642,7 +1645,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const trackH=Math.max(100, h*0.32);   // altura generosa para deslizar bien
 
     return(
-      <div style={{position:'fixed',bottom:54,left:0,right:0,
+      <div
+        onTouchStart={e=>e.stopPropagation()}
+        onTouchMove={e=>e.stopPropagation()}
+        style={{position:'fixed',bottom:54,left:0,right:0,
         background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
         backdropFilter:'blur(40px)',zIndex:50,
         transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
