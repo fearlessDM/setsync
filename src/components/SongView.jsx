@@ -71,6 +71,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [mesaConectada] = useState(false);
   const [mesaNombre] = useState('Behringer X32');
   const [wifiStrength] = useState(3); // 0-4
+  const [mesaConectada]=useState(false);
+  const [mesaNombre]=useState('Behringer X32');
+  const [wifiStrength]=useState(3);
   const [monitorLayer,setMonitorLayer]=useState('A');
 
   // Chip de estado de monitoreo — aparece en sidebar (desktop) o en tab (mobile)
@@ -244,6 +247,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
   const wrapRef=useRef(null);
+  const cvRef=useRef(null);
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
