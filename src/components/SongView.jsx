@@ -3,6 +3,9 @@ import { t as getT } from '../i18n';
 // vista bloques/lineal, Nashville, panel Estructura con drag touch.
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { MonitorPanel } from './songview/MonitorPanel';
+import { ReferenciaPanel } from './songview/ReferenciaPanel';
+import { SecuenciaPanel } from './songview/SecuenciaPanel';
 import { tpKey } from '../utils/music';
 import { Toast } from './common';
 import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
@@ -848,7 +851,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   // ── Panel de Click con BPM y cifra editables ─────────────────────────────
-  const CIFRAS = ['4/4','3/4','6/8','2/4','5/4','12/8'];
   const defaultBpm = SECUENCIA_DATA[song?.name]?.click.bpm || song?.bpm || 120;
   const defaultCifra = SECUENCIA_DATA[song?.name]?.click.compas || '4/4';
   const [seqBpm, setSeqBpm] = useState(defaultBpm);
@@ -1019,812 +1021,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   // ── Panel de Referencia — audio player con loop ──────────────────────────
-  const ReferenciaPanel=()=>{
-    const audio=refPlayerRef.current;
-    const pct=refDuration>0?refTime/refDuration:0;
-
-    // Helper: segundos → mm:ss
-    const fmt=s=>isNaN(s)?'0:00':`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-
-    // Iniciar audio desde File
-    const loadFile=file=>{
-      if(refUrl) URL.revokeObjectURL(refUrl);
-      const url=URL.createObjectURL(file);
-      setRefUrl(url);setRefAudio(file);setRefTime(0);
-      setRefLoopIn(null);setRefLoopOut(null);setRefLooping(false);
-      setRefPlaying(false);
-      if(audio){audio.src=url;audio.load();}
-    };
-
-    // Seek al tocar el waveform/progress
-    const seekTo=(e,el)=>{
-      const r=el.getBoundingClientRect();
-      const ratio=(e.clientX-r.left)/r.width;
-      const t=ratio*refDuration;
-      if(audio){audio.currentTime=t;}
-      setRefTime(t);
-    };
-
-    // Marcar loop in/out
-    const markIn=()=>{setRefLoopIn(refTime);};
-    const markOut=()=>{setRefLoopOut(refTime);};
-    const clearLoop=()=>{setRefLoopIn(null);setRefLoopOut(null);setRefLooping(false);};
-
-    const inPct=refLoopIn!=null&&refDuration>0?refLoopIn/refDuration*100:null;
-    const outPct=refLoopOut!=null&&refDuration>0?refLoopOut/refDuration*100:null;
-
-    const SPEEDS=[0.5,0.75,1,1.25,1.5];
-
-    return(
-      <div style={{
-        position:'fixed',bottom:54,left:0,right:0,
-        background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.08)',
-        backdropFilter:'blur(40px)',zIndex:50,
-        transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
-        transition:'transform .3s cubic-bezier(.4,0,.2,1)',
-        display:'flex',flexDirection:'column',
-        maxHeight:'55vh',
-      }}>
-        {/* Header */}
-        <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,.06)'}}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8">
-            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-          </svg>
-          <span style={{flex:1,fontSize:10,fontWeight:900,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>
-            Referencia
-          </span>
-          {refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:160,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
-          {/* Subir audio */}
-          <button onClick={()=>refInputRef.current?.click()}
-            style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-            {refAudio?'Cambiar':'Subir audio'}
-          </button>
-          <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
-            onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
-        </div>
-
-        {!refUrl?(
-          /* Estado vacío */
-          <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20}}>
-            <div style={{width:56,height:56,borderRadius:'50%',border:'2px dashed rgba(255,255,255,.15)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
-              onClick={()=>refInputRef.current?.click()}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--tx3)" strokeWidth="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
-              <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
-            </div>
-          </div>
-        ):(
-          <div style={{flex:1,display:'flex',flexDirection:'column',padding:'10px 14px 14px',gap:10,overflow:'hidden'}}>
-            {/* Audio element oculto */}
-            <audio ref={refPlayerRef} src={refUrl} preload="metadata"
-              onTimeUpdate={e=>{
-                const t=e.target.currentTime;
-                setRefTime(t);
-                // Loop check
-                if(refLooping&&refLoopOut!=null&&t>=refLoopOut){
-                  e.target.currentTime=refLoopIn??0;
-                }
-              }}
-              onLoadedMetadata={e=>setRefDuration(e.target.duration)}
-              onEnded={()=>setRefPlaying(false)}
-              style={{display:'none'}}/>
-
-            {/* Waveform / Progress bar principal */}
-            <div style={{position:'relative',height:48,borderRadius:10,background:'rgba(255,255,255,.05)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
-              onClick={e=>seekTo(e,e.currentTarget)}
-              onPointerDown={e=>{
-                e.preventDefault();
-                const el=e.currentTarget;
-                el.setPointerCapture(e.pointerId);
-                seekTo(e,el);
-                const move=ev=>{ev.preventDefault();seekTo(ev,el);};
-                const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);};
-                el.addEventListener('pointermove',move,{passive:false});
-                el.addEventListener('pointerup',up,{once:true});
-              }}>
-              {/* Fondo de barras simuladas (decorativo estilo waveform) */}
-              <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',gap:1,padding:'4px 0'}}>
-                {Array.from({length:80},(_,i)=>{
-                  const h=Math.sin(i*0.4)*0.3+Math.sin(i*0.13)*0.4+0.3;
-                  const filled=(i/80)<pct;
-                  const inLoop=inPct!=null&&outPct!=null&&(i/80*100)>=inPct&&(i/80*100)<=outPct;
-                  return(
-                    <div key={i} style={{
-                      flex:1,borderRadius:1,
-                      height:`${Math.max(15,h*100)}%`,
-                      background: filled
-                        ? inLoop&&refLooping?'var(--gn)':'rgba(200,169,126,.9)'
-                        : inLoop?'rgba(48,192,183,.3)':'rgba(255,255,255,.12)',
-                      transition:'background .1s',
-                    }}/>
-                  );
-                })}
-              </div>
-              {/* Marcador In */}
-              {inPct!=null&&(
-                <div style={{position:'absolute',top:0,bottom:0,left:`${inPct}%`,width:2,background:'var(--gn)',zIndex:3}}>
-                  <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--gn)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>IN</div>
-                </div>
-              )}
-              {/* Marcador Out */}
-              {outPct!=null&&(
-                <div style={{position:'absolute',top:0,bottom:0,left:`${outPct}%`,width:2,background:'var(--rd)',zIndex:3}}>
-                  <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--rd)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
-                </div>
-              )}
-              {/* Playhead */}
-              <div style={{position:'absolute',top:0,bottom:0,left:`${pct*100}%`,width:2,background:'var(--ac)',zIndex:4,transition:'left .05s'}}/>
-            </div>
-
-            {/* Tiempos */}
-            <div style={{display:'flex',justifyContent:'space-between',flexShrink:0}}>
-              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refTime)}</span>
-              {refLoopIn!=null&&refLoopOut!=null&&(
-                <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-                  Loop {fmt(refLoopIn)} → {fmt(refLoopOut)}
-                </span>
-              )}
-              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refDuration)}</span>
-            </div>
-
-            {/* Controles principales */}
-            <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-              {/* Retroceder 5s */}
-              <button onClick={()=>{if(audio){audio.currentTime=Math.max(0,audio.currentTime-5);}}}
-                style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L4 9v6h6l-2.18-2.18A6.93 6.93 0 0 1 12.5 11c3.02 0 5.6 2 6.54 4.77l1.92-.64A9 9 0 0 0 12.5 8z"/></svg>
-              </button>
-
-              {/* Play / Pause */}
-              <button onClick={()=>{
-                if(!audio)return;
-                if(refPlaying){audio.pause();setRefPlaying(false);}
-                else{
-                  if(refLooping&&refLoopIn!=null&&(audio.currentTime<(refLoopIn??0)||audio.currentTime>=(refLoopOut??refDuration))){
-                    audio.currentTime=refLoopIn??0;
-                  }
-                  audio.play();setRefPlaying(true);
-                }
-              }} style={{width:48,height:48,borderRadius:'50%',border:'none',background:'var(--ac)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 20px rgba(255,255,255,.2)'}}>
-                {refPlaying
-                  ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                }
-              </button>
-
-              {/* Adelantar 5s */}
-              <button onClick={()=>{if(audio){audio.currentTime=Math.min(refDuration,audio.currentTime+5);}}}
-                style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 9c-1.85-1.6-4.25-2.6-6.9-2.6A9 9 0 0 0 2.54 15.13l1.92.64A7 7 0 0 1 11.1 11c1.89 0 3.63.76 4.9 2L14 15h6V9l-2 2z"/></svg>
-              </button>
-
-              <div style={{flex:1}}/>
-
-              {/* Velocidad */}
-              <div style={{display:'flex',gap:3}}>
-                {SPEEDS.map(s=>(
-                  <button key={s} onClick={()=>{setRefSpeed(s);if(audio)audio.playbackRate=s;}}
-                    style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
-                      fontFamily:"'Lexend Giga',sans-serif",
-                      background:refSpeed===s?'rgba(200,169,126,.25)':'rgba(255,255,255,.06)',
-                      color:refSpeed===s?'var(--ac)':'var(--tx3)'}}>
-                    {s}x
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Loop controls */}
-            <div style={{display:'flex',gap:6,flexShrink:0}}>
-              <button onClick={markIn}
-                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'rgba(255,255,255,.1)'}`,
-                  background:refLoopIn!=null?'rgba(48,192,183,.1)':'rgba(255,255,255,.05)',
-                  color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
-                  fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                <span style={{fontSize:8,letterSpacing:'.5px'}}>▶ IN</span>
-                {refLoopIn!=null&&<span style={{opacity:.7}}>{fmt(refLoopIn)}</span>}
-              </button>
-              <button onClick={markOut}
-                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'rgba(255,255,255,.1)'}`,
-                  background:refLoopOut!=null?'rgba(253,128,131,.1)':'rgba(255,255,255,.05)',
-                  color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
-                  fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                <span style={{fontSize:8,letterSpacing:'.5px'}}>OUT ■</span>
-                {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
-              </button>
-              <button onClick={()=>{
-                if(refLoopIn==null||refLoopOut==null)return;
-                const next=!refLooping;
-                setRefLooping(next);
-                if(next){
-                  const a=refPlayerRef.current;
-                  if(a){a.currentTime=refLoopIn??0;a.play().then(()=>setRefPlaying(true)).catch(()=>{});}
-                }
-              }} disabled={refLoopIn==null||refLoopOut==null}
-                style={{width:60,padding:'6px 8px',borderRadius:8,
-                  border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
-                  background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
-                  color:refLooping?'var(--gn)':'var(--tx3)',
-                  cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
-                  fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
-                  opacity:refLoopIn==null||refLoopOut==null?.4:1,
-                  boxShadow:refLooping?'0 0 8px rgba(48,192,183,.4)':'none',
-                  transition:'all .2s'}}>
-                {refLooping?'↻ ON':'↻'}
-              </button>
-              {(refLoopIn!=null||refLoopOut!=null)&&(
-                <button onClick={clearLoop}
-                  style={{width:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
-                    color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  ×
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // ── Panel de Secuencia ────────────────────────────────────────────────────
-  // Waveform simulado — 80 barras de altura variable
-  const WAVE_DATA=Array.from({length:80},(_,i)=>
-    Math.abs(Math.sin(i*.31)*.45+Math.sin(i*.13)*.3+Math.sin(i*.07)*.15+.1)
-  );
-
-  const SecuenciaPanel=()=>{
-    // Calcular total de compases para proporciones del mapa
-    const guias=seqData?.guias;
-    const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
-
-    // Seek táctil en waveform
-    const seekOnEl=(e,el)=>{
-      const r=el.getBoundingClientRect();
-      const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-      setSeqPos(p);
-      // Highlight del bloque correspondiente
-      if(guias&&totalComp){
-        let acc=0,found=false;
-        for(const g of guias){
-          const from=acc/totalComp;
-          acc+=g.compases||4;
-          const to=acc/totalComp;
-          if(p>=from&&p<=to){setSeqHighlight({from,to});found=true;break;}
-        }
-        if(!found)setSeqHighlight(null);
-      }
-    };
-
-    // Navegar al bloque por idx (desde mapa)
-    const gotoBloque=(i)=>{
-      if(!guias||!totalComp)return;
-      let acc=0;
-      for(let j=0;j<i;j++) acc+=(guias[j].compases||4);
-      const from=acc/totalComp;
-      acc+=(guias[i].compases||4);
-      const to=acc/totalComp;
-      setSeqPos(from+.001);
-      setSeqHighlight({from,to});
-      // Scroll en letra
-      const el=document.getElementById('section-'+i);
-      const cont=wrapRef.current;
-      if(el&&cont){const eT=el.getBoundingClientRect().top;const cT=cont.getBoundingClientRect().top;cont.scrollBy({top:eT-cT-12,behavior:'smooth'});}
-      window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{
-        detail:{sectionIdx:i,compasInicio:acc-(guias[i].compases||4),msInicio:((acc-(guias[i].compases||4))/(totalComp))*(60000/(seqBpm||120))*4*totalComp}
-      }));
-    };
-
-    const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-
-    return(
-    <div
-      onTouchStart={e=>e.stopPropagation()}
-      onTouchMove={e=>e.stopPropagation()}
-      style={{
-      position:'fixed',bottom:54,left:0,right:0,
-      background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
-      backdropFilter:'blur(40px)',zIndex:50,
-      maxHeight:'72vh',
-      transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
-      transition:'transform .3s cubic-bezier(.4,0,.2,1)',
-      display:'flex',flexDirection:'column',
-      overflow:'hidden',
-    }}>
-
-      {/* Área scrollable: mapa + waveform + controles + BPM */}
-      <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
-      {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
-      {guias&&guias.length>0&&(
-        <div style={{display:'flex',height:34,borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
-          {guias.map((g,i)=>{
-            const pct=(g.compases||4)/totalComp*100;
-            let acc=0; for(let j=0;j<i;j++) acc+=(guias[j].compases||4);
-            const from=acc/totalComp, to=(acc+(g.compases||4))/totalComp;
-            const isActive=seqHighlight&&seqPos>=from&&seqPos<=to;
-            return(
-              <button key={i} onClick={()=>gotoBloque(i)}
-                style={{width:`${pct}%`,border:'none',cursor:'pointer',padding:0,
-                  background:isActive?`${g.color}22`:'transparent',
-                  borderBottom:isActive?`2px solid ${g.color}`:'2px solid transparent',
-                  display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
-                  transition:'all .15s'}}>
-                <span style={{fontSize:8,fontWeight:900,color:isActive?g.color:`${g.color}66`,
-                  fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',lineHeight:1}}>{g.label}</span>
-                <span style={{fontSize:5,color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── WAVEFORM GENERAL + SEEK ── */}
-      <div style={{padding:'10px 14px 0',flexShrink:0}}>
-        <div
-          style={{height:44,position:'relative',cursor:'pointer',borderRadius:8,
-            background:'rgba(255,255,255,.03)',overflow:'hidden',touchAction:'none'}}
-          onPointerDown={e=>{
-            e.preventDefault();
-            const el=e.currentTarget;
-            el.setPointerCapture(e.pointerId);
-            seekOnEl(e,el);
-            const mv=ev=>{ev.preventDefault();seekOnEl(ev,el);};
-            const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',mv);};
-            el.addEventListener('pointermove',mv,{passive:false});
-            el.addEventListener('pointerup',up,{once:true});
-          }}>
-          {/* Barras waveform */}
-          <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',gap:1,padding:'4px 0'}}>
-            {WAVE_DATA.map((h,i)=>{
-              const pr=i/WAVE_DATA.length;
-              const played=pr<seqPos;
-              // Highlight del bloque seleccionado
-              const inHL=seqHighlight&&pr>=seqHighlight.from&&pr<=seqHighlight.to;
-              // Color de sección
-              let sc='rgba(255,255,255,.09)';
-              if(guias&&totalComp){
-                let acc=0;
-                for(const g of guias){
-                  const fr=acc/totalComp;
-                  acc+=g.compases||4;
-                  if(pr<=acc/totalComp){sc=g.color;break;}
-                }
-              }
-              return(
-                <div key={i} style={{
-                  flex:1,borderRadius:1,
-                  height:`${Math.max(12,h*100)}%`,
-                  background: inHL
-                    ? (played?sc+'ee':sc+'55')  // bloque seleccionado: más brillante
-                    : (played?sc+'99':'rgba(255,255,255,.09)'),
-                  transition:'background .08s',
-                }}/>
-              );
-            })}
-          </div>
-          {/* Playhead */}
-          <div style={{position:'absolute',top:0,bottom:0,left:`${seqPos*100}%`,
-            width:2,background:'#fff',zIndex:3,boxShadow:'0 0 5px rgba(255,255,255,.8)'}}/>
-        </div>
-        {/* Tiempo */}
-        <div style={{display:'flex',justifyContent:'space-between',marginTop:3}}>
-          <span style={{fontSize:8,color:'var(--tx3)'}}>{fmt(seqPos*192)}</span>
-          <span style={{fontSize:8,color:'var(--tx3)'}}>3:12</span>
-        </div>
-      </div>
-
-      {/* ── BARRA ÚNICA: BPM + Cifra + Controles ── */}
-      <div style={{display:'flex',alignItems:'center',gap:0,
-        margin:'8px 14px',padding:'8px 12px',
-        background:'rgba(255,255,255,.04)',borderRadius:12,
-        border:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
-
-        {/* − BPM + */}
-        <button
-          style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
-            display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
-          onPointerDown={e=>{
-            e.preventDefault();
-            const btn=e.currentTarget;
-            const fire=()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
-            fire();
-            btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
-          }}
-          onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
-          onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
-
-        <div style={{textAlign:'center',padding:'0 6px'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,
-            color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
-          <div style={{fontSize:7,color:'var(--tx3)',fontWeight:700,letterSpacing:1}}>BPM</div>
-        </div>
-
-        <button
-          style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
-            display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
-          onPointerDown={e=>{
-            e.preventDefault();
-            const btn=e.currentTarget;
-            const fire=()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
-            fire();
-            btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
-          }}
-          onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
-          onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>+</button>
-
-        {/* Divisor */}
-        <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
-
-        {/* Cifra — sin label */}
-        <div style={{position:'relative',flexShrink:0}}>
-          <select value={seqCifra}
-            onChange={e=>{const c=e.target.value;setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
-            style={{padding:'5px 20px 5px 8px',borderRadius:8,
-              border:'1px solid rgba(255,255,255,.12)',
-              background:'rgba(255,255,255,.07)',color:'var(--ac)',
-              fontSize:14,fontWeight:700,
-              fontFamily:"'Special Gothic Expanded One',sans-serif",
-              outline:'none',WebkitAppearance:'none',appearance:'none',
-              cursor:'pointer',minWidth:52}}>
-            {CIFRAS.map(c=><option key={c} value={c} style={{background:'#0a0a0a'}}>{c}</option>)}
-          </select>
-          <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2.5"
-            style={{position:'absolute',right:5,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </div>
-
-        {/* Divisor */}
-        <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
-
-        {/* Controles: ⏮ Play ⏭ */}
-        {/* Sección anterior */}
-        <button onClick={()=>{
-          if(!guias)return;
-          let cur=0;
-          for(let j=0;j<guias.length;j++){
-            const to=(cur+(guias[j].compases||4))/totalComp;
-            if(seqPos<to+.001){gotoBloque(Math.max(0,j-1));break;}
-            cur+=guias[j].compases||4;
-          }
-        }} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',
-          display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-            <polygon points="19 20 9 12 19 4 19 20"/>
-            <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" strokeWidth="2.5"/>
-          </svg>
-        </button>
-
-        {/* Play / Stop click */}
-        <button onClick={()=>{const next=!clickActivo;setClickActivo(next);if(next)startClick(seqBpm);else stopClick();}}
-          style={{width:44,height:44,borderRadius:'50%',border:'none',flexShrink:0,
-            marginLeft:6,
-            background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
-            display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
-            boxShadow:clickActivo?'0 0 16px rgba(253,128,131,.5)':'0 0 16px rgba(48,192,183,.3)'}}>
-          {clickActivo
-            ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
-        </button>
-
-        {/* Sección siguiente */}
-        <button onClick={()=>{
-          if(!guias)return;
-          let cur=0;
-          for(let j=0;j<guias.length;j++){
-            const to=(cur+(guias[j].compases||4))/totalComp;
-            if(seqPos<to-.001){gotoBloque(Math.min(guias.length-1,j+1));break;}
-            cur+=guias[j].compases||4;
-          }
-        }} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',
-          display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginLeft:6}}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-            <polygon points="5 4 15 12 5 20 5 4"/>
-            <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="2.5"/>
-          </svg>
-        </button>
-      </div>
-
-      </div>{/* fin área scrollable */}
-      {/* ── Multitracks FUERA del scroll para touch libre ── */}
-      <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid rgba(255,255,255,.06)'}}>
-      {/* ── Multitracks con faders (8+8) ── */}
-      <div>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
-          {/* Selector Capa A/B */}
-          <div style={{display:'inline-flex',borderRadius:16,border:'1px solid var(--bd)',overflow:'hidden'}}>
-            {['A','B'].map(l=>(
-              <button key={l} onClick={()=>setSeqLayer(l)}
-                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",
-                  background:seqLayer===l?'rgba(255,255,255,.12)':'transparent',
-                  color:seqLayer===l?'var(--tx)':'var(--tx3)'}}>
-                {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        {seqData?.multitracks?(
-          <div style={{display:'grid',gridTemplateColumns:'repeat(8,1fr)',gap:5}}>
-            {(seqLayer==='A'?seqData.multitracks.slice(0,8):seqData.multitracks.slice(8,16)).map((tr,li)=>{
-              const i = seqLayer==='A'?li:li+8;
-              const vol = trackVols[i]??80;
-              const muted = trackMutes[i]??false;
-              return(
-                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
-                  padding:'6px 3px 5px',borderRadius:10,overflow:'visible',
-                  background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-                  border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
-                  {/* Dot color */}
-                  <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                  {/* Label */}
-                  <div style={{fontSize:6,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
-                    width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
-                    padding:'0 2px',flexShrink:0}}>{tr.label}</div>
-                  {/* Fader Secuencia */}
-                  <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',overflow:'visible'}}>
-                    <div className="fader-track"
-                      style={{height:72}}>
-                      <div className="fader-knob"
-                        style={{bottom:`calc(${vol}% - 11px)`}}
-                        onPointerDown={e=>{
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const knob=e.currentTarget;
-                          const track=knob.parentElement;
-                          knob.setPointerCapture(e.pointerId);
-                          // Capturar rect UNA VEZ — no recalcular en cada move
-                          const r=track.getBoundingClientRect();
-                          const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                          setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
-                          const move=ev=>{
-                            ev.preventDefault();
-                            setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});
-                          };
-                          const up=ev=>{
-                            knob.releasePointerCapture(ev.pointerId);
-                            knob.removeEventListener('pointermove',move);
-                            knob.removeEventListener('pointerup',up);
-                          };
-                          knob.addEventListener('pointermove',move,{passive:false});
-                          knob.addEventListener('pointerup',up,{once:true});
-                        }}
-                        onTouchStart={e=>e.stopPropagation()}
-                      >{/* knob */}</div>
-                    </div>
-                  </div>
-                  {/* Valor */}
-                  <div style={{fontSize:7,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
-                  {/* Mute */}
-                  <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                    style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
-                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
-                      background:muted?'var(--rd)':'rgba(255,255,255,.08)',
-                      color:muted?'#fff':'var(--tx3)'}}>
-                    {muted?'MUTE':'M'}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ):(
-          <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
-          </div>
-        )}
-      </div>
-      </div>
-    </div>
-    );
-  };
-
-
-  // Conversión vol (0-100) → dB display
-  const volToDB=v=>{
-    if(v<=0) return '-∞';
-    const db=40*Math.log10(v/75);
-    if(db>=0) return '+'+db.toFixed(1);
-    return db.toFixed(1);
-  };
-
-  // Escala de dB para el track visual
-  const DB_MARKS=[{db:10,pct:100},{db:5,pct:91},{db:0,pct:75},{db:-5,pct:65},{db:-10,pct:55},{db:-20,pct:40},{db:-30,pct:28},{db:-50,pct:14}];
-  const MonitorPanel=()=>{
-    const h=window.innerHeight;
-    const trackH=Math.max(100, h*0.32);   // altura generosa para deslizar bien
-
-    return(
-      <div
-        onTouchStart={e=>e.stopPropagation()}
-        onTouchMove={e=>e.stopPropagation()}
-        style={{position:'fixed',bottom:54,left:0,right:0,
-        background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
-        backdropFilter:'blur(40px)',zIndex:50,
-        transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
-        transition:'transform .3s cubic-bezier(.4,0,.2,1)',
-        display:'flex',flexDirection:'column',
-        maxHeight:'70vh',
-      }}>
-
-        {/* Header */}
-        <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
-          borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
-            stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
-            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-          </svg>
-          <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':'var(--tx3)',
-            fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
-            {mesaConectada?`Conectado · ${mesaNombre}`:'Monitor · Sin conexión'}
-          </div>
-          {/* Bus selector */}
-          <div style={{display:'flex',alignItems:'center',gap:3}}>
-            <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
-            {[1,2,3,4].map(b=>(
-              <button key={b} onClick={()=>setMonitorBus(b)}
-                style={{width:20,height:20,borderRadius:5,border:'none',cursor:'pointer',
-                  background:monitorBus===b?'var(--gn)':'rgba(255,255,255,.08)',
-                  color:monitorBus===b?'#000':'var(--tx3)',fontSize:8,fontWeight:900}}>
-                {b}
-              </button>
-            ))}
-          </div>
-          {/* Capa A/B */}
-          <div style={{display:'inline-flex',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
-            {['A','B'].map(l=>(
-              <button key={l} onClick={()=>setMonitorLayer(l)}
-                style={{padding:'2px 8px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",
-                  background:monitorLayer===l?'rgba(48,192,183,.25)':'transparent',
-                  color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
-                {l}
-              </button>
-            ))}
-          </div>
-          <button onClick={()=>setShowMonitor(false)}
-            style={{width:20,height:20,borderRadius:5,border:'1px solid rgba(255,255,255,.1)',
-              background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
-              display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
-        </div>
-
-        {/* Grid de 8 faders */}
-        <div style={{flex:1,display:'flex',gap:2,padding:'6px 8px 8px',overflow:'hidden',minHeight:0}}>
-          {Array.from({length:8},(_,li)=>{
-            const ci=monitorLayer==='A'?li:li+8;
-            const vol=faderVols[ci];
-            const muted=faderMutes[ci];
-            const dbStr=volToDB(muted?0:vol);
-            // VU meter: cuántos segmentos iluminar (0-12)
-            const vuLit=muted?0:Math.round((vol/100)*12);
-
-            return(
-              <div key={ci} style={{
-                flex:1,display:'flex',flexDirection:'column',alignItems:'center',
-                gap:2,minWidth:0,
-                padding:'4px 2px 4px',
-                borderRadius:6,
-                background:muted?'rgba(253,128,131,.06)':'rgba(255,255,255,.03)',
-                border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.06)'}`,
-                overflow:'visible',
-              }}>
-
-                {/* dB value — top */}
-                <div style={{fontSize:7,fontWeight:700,
-                  color:muted?'var(--rd)':vol>90?'#FD8083':vol>75?'#f59e0b':'var(--tx)',
-                  fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.3px',
-                  flexShrink:0,minWidth:0,textAlign:'center'}}>
-                  {dbStr}
-                </div>
-
-                {/* Fader + VU + escala dB */}
-                <div style={{flex:1,display:'flex',alignItems:'stretch',gap:2,
-                  width:'100%',overflow:'visible',justifyContent:'center'}}>
-
-                  {/* Escala dB — izquierda */}
-                  <div style={{position:'relative',width:10,flexShrink:0,pointerEvents:'none'}}>
-                    {DB_MARKS.map(({db,pct})=>(
-                      <div key={db} style={{
-                        position:'absolute',right:0,
-                        bottom:`${pct}%`,
-                        fontSize:4.5,color:'rgba(255,255,255,.3)',
-                        fontFamily:"'Lexend Giga',sans-serif",
-                        lineHeight:1,transform:'translateY(50%)',
-                        textAlign:'right',
-                      }}>{db>0?'+'+db:db}</div>
-                    ))}
-                  </div>
-
-                  {/* Track + Knob + LED */}
-                  <div style={{position:'relative',display:'flex',
-                    alignItems:'center',justifyContent:'center',
-                    overflow:'visible',flex:1}}>
-                    {/* El track real — contenedor táctil */}
-                    <div className="fader-track" style={{height:trackH}}
-                      ref={el=>{
-                        if(!el)return;
-                        el._ci=ci;
-                      }}>
-                      {/* VU meter — dentro del track, lado derecho */}
-                      <div style={{
-                        position:'absolute',top:3,bottom:3,right:3,
-                        width:4,display:'flex',flexDirection:'column-reverse',
-                        gap:1,zIndex:1,pointerEvents:'none',
-                      }}>
-                        {Array.from({length:12},(_,si)=>{
-                          const lit=si<vuLit;
-                          const col=si>=10?'#FD8083':si>=8?'#f59e0b':'#30C0B7';
-                          return(
-                            <div key={si} style={{
-                              flex:1,borderRadius:.5,
-                              background:lit?col:'rgba(255,255,255,.08)',
-                              boxShadow:lit&&si>=8?`0 0 3px ${col}`:'none',
-                            }}/>
-                          );
-                        })}
-                      </div>
-                      {/* Knob */}
-                      <div className="fader-knob"
-                        style={{bottom:`calc(${vol}% - 15px)`}}
-                        onPointerDown={e=>{
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const knob=e.currentTarget;
-                          const track=knob.parentElement;
-                          knob.setPointerCapture(e.pointerId);
-                          const r=track.getBoundingClientRect();
-                          const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                          setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
-                          const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
-                          const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
-                          knob.addEventListener('pointermove',move,{passive:false});
-                          knob.addEventListener('pointerup',up,{once:true});
-                        }}>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Canal número */}
-                <div style={{fontSize:6,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
-                  fontWeight:700,flexShrink:0,letterSpacing:'.5px'}}>
-                  CH {ci+1}
-                </div>
-
-                {/* MUTE */}
-                <button onClick={e=>{
-                  e.stopPropagation();
-                  setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;});
-                }} style={{
-                  width:'100%',padding:'3px 0',borderRadius:4,border:'none',
-                  cursor:'pointer',flexShrink:0,
-                  background:muted?'#8B0000':'rgba(255,255,255,.06)',
-                  color:muted?'#ff4444':'var(--tx3)',
-                  fontSize:7,fontWeight:900,
-                  fontFamily:"'Lexend Giga',sans-serif",
-                  letterSpacing:'.5px',
-                  boxShadow:muted?'0 0 8px rgba(255,68,68,.4)':'none',
-                }}>
-                  MUTE
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
 
   // ── NavBar — botones flotantes, sin título ───────────────────────────────
   const NavBar=()=>(
@@ -1868,9 +1064,40 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
         <AnnoBar/>
         <ContentArea/>
-        <MonitorPanel/>
-        <ReferenciaPanel/>
-        <SecuenciaPanel/>
+          <MonitorPanel
+          bottomTab={bottomTab} showMonitor={showMonitor} setShowMonitor={setShowMonitor}
+          monitorBus={monitorBus} setMonitorBus={setMonitorBus}
+          monitorLayer={monitorLayer} setMonitorLayer={setMonitorLayer}
+          faderVols={faderVols} setFaderVols={setFaderVols}
+          faderMutes={faderMutes} setFaderMutes={setFaderMutes}
+          mesaConectada={mesaConectada} mesaNombre={mesaNombre} wifiStrength={wifiStrength}
+        />
+        <ReferenciaPanel
+          bottomTab={bottomTab}
+          refAudio={refAudio} setRefAudio={setRefAudio}
+          refUrl={refUrl} setRefUrl={setRefUrl}
+          refPlaying={refPlaying} setRefPlaying={setRefPlaying}
+          refTime={refTime} setRefTime={setRefTime}
+          refDuration={refDuration} setRefDuration={setRefDuration}
+          refLoopIn={refLoopIn} setRefLoopIn={setRefLoopIn}
+          refLoopOut={refLoopOut} setRefLoopOut={setRefLoopOut}
+          refLooping={refLooping} setRefLooping={setRefLooping}
+          refSpeed={refSpeed} setRefSpeed={setRefSpeed}
+          refPlayerRef={refPlayerRef}
+        />
+        <SecuenciaPanel
+          bottomTab={bottomTab} song={song} wrapRef={wrapRef}
+          seqData={seqData}
+          seqBpm={seqBpm} setSeqBpm={setSeqBpm}
+          seqCifra={seqCifra} setSeqCifra={setSeqCifra}
+          clickActivo={clickActivo} setClickActivo={setClickActivo}
+          startClick={startClick} stopClick={stopClick}
+          seqLayer={seqLayer} setSeqLayer={setSeqLayer}
+          seqPos={seqPos} setSeqPos={setSeqPos}
+          seqHighlight={seqHighlight} setSeqHighlight={setSeqHighlight}
+          trackVols={trackVols} setTrackVols={setTrackVols}
+          trackMutes={trackMutes} setTrackMutes={setTrackMutes}
+        />
         <BottomTabBar/>
       </div>
     );
@@ -1896,9 +1123,40 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       </div>
       <AnnoBar/>
       <ContentArea/>
-      <MonitorPanel/>
-      <ReferenciaPanel/>
-      <SecuenciaPanel/>
+        <MonitorPanel
+          bottomTab={bottomTab} showMonitor={showMonitor} setShowMonitor={setShowMonitor}
+          monitorBus={monitorBus} setMonitorBus={setMonitorBus}
+          monitorLayer={monitorLayer} setMonitorLayer={setMonitorLayer}
+          faderVols={faderVols} setFaderVols={setFaderVols}
+          faderMutes={faderMutes} setFaderMutes={setFaderMutes}
+          mesaConectada={mesaConectada} mesaNombre={mesaNombre} wifiStrength={wifiStrength}
+        />
+        <ReferenciaPanel
+          bottomTab={bottomTab}
+          refAudio={refAudio} setRefAudio={setRefAudio}
+          refUrl={refUrl} setRefUrl={setRefUrl}
+          refPlaying={refPlaying} setRefPlaying={setRefPlaying}
+          refTime={refTime} setRefTime={setRefTime}
+          refDuration={refDuration} setRefDuration={setRefDuration}
+          refLoopIn={refLoopIn} setRefLoopIn={setRefLoopIn}
+          refLoopOut={refLoopOut} setRefLoopOut={setRefLoopOut}
+          refLooping={refLooping} setRefLooping={setRefLooping}
+          refSpeed={refSpeed} setRefSpeed={setRefSpeed}
+          refPlayerRef={refPlayerRef}
+        />
+        <SecuenciaPanel
+          bottomTab={bottomTab} song={song} wrapRef={wrapRef}
+          seqData={seqData}
+          seqBpm={seqBpm} setSeqBpm={setSeqBpm}
+          seqCifra={seqCifra} setSeqCifra={setSeqCifra}
+          clickActivo={clickActivo} setClickActivo={setClickActivo}
+          startClick={startClick} stopClick={stopClick}
+          seqLayer={seqLayer} setSeqLayer={setSeqLayer}
+          seqPos={seqPos} setSeqPos={setSeqPos}
+          seqHighlight={seqHighlight} setSeqHighlight={setSeqHighlight}
+          trackVols={trackVols} setTrackVols={setTrackVols}
+          trackMutes={trackMutes} setTrackMutes={setTrackMutes}
+        />
       <BottomTabBar/>
     </div>
   );
