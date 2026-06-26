@@ -615,6 +615,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
 
   // ── Monitor panel — estado centralizado en SongView ─────────────────────
+  const CIFRAS=['4/4','3/4','6/8','2/4','5/4','12/8'];
   const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros 2','Pad','Fx','Aux L','Aux R'];
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
   const [trackVols,setTrackVols]=useState(()=>Array(20).fill(80));
