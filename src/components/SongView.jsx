@@ -1022,7 +1022,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── Panel de Referencia — audio player con loop ──────────────────────────
 
 
-  const FADER_NAMES=['Kick','Snare','Hi-Hat','Bass','Gtr 1','Gtr 2','Keys','Voz 1','Voz 2','Voz 3','Coros','Coros 2','Pad','Fx','Aux L','Aux R'];
 
   const volToDB=v=>{
     if(v<=0) return '-∞';
@@ -1454,7 +1453,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   }
 
 
-  const CIFRAS = ['4/4','3/4','6/8','2/4','5/4','12/8'];
 
   const WAVE_DATA=Array.from({length:80},(_,i)=>
     Math.abs(Math.sin(i*.31)*.45+Math.sin(i*.13)*.3+Math.sin(i*.07)*.15+.1)
