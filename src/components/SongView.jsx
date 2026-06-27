@@ -1035,14 +1035,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     {db:-10,pct:55},{db:-20,pct:40},{db:-30,pct:28},{db:-50,pct:14}
   ];
 
-  const MonitorPanel=({
-    bottomTab, showMonitor, setShowMonitor,
-    monitorBus, setMonitorBus,
-    monitorLayer, setMonitorLayer,
-    faderVols, setFaderVols,
-    faderMutes, setFaderMutes,
-    mesaConectada, mesaNombre, wifiStrength,
-  }) => {
+  const MonitorPanel=() => {
     const h=window.innerHeight;
     const trackH=Math.max(100, h*0.32);
 
@@ -1220,19 +1213,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   }
 
 
-  const ReferenciaPanel=({
-    bottomTab,
-    refAudio, setRefAudio,
-    refUrl, setRefUrl,
-    refPlaying, setRefPlaying,
-    refTime, setRefTime,
-    refDuration, setRefDuration,
-    refLoopIn, setRefLoopIn,
-    refLoopOut, setRefLoopOut,
-    refLooping, setRefLooping,
-    refSpeed, setRefSpeed,
-    refPlayerRef,
-  }) => {
+  const ReferenciaPanel=() => {
     const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 
     const panel = (
@@ -1458,19 +1439,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     Math.abs(Math.sin(i*.31)*.45+Math.sin(i*.13)*.3+Math.sin(i*.07)*.15+.1)
   );
 
-  const SecuenciaPanel=({
-    bottomTab, song, wrapRef,
-    seqData,
-    seqBpm, setSeqBpm,
-    seqCifra, setSeqCifra,
-    clickActivo, setClickActivo,
-    startClick, stopClick,
-    seqLayer, setSeqLayer,
-    seqPos, setSeqPos,
-    seqHighlight, setSeqHighlight,
-    trackVols, setTrackVols,
-    trackMutes, setTrackMutes,
-  }) => {
+  const SecuenciaPanel=() => {
       // Calcular total de compases para proporciones del mapa
       const guias=seqData?.guias;
       const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
