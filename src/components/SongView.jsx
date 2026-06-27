@@ -1043,7 +1043,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div
         onTouchStart={e=>e.stopPropagation()}
         onTouchMove={e=>e.stopPropagation()}
-        style={{position:'fixed',bottom:54,left:0,right:0,
+        style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
           background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
           backdropFilter:'blur(40px)',zIndex:200,
           transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
@@ -1218,9 +1218,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
     const panel = (
         <div style={{
-          position:'fixed',bottom:54,left:0,right:0,
+          position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
           background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.08)',
-          backdropFilter:'blur(40px)',zIndex:50,
+          backdropFilter:'blur(40px)',zIndex:60,
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
           display:'flex',flexDirection:'column',
@@ -1489,7 +1489,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchStart={e=>e.stopPropagation()}
         onTouchMove={e=>e.stopPropagation()}
         style={{
-        position:'fixed',bottom:54,left:0,right:0,
+        position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
         background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
         backdropFilter:'blur(40px)',zIndex:50,
         maxHeight:'72vh',
