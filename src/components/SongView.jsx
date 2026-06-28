@@ -1173,11 +1173,26 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         const knob=e.currentTarget;
                         const track=knob.parentElement;
                         knob.setPointerCapture(e.pointerId);
+                        // Capturar rect ANTES del primer re-render
                         const r=track.getBoundingClientRect();
-                        const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                        setFaderVols(v=>{const n=[...v];n[ci]=calc(e);return n;});
-                        const move=ev=>{ev.preventDefault();setFaderVols(v=>{const n=[...v];n[ci]=calc(ev);return n;});};
-                        const up=ev=>{knob.releasePointerCapture(ev.pointerId);knob.removeEventListener('pointermove',move);knob.removeEventListener('pointerup',up);};
+                        const trackH=r.height;
+                        const trackTop=r.top;
+                        const calcPct=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-trackTop)/trackH)))*100);
+                        let curVol=calcPct(e);
+                        // Mover knob directo en DOM — sin re-render de React
+                        knob.style.bottom=`calc(${curVol}% - 15px)`;
+                        const move=ev=>{
+                          ev.preventDefault();
+                          curVol=calcPct(ev);
+                          knob.style.bottom=`calc(${curVol}% - 15px)`;
+                        };
+                        const up=ev=>{
+                          knob.releasePointerCapture(ev.pointerId);
+                          knob.removeEventListener('pointermove',move);
+                          knob.removeEventListener('pointerup',up);
+                          // Solo actualizar React state al soltar
+                          setFaderVols(v=>{const n=[...v];n[ci]=curVol;return n;});
+                        };
                         knob.addEventListener('pointermove',move,{passive:false});
                         knob.addEventListener('pointerup',up,{once:true});
                       }}>
@@ -1221,7 +1236,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{
           position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
           background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.08)',
-          backdropFilter:'blur(40px)',zIndex:60,
+          backdropFilter:'blur(40px)',zIndex:110,
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
           display:'flex',flexDirection:'column',
@@ -1492,7 +1507,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         style={{
         position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
         background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
-        backdropFilter:'blur(40px)',zIndex:50,
+        backdropFilter:'blur(40px)',zIndex:110,
         maxHeight:'72vh',
         transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
         transition:'transform .3s cubic-bezier(.4,0,.2,1)',
@@ -1747,18 +1762,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                             const knob=e.currentTarget;
                             const track=knob.parentElement;
                             knob.setPointerCapture(e.pointerId);
-                            // Capturar rect UNA VEZ — no recalcular en cada move
                             const r=track.getBoundingClientRect();
-                            const calc=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-r.top)/r.height)))*100);
-                            setTrackVols(v=>{const n=[...v];n[i]=calc(e);return n;});
+                            const trackH=r.height;
+                            const trackTop=r.top;
+                            const calcPct=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-trackTop)/trackH)))*100);
+                            let curVol=calcPct(e);
+                            // Mover directo en DOM — sin re-render React
+                            knob.style.bottom=`calc(${curVol}% - 11px)`;
                             const move=ev=>{
                               ev.preventDefault();
-                              setTrackVols(v=>{const n=[...v];n[i]=calc(ev);return n;});
+                              curVol=calcPct(ev);
+                              knob.style.bottom=`calc(${curVol}% - 11px)`;
                             };
                             const up=ev=>{
                               knob.releasePointerCapture(ev.pointerId);
                               knob.removeEventListener('pointermove',move);
                               knob.removeEventListener('pointerup',up);
+                              // State solo al soltar
+                              setTrackVols(v=>{const n=[...v];n[i]=curVol;return n;});
                             };
                             knob.addEventListener('pointermove',move,{passive:false});
                             knob.addEventListener('pointerup',up,{once:true});
