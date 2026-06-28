@@ -125,7 +125,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
   const [showSpeedPopup,setShowSpeedPopup]=useState(false);
 
-  const getSongContent=(song)=>editedSongs[song.name]||contentDB[song.name]||null;
+  const getSongContent=(song)=>{const k=song.name||song.n||'';return editedSongs[k]||contentDB[k]||null;};
 
   // ── Mapa de la Canción — vista de NAVEGACIÓN del panel lateral, INDEPENDIENTE
   // del contenido real de la canción. Reordenar/duplicar/eliminar aquí NUNCA
@@ -140,6 +140,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const handleDragChord=(lineIdx,chordIdx,steps)=>{
     if(!steps)return;
     const song=songs[idx];
+    if(song&&!song.name&&song.n){song.name=song.n;}
     const raw=getSongContent(song)||'';
     const allLines=raw.split('\n');
 
@@ -1046,7 +1047,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
           background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
           backdropFilter:'blur(40px)',zIndex:200,
-          transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(100%)',
+          transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(110%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
           display:'flex',flexDirection:'column',
           maxHeight:'70vh',
