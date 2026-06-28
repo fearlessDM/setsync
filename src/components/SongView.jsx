@@ -596,6 +596,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── ContentArea — layout correcto con MapaMaestro sticky ─────────────────
   const ContentArea=()=>(
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
+      <MapaMaestro/>
       {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
       <div style={{flex:1,position:'relative',overflow:'hidden'}}>
         <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
@@ -699,7 +700,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div style={{
         position:'fixed',bottom:0,left:0,right:0,
         background:'rgba(8,8,9,.97)',borderTop:'1px solid rgba(255,255,255,.1)',
-        backdropFilter:'blur(20px)',zIndex:55,
+        backdropFilter:'blur(20px)',zIndex:120,
         display:'flex',alignItems:'stretch',
         paddingBottom:'env(safe-area-inset-bottom,0px)',
         minHeight:54,
@@ -880,67 +881,55 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   // Mapa Maestro Horizontal — sticky encima del contenido de letra
   const MapaMaestro=()=>{
+    // Se oculta cuando Secuencia está activa (el mapa va dentro del panel)
+    if(bottomTab==='secuencia') return null;
     const guias = seqData?.guias;
     if(!guias||!guias.length) return null;
     const totalComp = guias.reduce((s,g)=>s+(g.compases||4),0);
-    const narrow = window.innerWidth < 400;
+    // Abreviar etiquetas
+    const abrev=lbl=>{
+      const m={
+        'INTRO':'INT','VERSO':'V','VERSO 1':'V1','VERSO 2':'V2','VERSO 3':'V3',
+        'CORO':'C','CORO 2':'C2','CORO 3':'C3','PRE-CORO':'PC','PRECORO':'PC',
+        'PUENTE':'P','BRIDGE':'P','FINAL':'FIN','OUTRO':'OUT','INTERLUDIO':'INT',
+        'ESTRIBILLO':'EST','CHORUS':'C','VERSE':'V','PRE-CHORUS':'PC',
+      };
+      return m[lbl.toUpperCase()]||lbl.slice(0,3).toUpperCase();
+    };
     return(
       <div style={{
-        flexShrink:0,
-        background:'rgba(8,8,9,.96)',borderBottom:'1px solid rgba(255,255,255,.07)',
-        display:'flex',alignItems:'stretch',
+        display:'flex',height:28,flexShrink:0,
+        borderBottom:'1px solid rgba(255,255,255,.07)',
+        background:'rgba(8,8,9,.95)',
         overflowX:'auto',scrollbarWidth:'none',
-        WebkitOverflowScrolling:'touch',
-        minHeight:32,zIndex:5,
       }}>
         {guias.map((g,i)=>{
-          const isActive = mapaSectionIdx===i;
-          const pct = Math.max(7, Math.round((g.compases/totalComp)*100));
+          const pct=(g.compases||4)/totalComp*100;
+          const isActive=mapaSectionIdx===i;
           return(
             <button key={i}
               onClick={()=>{
                 setMapaSectionIdx(i);
                 const el=document.getElementById('section-'+i);
                 const cont=wrapRef.current;
-                if(el&&cont){const elTop=el.getBoundingClientRect().top;const cTop=cont.getBoundingClientRect().top;cont.scrollBy({top:elTop-cTop-12,behavior:'smooth'});}
-                const compasInicio = guias.slice(0,i).reduce((s,g)=>s+(g.compases||4),0);
-                const msPerCompas = (60000/(seqBpm||120))*4;
-                window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{
-                  detail:{sectionIdx:i,compasInicio,msInicio:compasInicio*msPerCompas}
-                }));
+                if(el&&cont){const eT=el.getBoundingClientRect().top;const cT=cont.getBoundingClientRect().top;cont.scrollBy({top:eT-cT-12,behavior:'smooth'});}
+                window.dispatchEvent(new CustomEvent('setsync-mapa-seek',{detail:{sectionIdx:i}}));
               }}
               style={{
-                flexShrink:0,
-                width:pct+'%',minWidth:narrow?36:52,
-                border:'none',
-                background:'transparent',
-                borderBottom:isActive?'2px solid '+g.color:'2px solid transparent',
-                padding:'4px 3px 2px',
-                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
-                cursor:'pointer',transition:'all .15s',
+                minWidth:`${pct}%`,
+                border:'none',padding:'0 2px',cursor:'pointer',
+                display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                gap:1,
+                background:isActive?`${g.color}18`:'transparent',
+                borderBottom:isActive?`2px solid ${g.color}`:'2px solid transparent',
+                transition:'all .15s',flexShrink:0,
               }}>
-              {/* Chip de color — mismo estilo que los de Secuencia */}
-              <div style={{
-                width:'calc(100% - 4px)',
-                minHeight:20,
-                borderRadius:5,
-                background:isActive?g.color+'33':g.color+'14',
-                border:'1px solid '+(isActive?g.color+'88':g.color+'33'),
-                display:'flex',alignItems:'center',justifyContent:'center',
-                padding:'2px 4px',
-              }}>
-                <span style={{
-                  fontSize:narrow?6:8,fontWeight:900,
-                  color:isActive?g.color:g.color+'99',
-                  fontFamily:"'Lexend Giga',sans-serif",
-                  textTransform:'uppercase',letterSpacing:'.3px',
-                  whiteSpace:'nowrap',lineHeight:1.1,textAlign:'center',
-                }}>{abrevLabel(g.label,narrow)}</span>
-              </div>
               <span style={{
-                fontSize:5,color:isActive?g.color:'rgba(255,255,255,.25)',
-                fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,lineHeight:1,
-              }}>{g.compases}c</span>
+                fontSize:8,fontWeight:900,
+                color:isActive?g.color:`${g.color}77`,
+                fontFamily:"'Lexend Giga',sans-serif",
+                textTransform:'uppercase',lineHeight:1,
+              }}>{abrev(g.label)}</span>
             </button>
           );
         })}
