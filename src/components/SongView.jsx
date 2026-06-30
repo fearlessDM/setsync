@@ -1214,6 +1214,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       </div>
     );
 
+    if(!(bottomTab==='monitor'&&showMonitor)) return null;
     return createPortal(panel, document.body);
   }
 
@@ -1435,6 +1436,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
         </div>
     );
+    if(bottomTab!=='referencia') return null;
     return createPortal(panel, document.body);
   }
 
@@ -1801,6 +1803,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
       </div>
     );
+    if(bottomTab!=='secuencia') return null;
     return createPortal(panel, document.body);
   }
 
