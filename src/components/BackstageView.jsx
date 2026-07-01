@@ -291,11 +291,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           )}
         </div>
         <div className="card" style={{padding:14,marginBottom:12}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-            <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Canciones</div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+            <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Selecciona las canciones</div>
             {slCanciones.length>0&&(
               <span style={{fontSize:11,fontWeight:700,color:'var(--ac)'}}>{slCanciones.length} canciones</span>
             )}
+          </div>
+          <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
+            También puedes asignar diferentes variaciones de la canción a cada persona
           </div>
           {slCanciones.length>0&&(
             <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:12}}>
