@@ -11,6 +11,7 @@ import { useMapaCancion } from './songview/useMapaCancion';
 import { useAnotaciones } from './songview/useAnotaciones';
 import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
 import { PanelEstructura } from './songview/PanelEstructura';
+import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
 
 
 // renderSongContent re-exportado para no romper imports externos existentes
@@ -65,10 +66,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [monitorBus,setMonitorBus]=useState(1);
   const [bottomTab,setBottomTab]=useState(null); // null | 'monitor' | 'secuencia'
 
-  // ── Estado de conexión de la mesa (demo: sin conexión) ────────────────────
-  const [mesaConectada] = useState(false);
-  const [mesaNombre] = useState('Behringer X32');
-  const [wifiStrength] = useState(3); // 0-4
+  // ── Estado de conexión de la mesa (v36-ampliación) ─────────────────────
+  // Antes era demo fijo (mesaConectada=false hardcodeado). Ahora es una
+  // conexión real vía driver — hoy solo Soundcraft funciona en la versión
+  // web (protocolo WebSocket, ver mixerDrivers.js para el detalle de por
+  // qué las demás marcas quedan pendientes de la app nativa). Las funciones
+  // conectarMesa/desconectarMesa viven más abajo, después de declarar
+  // FADER_NAMES/faderVols/faderMutes (que usan) — nunca antes, o caen en
+  // zona muerta temporal.
+  const [mesaMarca,setMesaMarca]=useState('soundcraft');
+  const [mesaIP,setMesaIP]=useState('');
+  const [mesaEstado,setMesaEstado]=useState('desconectado'); // desconectado|conectando|conectado|error
+  const [mesaErrorMsg,setMesaErrorMsg]=useState(null);
+  const [showConectarMesa,setShowConectarMesa]=useState(false);
+  const mesaDriverRef=useRef(null);
+  const mesaSubsRef=useRef([]);
+  const mesaConectada = mesaEstado==='conectado';
+  const mesaNombre = MARCAS_MESA.find(m=>m.id===mesaMarca)?.nombre || '';
+  const [wifiStrength] = useState(3); // 0-4 — decorativo, WebSocket no expone RSSI
   const [monitorLayer,setMonitorLayer]=useState('A');
 
   // Chip de estado de monitoreo — aparece en sidebar (desktop) o en tab (mobile)
@@ -693,6 +708,50 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   },[baseName]);
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
+  // Conectar/desconectar mesa real vía driver (v36-ampliación). Vive acá,
+  // después de FADER_NAMES/faderVols/faderMutes, porque los usa — antes
+  // de esas declaraciones cae en zona muerta temporal.
+  const conectarMesa=async()=>{
+    if(!mesaIP.trim()){ setMesaErrorMsg('Ingresa la IP de la mesa'); return; }
+    mesaDriverRef.current?.disconnect?.();
+    mesaSubsRef.current.forEach(s=>s?.unsubscribe?.());
+    mesaSubsRef.current=[];
+    setMesaErrorMsg(null);
+    setMesaEstado('conectando');
+    const driver=crearDriver(mesaMarca, mesaIP.trim());
+    driver.onStatusChange(estado=>setMesaEstado(estado));
+    mesaDriverRef.current=driver;
+    try{
+      await driver.connect();
+      setToast({text:`✓ Conectado a ${mesaNombre}`,sub:mesaIP.trim()});
+      // Sincroniza los 8 faders visibles con los valores reales de la mesa
+      FADER_NAMES.forEach((_,ci)=>{
+        const subF=driver.onFaderChange(monitorBus, ci+1, v=>{
+          setFaderVols(prev=>{const n=[...prev];n[ci]=Math.round(v*100);return n;});
+        });
+        const subM=driver.onMuteChange(monitorBus, ci+1, m=>{
+          setFaderMutes(prev=>{const n=[...prev];n[ci]=m;return n;});
+        });
+        mesaSubsRef.current.push(subF,subM);
+      });
+    }catch(err){
+      setMesaErrorMsg(err.message||'No se pudo conectar');
+      setMesaEstado('error');
+    }
+  };
+  const desconectarMesa=()=>{
+    mesaDriverRef.current?.disconnect?.();
+    mesaSubsRef.current.forEach(s=>s?.unsubscribe?.());
+    mesaSubsRef.current=[];
+    mesaDriverRef.current=null;
+    setMesaEstado('desconectado');
+  };
+  // Limpieza al desmontar SongView — no dejar el socket abierto
+  useEffect(()=>()=>{
+    mesaDriverRef.current?.disconnect?.();
+    mesaSubsRef.current.forEach(s=>s?.unsubscribe?.());
+  },[]);
+
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
   const BottomTabBar=()=>{
     const canPrev = idx > 0;
@@ -1167,15 +1226,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
           borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
-            stroke={mesaConectada?'var(--gn)':'var(--tx3)'} strokeWidth="2">
-            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-          </svg>
-          <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':'var(--tx3)',
-            fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
-            {mesaConectada?`Conectado · ${mesaNombre}`:'Monitor · Sin conexión'}
-          </div>
+          <button onClick={()=>setShowConectarMesa(v=>!v)}
+            style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0,background:'none',border:'none',cursor:'pointer',padding:0,textAlign:'left'}}>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
+              stroke={mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--tx3)'} strokeWidth="2">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            </svg>
+            <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--tx3)',
+              fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
+              {mesaConectada?`Conectado · ${mesaNombre}`:mesaEstado==='conectando'?'Conectando…':'Monitor · Toca para conectar'}
+            </div>
+          </button>
           <div style={{display:'flex',alignItems:'center',gap:3}}>
             <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
             {[1,2,3,4].map(b=>(
@@ -1203,6 +1265,48 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
               display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
         </div>
+
+        {/* Panel de conexión — marca + IP (v36-ampliación) */}
+        {showConectarMesa&&(
+          <div style={{padding:'10px 12px',borderBottom:'1px solid rgba(255,255,255,.07)',
+            display:'flex',flexDirection:'column',gap:8,flexShrink:0,background:'rgba(255,255,255,.02)'}}>
+            <select value={mesaMarca} onChange={e=>{setMesaMarca(e.target.value);setMesaErrorMsg(null);}}
+              disabled={mesaConectada}
+              style={{padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+                background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+              {MARCAS_MESA.map(m=>(
+                <option key={m.id} value={m.id}>{m.nombre}{m.disponible?'':' — próximamente (requiere app nativa)'}</option>
+              ))}
+            </select>
+            <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              {MARCAS_MESA.find(m=>m.id===mesaMarca)?.modelos}
+            </div>
+            <div style={{display:'flex',gap:6}}>
+              <input value={mesaIP} onChange={e=>setMesaIP(e.target.value)} disabled={mesaConectada}
+                placeholder="IP de la mesa (ej: 10.10.1.1)"
+                style={{flex:1,padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+                  background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif"}}/>
+              {mesaConectada?(
+                <button onClick={desconectarMesa}
+                  style={{padding:'7px 14px',borderRadius:8,border:'none',background:'rgba(253,128,131,.15)',
+                    color:'var(--rd)',cursor:'pointer',fontSize:10,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Desconectar
+                </button>
+              ):(
+                <button onClick={conectarMesa} disabled={mesaEstado==='conectando'}
+                  style={{padding:'7px 14px',borderRadius:8,border:'none',
+                    background:mesaEstado==='conectando'?'rgba(255,255,255,.1)':'var(--ac)',
+                    color:mesaEstado==='conectando'?'var(--tx3)':'#000',cursor:mesaEstado==='conectando'?'not-allowed':'pointer',
+                    fontSize:10,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  {mesaEstado==='conectando'?'Conectando…':'Conectar'}
+                </button>
+              )}
+            </div>
+            {mesaErrorMsg&&(
+              <div style={{fontSize:9,color:'var(--rd)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{mesaErrorMsg}</div>
+            )}
+          </div>
+        )}
 
         {/* Grid de 8 faders */}
         <div style={{flex:1,display:'flex',gap:2,padding:'6px 8px 8px',overflow:'hidden',minHeight:0}}>
@@ -1323,6 +1427,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.removeEventListener('pointerup',up);
                           // Solo actualizar React state al soltar
                           setFaderVols(v=>{const n=[...v];n[ci]=curVol;return n;});
+                          // Envía el valor real a la mesa conectada (v36-ampliación)
+                          if(mesaConectada) mesaDriverRef.current?.setFaderLevel(monitorBus, ci+1, curVol/100);
                         };
                         knob.addEventListener('pointermove',move,{passive:false});
                         knob.addEventListener('pointerup',up,{once:true});
@@ -1339,7 +1445,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   fontWeight:700,flexShrink:0,letterSpacing:'.5px'}}>CH {ci+1}</div>
                 <button onClick={e=>{
                   e.stopPropagation();
-                  setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];return n;});
+                  setFaderMutes(m=>{const n=[...m];n[ci]=!n[ci];
+                    if(mesaConectada) mesaDriverRef.current?.setMute(monitorBus, ci+1, n[ci]);
+                    return n;});
                 }} style={{
                   width:'100%',padding:'3px 0',borderRadius:4,border:'none',cursor:'pointer',
                   flexShrink:0,

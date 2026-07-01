@@ -11,9 +11,10 @@
     "deploy": "npm run build && echo Build listo en dist/ - sube ese contenido a GitHub Pages o conecta con Netlify"
   },
   "dependencies": {
+    "firebase": "^11.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "firebase": "^11.0.0"
+    "soundcraft-ui-connection": "^7.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
