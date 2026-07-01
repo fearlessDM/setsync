@@ -481,7 +481,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
-          <div style={{fontSize:12,color:'var(--tx2)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif"}}>{CANCIONES.length} canciones · letras · acordes · partituras</div>
+          <div style={{fontSize:12,color:'var(--tx2)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.6,maxWidth:420}}>
+            Las canciones son carpetas, no archivos.<br/>
+            Letras y acordes, partituras por instrumento, secuencias y audios de referencia — todo vive junto, dentro de la canción.
+          </div>
         </div>
         <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
           style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',

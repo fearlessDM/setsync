@@ -264,15 +264,20 @@ Voicings extendidos para teclado
       if(typeof item==='string')return CANCIONES.find(c=>c.n===item)||{n:item,name:item,key:'',bpm:''};
       if(item&&item.cancion){
         const base=CANCIONES.find(c=>c.n===item.cancion)||{n:item.cancion,key:'',bpm:''};
-        const v=item.variacionId&&item.variacionId!=='original'
-          ?(variacionesDB[item.cancion]||[]).find(x=>x.id===item.variacionId):null;
-        const persona=item.personaId?personas.find(p=>p.id===item.personaId):null;
-        const partitura = v?.tipo==='partitura' ? {url:v.archivoUrl,nombre:v.archivoNombre} : null;
+        // asignaciones: puede haber varias (ej. Piano→Ana y Bajo→Luis en la
+        // misma canción) — al abrir genérico no sabemos "cuál es la mía"
+        // sin login, así que se abre el Original y se muestran todas las
+        // asignaciones como referencia en el header.
+        const asignaciones=(item.asignaciones||(item.variacionId?[{variacionId:item.variacionId,personaId:item.personaId}]:[]))
+          .map(a=>{
+            const v=a.variacionId&&a.variacionId!=='original'?(variacionesDB[item.cancion]||[]).find(x=>x.id===a.variacionId):null;
+            const persona=a.personaId?personas.find(p=>p.id===a.personaId):null;
+            return (v||persona)?{variacion:v?.label||'Original',persona:persona?.name||null}:null;
+          }).filter(Boolean);
         return{
-          name: v?`${item.cancion} · ${v.label}`:item.cancion,
+          name: item.cancion,
           key: base.key, bpm: base.bpm,
-          asignadoA: persona?.name||null,
-          partitura,
+          asignaciones,
         };
       }
       if(typeof item==='object'&&item)return item; // ya resuelto (compatibilidad hacia atrás)

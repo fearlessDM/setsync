@@ -2267,7 +2267,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
               {curKey} · {song.bpm} BPM
               {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
-              {song.asignadoA&&<span style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>Asignado a {song.asignadoA}</span>}
+              {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
             </div>
           </div>
           <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
@@ -2313,7 +2313,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
             {curKey} · {song.bpm} BPM
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
-            {song.asignadoA&&<span style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>Asignado a {song.asignadoA}</span>}
+            {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
           </div>
         </div>
         <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"

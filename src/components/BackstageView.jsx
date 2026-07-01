@@ -64,6 +64,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     {name:'Mauro Pizarro',av:'MP',rol:'Líder Proyecciones',permisos:['gestionar equipo']},
   ]);
   const personas=equipos.flatMap(eq=>(eq.miembros||[]));
+  // Paleta de acento (misma familia que usa el resto de la app: mint/gold/
+  // rojo) para dar variedad de color a avatares sin usar gradientes —
+  // determinístico por nombre, no random, así cada persona mantiene su
+  // color entre renders.
+  const AVATAR_PALETTE=['#30C0B7','#c8a97e','#FD8083','#7dd3c0','#e0a458'];
+  const colorForName=(name='')=>{
+    let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+    return AVATAR_PALETTE[h%AVATAR_PALETTE.length];
+  };
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
@@ -294,7 +303,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
             <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Selecciona las canciones</div>
             {slCanciones.length>0&&(
-              <span style={{fontSize:11,fontWeight:700,color:'var(--ac)'}}>{slCanciones.length} canciones</span>
+              <span style={{fontSize:11,fontWeight:700,color:'var(--ac)'}}>{slCanciones.length}</span>
             )}
           </div>
           <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
@@ -304,10 +313,28 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:12}}>
               {slCanciones.map((s,i)=>{
                 const vars=variacionesDB[s.cancion]||[];
+                const asignaciones=s.asignaciones||[{id:`a${i}`,variacionId:'original',personaId:null}];
+                const resumenVars=asignaciones.map(a=>vars.find(v=>v.id===a.variacionId)?.label).filter(Boolean);
+                const actualizarAsignacion=(aId,campo,valor)=>{
+                  setSlCanciones(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                    asignaciones:(x.asignaciones||asignaciones).map(a=>a.id===aId?{...a,[campo]:valor}:a)}));
+                };
+                const agregarAsignacion=()=>{
+                  setSlCanciones(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                    asignaciones:[...(x.asignaciones||asignaciones),{id:`a${Date.now()}${j}`,variacionId:'original',personaId:null}]}));
+                };
+                const quitarAsignacion=(aId)=>{
+                  setSlCanciones(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                    asignaciones:(x.asignaciones||asignaciones).filter(a=>a.id!==aId)}));
+                };
                 return(
                 <div key={s.cancion+i} style={{padding:'10px 12px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)'}}>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:vars.length||personas.length?8:0}}>
-                    <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{i+1}. {s.cancion}</span>
+                    <span style={{flex:1,minWidth:0,fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
+                      overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
+                      {i+1}. {s.cancion}
+                      {resumenVars.length>0&&<span style={{fontWeight:400,color:'var(--gn)',fontSize:10,marginLeft:6}}>· {resumenVars.join(', ')}</span>}
+                    </span>
                     <button disabled={i===0} onClick={()=>moverCancion(i,i-1)}
                       style={{width:18,height:18,border:'none',background:'rgba(255,255,255,.08)',
                         color:i===0?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
@@ -325,25 +352,44 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                         color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                         alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                   </div>
-                  {/* Asignación: qué variación/partitura toca esta persona (v36-ampliación) */}
+                  {/* Asignaciones: qué variación/partitura toca cada persona — puede haber
+                      varias por canción (v36-ampliación: botón + para repartir a más de una
+                      persona, ej. Piano a Ana y Bajo a Luis en la misma canción) */}
                   {(vars.length>0||personas.length>0)&&(
-                    <div style={{display:'flex',gap:6}}>
-                      {vars.length>0&&(
-                        <select value={s.variacionId||'original'} onChange={e=>setSlCanciones(prev=>prev.map((x,j)=>j===i?{...x,variacionId:e.target.value}:x))}
-                          style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                            color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                          <option value="original">Original (letra/acordes)</option>
-                          {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
-                        </select>
-                      )}
-                      {personas.length>0&&(
-                        <select value={s.personaId||''} onChange={e=>setSlCanciones(prev=>prev.map((x,j)=>j===i?{...x,personaId:e.target.value||null}:x))}
-                          style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                            color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                          <option value="">Sin asignar</option>
-                          {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
-                        </select>
-                      )}
+                    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                      {asignaciones.map(a=>(
+                        <div key={a.id} style={{display:'flex',gap:6,alignItems:'center'}}>
+                          {vars.length>0&&(
+                            <select value={a.variacionId||'original'} onChange={e=>actualizarAsignacion(a.id,'variacionId',e.target.value)}
+                              style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                                color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                              <option value="original">Original (letra/acordes)</option>
+                              {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
+                            </select>
+                          )}
+                          {personas.length>0&&(
+                            <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
+                              style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                                color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                              <option value="">Sin asignar</option>
+                              {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
+                            </select>
+                          )}
+                          {asignaciones.length>1&&(
+                            <button onClick={()=>quitarAsignacion(a.id)}
+                              style={{width:20,height:20,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.08)',
+                                color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
+                                alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+                          )}
+                        </div>
+                      ))}
+                      <button onClick={agregarAsignacion}
+                        style={{alignSelf:'flex-start',display:'flex',alignItems:'center',gap:5,padding:'4px 10px',
+                          borderRadius:100,border:'1px dashed rgba(255,255,255,.2)',background:'transparent',
+                          color:'var(--gn)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                        <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Asignar otra variación
+                      </button>
                     </div>
                   )}
                 </div>
@@ -354,7 +400,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <input className="inp" placeholder="Buscar canción..." value={slSearch} onChange={e=>setSlSearch(e.target.value)} style={{marginBottom:10}}/>
           <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).map(s=>(
-              <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,{cancion:s.n,variacionId:'original',personaId:null}]);}}>
+              <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,{cancion:s.n,asignaciones:[{id:`a${Date.now()}`,variacionId:'original',personaId:null}]}]);}}>
                 <span className="scard-n">{s.n}</span>
                 <span className="scard-s">{s.key}<span>{s.bpm} bpm</span></span>
               </div>
@@ -460,7 +506,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 borderBottom:i<personas.length-1?'1px solid rgba(255,255,255,.05)':'none',background:'var(--s1)'}}>
                 {m.foto
                   ?<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
-                  :<div style={{width:26,height:26,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
+                  :<div style={{width:26,height:26,borderRadius:'50%',background:`${colorForName(m.name)}22`,border:`1px solid ${colorForName(m.name)}55`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:colorForName(m.name),flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
                 }
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12,fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
@@ -669,8 +715,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
             {lideresActuales.map((l,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)'}}>
-                {/* Avatar texto plano — sin gradiente */}
-                <div style={{width:36,height:36,borderRadius:10,background:'rgba(255,255,255,.08)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>
+                {/* Avatar coloreado por persona — determinístico, sin gradiente */}
+                <div style={{width:36,height:36,borderRadius:10,background:`${colorForName(l.name)}22`,border:`1px solid ${colorForName(l.name)}55`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:900,color:colorForName(l.name),flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>
                   {l.av}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
@@ -777,10 +823,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div className="card" style={{padding:16,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Tipo de aviso</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-          {[{id:'recordatorio',label:'Recordatorio',icon:'🔔'},{id:'cambio',label:'Cambio setlist',icon:''},{id:'urgente',label:'Urgente',icon:'⚡'},{id:'general',label:'General',icon:'💬'}].map(t=>(
-            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',border:notifTipo===t.id?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifTipo===t.id?'rgba(200,169,126,.08)':'var(--s1)',fontFamily:"'Lexend Giga',sans-serif"}}>
-              <div style={{fontSize:18,marginBottom:4}}>{t.icon}</div>
-              <div style={{fontSize:12,fontWeight:700,color:notifTipo===t.id?'var(--ac)':'var(--tx)'}}>{t.label}</div>
+          {[{id:'recordatorio',label:'Recordatorio',color:'#c8a97e',icon:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>},
+            {id:'cambio',label:'Cambio setlist',color:'#30C0B7',icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>},
+            {id:'urgente',label:'Urgente',color:'#FD8083',icon:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>},
+            {id:'general',label:'General',color:'#7dd3c0',icon:<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>}].map(t=>(
+            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',border:notifTipo===t.id?`1px solid ${t.color}80`:'1px solid var(--bd)',background:notifTipo===t.id?`${t.color}14`:'var(--s1)',fontFamily:"'Lexend Giga',sans-serif"}}>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={t.color} strokeWidth="1.8" style={{marginBottom:6,display:'block'}}>{t.icon}</svg>
+              <div style={{fontSize:12,fontWeight:700,color:notifTipo===t.id?t.color:'var(--tx)'}}>{t.label}</div>
             </button>
           ))}
         </div>
@@ -956,7 +1005,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Versículo y notas para el domingo</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Versículo del domingo</div>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+          <div style={{width:24,height:24,borderRadius:7,background:'rgba(200,169,126,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#c8a97e" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Versículo del domingo</div>
+        </div>
         <input className="inp" placeholder="Ej: Juan 3:16" style={{marginBottom:8}}
           value={pastorVersiculo||''} onChange={e=>setPastorVersiculo(e.target.value)}/>
         <textarea className="inp" placeholder="Escribe el texto del versículo aquí..."
@@ -964,27 +1018,37 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           value={pastorTexto||''} onChange={e=>setPastorTexto(e.target.value)}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Notas del mensaje</div>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+          <div style={{width:24,height:24,borderRadius:7,background:'rgba(48,192,183,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#30C0B7" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          </div>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Notas del mensaje</div>
+        </div>
         <textarea className="inp" placeholder="Título del mensaje, puntos principales, notas para el equipo..."
           rows={5} style={{width:'100%',resize:'vertical',fontFamily:"'Lexend Giga',sans-serif",fontSize:13,lineHeight:1.6}}
           value={pastorNotas||''} onChange={e=>setPastorNotas(e.target.value)}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:12}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Archivos para multimedia</div>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+          <div style={{width:24,height:24,borderRadius:7,background:'rgba(253,128,131,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#FD8083" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Archivos para multimedia</div>
+        </div>
         <div style={{fontSize:11,color:'var(--tx2)',marginBottom:12,lineHeight:1.6}}>PPT, imágenes o PDF que el equipo de proyecciones necesita para el servicio.</div>
-        <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',background:'rgba(255,255,255,.03)',cursor:'pointer',transition:'all .2s'}}
-          onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}
-          onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.03)'}>
+        <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed rgba(253,128,131,.3)',background:'rgba(253,128,131,.04)',cursor:'pointer',transition:'all .2s'}}
+          onMouseEnter={e=>e.currentTarget.style.background='rgba(253,128,131,.08)'}
+          onMouseLeave={e=>e.currentTarget.style.background='rgba(253,128,131,.04)'}>
           <input type="file" accept=".ppt,.pptx,.pdf,.jpg,.jpeg,.png,.gif" multiple style={{display:'none'}}
             onChange={e=>{
               const files=Array.from(e.target.files||[]);
               if(files.length) onToast({text:`${files.length} archivo${files.length>1?'s':''} listo${files.length>1?'s':''}`,sub:'El equipo multimedia puede verlo'});
             }}/>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FD8083" strokeWidth="1.8">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
           <div>
-            <div style={{fontSize:12,fontWeight:700,color:'var(--ac)'}}>Subir archivos</div>
+            <div style={{fontSize:12,fontWeight:700,color:'#FD8083'}}>Subir archivos</div>
             <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>PPT · PDF · Imágenes</div>
           </div>
         </label>
@@ -1220,19 +1284,31 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   }
 
   const ITEMS=[
-    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',adminOnly:false},
-    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',adminOnly:false},
-    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'calendar',adminOnly:false},
-    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',adminOnly:true},
-    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',adminOnly:true},
-    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',adminOnly:false},
-    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',adminOnly:false},
-    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',adminOnly:true}]:[]),
-    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'settings',adminOnly:true},
+    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',color:'#c8a97e',adminOnly:false},
+    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',color:'#30C0B7',adminOnly:false},
+    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'mic',color:'#FD8083',adminOnly:false},
+    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',color:'#30C0B7',adminOnly:true},
+    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',color:'#c8a97e',adminOnly:true},
+    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',color:'#FD8083',adminOnly:false},
+    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',color:'#7dd3c0',adminOnly:false},
+    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',color:'#e0a458',adminOnly:true}]:[]),
+    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'star',color:'#c8a97e',adminOnly:true},
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;
   });
+
+  const ITEM_ICONS={
+    calendar:<path d="M3 10h18M8 3v4M16 3v4M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>,
+    music:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
+    mic:<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></>,
+    team:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    shield:<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>,
+    bell:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
+    settings:<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
+    book:<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>,
+    star:<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+  };
 
   return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
@@ -1246,9 +1322,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
-            style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'20px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:6}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:15}}>{it.label}</div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
+            style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10}}>
+            <div style={{width:32,height:32,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',background:`${it.color}1c`}}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={it.color} strokeWidth="1.8">{ITEM_ICONS[it.icon]}</svg>
+            </div>
+            <div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:15,marginBottom:5}}>{it.label}</div>
+              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
+            </div>
           </button>
         ))}
       </div>
