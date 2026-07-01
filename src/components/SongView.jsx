@@ -637,6 +637,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const refInputRef=useRef(null);
   const refWaveRef=useRef(null);
   const refAnimRef=useRef(null);
+  // ── Referencia Capa 2 — Grabaciones de ensayo (v36) ──────────────────────
+  // NOTA: estado 100% local por ahora (sin Firebase Storage/Firestore aún —
+  // decisión de Danny 01-Jul-2026: armar UI/estado local primero, conectar
+  // Firebase en sesión aparte). ENSAYOS_MOCK más abajo es placeholder.
+  const [refTab,setRefTab]=useState('track');           // 'track' | 'grabaciones'
+  const [grabaciones,setGrabaciones]=useState([null,null,null]); // 3 slots fijos (v36)
+  const [isRecording,setIsRecording]=useState(false);
+  const [recordSlot,setRecordSlot]=useState(null);       // idx del slot que se está grabando
+  const [recordElapsed,setRecordElapsed]=useState(0);    // segundos
+  const [recordError,setRecordError]=useState(null);
+  const [pendingRecording,setPendingRecording]=useState(null); // {blob,url,duracionSeg,slotIdx}
+  const [selectedEnsayoId,setSelectedEnsayoId]=useState(null);
+  const mediaRecorderRef=useRef(null);
+  const mediaStreamRef=useRef(null);
+  const recordChunksRef=useRef([]);
+
+  // Timer de grabación (hook en el nivel de SongView — nunca dentro de
+  // ReferenciaPanel, que se re-crea cada render y perdería el estado)
+  useEffect(()=>{
+    if(!isRecording) return;
+    const iv=setInterval(()=>setRecordElapsed(s=>s+1),1000);
+    return ()=>clearInterval(iv);
+  },[isRecording]);
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
@@ -1239,8 +1262,149 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   }
 
 
+  // ── Helpers Capa 1 — Track de referencia (reparados; estaban referenciados
+  // pero nunca definidos: loadFile/seekTo/clearLoop/markIn/markOut/SPEEDS/audio) ──
+  const SPEEDS=[0.5,0.75,1,1.25,1.5];
+
+  const loadFile=(file)=>{
+    if(refUrl) URL.revokeObjectURL(refUrl);
+    setRefAudio(file);
+    setRefUrl(URL.createObjectURL(file));
+    setRefPlaying(false);
+    setRefTime(0);
+    setRefDuration(0);
+    setRefLoopIn(null);
+    setRefLoopOut(null);
+    setRefLooping(false);
+    const esMp3=file.type.includes('mpeg')||file.name.toLowerCase().endsWith('.mp3');
+    setToast(esMp3?'✓ MP3 cargado (se convertirá a AAC 96kbps al sincronizar)':'✓ Track cargado');
+  };
+
+  const seekTo=(e,el)=>{
+    const audio=refPlayerRef.current;
+    if(!audio||!refDuration) return;
+    const r=el.getBoundingClientRect();
+    const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    audio.currentTime=p*refDuration;
+    setRefTime(p*refDuration);
+  };
+
+  const clearLoop=()=>{
+    setRefLoopIn(null);
+    setRefLoopOut(null);
+    setRefLooping(false);
+  };
+
+  const markIn=()=>{
+    const audio=refPlayerRef.current;
+    const t=audio?audio.currentTime:refTime;
+    if(refLoopOut!=null&&t>=refLoopOut){setToast('El punto IN debe ser antes del OUT');return;}
+    setRefLoopIn(t);
+  };
+
+  const markOut=()=>{
+    const audio=refPlayerRef.current;
+    const t=audio?audio.currentTime:refTime;
+    if(refLoopIn!=null&&t<=refLoopIn){setToast('El punto OUT debe ser después del IN');return;}
+    setRefLoopOut(t);
+  };
+
+  const fmtDur=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+
+  // ── Helpers Capa 2 — Grabaciones de ensayo (v36) ─────────────────────────
+  // ENSAYOS_MOCK: placeholder hasta tener Fecha/Evento→Ensayo real en
+  // Firestore (decisión Danny 01-Jul-2026: UI/estado local primero). Cuando
+  // se conecte Firebase esto debe venir por prop, filtrado por equipo.
+  const ENSAYOS_MOCK=[
+    {id:'e1',nombre:'Ensayo general · hoy'},
+    {id:'e2',nombre:'Ensayo jóvenes · sábado'},
+  ];
+
+  const fmtFechaCorta=(d)=>d.toLocaleDateString('es-CL',{day:'2-digit',month:'short'})+' · '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+
+  const getRecordMime=()=>{
+    if(typeof MediaRecorder==='undefined') return null;
+    if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return 'audio/webm;codecs=opus';
+    if(MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4'; // fallback iOS (AAC)
+    return '';
+  };
+
+  const iniciarGrabacion=async(slotIdx)=>{
+    setRecordError(null);
+    if(typeof navigator==='undefined'||!navigator.mediaDevices?.getUserMedia){
+      setRecordError('Este dispositivo/navegador no soporta grabación');
+      return;
+    }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaStreamRef.current=stream;
+      const mime=getRecordMime();
+      const opts={audioBitsPerSecond:32000,...(mime?{mimeType:mime}:{})};
+      const mr=new MediaRecorder(stream,opts);
+      recordChunksRef.current=[];
+      mr.ondataavailable=e=>{if(e.data&&e.data.size>0)recordChunksRef.current.push(e.data);};
+      mr.onstop=()=>{
+        const blob=new Blob(recordChunksRef.current,{type:mime||'audio/webm'});
+        const url=URL.createObjectURL(blob);
+        stream.getTracks().forEach(t=>t.stop());
+        setPendingRecording({blob,url,duracionSeg:recordElapsed,slotIdx});
+        setIsRecording(false);
+      };
+      mediaRecorderRef.current=mr;
+      mr.start();
+      setRecordElapsed(0);
+      setRecordSlot(slotIdx);
+      setIsRecording(true);
+    }catch(err){
+      setRecordError('No se pudo acceder al micrófono — revisa permisos');
+    }
+  };
+
+  const detenerGrabacion=()=>{ mediaRecorderRef.current?.stop(); };
+
+  const descartarPending=()=>{
+    if(pendingRecording?.url) URL.revokeObjectURL(pendingRecording.url);
+    setPendingRecording(null);
+    setSelectedEnsayoId(null);
+  };
+
+  const guardarEnCancion=()=>{
+    if(!pendingRecording) return;
+    if(refUrl) URL.revokeObjectURL(refUrl);
+    setRefAudio({name:`Grabación de ensayo · ${fmtFechaCorta(new Date())}`});
+    setRefUrl(pendingRecording.url);
+    setRefPlaying(false);setRefTime(0);setRefDuration(0);
+    setRefLoopIn(null);setRefLoopOut(null);setRefLooping(false);
+    setPendingRecording(null);
+    setSelectedEnsayoId(null);
+    setRefTab('track');
+    setToast('✓ Guardada en la Canción — permanente');
+  };
+
+  const guardarEnEnsayo=()=>{
+    if(!pendingRecording||!selectedEnsayoId) return;
+    const ensayo=ENSAYOS_MOCK.find(e=>e.id===selectedEnsayoId);
+    const idx=pendingRecording.slotIdx;
+    setGrabaciones(g=>{
+      const n=[...g];
+      n[idx]={
+        id:`g_${Date.now()}`,
+        url:pendingRecording.url,
+        duracionSeg:pendingRecording.duracionSeg,
+        fecha:new Date(),
+        ensayoId:selectedEnsayoId,
+        ensayoNombre:ensayo?.nombre||'Ensayo',
+      };
+      return n;
+    });
+    setPendingRecording(null);
+    setSelectedEnsayoId(null);
+    setToast('✓ Guardada en el Ensayo — se autoborra 2 semanas después del evento');
+  };
+
   const ReferenciaPanel=() => {
-    const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+    const fmt=fmtDur;
+    const grabActivas=grabaciones.filter(Boolean).length;
 
     const panel = (
         <div style={{
@@ -1250,7 +1414,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
           display:'flex',flexDirection:'column',
-          maxHeight:'55vh',
+          maxHeight:'62vh',
         }}>
           {/* Header */}
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,.06)'}}>
@@ -1260,204 +1424,335 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <span style={{flex:1,fontSize:10,fontWeight:900,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>
               Referencia
             </span>
-            {refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:160,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
-            {/* Subir audio */}
-            <button onClick={()=>refInputRef.current?.click()}
-              style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-              {refAudio?'Cambiar':'Subir audio'}
-            </button>
-            <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
-              onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
+            {refTab==='track'&&refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:140,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
+            {refTab==='track'&&(
+              <>
+                <button onClick={()=>refInputRef.current?.click()}
+                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                  {refAudio?'Cambiar':'Subir audio'}
+                </button>
+                <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
+                  onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
+              </>
+            )}
           </div>
 
-          {!refUrl?(
-            /* Estado vacío */
-            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20}}>
-              <div style={{width:56,height:56,borderRadius:'50%',border:'2px dashed rgba(255,255,255,.15)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
-                onClick={()=>refInputRef.current?.click()}>
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--tx3)" strokeWidth="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-              </div>
-              <div style={{textAlign:'center'}}>
-                <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
-                <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
-              </div>
-            </div>
-          ):(
-            <div style={{flex:1,display:'flex',flexDirection:'column',padding:'10px 14px 14px',gap:10,overflow:'hidden'}}>
-              {/* Audio element oculto */}
-              <audio ref={refPlayerRef} src={refUrl} preload="metadata"
-                onTimeUpdate={e=>{
-                  const t=e.target.currentTime;
-                  setRefTime(t);
-                  // Loop check
-                  if(refLooping&&refLoopOut!=null&&t>=refLoopOut){
-                    e.target.currentTime=refLoopIn??0;
-                  }
-                }}
-                onLoadedMetadata={e=>setRefDuration(e.target.duration)}
-                onEnded={()=>setRefPlaying(false)}
-                style={{display:'none'}}/>
+          {/* Sub-tabs Capa 1 (Track) / Capa 2 (Grabaciones) — v36 */}
+          <div style={{display:'flex',gap:6,padding:'8px 14px 0',flexShrink:0}}>
+            <button onClick={()=>setRefTab('track')}
+              style={{flex:1,padding:'7px 0',borderRadius:9,border:'none',cursor:'pointer',
+                fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.5px',
+                background:refTab==='track'?'rgba(255,255,255,.1)':'transparent',
+                color:refTab==='track'?'var(--tx)':'var(--tx3)'}}>
+              TRACK
+            </button>
+            <button onClick={()=>setRefTab('grabaciones')}
+              style={{flex:1,padding:'7px 0',borderRadius:9,border:'none',cursor:'pointer',
+                fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.5px',
+                background:refTab==='grabaciones'?'rgba(255,255,255,.1)':'transparent',
+                color:refTab==='grabaciones'?'var(--tx)':'var(--tx3)'}}>
+              GRABACIONES · {grabActivas}/3
+            </button>
+          </div>
 
-              {/* Waveform / Progress bar principal */}
-              <div style={{position:'relative',height:48,borderRadius:10,background:'rgba(255,255,255,.05)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
-                onClick={e=>seekTo(e,e.currentTarget)}
-                onPointerDown={e=>{
-                  e.preventDefault();
-                  const el=e.currentTarget;
-                  el.setPointerCapture(e.pointerId);
-                  seekTo(e,el);
-                  const move=ev=>{ev.preventDefault();seekTo(ev,el);};
-                  const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);};
-                  el.addEventListener('pointermove',move,{passive:false});
-                  el.addEventListener('pointerup',up,{once:true});
-                }}>
-                {/* Fondo de barras simuladas (decorativo estilo waveform) */}
-                <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',gap:1,padding:'4px 0'}}>
-                  {Array.from({length:80},(_,i)=>{
-                    const h=Math.sin(i*0.4)*0.3+Math.sin(i*0.13)*0.4+0.3;
-                    const filled=(i/80)<pct;
-                    const inLoop=inPct!=null&&outPct!=null&&(i/80*100)>=inPct&&(i/80*100)<=outPct;
-                    return(
-                      <div key={i} style={{
-                        flex:1,borderRadius:1,
-                        height:`${Math.max(15,h*100)}%`,
-                        background: filled
-                          ? inLoop&&refLooping?'var(--gn)':'rgba(200,169,126,.9)'
-                          : inLoop?'rgba(48,192,183,.3)':'rgba(255,255,255,.12)',
-                        transition:'background .1s',
-                      }}/>
-                    );
-                  })}
+          {refTab==='track'?(
+            !refUrl?(
+              /* Estado vacío */
+              <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20}}>
+                <div style={{width:56,height:56,borderRadius:'50%',border:'2px dashed rgba(255,255,255,.15)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
+                  onClick={()=>refInputRef.current?.click()}>
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--tx3)" strokeWidth="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
                 </div>
-                {/* Marcador In */}
-                {inPct!=null&&(
-                  <div style={{position:'absolute',top:0,bottom:0,left:`${inPct}%`,width:2,background:'var(--gn)',zIndex:3}}>
-                    <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--gn)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>IN</div>
-                  </div>
-                )}
-                {/* Marcador Out */}
-                {outPct!=null&&(
-                  <div style={{position:'absolute',top:0,bottom:0,left:`${outPct}%`,width:2,background:'var(--rd)',zIndex:3}}>
-                    <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--rd)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
-                  </div>
-                )}
-                {/* Playhead */}
-                <div style={{position:'absolute',top:0,bottom:0,left:`${pct*100}%`,width:2,background:'var(--ac)',zIndex:4,transition:'left .05s'}}/>
+                <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
+                  <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+                </div>
               </div>
-
-              {/* Tiempos */}
-              <div style={{display:'flex',justifyContent:'space-between',flexShrink:0}}>
-                <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refTime)}</span>
-                {refLoopIn!=null&&refLoopOut!=null&&(
-                  <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-                    Loop {fmt(refLoopIn)} → {fmt(refLoopOut)}
-                  </span>
-                )}
-                <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refDuration)}</span>
-              </div>
-
-              {/* Controles principales */}
-              <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                {/* Retroceder 5s */}
-                <button onClick={()=>{if(audio){audio.currentTime=Math.max(0,audio.currentTime-5);}}}
-                  style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L4 9v6h6l-2.18-2.18A6.93 6.93 0 0 1 12.5 11c3.02 0 5.6 2 6.54 4.77l1.92-.64A9 9 0 0 0 12.5 8z"/></svg>
-                </button>
-
-                {/* Play / Pause */}
-                <button onClick={()=>{
-                  if(!audio)return;
-                  if(refPlaying){audio.pause();setRefPlaying(false);}
-                  else{
-                    if(refLooping&&refLoopIn!=null&&(audio.currentTime<(refLoopIn??0)||audio.currentTime>=(refLoopOut??refDuration))){
-                      audio.currentTime=refLoopIn??0;
+            ):(()=>{
+              const audio=refPlayerRef.current;
+              const pct=refDuration?(refTime/refDuration):0;
+              const inPct=(refLoopIn!=null&&refDuration)?(refLoopIn/refDuration*100):null;
+              const outPct=(refLoopOut!=null&&refDuration)?(refLoopOut/refDuration*100):null;
+              return(
+              <div style={{flex:1,display:'flex',flexDirection:'column',padding:'10px 14px 14px',gap:10,overflow:'hidden'}}>
+                {/* Audio element oculto */}
+                <audio ref={refPlayerRef} src={refUrl} preload="metadata"
+                  onTimeUpdate={e=>{
+                    const t=e.target.currentTime;
+                    setRefTime(t);
+                    // Loop check
+                    if(refLooping&&refLoopOut!=null&&t>=refLoopOut){
+                      e.target.currentTime=refLoopIn??0;
                     }
-                    audio.play();setRefPlaying(true);
-                  }
-                }} style={{width:48,height:48,borderRadius:'50%',border:'none',background:'var(--ac)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 20px rgba(255,255,255,.2)'}}>
-                  {refPlaying
-                    ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                    :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  }
-                </button>
+                  }}
+                  onLoadedMetadata={e=>setRefDuration(e.target.duration)}
+                  onEnded={()=>setRefPlaying(false)}
+                  style={{display:'none'}}/>
 
-                {/* Adelantar 5s */}
-                <button onClick={()=>{if(audio){audio.currentTime=Math.min(refDuration,audio.currentTime+5);}}}
-                  style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 9c-1.85-1.6-4.25-2.6-6.9-2.6A9 9 0 0 0 2.54 15.13l1.92.64A7 7 0 0 1 11.1 11c1.89 0 3.63.76 4.9 2L14 15h6V9l-2 2z"/></svg>
-                </button>
+                {/* Waveform / Progress bar principal */}
+                <div style={{position:'relative',height:48,borderRadius:10,background:'rgba(255,255,255,.05)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
+                  onClick={e=>seekTo(e,e.currentTarget)}
+                  onPointerDown={e=>{
+                    e.preventDefault();
+                    const el=e.currentTarget;
+                    el.setPointerCapture(e.pointerId);
+                    seekTo(e,el);
+                    const move=ev=>{ev.preventDefault();seekTo(ev,el);};
+                    const up=ev=>{el.releasePointerCapture(ev.pointerId);el.removeEventListener('pointermove',move);};
+                    el.addEventListener('pointermove',move,{passive:false});
+                    el.addEventListener('pointerup',up,{once:true});
+                  }}>
+                  {/* Fondo de barras simuladas (decorativo estilo waveform) */}
+                  <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',gap:1,padding:'4px 0'}}>
+                    {Array.from({length:80},(_,i)=>{
+                      const h=Math.sin(i*0.4)*0.3+Math.sin(i*0.13)*0.4+0.3;
+                      const filled=(i/80)<pct;
+                      const inLoop=inPct!=null&&outPct!=null&&(i/80*100)>=inPct&&(i/80*100)<=outPct;
+                      return(
+                        <div key={i} style={{
+                          flex:1,borderRadius:1,
+                          height:`${Math.max(15,h*100)}%`,
+                          background: filled
+                            ? inLoop&&refLooping?'var(--gn)':'rgba(200,169,126,.9)'
+                            : inLoop?'rgba(48,192,183,.3)':'rgba(255,255,255,.12)',
+                          transition:'background .1s',
+                        }}/>
+                      );
+                    })}
+                  </div>
+                  {/* Marcador In */}
+                  {inPct!=null&&(
+                    <div style={{position:'absolute',top:0,bottom:0,left:`${inPct}%`,width:2,background:'var(--gn)',zIndex:3}}>
+                      <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--gn)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>IN</div>
+                    </div>
+                  )}
+                  {/* Marcador Out */}
+                  {outPct!=null&&(
+                    <div style={{position:'absolute',top:0,bottom:0,left:`${outPct}%`,width:2,background:'var(--rd)',zIndex:3}}>
+                      <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--rd)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
+                    </div>
+                  )}
+                  {/* Playhead */}
+                  <div style={{position:'absolute',top:0,bottom:0,left:`${pct*100}%`,width:2,background:'var(--ac)',zIndex:4,transition:'left .05s'}}/>
+                </div>
 
-                <div style={{flex:1}}/>
+                {/* Tiempos */}
+                <div style={{display:'flex',justifyContent:'space-between',flexShrink:0}}>
+                  <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refTime)}</span>
+                  {refLoopIn!=null&&refLoopOut!=null&&(
+                    <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                      Loop {fmt(refLoopIn)} → {fmt(refLoopOut)}
+                    </span>
+                  )}
+                  <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refDuration)}</span>
+                </div>
 
-                {/* Velocidad */}
-                <div style={{display:'flex',gap:3}}>
-                  {SPEEDS.map(s=>(
-                    <button key={s} onClick={()=>{setRefSpeed(s);if(audio)audio.playbackRate=s;}}
-                      style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
-                        fontFamily:"'Lexend Giga',sans-serif",
-                        background:refSpeed===s?'rgba(200,169,126,.25)':'rgba(255,255,255,.06)',
-                        color:refSpeed===s?'var(--ac)':'var(--tx3)'}}>
-                      {s}x
+                {/* Controles principales */}
+                <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+                  {/* Retroceder 5s */}
+                  <button onClick={()=>{if(audio){audio.currentTime=Math.max(0,audio.currentTime-5);}}}
+                    style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L4 9v6h6l-2.18-2.18A6.93 6.93 0 0 1 12.5 11c3.02 0 5.6 2 6.54 4.77l1.92-.64A9 9 0 0 0 12.5 8z"/></svg>
+                  </button>
+
+                  {/* Play / Pause */}
+                  <button onClick={()=>{
+                    if(!audio)return;
+                    if(refPlaying){audio.pause();setRefPlaying(false);}
+                    else{
+                      if(refLooping&&refLoopIn!=null&&(audio.currentTime<(refLoopIn??0)||audio.currentTime>=(refLoopOut??refDuration))){
+                        audio.currentTime=refLoopIn??0;
+                      }
+                      audio.play();setRefPlaying(true);
+                    }
+                  }} style={{width:48,height:48,borderRadius:'50%',border:'none',background:'var(--ac)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 20px rgba(255,255,255,.2)'}}>
+                    {refPlaying
+                      ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                      :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    }
+                  </button>
+
+                  {/* Adelantar 5s */}
+                  <button onClick={()=>{if(audio){audio.currentTime=Math.min(refDuration,audio.currentTime+5);}}}
+                    style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 9c-1.85-1.6-4.25-2.6-6.9-2.6A9 9 0 0 0 2.54 15.13l1.92.64A7 7 0 0 1 11.1 11c1.89 0 3.63.76 4.9 2L14 15h6V9l-2 2z"/></svg>
+                  </button>
+
+                  <div style={{flex:1}}/>
+
+                  {/* Velocidad */}
+                  <div style={{display:'flex',gap:3}}>
+                    {SPEEDS.map(s=>(
+                      <button key={s} onClick={()=>{setRefSpeed(s);if(audio)audio.playbackRate=s;}}
+                        style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
+                          fontFamily:"'Lexend Giga',sans-serif",
+                          background:refSpeed===s?'rgba(200,169,126,.25)':'rgba(255,255,255,.06)',
+                          color:refSpeed===s?'var(--ac)':'var(--tx3)'}}>
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Loop controls */}
+                <div style={{display:'flex',gap:6,flexShrink:0}}>
+                  <button onClick={markIn}
+                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'rgba(255,255,255,.1)'}`,
+                      background:refLoopIn!=null?'rgba(48,192,183,.1)':'rgba(255,255,255,.05)',
+                      color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
+                      fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
+                    <span style={{fontSize:8,letterSpacing:'.5px'}}>▶ IN</span>
+                    {refLoopIn!=null&&<span style={{opacity:.7}}>{fmt(refLoopIn)}</span>}
+                  </button>
+                  <button onClick={markOut}
+                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'rgba(255,255,255,.1)'}`,
+                      background:refLoopOut!=null?'rgba(253,128,131,.1)':'rgba(255,255,255,.05)',
+                      color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
+                      fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
+                    <span style={{fontSize:8,letterSpacing:'.5px'}}>OUT ■</span>
+                    {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
+                  </button>
+                  <button onClick={()=>{
+                    if(refLoopIn==null||refLoopOut==null)return;
+                    const next=!refLooping;
+                    setRefLooping(next);
+                    if(next){
+                      const a=refPlayerRef.current;
+                      if(a){a.currentTime=refLoopIn??0;a.play().then(()=>setRefPlaying(true)).catch(()=>{});}
+                    }
+                  }} disabled={refLoopIn==null||refLoopOut==null}
+                    style={{width:60,padding:'6px 8px',borderRadius:8,
+                      border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
+                      background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
+                      color:refLooping?'var(--gn)':'var(--tx3)',
+                      cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
+                      fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
+                      opacity:refLoopIn==null||refLoopOut==null?.4:1,
+                      boxShadow:refLooping?'0 0 8px rgba(48,192,183,.4)':'none',
+                      transition:'all .2s'}}>
+                    {refLooping?'↻ ON':'↻'}
+                  </button>
+                  {(refLoopIn!=null||refLoopOut!=null)&&(
+                    <button onClick={clearLoop}
+                      style={{width:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
+                        color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      ×
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
-
-              {/* Loop controls */}
-              <div style={{display:'flex',gap:6,flexShrink:0}}>
-                <button onClick={markIn}
-                  style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'rgba(255,255,255,.1)'}`,
-                    background:refLoopIn!=null?'rgba(48,192,183,.1)':'rgba(255,255,255,.05)',
-                    color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
-                    fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                  <span style={{fontSize:8,letterSpacing:'.5px'}}>▶ IN</span>
-                  {refLoopIn!=null&&<span style={{opacity:.7}}>{fmt(refLoopIn)}</span>}
-                </button>
-                <button onClick={markOut}
-                  style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'rgba(255,255,255,.1)'}`,
-                    background:refLoopOut!=null?'rgba(253,128,131,.1)':'rgba(255,255,255,.05)',
-                    color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
-                    fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                  <span style={{fontSize:8,letterSpacing:'.5px'}}>OUT ■</span>
-                  {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
-                </button>
-                <button onClick={()=>{
-                  if(refLoopIn==null||refLoopOut==null)return;
-                  const next=!refLooping;
-                  setRefLooping(next);
-                  if(next){
-                    const a=refPlayerRef.current;
-                    if(a){a.currentTime=refLoopIn??0;a.play().then(()=>setRefPlaying(true)).catch(()=>{});}
-                  }
-                }} disabled={refLoopIn==null||refLoopOut==null}
-                  style={{width:60,padding:'6px 8px',borderRadius:8,
-                    border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
-                    background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
-                    color:refLooping?'var(--gn)':'var(--tx3)',
-                    cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
-                    fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
-                    opacity:refLoopIn==null||refLoopOut==null?.4:1,
-                    boxShadow:refLooping?'0 0 8px rgba(48,192,183,.4)':'none',
-                    transition:'all .2s'}}>
-                  {refLooping?'↻ ON':'↻'}
-                </button>
-                {(refLoopIn!=null||refLoopOut!=null)&&(
-                  <button onClick={clearLoop}
-                    style={{width:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
-                      color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    ×
-                  </button>
-                )}
+              );
+            })()
+          ):(
+            /* ── Capa 2 — Grabaciones de ensayo (v36) ──────────────────────── */
+            <div style={{flex:1,display:'flex',flexDirection:'column',padding:'12px 14px 14px',gap:8,overflow:'auto'}}>
+              <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,marginBottom:2}}>
+                Grabación en vivo · Opus 32kbps · cualquiera del equipo puede grabar
               </div>
+              {recordError&&(
+                <div style={{fontSize:9,color:'var(--rd)',fontFamily:"'Lexend Giga',sans-serif",padding:'6px 8px',background:'rgba(253,128,131,.1)',borderRadius:8}}>{recordError}</div>
+              )}
+              {grabaciones.map((slot,i)=>(
+                <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
+                  background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
+                  <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
+                    background:slot?'rgba(48,192,183,.15)':'rgba(255,255,255,.06)',
+                    color:slot?'var(--gn)':'var(--tx3)',fontSize:11,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+                    {i+1}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    {slot?(
+                      <>
+                        <div style={{fontSize:10,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmtDur(slot.duracionSeg)} · {slot.ensayoNombre}</div>
+                        <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmtFechaCorta(slot.fecha)} · autoborra en 2 sem.</div>
+                      </>
+                    ):isRecording&&recordSlot===i?(
+                      <div style={{fontSize:10,fontWeight:700,color:'var(--rd)',fontFamily:"'Lexend Giga',sans-serif"}}>● Grabando · {fmtDur(recordElapsed)}</div>
+                    ):(
+                      <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Slot vacío</div>
+                    )}
+                  </div>
+                  {slot&&(<audio src={slot.url} controls style={{height:26,maxWidth:90}}/>)}
+                  {isRecording&&recordSlot===i?(
+                    <button onClick={detenerGrabacion}
+                      style={{padding:'6px 10px',borderRadius:8,border:'none',cursor:'pointer',
+                        background:'var(--rd)',color:'#000',fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                      ■ Detener
+                    </button>
+                  ):(
+                    <button disabled={isRecording} onClick={()=>iniciarGrabacion(i)}
+                      style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',cursor:isRecording?'not-allowed':'pointer',
+                        background:'rgba(255,255,255,.07)',color:'var(--tx2)',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+                        flexShrink:0,opacity:isRecording?.4:1}}>
+                      {slot?'Reemplazar':'Grabar'}
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
     );
+
+    // Diálogo de destino — aparece justo después de detener una grabación
+    const destinoDialog = pendingRecording && (
+      <div style={{position:'fixed',inset:0,zIndex:300,background:'rgba(0,0,0,.7)',
+        display:'flex',alignItems:'flex-end',justifyContent:'center'}}
+        onClick={descartarPending}>
+        <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:480,background:'#0d0d10',
+          borderTop:'1px solid rgba(255,255,255,.1)',borderRadius:'16px 16px 0 0',padding:'18px 18px calc(18px + env(safe-area-inset-bottom,0px))',
+          display:'flex',flexDirection:'column',gap:12}}>
+          <div style={{fontSize:12,fontWeight:900,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
+            ¿Dónde guardamos la grabación? · {fmtDur(pendingRecording.duracionSeg)}
+          </div>
+
+          <button onClick={guardarEnCancion}
+            style={{textAlign:'left',padding:'12px 14px',borderRadius:12,border:'1px solid rgba(48,192,183,.3)',
+              background:'rgba(48,192,183,.08)',cursor:'pointer'}}>
+            <div style={{fontSize:11,fontWeight:900,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>En la Canción</div>
+            <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2,lineHeight:1.4}}>
+              Queda permanente en la carpeta de esta canción.
+            </div>
+          </button>
+
+          <div style={{padding:'12px 14px',borderRadius:12,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}>
+            <div style={{fontSize:11,fontWeight:900,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>En un Ensayo</div>
+            <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2,marginBottom:8,lineHeight:1.4}}>
+              Se autoborra 2 semanas después de la fecha del evento.
+            </div>
+            <select value={selectedEnsayoId||''} onChange={e=>setSelectedEnsayoId(e.target.value||null)}
+              style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',
+                background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
+              <option value="">Elegir ensayo…</option>
+              {ENSAYOS_MOCK.map(en=>(<option key={en.id} value={en.id}>{en.nombre}</option>))}
+            </select>
+            <button disabled={!selectedEnsayoId} onClick={guardarEnEnsayo}
+              style={{width:'100%',padding:'9px 0',borderRadius:8,border:'none',cursor:selectedEnsayoId?'pointer':'not-allowed',
+                background:selectedEnsayoId?'var(--ac)':'rgba(255,255,255,.1)',color:selectedEnsayoId?'#000':'var(--tx3)',
+                fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
+              Guardar en este ensayo
+            </button>
+          </div>
+
+          <button onClick={descartarPending}
+            style={{padding:'8px 0',borderRadius:8,border:'none',background:'transparent',color:'var(--tx3)',
+              cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+            Descartar grabación
+          </button>
+        </div>
+      </div>
+    );
+
     if(bottomTab!=='referencia') return null;
-    return createPortal(panel, document.body);
+    return (
+      <>
+        {createPortal(panel, document.body)}
+        {destinoDialog&&createPortal(destinoDialog, document.body)}
+      </>
+    );
   }
 
 
