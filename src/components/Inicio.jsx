@@ -197,6 +197,195 @@ function useDragRows(initialOrder) {
 }
 
 // ── Tutorial page ─────────────────────────────────────────────────────────
+// ── Página de detalle de Planes — Cuenta Unitaria + Cuenta Equipo ──────────
+function PlanesDetallePage({ onClose }) {
+  const [periodo, setPeriodo] = useState('mensual'); // 'mensual' | 'anual'
+
+  const PLANES_UNITARIA = [
+    {name:'Lite',color:'var(--tx3)',mensual:0,anual:0,sub:'Para empezar',
+      features:[
+        {icon:'👥',t:'1 equipo · 5 miembros'},
+        {icon:'🎵',t:'10 canciones en tu cancionero'},
+        {icon:'📋',t:'Setlists básicos'},
+      ]},
+    {name:'Pro',color:'var(--gn)',mensual:7.90,anual:5.53,sub:'El más popular',
+      features:[
+        {icon:'👥',t:'Equipos ilimitados'},
+        {icon:'📚',t:'Cancionero completo + Universal'},
+        {icon:'🎚️',t:'Monitoreo OSC (mesas X32/M32/XR18)'},
+        {icon:'▶️',t:'Secuencias & Click'},
+      ]},
+    {name:'Premium',color:'var(--ac)',mensual:19.90,anual:13.93,sub:'Producción pro',
+      features:[
+        {icon:'✨',t:'Todo lo de Pro, más:'},
+        {icon:'🎛️',t:'Multitracks (reproductor multipista)'},
+        {icon:'🎼',t:'Partituras (PDF y MusicXML)'},
+        {icon:'🎸',t:'Multi-banda — varias bandas, una cuenta'},
+      ]},
+  ];
+
+  const CUENTA_EQUIPO = [
+    {rango:'1–5 personas',mensual:6.90,anual:4.83},
+    {rango:'6–10 personas',mensual:11.90,anual:8.33},
+    {rango:'11–20 personas',mensual:24.90,anual:17.43},
+    {rango:'21–40 personas',mensual:36.00,anual:25.20,marcaBlanca:true},
+    {rango:'41+ personas',mensual:null,anual:null,marcaBlanca:true,contactar:true},
+  ];
+
+  const fmt=n=>n===0?'Gratis':n===null?'A medida':`$${n.toFixed(2)}`;
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',
+      paddingBottom:80}}>
+      <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
+        borderBottom:'1px solid rgba(255,255,255,.08)',padding:'12px 14px',
+        display:'flex',alignItems:'center',gap:10,zIndex:1}}>
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',fontSize:18,
+          display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,fontWeight:400,color:'var(--tx)'}}>
+          Planes y precios
+        </div>
+      </div>
+
+      <div style={{padding:'20px 16px',maxWidth:640,margin:'0 auto'}}>
+
+        {/* Toggle mensual/anual */}
+        <div style={{display:'flex',justifyContent:'center',marginBottom:24}}>
+          <div style={{display:'inline-flex',borderRadius:100,border:'1px solid rgba(255,255,255,.1)',
+            padding:3,background:'rgba(255,255,255,.03)'}}>
+            {['mensual','anual'].map(p=>(
+              <button key={p} onClick={()=>setPeriodo(p)}
+                style={{padding:'8px 18px',borderRadius:100,border:'none',cursor:'pointer',
+                  fontFamily:"'Lexend Giga',sans-serif",fontSize:12,fontWeight:700,
+                  background:periodo===p?'var(--gn)':'transparent',
+                  color:periodo===p?'#04120f':'var(--tx3)',
+                  display:'flex',alignItems:'center',gap:6,transition:'all .15s'}}>
+                {p==='mensual'?'Mensual':'Anual'}
+                {p==='anual'&&<span style={{fontSize:9,
+                  color:periodo==='anual'?'#04120f':'var(--gn)',fontWeight:900}}>−30%</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══ CUENTA UNITARIA ═══ */}
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+          fontSize:19,fontWeight:400,color:'var(--tx)',marginBottom:4}}>Cuenta Unitaria</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+          color:'var(--tx2)',lineHeight:1.6,marginBottom:16}}>
+          Un plan por cuenta. Elige tu interfaz (Iglesia o Banda) y crece con tu equipo principal.
+        </div>
+
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:32}}>
+          {PLANES_UNITARIA.map(p=>{
+            const precio=periodo==='mensual'?p.mensual:p.anual;
+            return(
+              <div key={p.name} style={{padding:16,borderRadius:14,
+                border:`1px solid ${p.color}35`,background:`${p.color}08`}}>
+                <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:2}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                      fontSize:17,color:p.color,fontWeight:400}}>{p.name}</span>
+                    <span style={{fontSize:9,color:p.color,fontWeight:700,opacity:.7,
+                      textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>{p.sub}</span>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                      fontSize:19,color:'var(--tx)'}}>{fmt(precio)}</span>
+                    {precio>0&&<span style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>/mes</span>}
+                  </div>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:10}}>
+                  {p.features.map((f,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:8}}>
+                      <span style={{fontSize:13,flexShrink:0,width:18,textAlign:'center'}}>{f.icon}</span>
+                      <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",
+                        fontWeight:300,lineHeight:1.4}}>{f.t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ═══ CUENTA EQUIPO ═══ */}
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+          fontSize:19,fontWeight:400,color:'var(--tx)',marginBottom:4}}>Cuenta Equipo</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+          color:'var(--tx2)',lineHeight:1.6,marginBottom:6}}>
+          Paga por equipo adicional según su tamaño — ideal para iglesias o bandas con varios
+          equipos activos (Alabanza, Jóvenes, Multimedia...). El líder de cada equipo paga
+          directamente por su gente.
+        </div>
+        <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'10px 12px',
+          borderRadius:10,background:'rgba(224,120,32,.08)',border:'1px solid rgba(224,120,32,.25)',
+          marginBottom:16}}>
+          <span style={{fontSize:14,flexShrink:0}}>🔒</span>
+          <span style={{fontSize:10.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",
+            fontWeight:300,lineHeight:1.6}}>
+            Todos los miembros de una Cuenta Equipo comparten la <b style={{color:'var(--tx)'}}>misma interfaz</b>
+            {' '}(Iglesia o Banda) — no se elige individualmente por persona.
+          </span>
+        </div>
+
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:16}}>
+          {CUENTA_EQUIPO.map((t,i)=>{
+            const precio=t.mensual===null?null:(periodo==='mensual'?t.mensual:t.anual);
+            return(
+              <div key={i} style={{padding:14,borderRadius:14,
+                border:'1px solid rgba(224,120,32,.3)',background:'rgba(224,120,32,.06)',
+                display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}}>
+                <div>
+                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:13,fontWeight:700,
+                    color:'var(--tx)'}}>{t.rango}</div>
+                  {t.marcaBlanca&&(
+                    <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
+                      <span style={{fontSize:10}}>🏷️</span>
+                      <span style={{fontSize:9.5,color:'#e07820',fontWeight:700,
+                        fontFamily:"'Lexend Giga',sans-serif"}}>Incluye opción marca blanca</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  {t.contactar?(
+                    <span style={{fontSize:12,color:'#e07820',fontWeight:700,
+                      fontFamily:"'Lexend Giga',sans-serif"}}>Contactar</span>
+                  ):(<>
+                    <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                      fontSize:16,color:'var(--tx)'}}>{fmt(precio)}</span>
+                    <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>/mes</span>
+                  </>)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{fontSize:9.5,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
+          lineHeight:1.6,marginBottom:24}}>
+          Mínimo garantizado de $1 USD por persona en todos los tramos. Los planes Cuenta Equipo
+          conviven junto a tu plan de cuenta (Lite/Pro/Premium) — no lo reemplazan.
+        </div>
+
+        <div style={{padding:14,borderRadius:14,background:'rgba(255,255,255,.03)',
+          border:'1px solid rgba(255,255,255,.08)'}}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,
+            color:'var(--tx)',marginBottom:4,display:'flex',alignItems:'center',gap:6}}>
+            <span>💬</span> ¿Tienes dudas sobre qué plan elegir?
+          </div>
+          <div style={{fontSize:10.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",
+            fontWeight:300,lineHeight:1.6}}>
+            Escríbenos y te ayudamos a encontrar el plan correcto para tu equipo.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 function TutorialPage({ tut, onClose }) {
   const lines = tut.contenido.trim().split('\n');
   return (
@@ -389,6 +578,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const isAdmin = userRole==='superadmin'||userRole==='leader';
   const nombre = 'Daniel';
   const [tutorialActivo, setTutorialActivo] = useState(null);
+  const [planesDetalleOpen, setPlanesDetalleOpen] = useState(false);
   const [faqsOpen, setFaqsOpen] = useState({});
 
   const hoy = new Date();
@@ -633,8 +823,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
           <div style={{marginTop:10,textAlign:'center'}}>
             <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',
-              fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
-              Ver planes completos →
+              fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>setPlanesDetalleOpen(true)}>
+              Quiero ver todo el detalle de cada plan →
             </span>
           </div>
         </Card>
@@ -649,6 +839,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       {/* Tutorial overlay */}
       {tutorialActivo&&(
         <TutorialPage tut={tutorialActivo} onClose={()=>setTutorialActivo(null)}/>
+      )}
+      {planesDetalleOpen&&(
+        <PlanesDetallePage onClose={()=>setPlanesDetalleOpen(false)}/>
       )}
 
       {/* Hero */}
