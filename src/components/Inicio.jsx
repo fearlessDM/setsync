@@ -375,6 +375,13 @@ const Lbl2 = ({children}) => (
     letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{children}</div>
 );
 
+const NOTIFICACIONES_DEMO = [
+  {icon:'✅',color:'#30C0B7',texto:'Cony confirmó asistencia al ensayo del jueves',tiempo:'Hace 20 min',leida:false},
+  {icon:'📎',color:'#a78bfa',texto:'Daniel subió una partitura para "Gloria en Gloria"',tiempo:'Hace 2 h',leida:false},
+  {icon:'💬',color:'#e07820',texto:'Nuevo mensaje en el equipo de alabanza',tiempo:'Ayer',leida:true},
+  {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
+];
+
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }) {
   const feat = getModoFeatures(mode);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
@@ -394,6 +401,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   // Cada "row" es un índice de bloque
   const BLOCK_ROWS = [
     ['proximo'],
+    ['notificaciones'],
     ['equipo'],
     ['cancionero','plan'],
     ['notas'],
@@ -493,6 +501,40 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           {planId==='lite'&&(
             <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
               fontWeight:700,marginTop:8}}>↑ Mejorar</div>
+          )}
+        </Card>
+      );
+
+      case 'notificaciones': return (
+        <Card cols={2} key="notificaciones">
+          <Lbl>Últimas notificaciones</Lbl>
+          {NOTIFICACIONES_DEMO.length===0?(
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
+              color:'var(--tx3)',padding:'8px 0'}}>
+              Sin notificaciones por ahora.
+            </div>
+          ):(
+            <div style={{display:'flex',flexDirection:'column',gap:0}}>
+              {NOTIFICACIONES_DEMO.map((n,i)=>(
+                <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start',
+                  padding:'9px 0',borderBottom:i<NOTIFICACIONES_DEMO.length-1?'1px solid rgba(255,255,255,.05)':'none'}}>
+                  <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
+                    background:`${n.color}18`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <span style={{fontSize:12}}>{n.icon}</span>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,
+                      color:'var(--tx)',lineHeight:1.4}}>{n.texto}</div>
+                    <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
+                      {n.tiempo}
+                    </div>
+                  </div>
+                  {!n.leida&&(
+                    <div style={{width:7,height:7,borderRadius:'50%',background:n.color,flexShrink:0,marginTop:4}}/>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </Card>
       );

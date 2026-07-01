@@ -313,8 +313,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
             fontSize:24,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{MESES_LARGO[mesNav]}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
-            color:'var(--tx3)',lineHeight:1.5}}>
-            {sinEventos ? 'Sin eventos este mes' : 'Toca un bloque para ver el setlist'}
+            color:'var(--tx2)',lineHeight:1.5}}>
+            {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : 'Navega por los meses y revisa los próximos eventos agendados'}
           </div>
         </div>
         <MiniCalEvento mes={mesNav} eventos={eventos}

@@ -110,7 +110,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
   transition:all .2s;letter-spacing:.2px;
 }
 .btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
-.btn-p{background:var(--ac);color:var(--btn-c);}
+.btn-p{background:var(--gn);color:#04120f;}
 .btn-p:hover{opacity:.88;}
 .btn-g{background:var(--s1);color:var(--tx2);border:1px solid var(--bd);}
 .btn-g:hover{background:var(--s3);color:var(--tx);}

@@ -432,7 +432,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         
         {/* ── Chips de tab con colores ── */}
         {[
-          {id:'mi',    label:'Mi cancionero', color:'#c8a97e', bg:'rgba(200,169,126,.12)',
+          {id:'mi',    label:'Todas', color:'#c8a97e', bg:'rgba(200,169,126,.12)',
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
           {id:'universal', label:'Universal', color:'var(--gn)', bg:'rgba(48,192,183,.12)', show:feat.cancioneroUniversal,
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
@@ -440,8 +440,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
            icon:<svg viewBox="0 0 50 60" width="10" height="11" fill="currentColor"><path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/></svg>},
           {id:'colecciones',label:'Colecciones', color:'#e07820', bg:'rgba(224,120,32,.12)',
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h6l2 2h8v12H4z"/></svg>},
-          {id:'drive', label:'Subir por Drive', color:'var(--tx3)', bg:'rgba(255,255,255,.06)',
-           icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>},
         ].filter(t=>t.show!==false).map(t=>(
           <button key={t.id}
             onClick={()=>{if(t.id==='drive'){setShowCrear(true);setCrearModo('drive');}else setTab(t.id);}}

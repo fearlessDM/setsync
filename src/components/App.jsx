@@ -159,7 +159,14 @@ export default function App(){
     if(idx>=0){setSongViewSongs(songs);setSongView(idx);}
   };
   const abrirSongDesdeEvento=(idx,setlist)=>{
-    if(setlist&&setlist.length){setSongViewSongs(setlist);setSongView(idx);}
+    if(!setlist||!setlist.length)return;
+    // setlist puede venir como array de nombres (strings) — mapear a objetos
+    // completos de CANCIONES para que SongView tenga key/bpm/n disponibles.
+    const songs=setlist.map(item=>{
+      if(typeof item==='object'&&item)return item;
+      return CANCIONES.find(c=>c.n===item)||{n:item,name:item,key:'',bpm:''};
+    });
+    setSongViewSongs(songs);setSongView(idx);
   };
   const handleSaveChords=(name,content)=>{contentDB[name]=content;showToast('✓ Acordes guardados');};
 
