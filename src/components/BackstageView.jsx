@@ -29,6 +29,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [evFecha,setEvFecha]=useState('');
   const [evNotas,setEvNotas]=useState('');
   const [evSetlist,setEvSetlist]=useState([]);
+  const [evArchivo,setEvArchivo]=useState(null);
   const [evSearch,setEvSearch]=useState('');
   const [notifDest,setNotifDest]=useState([]);
   const [notifTipo,setNotifTipo]=useState('recordatorio');
@@ -90,29 +91,69 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Setlist</div>
-        <input className="inp" placeholder="Buscar canción..." value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:8}}/>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>Crea setlist</div>
+        <div style={{fontSize:10,color:'var(--tx2)',fontWeight:300,marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>
+          Selecciona las canciones del setlist
+        </div>
+        <input className="inp" placeholder="Buscar canción..." value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
         {evSetlist.length>0&&(
-          <div style={{marginBottom:8}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
             {evSetlist.map((s,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid var(--bd)'}}>
-                <span style={{fontSize:11,color:'var(--tx3)',fontWeight:700,minWidth:16}}>{i+1}</span>
-                <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{s}</span>
-                <button onClick={()=>setEvSetlist(l=>l.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'var(--rd)',cursor:'pointer',fontSize:16,lineHeight:1}}>×</button>
+              <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 6px 6px 12px',
+                borderRadius:100,background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.3)'}}>
+                <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700}}>{i+1}</span>
+                <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{s}</span>
+                <button onClick={()=>setEvSetlist(l=>l.filter((_,j)=>j!==i))}
+                  style={{width:16,height:16,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                    color:'var(--tx3)',cursor:'pointer',fontSize:11,lineHeight:1,display:'flex',
+                    alignItems:'center',justifyContent:'center'}}>×</button>
               </div>
             ))}
           </div>
         )}
-        <div style={{maxHeight:200,overflowY:'auto'}}>
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,maxHeight:220,overflowY:'auto'}}>
           {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.includes(s.n)).map(s=>(
-            <div key={s.n} onClick={()=>setEvSetlist(l=>[...l,s.n])} style={{padding:'7px 0',borderBottom:'1px solid rgba(255,255,255,.04)',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}
-              onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.05)'}
-              onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <span style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{s.n}</span>
-              <span style={{fontSize:10,color:'var(--ac)',fontWeight:700}}>{s.key} · {s.bpm}</span>
+            <div key={s.n} onClick={()=>setEvSetlist(l=>[...l,s.n])}
+              style={{padding:'8px 12px',borderRadius:12,cursor:'pointer',
+                background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',
+                display:'flex',flexDirection:'column',gap:2,minWidth:100,transition:'background .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.08)'}
+              onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}>
+              <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{s.n}</span>
+              <span style={{fontSize:9,color:'var(--ac)',fontWeight:700}}>{s.key} · {s.bpm}</span>
             </div>
           ))}
         </div>
+      </div>
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Archivo adjunto</div>
+        <div style={{fontSize:10,color:'var(--tx2)',fontWeight:300,marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>
+          PDF, Word o audio — visible para el equipo en los detalles del evento
+        </div>
+        {evArchivo?(
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+            borderRadius:10,background:'rgba(48,192,183,.08)',border:'1px solid rgba(48,192,183,.25)'}}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{evArchivo.name}</span>
+            <button onClick={()=>setEvArchivo(null)}
+              style={{background:'none',border:'none',color:'var(--rd)',cursor:'pointer',fontSize:16}}>×</button>
+          </div>
+        ):(
+          <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+            padding:'16px',borderRadius:10,border:'1px dashed rgba(255,255,255,.15)',
+            cursor:'pointer',color:'var(--tx3)'}}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span style={{fontSize:11,fontWeight:700}}>Subir archivo</span>
+            <input type="file" accept=".pdf,.doc,.docx,.mp3,.wav,.m4a" style={{display:'none'}}
+              onChange={e=>{const f=e.target.files[0];if(f)setEvArchivo(f);}}/>
+          </label>
+        )}
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Equipos convocados</div>
@@ -154,11 +195,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           disabled={!evNombre.trim()&&!evFecha}
           onClick={()=>{
             const label=`${evNombre||'Nuevo evento'}`;
-            const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,lugar:'',setlist:[...evSetlist]};
+            const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,lugar:'',setlist:[...evSetlist],archivo:evArchivo?{name:evArchivo.name}:null};
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
             onToast({text:'Evento creado',sub:`${label} · ${evSetlist.length} canciones`});
-            setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');
+            setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');setEvArchivo(null);
             setBsView(null);
           }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>

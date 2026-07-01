@@ -4,7 +4,7 @@
 /* ── Colores ── */
 --bg:#080809;--s1:rgba(255,255,255,.05);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
 --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
---ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.5);--tx3:#52555c;
+--ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.68);--tx3:#7a7e88;
 --gn:#30C0B7;--rd:#FD8083;--btn-c:#080809;
 
 /* ── Sistema de espaciado — tokens globales ── */

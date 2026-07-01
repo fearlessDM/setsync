@@ -19,6 +19,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
   const [crearModo,setCrearModo]=useState(null);
+  const [colecciones,setColecciones]=useState([]);
+  const [showCrearColeccion,setShowCrearColeccion]=useState(false);
+  const [nuevaColeccion,setNuevaColeccion]=useState({nombre:'',color:'#c8a97e',canciones:[]});
+  const [coleccionSel,setColeccionSel]=useState(null);
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
   const fast=fl.filter(s=>s.bpm>=120).sort((a,b)=>b.bpm-a.bpm);
@@ -434,6 +438,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
           {id:'partituras',label:'Partituras', color:'#a78bfa', bg:'rgba(167,139,250,.12)',
            icon:<svg viewBox="0 0 50 60" width="10" height="11" fill="currentColor"><path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/></svg>},
+          {id:'colecciones',label:'Colecciones', color:'#e07820', bg:'rgba(224,120,32,.12)',
+           icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h6l2 2h8v12H4z"/></svg>},
           {id:'drive', label:'Subir por Drive', color:'var(--tx3)', bg:'rgba(255,255,255,.06)',
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>},
         ].filter(t=>t.show!==false).map(t=>(
@@ -498,6 +504,155 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {tab==='colecciones'&&(
+        <div>
+          {coleccionSel===null?(
+            <>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+                  Agrupa tus canciones por álbum, temporada o cualquier criterio.
+                </div>
+                <button onClick={()=>setShowCrearColeccion(true)}
+                  style={{padding:'7px 14px',borderRadius:9,border:'none',background:'#e07820',
+                    color:'#000',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                    display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Crear colección
+                </button>
+              </div>
+
+              {colecciones.length===0?(
+                <div style={{textAlign:'center',padding:'50px 20px',color:'var(--tx3)'}}>
+                  <div style={{fontSize:28,marginBottom:10,opacity:.5}}>🗂️</div>
+                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:15,color:'var(--tx2)',marginBottom:6}}>
+                    Sin colecciones aún
+                  </div>
+                  <div style={{fontSize:11,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.6,maxWidth:260,margin:'0 auto'}}>
+                    Ej: "Álbum 2026", "Navidad", "Solo guitarra" — cualquier etiqueta que te ayude a ordenarte.
+                  </div>
+                </div>
+              ):(
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:10}}>
+                  {colecciones.map((c,i)=>(
+                    <div key={i} onClick={()=>setColeccionSel(i)}
+                      style={{padding:14,borderRadius:14,cursor:'pointer',
+                        background:`${c.color}12`,border:`1px solid ${c.color}35`,
+                        display:'flex',flexDirection:'column',gap:8}}>
+                      <div style={{width:32,height:32,borderRadius:9,background:`${c.color}22`,
+                        display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={c.color} strokeWidth="2">
+                          <path d="M4 4h6l2 2h8v12H4z"/>
+                        </svg>
+                      </div>
+                      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:13,fontWeight:700,color:'var(--tx)'}}>
+                        {c.nombre}
+                      </div>
+                      <div style={{fontSize:10,color:c.color,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                        {c.canciones.length} canción{c.canciones.length!==1?'es':''}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ):(
+            <div>
+              <button onClick={()=>setColeccionSel(null)}
+                style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',
+                  fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",marginBottom:14,
+                  display:'flex',alignItems:'center',gap:5}}>
+                ← Colecciones
+              </button>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400,
+                color:colecciones[coleccionSel].color,marginBottom:14}}>
+                {colecciones[coleccionSel].nombre}
+              </div>
+              {colecciones[coleccionSel].canciones.length===0?(
+                <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Esta colección está vacía.
+                </div>
+              ):(
+                <div className="sg">
+                  {colecciones[coleccionSel].canciones.map(n=>{
+                    const s=CANCIONES.find(x=>x.n===n);
+                    if(!s) return null;
+                    return(
+                      <div key={n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}>
+                        <div className="scard-n">{s.n}</div>
+                        <div className="scard-s">{s.key} · {s.bpm} BPM</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {showCrearColeccion&&(
+            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:200,
+              display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
+              onClick={()=>setShowCrearColeccion(false)}>
+              <div onClick={e=>e.stopPropagation()}
+                style={{background:'var(--bg)',borderRadius:16,padding:20,maxWidth:360,width:'100%',
+                  border:'1px solid var(--bd)',maxHeight:'80vh',overflowY:'auto'}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:17,
+                  fontWeight:400,color:'var(--tx)',marginBottom:14}}>Nueva colección</div>
+                <input className="inp" placeholder="Nombre de la colección..."
+                  value={nuevaColeccion.nombre}
+                  onChange={e=>setNuevaColeccion(v=>({...v,nombre:e.target.value}))}
+                  style={{marginBottom:10}}/>
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  letterSpacing:'1.5px',marginBottom:6}}>Color</div>
+                <div style={{display:'flex',gap:6,marginBottom:14}}>
+                  {['#c8a97e','#30C0B7','#e07820','#a78bfa','#FD8083','#5ecea0'].map(col=>(
+                    <button key={col} onClick={()=>setNuevaColeccion(v=>({...v,color:col}))}
+                      style={{width:26,height:26,borderRadius:'50%',border:nuevaColeccion.color===col?'2px solid #fff':'2px solid transparent',
+                        background:col,cursor:'pointer'}}/>
+                  ))}
+                </div>
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  letterSpacing:'1.5px',marginBottom:6}}>Canciones ({nuevaColeccion.canciones.length})</div>
+                <div style={{maxHeight:180,overflowY:'auto',marginBottom:14,display:'flex',flexDirection:'column',gap:4}}>
+                  {CANCIONES.map(s=>{
+                    const sel=nuevaColeccion.canciones.includes(s.n);
+                    return(
+                      <div key={s.n} onClick={()=>setNuevaColeccion(v=>({...v,
+                          canciones:sel?v.canciones.filter(x=>x!==s.n):[...v.canciones,s.n]}))}
+                        style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,
+                          cursor:'pointer',background:sel?'rgba(224,120,32,.1)':'transparent'}}>
+                        <div style={{width:14,height:14,borderRadius:4,flexShrink:0,
+                          border:`1px solid ${sel?'#e07820':'var(--bd)'}`,background:sel?'#e07820':'transparent'}}/>
+                        <span style={{fontSize:11,color:'var(--tx)',fontWeight:600}}>{s.n}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={()=>setShowCrearColeccion(false)}
+                    style={{flex:1,padding:'10px',borderRadius:9,border:'1px solid var(--bd)',
+                      background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:12,
+                      fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Cancelar</button>
+                  <button disabled={!nuevaColeccion.nombre.trim()}
+                    onClick={()=>{
+                      setColecciones(v=>[...v,{...nuevaColeccion}]);
+                      onToast&&onToast({text:'Colección creada',sub:nuevaColeccion.nombre});
+                      setNuevaColeccion({nombre:'',color:'#c8a97e',canciones:[]});
+                      setShowCrearColeccion(false);
+                    }}
+                    style={{flex:2,padding:'10px',borderRadius:9,border:'none',
+                      background:nuevaColeccion.nombre.trim()?'#e07820':'rgba(255,255,255,.08)',
+                      color:nuevaColeccion.nombre.trim()?'#000':'var(--tx3)',
+                      cursor:nuevaColeccion.nombre.trim()?'pointer':'not-allowed',fontSize:12,
+                      fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Crear colección</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

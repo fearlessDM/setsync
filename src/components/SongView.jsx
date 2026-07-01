@@ -1157,6 +1157,26 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         touchAction:'none',userSelect:'none',WebkitUserSelect:'none',
                       }}
                       onPointerDown={e=>{
+                        /* ═══════════════════════════════════════════════════════════
+                         * ⚠️  ZONA BLINDADA — LÓGICA DE FADER TÁCTIL — NO MODIFICAR ⚠️
+                         * ═══════════════════════════════════════════════════════════
+                         * Este patrón costó ~1 semana de debugging. Reglas NO NEGOCIABLES:
+                         * 1. getBoundingClientRect() se captura UNA SOLA VEZ aquí, nunca
+                         *    dentro de 'move'. Recalcularlo en cada pointermove causa que
+                         *    el fader "salte" o se mueva solo unos pocos px porque React
+                         *    re-renderiza y el rect queda desactualizado.
+                         * 2. Durante el arrastre (pointermove) el conocimiento visual se
+                         *    actualiza escribiendo knob.style.bottom DIRECTO en el DOM,
+                         *    SIN llamar a setState. Llamar a setState en cada move fuerza
+                         *    un re-render de React que invalida el rect y rompe el drag.
+                         * 3. El estado de React (setFaderVols/setTrackVols) SOLO se
+                         *    actualiza en pointerup, una vez, al soltar el dedo.
+                         * 4. knob.setPointerCapture es obligatorio — sin esto, mover el
+                         *    dedo fuera del knob (aunque sea 1px) cancela el drag.
+                         * Si necesitas tocar este bloque, PRIMERO avisa a Danny — probó
+                         * en dispositivo real y funciona. Cualquier "mejora" estética que
+                         * toque este patrón debe volver a probarse en dispositivo físico.
+                         * ═══════════════════════════════════════════════════════════ */
                         e.preventDefault();
                         e.stopPropagation();
                         const knob=e.currentTarget;
@@ -1748,6 +1768,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         <div className="fader-knob"
                           style={{bottom:`calc(${vol}% - 11px)`}}
                           onPointerDown={e=>{
+                            /* ⚠️ ZONA BLINDADA — mismo patrón crítico que MonitorPanel.
+                             * NO recalcular rect en move. NO usar setState en move.
+                             * knob.style.bottom se mueve directo en DOM; setState solo en pointerup. */
                             e.preventDefault();
                             e.stopPropagation();
                             const knob=e.currentTarget;
