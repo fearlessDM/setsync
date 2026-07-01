@@ -1070,7 +1070,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         features:['Solo tú, sin invitados','10 canciones en tu cancionero','Setlists básicos para tus fechas']},
       {id:'pro',name:'Pro',mensual:7.90,anual:5.53,color:'var(--gn)',sub:'El más popular',
         desc:'Para el líder que ya arma equipo. Invita hasta 5 personas para que vean setlists, acordes y se sumen a la convocatoria.',
-        features:['Tú + hasta 5 invitados','Cancionero completo, sin límite de canciones','Monitoreo OSC para tu mesa X32/M32/XR18','Secuencias & Click sincronizado']},
+        features:['Tú + hasta 5 invitados','Cancionero completo, sin límite de canciones','Monitoreo por WiFi para tu mesa X32/M32/XR18','Secuencias & Click sincronizado']},
       {id:'premium',name:'Premium',mensual:19.90,anual:13.93,color:'var(--ac)',sub:'Producción pro',
         desc:'Cuando necesitas producción completa: multitracks, partituras y varias bandas o equipos bajo tu misma cuenta.',
         features:['Tú + hasta 15 invitados','Todo lo de Pro','Multitracks para tus secuencias','Partituras (MusicXML/PDF)','Gestiona varias bandas o equipos']},
@@ -1078,7 +1078,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     const PLANES_EQUIPO=[
       {id:'eq-1-10',name:'1–10 personas',mensual:4.90,anual:3.43,color:'var(--gn)',sub:'Equipos chicos',
         desc:'Toda tu iglesia o banda con Pro completo, cada persona con su propia sesión.',
-        features:['Hasta 10 miembros con acceso completo','Cancionero, monitoreo OSC y secuencias','Precio por persona, no por cuenta']},
+        features:['Hasta 10 miembros con acceso completo','Cancionero, monitoreo por WiFi y secuencias','Precio por persona, no por cuenta']},
       {id:'eq-11-25',name:'11–25 personas',mensual:3.90,anual:2.73,color:'var(--ac)',sub:'Equipos medianos',
         desc:'Para congregaciones o bandas con varios equipos rotativos (alabanza, proyección, sonido).',
         features:['Hasta 25 miembros con acceso completo','Todo lo del tramo anterior','Precio por persona más bajo']},
@@ -1162,7 +1162,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>Cuenta equipo</div>
         <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
-          Todos los miembros quedan con funciones completas (Cancionero, monitoreo OSC, multitracks y partituras). El precio es por persona y baja mientras más grande es el equipo — te conviene desde que ya todos necesitan Pro.
+          Todos los miembros quedan con funciones completas (Cancionero, monitoreo por WiFi, multitracks y partituras). El precio es por persona y baja mientras más grande es el equipo — te conviene desde que ya todos necesitan Pro.
         </div>
         <BloquePlanes planes={PLANES_EQUIPO} periodo={periodoEquipo} setPeriodo={setPeriodoEquipo}
           activo={null} onElegir={p=>onToast({text:'Solicitud enviada',sub:`Cotización para ${p.name}`})}/>

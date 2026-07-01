@@ -15,7 +15,7 @@ const BG_IMGS_BANDA = [
 
 const FAQS = [
   {q:'¿Cómo creo mi primer setlist?', a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
-  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión OSC. Cada músico controla su propio bus desde su teléfono.'},
+  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su teléfono.'},
   {q:'¿Puedo usar SetSync sin internet?', a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
   {q:'¿Cómo convoco al equipo?', a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
   {q:'¿Cómo transpongo una canción?', a:'En SongView toca el botón de nota (ej. "D") en la barra de herramientas. Ahí puedes subir/bajar semitonos y agregar capo.'},
@@ -33,7 +33,7 @@ const TUTORIALES = [
     contenido:`
 # Conexión a Monitoreo Inalámbrico
 
-SetSync usa el protocolo OSC (Open Sound Control) para comunicarse con tu mesa digital. El proceso es simple: los dispositivos (no solo teléfonos — también tablets o notebooks) deben estar conectados a la red WiFi que genera la mesa.
+SetSync se conecta a tu mesa digital por WiFi, usando el protocolo OSC (Open Sound Control) por debajo — en la práctica, es tu teléfono hablándole a la mesa por la misma red inalámbrica. El proceso es simple: los dispositivos (no solo teléfonos — también tablets o notebooks) deben estar conectados a la red WiFi que genera la mesa.
 
 ## ¿Qué es un bus?
 
