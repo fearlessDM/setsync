@@ -333,7 +333,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                           style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
                             color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
                           <option value="original">Original (letra/acordes)</option>
-                          {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}</option>))}
+                          {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
                         </select>
                       )}
                       {personas.length>0&&(

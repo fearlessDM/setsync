@@ -24,17 +24,35 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [nuevaColeccion,setNuevaColeccion]=useState({nombre:'',color:'#c8a97e',canciones:[]});
   const [coleccionSel,setColeccionSel]=useState(null);
   const [songParaVariar,setSongParaVariar]=useState(null); // nombre de canción con selector de versión abierto
+  const [nuevaVariacion,setNuevaVariacion]=useState(null); // {tipo:'letra'|'partitura', label, contenido, archivo}
 
   // Abre una canción: SIEMPRE muestra el selector de la carpeta primero
   // (letra/acordes original + variaciones/partituras si existen) — nunca
   // salta directo a la letra. Pedido de Danny 01-Jul-2026: una canción es
   // una carpeta, así que siempre se elige qué abrir dentro de ella.
   const abrirCancion=(name)=>{ setSongParaVariar(name); };
-  const agregarVariacion=(name)=>{
-    const label=prompt('Nombre de la variación (ej: Piano, Batería, Voz guía):');
-    if(!label?.trim())return;
-    setVariacionesDB(prev=>({...prev,[name]:[...(prev[name]||[]),{id:`v${Date.now()}`,label:label.trim()}]}));
-    onToast({text:'Variación agregada',sub:label.trim()});
+  // Abre el formulario de nueva variación (reemplaza el prompt() de antes —
+  // ahora soporta 2 tipos: letra/acordes propios, o partitura-archivo)
+  const abrirNuevaVariacion=(name)=>{
+    setNuevaVariacion({cancion:name,tipo:'letra',label:'',contenido:'',archivo:null});
+  };
+  const guardarNuevaVariacion=()=>{
+    const nv=nuevaVariacion;
+    if(!nv||!nv.label?.trim())return;
+    const id=`v${Date.now()}`;
+    const label=nv.label.trim();
+    if(nv.tipo==='partitura'){
+      if(!nv.archivo){onToast({text:'Selecciona un archivo',sub:'Imagen o PDF de la partitura'});return;}
+      const url=URL.createObjectURL(nv.archivo);
+      setVariacionesDB(prev=>({...prev,[nv.cancion]:[...(prev[nv.cancion]||[]),
+        {id,label,tipo:'partitura',archivoUrl:url,archivoNombre:nv.archivo.name}]}));
+    }else{
+      setVariacionesDB(prev=>({...prev,[nv.cancion]:[...(prev[nv.cancion]||[]),{id,label,tipo:'letra'}]}));
+      // Contenido propio de esta variación — mismo mecanismo que "guardar acordes"
+      onSaveChords(`${nv.cancion} · ${label}`, nv.contenido||'');
+    }
+    onToast({text:'Variación agregada',sub:label});
+    setNuevaVariacion(null);
   };
 
   // Sube un track de secuencia a la carpeta de la canción (lista abierta,
@@ -782,19 +800,60 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
                   style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
                     border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.06)',cursor:'pointer',textAlign:'left'}}>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
+                    {v.tipo==='partitura'
+                      ?<path d="M9 18V5l12-2v13"/>
+                      :<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>}
+                  </svg>
                   <span style={{fontSize:12,fontWeight:700,color:'var(--ac)',flex:1,fontFamily:"'Lexend Giga',sans-serif"}}>{v.label}</span>
+                  {v.tipo==='partitura'&&<span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase'}}>Partitura</span>}
                 </button>
               ))}
             </div>
-            {isAdmin&&(
-              <button onClick={()=>agregarVariacion(songParaVariar)}
+            {isAdmin&&(nuevaVariacion?.cancion===songParaVariar?(
+              <div style={{padding:12,borderRadius:12,border:'1px solid var(--bd)',background:'rgba(255,255,255,.03)',marginBottom:14}}>
+                <div style={{display:'flex',gap:6,marginBottom:10}}>
+                  <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'letra'}))}
+                    style={{flex:1,padding:'7px 0',borderRadius:8,border:'none',cursor:'pointer',fontSize:10,fontWeight:700,
+                      fontFamily:"'Lexend Giga',sans-serif",background:nuevaVariacion.tipo==='letra'?'rgba(200,169,126,.18)':'rgba(255,255,255,.05)',
+                      color:nuevaVariacion.tipo==='letra'?'var(--ac)':'var(--tx3)'}}>Letra/acordes</button>
+                  <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'partitura'}))}
+                    style={{flex:1,padding:'7px 0',borderRadius:8,border:'none',cursor:'pointer',fontSize:10,fontWeight:700,
+                      fontFamily:"'Lexend Giga',sans-serif",background:nuevaVariacion.tipo==='partitura'?'rgba(200,169,126,.18)':'rgba(255,255,255,.05)',
+                      color:nuevaVariacion.tipo==='partitura'?'var(--ac)':'var(--tx3)'}}>Partitura (archivo)</button>
+                </div>
+                <input className="inp" placeholder="Nombre (ej: Piano, Trombón, Voz guía)" value={nuevaVariacion.label}
+                  onChange={e=>setNuevaVariacion(v=>({...v,label:e.target.value}))} style={{marginBottom:8}}/>
+                {nuevaVariacion.tipo==='letra'?(
+                  <textarea className="inp" placeholder="Letra y acordes de esta variación (formato [Acorde]letra)..."
+                    value={nuevaVariacion.contenido} onChange={e=>setNuevaVariacion(v=>({...v,contenido:e.target.value}))}
+                    style={{minHeight:100,resize:'vertical',lineHeight:1.6,fontSize:11,marginBottom:8}}/>
+                ):(
+                  <label style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:8,
+                    border:'1px dashed rgba(255,255,255,.2)',background:'rgba(255,255,255,.03)',cursor:'pointer',marginBottom:8}}>
+                    <input type="file" accept="image/*,.pdf" style={{display:'none'}}
+                      onChange={e=>setNuevaVariacion(v=>({...v,archivo:e.target.files[0]||null}))}/>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span style={{fontSize:11,color:'var(--tx2)'}}>{nuevaVariacion.archivo?nuevaVariacion.archivo.name:'Elegir imagen o PDF'}</span>
+                  </label>
+                )}
+                <div style={{display:'flex',gap:6}}>
+                  <button onClick={()=>setNuevaVariacion(null)}
+                    style={{flex:1,padding:'8px 0',borderRadius:8,border:'1px solid var(--bd)',background:'transparent',
+                      color:'var(--tx3)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Cancelar</button>
+                  <button onClick={guardarNuevaVariacion}
+                    style={{flex:2,padding:'8px 0',borderRadius:8,border:'none',background:'var(--ac)',
+                      color:'#000',cursor:'pointer',fontSize:10,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>Guardar variación</button>
+                </div>
+              </div>
+            ):(
+              <button onClick={()=>abrirNuevaVariacion(songParaVariar)}
                 style={{width:'100%',padding:'9px 12px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',
                   background:'rgba(255,255,255,.03)',color:'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,
                   fontFamily:"'Lexend Giga',sans-serif"}}>
                 + Agregar variación (partitura o notas por instrumento)
               </button>
-            )}
+            ))}
 
             {/* ── Secuencia — lista abierta de tracks (v36-ampliación) ── */}
             <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid var(--bd)'}}>

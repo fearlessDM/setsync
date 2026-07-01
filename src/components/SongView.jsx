@@ -615,6 +615,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
             ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
+            :song.partitura
+            ?<div style={{width:'100%',display:'flex',flexDirection:'column',alignItems:'center',gap:12,paddingTop:10}}>
+                <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Partitura · {song.partitura.nombre}</div>
+                <img src={song.partitura.url} alt={song.partitura.nombre}
+                  style={{maxWidth:'100%',borderRadius:14,border:'1px solid rgba(255,255,255,.1)',
+                    boxShadow:'0 20px 50px rgba(0,0,0,.4)'}}/>
+              </div>
             :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
           }
         </div>
@@ -2259,6 +2267,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
               {curKey} · {song.bpm} BPM
               {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
+              {song.asignadoA&&<span style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>Asignado a {song.asignadoA}</span>}
             </div>
           </div>
           <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
@@ -2304,6 +2313,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
             {curKey} · {song.bpm} BPM
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
+            {song.asignadoA&&<span style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>Asignado a {song.asignadoA}</span>}
           </div>
         </div>
         <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"

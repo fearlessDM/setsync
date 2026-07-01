@@ -98,7 +98,19 @@ export default function App(){
   const [repertorio,setRepertorio]=useState(()=>appMode==='banda'?SEED_BANDA_REPERTORIO:CANCIONES.map(c=>({...c})));
   const [colecciones,setColecciones]=useState([]);
   const [ensayos,setEnsayos]=useState([]); // sesión local — no persiste a Firestore aún
-  const [variacionesDB,setVariacionesDB]=useState({}); // {nombreCancion: [{id,label}]} — versiones/partituras por instrumento
+  const [variacionesDB,setVariacionesDB]=useState(()=>({
+    // Demo para probar el flujo de asignación variación→persona en el
+    // setlist (pedido de Danny 01-Jul-2026). tipo:'letra' usa contenido
+    // propio en contentDB (sembrado más abajo); tipo:'partitura' trae su
+    // propio archivo (imagen/PDF) y SongView lo muestra en vez del acorde.
+    'YESHUA':[
+      {id:'v_demo_bajo',   label:'Bajo',    tipo:'letra'},
+      {id:'v_demo_piano',  label:'Piano',   tipo:'letra'},
+      {id:'v_demo_trombon',label:'Trombón', tipo:'partitura',
+        archivoNombre:'Yeshua - Trombón.svg',
+        archivoUrl:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgNjAwIDgwMCI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjZmRmYWYzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI1MCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMxYTFhMWEiIGZvbnQtd2VpZ2h0PSJib2xkIj5ZRVNIVUE8L3RleHQ+Cjx0ZXh0IHg9IjQwIiB5PSI3MiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiM1NTUiPlRyb21ib24gZW4gRG8gLSBNYXJjb3MgQnJ1bmV0PC90ZXh0Pgo8ZyBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMS4yIj4KPGxpbmUgeDE9IjQwIiB5MT0iMTIwIiB4Mj0iNTYwIiB5Mj0iMTIwIi8+CjxsaW5lIHgxPSI0MCIgeTE9IjEzMiIgeDI9IjU2MCIgeTI9IjEzMiIvPgo8bGluZSB4MT0iNDAiIHkxPSIxNDQiIHgyPSI1NjAiIHkyPSIxNDQiLz4KPGxpbmUgeDE9IjQwIiB5MT0iMTU2IiB4Mj0iNTYwIiB5Mj0iMTU2Ii8+CjxsaW5lIHgxPSI0MCIgeTE9IjE2OCIgeDI9IjU2MCIgeTI9IjE2OCIvPgo8L2c+CjxwYXRoIGQ9Ik01MiAxMTIgQzQwIDEyMiA0MCAxNDAgNTUgMTQ4IEM3MCAxNTYgNzIgMTY4IDU4IDE3NiBDNDggMTgyIDQ0IDE3MiA1MCAxNjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzExMSIgc3Ryb2tlLXdpZHRoPSIyLjUiLz4KPGcgc3Ryb2tlPSIjMjIyIiBzdHJva2Utd2lkdGg9IjEuMiI+CjxsaW5lIHgxPSI0MCIgeTE9IjIyMCIgeDI9IjU2MCIgeTI9IjIyMCIvPgo8bGluZSB4MT0iNDAiIHkxPSIyMzIiIHgyPSI1NjAiIHkyPSIyMzIiLz4KPGxpbmUgeDE9IjQwIiB5MT0iMjQ0IiB4Mj0iNTYwIiB5Mj0iMjQ0Ii8+CjxsaW5lIHgxPSI0MCIgeTE9IjI1NiIgeDI9IjU2MCIgeTI9IjI1NiIvPgo8bGluZSB4MT0iNDAiIHkxPSIyNjgiIHgyPSI1NjAiIHkyPSIyNjgiLz4KPC9nPgo8cGF0aCBkPSJNNTIgMjEyIEM0MCAyMjIgNDAgMjQwIDU1IDI0OCBDNzAgMjU2IDcyIDI2OCA1OCAyNzYgQzQ4IDI4MiA0NCAyNzIgNTAgMjY2IiBmaWxsPSJub25lIiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iMi41Ii8+CjxnIGZpbGw9IiMxMTEiPgo8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDQiIHI9IjYiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMzIiIHI9IjYiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSIxNTAiIHI9IjYiLz4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iMTIwIiByPSI2Ii8+PGNpcmNsZSBjeD0iMzgwIiBjeT0iMTU2IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDQwIiBjeT0iMTM4IiByPSI2Ii8+CjxjaXJjbGUgY3g9IjE0MCIgY3k9IjI0NCIgcj0iNiIvPjxjaXJjbGUgY3g9IjIwMCIgY3k9IjIzMiIgcj0iNiIvPjxjaXJjbGUgY3g9IjI2MCIgY3k9IjI1MCIgcj0iNiIvPgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIyMjAiIHI9IjYiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjYiLz48Y2lyY2xlIGN4PSI0NDAiIGN5PSIyMzgiIHI9IjYiLz4KPC9nPgo8dGV4dCB4PSI0MCIgeT0iNzQwIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iIzk5OSI+UGFydGl0dXJhIGRlbW8gZ2VuZXJhZGEgcG9yIFNldFN5bmMgLSByZWVtcGxhemFyIHBvciBlbCBQREYgcmVhbDwvdGV4dD4KPC9zdmc+'},
+    ],
+  })); // {nombreCancion: [{id,label}]} — versiones/partituras por instrumento
   // ── Carpeta de canción (v36-ampliación) — 100% local por ahora, igual que
   // ensayos/variacionesDB: {nombreCancion: {trackReferencia:{url,nombre,
   // fecha,origen}|null, secuencia:[{id,nombre,url,size}]}}. trackReferencia
@@ -152,6 +164,70 @@ export default function App(){
   const [activeSunday,setActiveSunday]=useState(()=>Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1);
   const contentDB = appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
 
+  // Demo: contenido propio para las variaciones de letra "Bajo" y "Piano"
+  // de YESHUA (mismo mecanismo de mutación directa que usa handleSaveChords
+  // más abajo — contentDB es el objeto estático importado, no state).
+  // Clave = displayName que arma abrirSongDesdeRepertorio ("Canción · Label").
+  useEffect(()=>{
+    if(!contentDB['YESHUA · Bajo']){
+      contentDB['YESHUA · Bajo']=`
+YESHUA — VERSIÓN BAJO
+Marcos Brunet
+Notas raíz para línea de bajo
+
+===VERSO 1===
+[A]Mi orgullo me sacó del jardín
+[B]Su humildad colocó el jardín en mí
+[A]Y si vendiera todo lo que tengo
+[B]A cambio de su amor, yo fallaría
+[A]Porque su amor no se compra Ni se merece
+[B]Su amor es un regalo De gracia se recibe
+===CORO===
+[A]Quiero conocer a Jesús
+[B]Quiero conocer a Jesús
+[A]Quiero conocer a Jesús
+[B]Quiero conocer a Jesús
+[A]Y ser hallado en él
+[B]Y ser hallado en él
+[B]Y ser hallado en él
+===PUENTE===
+[A]Mi amado es el más bello entre millares
+[E]de millares
+[A]Tuyo es el reino, Tuyo es el poder
+[B]Tuya es la gloria, Por siempre amén.
+`;
+    }
+    if(!contentDB['YESHUA · Piano']){
+      contentDB['YESHUA · Piano']=`
+YESHUA — VERSIÓN PIANO
+Marcos Brunet
+Voicings extendidos para teclado
+
+===VERSO 1===
+[Amaj7]Mi[Bsus4] orgullo me sacó del jardín
+[C#m7]Su h[Bsus4]umildad colocó el jardín en mí
+[Amaj7]Y [Bsus4]si vendiera todo lo que tengo
+[C#m7]A ca[Bsus4]mbio de su amor, yo fallaría
+[Amaj7]Po[Bsus4]rque su amor no se compra Ni se merece
+[C#m7]Su a[Bsus4]mor es un regalo De gracia se recibe
+===CORO===
+[Amaj7]Qu[Bsus4]iero conocer a Jesús
+[C#m7]Quie[Bsus4]ro conocer a Jesús
+[Amaj7]Qu[Bsus4]iero conocer a Jesús
+[C#m7]Quie[Bsus4]ro conocer a Jesús
+[Amaj7]Y ser hallado en él
+[Bsus4]Y ser hallado en él
+[C#m7]Y ser hallado en él
+===PUENTE===
+[Amaj7]Mi[C#m7] amado es el más bello entre millares
+[E9]de[Bsus4] millares
+[Amaj7]Tu[Bsus4]yo es el reino, Tuyo es el poder
+[C#m7]Tuya[Bsus4] es la gloria, Por siempre amén.
+`;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+
   const showToast=(msg)=>{setToast(typeof msg==='string'?{text:msg}:msg);setTimeout(()=>setToast(null),2500);};
 
   // Domingo activo para MiEvento: el primero con setlist cargado, en vez de
@@ -168,7 +244,8 @@ export default function App(){
       if(!base)return;
       const v=(variacionesDB[name]||[]).find(x=>x.id===variacionId);
       const displayName = v ? `${name} · ${v.label}` : name;
-      setSongViewSongs([{name:displayName,key:base.key,bpm:base.bpm}]);
+      const partitura = v?.tipo==='partitura' ? {url:v.archivoUrl,nombre:v.archivoNombre} : null;
+      setSongViewSongs([{name:displayName,key:base.key,bpm:base.bpm,partitura}]);
       setSongView(0);
       return;
     }
@@ -190,10 +267,12 @@ export default function App(){
         const v=item.variacionId&&item.variacionId!=='original'
           ?(variacionesDB[item.cancion]||[]).find(x=>x.id===item.variacionId):null;
         const persona=item.personaId?personas.find(p=>p.id===item.personaId):null;
+        const partitura = v?.tipo==='partitura' ? {url:v.archivoUrl,nombre:v.archivoNombre} : null;
         return{
           name: v?`${item.cancion} · ${v.label}`:item.cancion,
           key: base.key, bpm: base.bpm,
           asignadoA: persona?.name||null,
+          partitura,
         };
       }
       if(typeof item==='object'&&item)return item; // ya resuelto (compatibilidad hacia atrás)
