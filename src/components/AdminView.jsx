@@ -274,7 +274,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
 export function AdminView({mode, activeSunday, userRole, onLive, onToast,
   onSelectDay, onOpenFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[]}){
   const tx = getT(lang);
-  const [selDay, setSelDay] = useState(activeSunday);
+  const [selDay, setSelDay] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pFilter, setPFilter] = useState('');
   const [sel, setSel] = useState(new Set());
@@ -492,9 +492,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
 }
 
 // ── Mensaje al equipo ──────────────────────────────────────────────────────
-export const generarMensaje=(activeSunday,sl,mesNombre,tipo)=>{
+export const generarMensaje=(activeSunday,sl,mesNombre,diasAntes)=>{
   const canciones=sl.map((s,i)=>`${i+1}. ${s.name} (${s.key} - ${s.bpm} BPM)`).join('\n');
-  const dias=tipo==='mie'?'este miércoles':'este sábado';
   const animos=[
     'No tocamos para impresionar, tocamos para ministrar. ¡Preparemos nuestros corazones!',
     'Somos instrumentos en manos del Señor. Que cada nota sea una ofrenda genuina.',
@@ -502,26 +501,29 @@ export const generarMensaje=(activeSunday,sl,mesNombre,tipo)=>{
     '¡Gracias por su fidelidad! Juntos vamos a levantar una adoración que glorifique a Dios.',
   ];
   const animo=animos[Math.floor(Math.random()*animos.length)];
-  return `Hola equipo hermoso! 🎸\n\nLes recuerdo que este domingo ${activeSunday} de ${mesNombre} tenemos servicio.\n\n📋 SETLIST:\n${canciones}\n\n⏰ Llegada: 8:30 AM | Ensayo: 9:00 AM | Servicio: 10:00 AM\n\nPor favor repasa las canciones con tiempo antes del ${dias}. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
+  return `Hola equipo hermoso! 🎸\n\nLes recuerdo que este domingo ${activeSunday} de ${mesNombre} tenemos servicio.\n\n📋 SETLIST:\n${canciones}\n\n⏰ Llegada: 8:30 AM | Ensayo: 9:00 AM | Servicio: 10:00 AM\n\nPor favor repasa las canciones con ${diasAntes} día${diasAntes>1?'s':''} de anticipación. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
 };
 
 export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
+  const [avisoActivo,setAvisoActivo]=useState(1);
+  const [dias1,setDias1]=useState(3);
+  const [dias2,setDias2]=useState(1);
+  const diasAntes = avisoActivo===1?dias1:dias2;
   const [msg,setMsg]=useState('');
-  const [tipo,setTipo]=useState('mie');
-  useEffect(()=>{setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));},[tipo,activeSunday]);
+  useEffect(()=>{setMsg(generarMensaje(activeSunday,sl,mesNombre,diasAntes));},[avisoActivo,dias1,dias2,activeSunday]);
   const [custom,setCustom]=useState(false);
   const [open,setOpen]=useState(false);
   if(!open)return(
     <div style={{marginBottom:'var(--sp-md)'}}>
-      <div style={{borderTop:'1px solid var(--bd)',paddingTop:'var(--sp-md)'}}>
-        <div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>Recordatorio al equipo</div>
+      <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'var(--sp-xs)'}}>Recordatorio al equipo</div>
         <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
           <div style={{width:38,height:38,borderRadius:'var(--rad-sm)',background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div style={{flex:1,textAlign:'left'}}>
             <div style={{fontWeight:900,fontSize:14,color:'var(--ac)'}}>Enviar recordatorio</div>
-            <div style={{fontSize:11,color:'var(--tx2)',marginTop:2}}>Mié y Sáb · Info del evento + ánimo al equipo</div>
+            <div style={{fontSize:11,color:'var(--tx2)',marginTop:2}}>Aviso 1 y 2 · Info del evento + ánimo al equipo</div>
           </div>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -536,9 +538,16 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
         <button onClick={()=>setOpen(false)} style={{marginLeft:'auto',background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:16,lineHeight:1}}>×</button>
       </div>
       <div style={{display:'flex',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
-        {[['mie','Miércoles'],['sab','Sábado']].map(([t,l])=>(
-          <button key={t} onClick={()=>setTipo(t)} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',border:tipo===t?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:tipo===t?'rgba(200,169,126,.08)':'var(--s1)',color:tipo===t?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{l}</button>
+        {[1,2].map(n=>(
+          <button key={n} onClick={()=>setAvisoActivo(n)} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',border:avisoActivo===n?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:avisoActivo===n?'rgba(200,169,126,.08)':'var(--s1)',color:avisoActivo===n?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Aviso {n}</button>
         ))}
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
+        <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Anticipación:</span>
+        <select value={diasAntes} onChange={e=>{const v=Number(e.target.value);if(avisoActivo===1)setDias1(v);else setDias2(v);}}
+          className="inp" style={{width:'auto',padding:'4px 8px',fontSize:12}}>
+          {[1,2,3,4,5,6,7].map(d=>(<option key={d} value={d}>{d} día{d>1?'s':''} antes</option>))}
+        </select>
       </div>
       {!custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>Vista previa</div>
@@ -547,7 +556,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
       </div>)}
       {custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,tipo));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
+        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,diasAntes));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
       </div>)}
       <div style={{display:'flex',gap:'var(--sp-xs)'}}>
         <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>Cancelar</button>
@@ -621,7 +630,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
       {/* Canciones */}
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
         <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Canciones</span>
+          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Setlist</span>
           <span style={{padding:'2px 8px',borderRadius:'var(--rad-full)',border:'1px solid rgba(94,206,160,.4)',background:'rgba(94,206,160,.08)',color:'var(--gn)',fontSize:9,fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
             <div style={{width:5,height:5,borderRadius:'50%',background:'var(--gn)'}}/>Publicado
           </span>

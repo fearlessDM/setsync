@@ -111,16 +111,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             ))}
           </div>
         )}
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,maxHeight:220,overflowY:'auto'}}>
+        <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
           {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.includes(s.n)).map(s=>(
-            <div key={s.n} onClick={()=>setEvSetlist(l=>[...l,s.n])}
-              style={{padding:'8px 12px',borderRadius:12,cursor:'pointer',
-                background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',
-                display:'flex',flexDirection:'column',gap:2,minWidth:100,transition:'background .15s'}}
-              onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.08)'}
-              onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}>
-              <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{s.n}</span>
-              <span style={{fontSize:9,color:'var(--ac)',fontWeight:400}}>{s.key} · {s.bpm}</span>
+            <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,s.n])}>
+              <span className="scard-n">{s.n}</span>
+              <span className="scard-s">{s.key}<span>{s.bpm} bpm</span></span>
             </div>
           ))}
         </div>
@@ -132,7 +127,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',transition:'all .15s'}}>
               <input type="checkbox" defaultChecked onChange={()=>{}} style={{accentColor:eq.color,width:13,height:13}}/>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
-              <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{eq.name}</span>
+              <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
               <span style={{fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
             </label>
           ))}
@@ -291,43 +286,38 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             )}
           </div>
           {slCanciones.length>0&&(
-            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+            <div className="sg" style={{marginBottom:12}}>
               {slCanciones.map((s,i)=>(
-                <div key={s+i} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 4px 6px 12px',
-                  borderRadius:100,background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.3)'}}>
-                  <span style={{fontSize:9,color:'var(--tx3)',fontWeight:400}}>{i+1}</span>
-                  <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{s}</span>
-                  <button disabled={i===0} onClick={()=>moverCancion(i,i-1)}
-                    style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
-                      color:i===0?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
-                      borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
-                  </button>
-                  <button disabled={i===slCanciones.length-1} onClick={()=>moverCancion(i,i+1)}
-                    style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
-                      color:i===slCanciones.length-1?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===slCanciones.length-1?'not-allowed':'pointer',
-                      borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                  <button onClick={()=>setSlCanciones(prev=>prev.filter((_,j)=>j!==i))}
-                    style={{width:16,height:16,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
-                      color:'var(--tx3)',cursor:'pointer',fontSize:11,lineHeight:1,display:'flex',
-                      alignItems:'center',justifyContent:'center'}}>×</button>
+                <div key={s+i} className="scard" style={{position:'relative',cursor:'default'}}>
+                  <span className="scard-n" style={{paddingRight:36}}>{i+1}. {s}</span>
+                  <div style={{position:'absolute',top:6,right:6,display:'flex',gap:3}}>
+                    <button disabled={i===0} onClick={()=>moverCancion(i,i-1)}
+                      style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
+                        color:i===0?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
+                        borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <button disabled={i===slCanciones.length-1} onClick={()=>moverCancion(i,i+1)}
+                      style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
+                        color:i===slCanciones.length-1?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===slCanciones.length-1?'not-allowed':'pointer',
+                        borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <button onClick={()=>setSlCanciones(prev=>prev.filter((_,j)=>j!==i))}
+                      style={{width:16,height:16,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                        color:'var(--tx3)',cursor:'pointer',fontSize:11,lineHeight:1,display:'flex',
+                        alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
           <input className="inp" placeholder="Buscar canción..." value={slSearch} onChange={e=>setSlSearch(e.target.value)} style={{marginBottom:10}}/>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,maxHeight:220,overflowY:'auto'}}>
+          <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.includes(s.n)).map(s=>(
-              <div key={s.n} onClick={()=>{setSlCanciones(prev=>[...prev,s.n]);}}
-                style={{padding:'8px 12px',borderRadius:12,cursor:'pointer',
-                  background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',
-                  display:'flex',flexDirection:'column',gap:2,minWidth:100,transition:'background .15s'}}
-                onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.08)'}
-                onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}>
-                <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{s.n}</span>
-                <span style={{fontSize:9,color:'var(--ac)',fontWeight:400}}>{s.key} · {s.bpm}</span>
+              <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,s.n]);}}>
+                <span className="scard-n">{s.n}</span>
+                <span className="scard-s">{s.key}<span>{s.bpm} bpm</span></span>
               </div>
             ))}
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.includes(s.n)).length===0&&(
@@ -475,7 +465,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{borderRadius:14,background:'var(--s1)',border:`1px solid ${eq.color}40`,padding:14,marginBottom:14}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
                 <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`}}/>
-                <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:14,color:'var(--tx)',flex:1}}>{eq.name}</span>
+                <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,fontSize:14,color:'var(--tx)',flex:1}}>{eq.name}</span>
                 <button onClick={e=>{e.stopPropagation();setActiveEq(null);}} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
               </div>
               {/* Miembros del equipo */}
@@ -485,11 +475,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                     ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
                     :<div style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
                   }
-                  <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)'}}>{m.name}</span>
+                  <span style={{flex:1,fontSize:12,fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
                   <select value={m.role} onChange={e=>{
                     const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
                     setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                  }} style={{fontSize:9,color:eq.color,background:eq.color+'12',border:`1px solid ${eq.color}30`,padding:'3px 7px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,outline:'none'}}>
+                  }} style={{fontSize:9,color:eq.color,background:eq.color+'12',border:`1px solid ${eq.color}30`,padding:'3px 7px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,outline:'none'}}>
                     {(eq.roles||[]).map(r=>(<option key={r} value={r}>{r}</option>))}
                   </select>
                   <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0}}>
