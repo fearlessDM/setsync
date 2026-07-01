@@ -171,22 +171,22 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         border: isNext ? '1px solid rgba(255,255,255,.18)' : '1px solid var(--bd)',
         cursor: onOpen ? 'pointer' : 'default',
         transition:'all .2s',
-        opacity: isPast ? 0.5 : 1,
+        opacity: isPast ? 0.85 : 1,
       }}
     >
       {/* ── Fila superior: título + badge + botón live ── */}
-      <div style={{display:'flex', alignItems:'flex-start', gap:12, marginBottom:10}}>
+      <div style={{display:'flex', alignItems:'flex-start', gap:12, marginBottom: isPast?0:10}}>
         <div style={{flex:1}}>
           <div style={{
             fontFamily:"'Special Gothic Expanded One',sans-serif", fontWeight:400,
-            color:'var(--tx)', lineHeight:1.1, fontSize:19, marginBottom:4,
+            color:'var(--tx)', lineHeight:1.1, fontSize:19, marginBottom: isPast?0:4,
           }}>{titulo}</div>
-          {subtitulo && (
+          {!isPast && subtitulo && (
             <div style={{fontFamily:"'Lexend Giga',sans-serif", fontWeight:300,
               fontSize:11, color:'var(--tx3)', lineHeight:1.5}}>{subtitulo}</div>
           )}
         </div>
-        {badge && (
+        {!isPast && badge && (
           <span style={{
             padding:'4px 11px', borderRadius:'var(--rad-full)', fontSize:9, fontWeight:700,
             border: pub
@@ -196,7 +196,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
             flexShrink:0, whiteSpace:'nowrap',
           }}>{badge}</span>
         )}
-        {isLeader && setlist.length > 0 && (
+        {!isPast && isLeader && setlist.length > 0 && (
           <button
             onClick={e=>{e.stopPropagation(); onLive && onLive();}}
             style={{
@@ -215,7 +215,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
       </div>
 
       {/* ── Lugar y hora ── */}
-      {(lugar || hora) && (
+      {!isPast && (lugar || hora) && (
         <div style={{
           display:'flex', alignItems:'center', gap:12,
           marginBottom: equipos.length > 0 ? 12 : 0,
@@ -246,7 +246,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
       )}
 
       {/* ── Chips de equipos ── */}
-      {equipos.length > 0 && (
+      {!isPast && equipos.length > 0 && (
         <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
           {equipos.map(eq=>(
             <div key={eq.id} style={{
@@ -351,7 +351,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                     margin:'4px 0 var(--sp-xs)'}}>
                     <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(200,169,126,.4))'}}/>
                     <span style={{fontSize:9,fontWeight:900,color:'var(--ac)',
-                      textTransform:'uppercase',letterSpacing:'1.5px',flexShrink:0}}>Próximo evento</span>
+                      textTransform:'uppercase',letterSpacing:'1.5px',flexShrink:0}}>Fecha actual</span>
                     <div style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
                   </div>
                 )}
@@ -433,7 +433,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 isLeader={isLeader}
                 tx={tx}
                 onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);if(onOpenFecha)onOpenFecha(ev.dia,mesNav);}}
-                onLive={()=>{onLive&&onLive();}}
+                onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
               />
             ))}
           </div>
@@ -509,9 +509,16 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
   const [dias1,setDias1]=useState(3);
   const [dias2,setDias2]=useState(1);
   const diasAntes = avisoActivo===1?dias1:dias2;
-  const [msg,setMsg]=useState('');
-  useEffect(()=>{setMsg(generarMensaje(activeSunday,sl,mesNombre,diasAntes));},[avisoActivo,dias1,dias2,activeSunday]);
-  const [custom,setCustom]=useState(false);
+  const [msg1,setMsg1]=useState('');
+  const [msg2,setMsg2]=useState('');
+  const msg = avisoActivo===1?msg1:msg2;
+  const setMsg = avisoActivo===1?setMsg1:setMsg2;
+  useEffect(()=>{setMsg1(generarMensaje(activeSunday,sl,mesNombre,dias1));},[dias1,activeSunday]);
+  useEffect(()=>{setMsg2(generarMensaje(activeSunday,sl,mesNombre,dias2));},[dias2,activeSunday]);
+  const [custom1,setCustom1]=useState(false);
+  const [custom2,setCustom2]=useState(false);
+  const custom = avisoActivo===1?custom1:custom2;
+  const setCustom = avisoActivo===1?setCustom1:setCustom2;
   const [open,setOpen]=useState(false);
   if(!open)return(
     <div style={{marginBottom:'var(--sp-md)'}}>
@@ -558,9 +565,13 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
         <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,diasAntes));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
       </div>)}
+      <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+        Se envía por correo y notificación dentro de la app.
+      </div>
       <div style={{display:'flex',gap:'var(--sp-xs)'}}>
         <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>Cancelar</button>
-        <button onClick={()=>{onToast({text:'Mensaje enviado',sub:'Todo el equipo notificado'});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
+        <button onClick={()=>{onToast({text:'Mensaje enviado',sub:`Aviso ${avisoActivo} · correo y notificación`});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Enviar al equipo
         </button>
@@ -667,8 +678,8 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
                 {(eq.miembros||[]).map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
                     <div style={{width:16,height:16,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:6,fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
-                    <span style={{fontSize:10,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
-                    <span style={{fontSize:9,color:eq.color,fontWeight:700}}>{m.role}</span>
+                    <span style={{fontSize:10,fontWeight:400,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
+                    <span style={{fontSize:9,color:eq.color,fontWeight:300}}>{m.role}</span>
                   </div>
                 ))}
               </div>
@@ -682,12 +693,12 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
       {/* Itinerario */}
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
         <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
-          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Itinerario del domingo</span>
+          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Itinerario</span>
         </div>
         {ITINERARIO.map((it,i)=>(
           <div key={i} style={{display:'flex',gap:'var(--sp-sm)',padding:'11px var(--sp-md)',borderBottom:i<ITINERARIO.length-1?'1px solid rgba(255,255,255,.04)':'none',alignItems:'flex-start'}}>
             <span style={{fontSize:11,fontWeight:900,color:'var(--ac)',minWidth:40,fontFamily:"'Outfit',sans-serif"}}>{it.hora}</span>
-            <span style={{fontSize:12,color:'var(--tx)',fontWeight:600,lineHeight:1.4}}>{it.label}</span>
+            <span style={{fontSize:12,color:'var(--tx)',fontWeight:200,lineHeight:1.4}}>{it.label}</span>
           </div>
         ))}
       </div>

@@ -34,6 +34,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [notifDest,setNotifDest]=useState([]);
   const [notifTipo,setNotifTipo]=useState('recordatorio');
   const [notifMsg,setNotifMsg]=useState('');
+  const [notifCorreo,setNotifCorreo]=useState(false);
+
+  // ── Crear ensayo ──
+  const [ensRef,setEnsRef]=useState('');
+  const [ensEquipos,setEnsEquipos]=useState([]);
+  const [ensArchivo,setEnsArchivo]=useState(null);
+  const [ensNotas,setEnsNotas]=useState('');
 
   // ── Setlist Creator ──
   const [slNombre,setSlNombre]=useState('');
@@ -731,9 +738,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:10}}>Mensaje</div>
         <textarea className="inp" placeholder="Ej: Hola equipo, este domingo llegamos a las 9:00am. ¡Los esperamos!" value={notifMsg} onChange={e=>setNotifMsg(e.target.value)} style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:12}}/>
       </div>
+      <button onClick={()=>setNotifCorreo(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,marginBottom:16,cursor:'pointer',border:notifCorreo?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:notifCorreo?'rgba(200,169,126,.08)':'var(--s1)'}}>
+        <div style={{width:18,height:18,borderRadius:5,border:notifCorreo?'1px solid var(--ac)':'1px solid var(--bd)',background:notifCorreo?'var(--ac)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          {notifCorreo&&<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--bg)" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+        </div>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={notifCorreo?'var(--ac)':'var(--tx3)'} strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+        <span style={{fontSize:12,fontWeight:700,color:notifCorreo?'var(--ac)':'var(--tx2)',textAlign:'left',flex:1}}>También agregar por correo</span>
+      </button>
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
-        <button className="btn btn-p" style={{flex:2}} disabled={!notifMsg.trim()||!notifDest.length} onClick={()=>{onToast({text:'Notificación enviada',sub:notifDest.join(', ')});setBsView(null);}}>
+        <button className="btn btn-p" style={{flex:2}} disabled={!notifMsg.trim()||!notifDest.length} onClick={()=>{onToast({text:'Notificación enviada',sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});setBsView(null);}}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Enviar
         </button>
@@ -933,14 +947,158 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     </div>
   );
 
-      const ITEMS=[
+  // ── PLANES Y PRECIOS ──
+  if(bsView==='planes'){
+    const PLANES=[
+      {id:'lite',name:'Lite',mensual:0,anual:0,color:'var(--tx3)',sub:'Para empezar',
+        features:['1 equipo · 5 miembros','10 canciones','Setlists básicos']},
+      {id:'pro',name:'Pro',mensual:7.90,anual:5.53,color:'var(--gn)',sub:'El más popular',
+        features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Secuencias & Click']},
+      {id:'premium',name:'Premium',mensual:19.90,anual:13.93,color:'var(--ac)',sub:'Producción pro',
+        features:['Todo en Pro +','Multitracks','Partituras','Multi-banda']},
+    ];
+    const BloquePlanes=({periodo,precioKey,nota})=>(
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{periodo}</div>
+          {nota&&<span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>{nota}</span>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+          {PLANES.map(p=>(
+            <div key={p.id+periodo} style={{padding:'12px 10px',borderRadius:12,
+              border:planId===p.id?`1px solid ${p.color}`:`1px solid ${p.color}30`,
+              background:planId===p.id?`${p.color}12`:`${p.color}08`,
+              display:'flex',flexDirection:'column',gap:5}}>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:14,color:p.color,fontWeight:400}}>{p.name}</div>
+              <div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.7,textTransform:'uppercase',letterSpacing:'1px'}}>{p.sub}</div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,color:'var(--tx)',lineHeight:1,marginTop:2}}>
+                {p[precioKey]===0?'Gratis':`$${p[precioKey].toFixed(2)}`}
+              </div>
+              {p[precioKey]>0&&<div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>USD/mes</div>}
+              <div style={{marginTop:4,display:'flex',flexDirection:'column',gap:3}}>
+                {p.features.map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
+                    <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>
+                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.4}}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={()=>{if(planId!==p.id){setPlanId(p.id);onToast({text:'Plan actualizado',sub:p.name});}}}
+                disabled={planId===p.id}
+                style={{marginTop:6,padding:'6px 8px',borderRadius:8,border:'none',cursor:planId===p.id?'default':'pointer',
+                  background:planId===p.id?'rgba(255,255,255,.06)':`${p.color}20`,color:planId===p.id?'var(--tx3)':p.color,
+                  fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                {planId===p.id?'Plan actual':'Elegir'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+    return(
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        </div>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+          Planes <span style={{color:'var(--ac)'}}>y precios</span>
+        </div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Elige el plan que mejor se ajusta a tu equipo</div>
+        <BloquePlanes periodo="Mensual" precioKey="mensual"/>
+        <BloquePlanes periodo="Anual" precioKey="anual" nota="Ahorra 30%"/>
+      </div>
+    );
+  }
+
+  // ── CREAR ENSAYO ──
+  if(bsView==='ensayo')return(
+    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+      </div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        Crear <span style={{color:'var(--ac)'}}>ensayo</span>
+      </div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Agenda un ensayo y convoca a los equipos que necesitas</div>
+
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Asignar a</div>
+        <select className="inp" value={ensRef} onChange={e=>setEnsRef(e.target.value)} style={{cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
+          <option value="">Sin asignar — ensayo libre</option>
+          {eventos.map(ev=>(<option key={`ev-${ev.id}`} value={`evento:${ev.id}`}>{ev.nombre} · {ev.fecha}</option>))}
+          {slGuardados.map(sl=>(<option key={`sl-${sl.id}`} value={`setlist:${sl.id}`}>Setlist · {sl.nombre}</option>))}
+        </select>
+      </div>
+
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Convocar equipos</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+          {equipos.map(eq=>{
+            const activo=ensEquipos.includes(eq.id);
+            return(
+              <button key={eq.id} onClick={()=>setEnsEquipos(v=>activo?v.filter(x=>x!==eq.id):[...v,eq.id])}
+                style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,cursor:'pointer',
+                  border:activo?`1px solid ${eq.color}80`:'1px solid var(--bd)',background:activo?`${eq.color}12`:'var(--s1)'}}>
+                <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
+                <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
+                <span style={{fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notas del ensayo</div>
+        <textarea className="inp" value={ensNotas} onChange={e=>setEnsNotas(e.target.value)}
+          style={{minHeight:70,resize:'vertical',lineHeight:1.6,fontSize:12}}
+          placeholder="Ej: Repasar bloque de adoración, foco en transiciones."/>
+      </div>
+
+      <div className="card" style={{padding:14,marginBottom:18}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Archivo adjunto</div>
+        {ensArchivo?(
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+            borderRadius:10,background:'rgba(48,192,183,.08)',border:'1px solid rgba(48,192,183,.25)'}}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span style={{flex:1,fontSize:12,color:'var(--tx)'}}>{ensArchivo}</span>
+            <button onClick={()=>setEnsArchivo(null)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:16}}>×</button>
+          </div>
+        ):(
+          <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',background:'rgba(255,255,255,.03)',cursor:'pointer'}}>
+            <input type="file" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)setEnsArchivo(f.name);}}/>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div>
+              <div style={{fontSize:12,fontWeight:700,color:'var(--ac)'}}>Subir archivo</div>
+              <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>PDF, Word o audio para el equipo</div>
+            </div>
+          </label>
+        )}
+      </div>
+
+      <div style={{display:'flex',gap:9}}>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
+        <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!ensEquipos.length}
+          onClick={()=>{onToast({text:'Ensayo creado',sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});setEnsRef('');setEnsEquipos([]);setEnsArchivo(null);setEnsNotas('');setBsView(null);}}>
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Crear ensayo
+        </button>
+      </div>
+    </div>
+  );
+
+  const ITEMS=[
     {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',adminOnly:false},
     {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',adminOnly:false},
+    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'calendar',adminOnly:false},
     {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',adminOnly:true},
     {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',adminOnly:true},
     {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',adminOnly:false},
     {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',adminOnly:false},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',adminOnly:true}]:[]),
+    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'settings',adminOnly:true},
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;

@@ -69,7 +69,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           stroke="var(--tx2)" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Cancionero</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Canciones</span>
       </div>
 
       {/* Selector de modo si no hay uno elegido */}
@@ -413,7 +413,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Cancionero</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
           <div style={{fontSize:12,color:'var(--tx2)',fontWeight:200,fontFamily:"'Lexend Giga',sans-serif"}}>{CANCIONES.length} canciones · letras · acordes · partituras</div>
         </div>
         <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}

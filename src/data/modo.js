@@ -11,7 +11,7 @@ export const MODO_TEXTOS = {
       evento:        { singular:'Fecha',   plural:'Fechas' },
       equipoPersona: { singular:'Equipo de adoración', plural:'Equipos de adoración' },
       lider:         'Líder de alabanza',
-      repertorioTab: 'Cancionero',
+      repertorioTab: 'Canciones',
       backstageSub:  'Fechas · Setlists · Equipos de adoración',
     },
     en: {
@@ -27,7 +27,7 @@ export const MODO_TEXTOS = {
       evento:        { singular:'Show',  plural:'Shows' },
       equipoPersona: { singular:'Banda', plural:'Bandas' },
       lider:         'Encargado',
-      repertorioTab: 'Cancionero',
+      repertorioTab: 'Canciones',
       backstageSub:  'Gigs · Repertorio · Equipo técnico · Rider',
     },
     en: {
