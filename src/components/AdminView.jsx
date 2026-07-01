@@ -160,7 +160,7 @@ function BarraMeses({mesActivo, onChange, eventos=[]}){
 
 // ── Tarjeta de fecha ───────────────────────────────────────────────────────
 function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], isNext=false,
-  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge}){
+  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false}){
   return(
     <div
       onClick={onOpen}
@@ -185,10 +185,16 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
             <div style={{fontFamily:"'Lexend Giga',sans-serif", fontWeight:300,
               fontSize:11, color:'var(--tx3)', lineHeight:1.5}}>{subtitulo}</div>
           )}
+          {!isPast && tieneEnsayo && (
+            <div style={{display:'flex',alignItems:'center',gap:4,marginTop:4}}>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>Ensayo asignado</span>
+            </div>
+          )}
         </div>
         {!isPast && badge && (
           <span style={{
-            padding:'4px 11px', borderRadius:'var(--rad-full)', fontSize:9, fontWeight:700,
+            padding:'4px 11px', borderRadius:'var(--rad-full)', fontSize:6, fontWeight:700,
             border: pub
               ? '1px solid rgba(94,206,160,.35)' : '1px solid rgba(255,200,100,.25)',
             background: pub ? 'rgba(94,206,160,.08)' : 'rgba(255,200,100,.06)',
@@ -272,7 +278,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
 
 // ── Vista principal ────────────────────────────────────────────────────────
 export function AdminView({mode, activeSunday, userRole, onLive, onToast,
-  onSelectDay, onOpenFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[]}){
+  onSelectDay, onOpenFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], ensayos=[]}){
   const tx = getT(lang);
   const [selDay, setSelDay] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -402,6 +408,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   tx={tx}
                   onOpen={()=>{if(onOpenFecha)onOpenFecha(ev.dia||new Date(ev.fecha).getDate(),mesNav);}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
+                  tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
                 />
               );
             })}
@@ -652,7 +659,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
             <div key={i} onClick={()=>onOpenSong(i)} style={{display:'flex',alignItems:'center',gap:'var(--sp-sm)',padding:'13px var(--sp-md)',borderBottom:i<sl.length-1?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer'}}>
               <span style={{fontSize:13,fontWeight:900,color:'var(--tx3)',minWidth:16,textAlign:'right'}}>{i+1}</span>
               <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:14,color:'var(--tx)'}}>{s.name}</div>
+                <div style={{fontWeight:700,fontSize:11,color:'var(--tx)'}}>{s.name}</div>
                 <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>{s.key} · {s.bpm} BPM</div>
               </div>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>

@@ -12,7 +12,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -22,6 +22,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;
   const [activeEq,setActiveEq]=useState(null);
+  const [verMiembros,setVerMiembros]=useState(false);
   const [nuevaBanda,setNuevaBanda]=useState('');
   const [nuevosRoles,setNuevosRoles]=useState('');
   const [evNombre,setEvNombre]=useState('');
@@ -38,9 +39,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── Crear ensayo ──
   const [ensRef,setEnsRef]=useState('');
+  const [ensSetlistId,setEnsSetlistId]=useState('');
   const [ensEquipos,setEnsEquipos]=useState([]);
   const [ensArchivo,setEnsArchivo]=useState(null);
   const [ensNotas,setEnsNotas]=useState('');
+  // ── Planes y precios ──
+  const [periodoPersonal,setPeriodoPersonal]=useState('mensual');
+  const [periodoEquipo,setPeriodoEquipo]=useState('mensual');
 
   // ── Setlist Creator ──
   const [slNombre,setSlNombre]=useState('');
@@ -389,11 +394,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
           <button
             onClick={()=>{
-              const nombre=prompt('Nombre del nuevo miembro:');
+              const nombre=prompt('Nombre completo del nuevo miembro:');
               if(!nombre?.trim())return;
+              const email=prompt('Correo del miembro (opcional):')||'';
               const equipo=equipos[0];
               if(!equipo){onToast({text:'Crea un equipo primero'});return;}
-              const nuevo={id:Date.now(),name:nombre.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
+              const nuevo={id:Date.now(),name:nombre.trim(),email:email.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
               const upd={...equipo,miembros:[...(equipo.miembros||[]),nuevo]};
               setEquipos(prev=>prev.map(e=>e.id===equipo.id?upd:e));
               persistirEquipo(upd);
@@ -407,21 +413,39 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             Agregar miembro
           </button>
         </div>
-        {/* Pills de miembros con foto */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:20}}>
-          {personas.map(m=>(
-            <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',borderRadius:100,background:'var(--s1)',border:'1px solid var(--bd)'}}>
-              {m.foto
-                ?<img src={m.foto} alt={m.name} style={{width:22,height:22,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
-                :<div style={{width:22,height:22,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
-              }
-              <span style={{fontSize:11,fontWeight:700,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
-            </div>
-          ))}
-          {personas.length===0&&(
-            <div style={{fontSize:11,color:'var(--tx3)',fontStyle:'italic'}}>Agrega tu primer miembro →</div>
-          )}
-        </div>
+        {/* Lista desplegable de miembros con nombre completo y correo */}
+        <button onClick={()=>setVerMiembros(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:8,
+          padding:'10px 12px',borderRadius:'var(--rad-sm)',border:'1px solid var(--bd)',background:'var(--s1)',
+          cursor:'pointer',marginBottom:verMiembros?8:20,fontFamily:"'Lexend Giga',sans-serif"}}>
+          <span style={{fontSize:12,fontWeight:700,color:'var(--tx)',flex:1,textAlign:'left'}}>
+            Ver todos los miembros ({personas.length})
+          </span>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
+            style={{transform:verMiembros?'rotate(180deg)':'none',transition:'transform .15s'}}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        {verMiembros && (
+          <div style={{display:'flex',flexDirection:'column',marginBottom:20,borderRadius:'var(--rad-md)',
+            border:'1px solid var(--bd)',overflow:'hidden'}}>
+            {personas.map((m,i)=>(
+              <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
+                borderBottom:i<personas.length-1?'1px solid rgba(255,255,255,.05)':'none',background:'var(--s1)'}}>
+                {m.foto
+                  ?<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
+                  :<div style={{width:26,height:26,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
+                }
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
+                  <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:'Sin correo registrado'}</div>
+                </div>
+              </div>
+            ))}
+            {personas.length===0&&(
+              <div style={{fontSize:11,color:'var(--tx3)',fontStyle:'italic',padding:'12px'}}>Agrega tu primer miembro →</div>
+            )}
+          </div>
+        )}
 
         {/* ── Equipos en grid 2 columnas ── */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
@@ -571,7 +595,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
         {/* ── Crear nuevo equipo ── */}
         <div style={{padding:14,borderRadius:14,background:'var(--s1)',border:'1px solid var(--bd)'}}>
-          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:10}}>Nuevo equipo</div>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:10}}>Crear nuevo equipo</div>
           <input className="inp" placeholder="Nombre del equipo..." value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8}}/>
           <input className="inp" placeholder="Roles separados por coma (ej: Líder, Músico, Técnico)" value={nuevosRoles} onChange={e=>setNuevosRoles(e.target.value)} style={{marginBottom:8}}/>
           <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
@@ -949,51 +973,79 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── PLANES Y PRECIOS ──
   if(bsView==='planes'){
-    const PLANES=[
+    const PLANES_PERSONAL=[
       {id:'lite',name:'Lite',mensual:0,anual:0,color:'var(--tx3)',sub:'Para empezar',
-        features:['1 equipo · 5 miembros','10 canciones','Setlists básicos']},
+        desc:'Ideal si recién estás probando SetSync o tienes un equipo muy chico. Gestionas tu música sin invitar a nadie más.',
+        features:['Solo tú, sin invitados','10 canciones en tu cancionero','Setlists básicos para tus fechas']},
       {id:'pro',name:'Pro',mensual:7.90,anual:5.53,color:'var(--gn)',sub:'El más popular',
-        features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Secuencias & Click']},
+        desc:'Para el líder que ya arma equipo. Invita hasta 5 personas para que vean setlists, acordes y se sumen a la convocatoria.',
+        features:['Tú + hasta 5 invitados','Cancionero completo, sin límite de canciones','Monitoreo OSC para tu mesa X32/M32/XR18','Secuencias & Click sincronizado']},
       {id:'premium',name:'Premium',mensual:19.90,anual:13.93,color:'var(--ac)',sub:'Producción pro',
-        features:['Todo en Pro +','Multitracks','Partituras','Multi-banda']},
+        desc:'Cuando necesitas producción completa: multitracks, partituras y varias bandas o equipos bajo tu misma cuenta.',
+        features:['Tú + hasta 15 invitados','Todo lo de Pro','Multitracks para tus secuencias','Partituras (MusicXML/PDF)','Gestiona varias bandas o equipos']},
     ];
-    const BloquePlanes=({periodo,precioKey,nota})=>(
-      <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{periodo}</div>
-          {nota&&<span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>{nota}</span>}
+    const PLANES_EQUIPO=[
+      {id:'eq-1-10',name:'1–10 personas',mensual:4.90,anual:3.43,color:'var(--gn)',sub:'Equipos chicos',
+        desc:'Toda tu iglesia o banda con Pro completo, cada persona con su propia sesión.',
+        features:['Hasta 10 miembros con acceso completo','Cancionero, monitoreo OSC y secuencias','Precio por persona, no por cuenta']},
+      {id:'eq-11-25',name:'11–25 personas',mensual:3.90,anual:2.73,color:'var(--ac)',sub:'Equipos medianos',
+        desc:'Para congregaciones o bandas con varios equipos rotativos (alabanza, proyección, sonido).',
+        features:['Hasta 25 miembros con acceso completo','Todo lo del tramo anterior','Precio por persona más bajo']},
+      {id:'eq-26-40',name:'26–40 personas',mensual:2.90,anual:2.03,color:'#a78bfa',sub:'Equipos grandes',
+        desc:'Multi-equipo, multi-servicio: varios grupos trabajando en paralelo bajo una sola organización.',
+        features:['Hasta 40 miembros con acceso completo','Todo lo del tramo anterior','Ideal para múltiples sedes o servicios']},
+      {id:'eq-40+',name:'40+ personas',mensual:1.50,anual:1.05,color:'var(--tx3)',sub:'Redes y multi-sede',
+        desc:'Para redes de iglesias o productoras con muchos equipos. Hablamos directo para ajustar el trato.',
+        features:['Miembros ilimitados','Todo lo de los tramos anteriores','Soporte prioritario y onboarding asistido']},
+    ];
+    const BloquePlanes=({planes,periodo,setPeriodo,activo,onElegir})=>(
+      <>
+        <div style={{display:'flex',gap:6,marginBottom:12}}>
+          {['mensual','anual'].map(p=>(
+            <button key={p} onClick={()=>setPeriodo(p)} style={{flex:1,padding:9,borderRadius:'var(--rad-sm)',
+              border:periodo===p?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
+              background:periodo===p?'rgba(200,169,126,.08)':'var(--s1)',
+              color:periodo===p?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:11,cursor:'pointer',
+              fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:5}}>
+              {p==='mensual'?'Mensual':'Anual'}
+              {p==='anual'&&<span style={{fontSize:8,color:'var(--gn)',fontWeight:900}}>−30%</span>}
+            </button>
+          ))}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
-          {PLANES.map(p=>(
-            <div key={p.id+periodo} style={{padding:'12px 10px',borderRadius:12,
-              border:planId===p.id?`1px solid ${p.color}`:`1px solid ${p.color}30`,
-              background:planId===p.id?`${p.color}12`:`${p.color}08`,
-              display:'flex',flexDirection:'column',gap:5}}>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:14,color:p.color,fontWeight:400}}>{p.name}</div>
-              <div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.7,textTransform:'uppercase',letterSpacing:'1px'}}>{p.sub}</div>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,color:'var(--tx)',lineHeight:1,marginTop:2}}>
-                {p[precioKey]===0?'Gratis':`$${p[precioKey].toFixed(2)}`}
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {planes.map(p=>(
+            <div key={p.id} className="card" style={{padding:14,
+              border:activo===p.id?`1px solid ${p.color}`:'1px solid var(--bd)',
+              background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
+              <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:p.color,fontWeight:400}}>{p.name}</div>
+                <div style={{textAlign:'right'}}>
+                  <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,color:'var(--tx)'}}>
+                    {p[periodo]===0?'Gratis':`$${p[periodo].toFixed(2)}`}
+                  </span>
+                  {p[periodo]>0&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}> USD/mes</span>}
+                </div>
               </div>
-              {p[precioKey]>0&&<div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>USD/mes</div>}
-              <div style={{marginTop:4,display:'flex',flexDirection:'column',gap:3}}>
+              <div style={{fontSize:9,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.75,textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{p.sub}</div>
+              <div style={{fontSize:11,color:'var(--tx2)',lineHeight:1.6,marginBottom:10,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{p.desc}</div>
+              <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:10}}>
                 {p.features.map(f=>(
-                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
-                    <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>
-                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.4}}>{f}</span>
+                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                    <span style={{color:p.color,fontSize:10,marginTop:1,flexShrink:0}}>✓</span>
+                    <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5}}>{f}</span>
                   </div>
                 ))}
               </div>
-              <button onClick={()=>{if(planId!==p.id){setPlanId(p.id);onToast({text:'Plan actualizado',sub:p.name});}}}
-                disabled={planId===p.id}
-                style={{marginTop:6,padding:'6px 8px',borderRadius:8,border:'none',cursor:planId===p.id?'default':'pointer',
-                  background:planId===p.id?'rgba(255,255,255,.06)':`${p.color}20`,color:planId===p.id?'var(--tx3)':p.color,
-                  fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-                {planId===p.id?'Plan actual':'Elegir'}
+              <button onClick={()=>onElegir(p)} disabled={activo===p.id}
+                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:activo===p.id?'default':'pointer',
+                  background:activo===p.id?'rgba(255,255,255,.06)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
+                  fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                {activo===p.id?'Plan actual':'Elegir'}
               </button>
             </div>
           ))}
         </div>
-      </div>
+      </>
     );
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
@@ -1004,15 +1056,38 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Planes <span style={{color:'var(--ac)'}}>y precios</span>
         </div>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Elige el plan que mejor se ajusta a tu equipo</div>
-        <BloquePlanes periodo="Mensual" precioKey="mensual"/>
-        <BloquePlanes periodo="Anual" precioKey="anual" nota="Ahorra 30%"/>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:22}}>
+          SetSync tiene dos formas de pagar: por tu cuenta personal (tú invitas gente con límite) o por equipo (todos con acceso completo, precio por persona).
+        </div>
+
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>Cuenta personal</div>
+        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+          Tú administras la cuenta y decides a quién invitar, con un tope de invitados que crece según el plan.
+        </div>
+        <div style={{marginBottom:28}}>
+          <BloquePlanes planes={PLANES_PERSONAL} periodo={periodoPersonal} setPeriodo={setPeriodoPersonal}
+            activo={planId} onElegir={p=>{setPlanId(p.id);onToast({text:'Plan actualizado',sub:p.name});}}/>
+        </div>
+
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>Cuenta equipo</div>
+        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+          Todos los miembros quedan con funciones completas (Cancionero, monitoreo OSC, multitracks y partituras). El precio es por persona y baja mientras más grande es el equipo — te conviene desde que ya todos necesitan Pro.
+        </div>
+        <BloquePlanes planes={PLANES_EQUIPO} periodo={periodoEquipo} setPeriodo={setPeriodoEquipo}
+          activo={null} onElegir={p=>onToast({text:'Solicitud enviada',sub:`Cotización para ${p.name}`})}/>
       </div>
     );
   }
 
   // ── CREAR ENSAYO ──
-  if(bsView==='ensayo')return(
+  if(bsView==='ensayo'){
+    const ensayosDelEvento = ensRef ? ensayos.filter(e=>e.ref===ensRef) : [];
+    const duplicarEnsayo = (en) => {
+      const copia={...en,id:`ens${Date.now()}`,nombre:`${en.nombre||'Ensayo'} (copia)`};
+      setEnsayos(prev=>[...prev,copia]);
+      onToast({text:'Ensayo duplicado',sub:copia.nombre});
+    };
+    return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1028,7 +1103,28 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <select className="inp" value={ensRef} onChange={e=>setEnsRef(e.target.value)} style={{cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
           <option value="">Sin asignar — ensayo libre</option>
           {eventos.map(ev=>(<option key={`ev-${ev.id}`} value={`evento:${ev.id}`}>{ev.nombre} · {ev.fecha}</option>))}
-          {slGuardados.map(sl=>(<option key={`sl-${sl.id}`} value={`setlist:${sl.id}`}>Setlist · {sl.nombre}</option>))}
+        </select>
+      </div>
+
+      {ensayosDelEvento.length>0&&(
+        <div className="card" style={{padding:14,marginBottom:14,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.05)'}}>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
+            Ya hay {ensayosDelEvento.length} ensayo{ensayosDelEvento.length>1?'s':''} para este evento
+          </div>
+          {ensayosDelEvento.map(en=>(
+            <div key={en.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0'}}>
+              <span style={{flex:1,fontSize:12,color:'var(--tx)'}}>{en.nombre||'Ensayo'}</span>
+              <button onClick={()=>duplicarEnsayo(en)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Duplicar</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Setlist a ensayar</div>
+        <select className="inp" value={ensSetlistId} onChange={e=>setEnsSetlistId(e.target.value)} style={{cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
+          <option value="">Sin setlist asignado</option>
+          {slGuardados.map(sl=>(<option key={sl.id} value={sl.id}>{sl.nombre} · {sl.canciones.length} canciones</option>))}
         </select>
       </div>
 
@@ -1081,13 +1177,20 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
         <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!ensEquipos.length}
-          onClick={()=>{onToast({text:'Ensayo creado',sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});setEnsRef('');setEnsEquipos([]);setEnsArchivo(null);setEnsNotas('');setBsView(null);}}>
+          onClick={()=>{
+            const sl=slGuardados.find(s=>s.id===ensSetlistId);
+            const nuevo={id:`ens${Date.now()}`,ref:ensRef,setlistId:ensSetlistId,setlistNombre:sl?.nombre||'',equipos:[...ensEquipos],archivo:ensArchivo,notas:ensNotas,nombre:'Ensayo'};
+            setEnsayos(prev=>[...prev,nuevo]);
+            onToast({text:'Ensayo creado',sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});
+            setEnsRef('');setEnsSetlistId('');setEnsEquipos([]);setEnsArchivo(null);setEnsNotas('');setBsView(null);
+          }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           Crear ensayo
         </button>
       </div>
     </div>
-  );
+    );
+  }
 
   const ITEMS=[
     {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',adminOnly:false},

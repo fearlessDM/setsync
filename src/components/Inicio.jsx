@@ -33,7 +33,11 @@ const TUTORIALES = [
     contenido:`
 # Conexión a Monitoreo Inalámbrico
 
-SetSync usa el protocolo OSC (Open Sound Control) para comunicarse con tu mesa digital. El proceso es simple: la mesa y los teléfonos deben estar en la misma red WiFi.
+SetSync usa el protocolo OSC (Open Sound Control) para comunicarse con tu mesa digital. El proceso es simple: los dispositivos (no solo teléfonos — también tablets o notebooks) deben estar conectados a la red WiFi que genera la mesa.
+
+## ¿Qué es un bus?
+
+Un bus de monitor es tu propia mezcla, independiente de lo que suena en las cornetas o en el in-ear del resto. Cada músico elige cuánto quiere escuchar de cada instrumento o voz — más batería, menos voz, lo que necesite — y arma esa mezcla desde su propio dispositivo, sin tener que pedirle nada al sonidista.
 
 ## Mesas compatibles
 - Behringer X32 / X32 Compact / X32 Rack
@@ -45,17 +49,14 @@ SetSync usa el protocolo OSC (Open Sound Control) para comunicarse con tu mesa d
 **1. Conectar la mesa al WiFi**
 Conecta un router al puerto Ethernet de la mesa. La mesa creará una red o se unirá a la existente. Anota la IP de la mesa (aparece en el menú Setup → Network).
 
-**2. Conectar los teléfonos**
-Todos los músicos deben conectar su teléfono a la misma red WiFi de la mesa.
+**2. Conectar los dispositivos**
+Todos los músicos deben conectar su dispositivo (celular, tablet o notebook) a la misma red WiFi que genera la mesa.
 
 **3. Activar en SetSync**
 Abre una canción → pestaña Monitor → ingresa la IP de la mesa → conectar.
 
 **4. Asignar bus**
-Cada músico selecciona su bus de monitor (Bus 1, 2, 3...) y controla los niveles desde su pantalla.
-
-## Importante
-La conexión OSC real requiere SetSync como app nativa (próximamente en App Store). En la versión web actual, la UI está disponible pero la señal OSC necesita el bridge de red local.
+Cada músico selecciona su bus de monitor (Bus 1, 2, 3...) y controla los niveles desde su pantalla, armando su propia mezcla.
     `
   },
   {
@@ -382,7 +383,7 @@ const NOTIFICACIONES_DEMO = [
   {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
 ];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{} }) {
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
   const feat = getModoFeatures(mode);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
   const [bgIdx] = useState(()=>Math.floor(Math.random()*3));
@@ -445,6 +446,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
               {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
             </div>
+            {ensayos.some(en=>en.ref===`evento:${proximoEvento.id}`)&&(
+              <div style={{display:'flex',alignItems:'center',gap:4,marginTop:5}}>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>Ensayo asignado</span>
+              </div>
+            )}
           </>) : (
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)',fontWeight:300}}>
               Sin fechas próximas —{' '}
@@ -507,7 +514,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'notificaciones': return (
         <Card cols={2} key="notificaciones">
-          <Lbl>Últimas notificaciones</Lbl>
+          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="1.8">
+              <path d="M4 4h13l3 3v13H4z"/><path d="M17 4v6h6"/>
+            </svg>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Últimas notificaciones</span>
+          </div>
           {NOTIFICACIONES_DEMO.length===0?(
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
@@ -600,36 +613,25 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'planes': return (
         <Card cols={2} key="planes">
           <Lbl>Planes SetSync</Lbl>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:4}}>
-            {[
-              {name:'Lite',price:'Gratis',color:'var(--tx3)',sub:'Para empezar',
-                features:['1 equipo · 5 miembros','10 canciones','Setlists básicos']},
-              {name:'Pro',price:'$7.90',period:'/mes',color:'var(--gn)',sub:'El más popular',
-                features:['Equipos ilimitados','Cancionero completo','Monitoreo OSC','Secuencias & Click']},
-              {name:'Premium',price:'$19.90',period:'/mes',color:'var(--ac)',sub:'Producción pro',
-                features:['Todo en Pro +','Multitracks','Partituras','Multi-banda']},
-            ].map(p=>(
-              <div key={p.name} style={{padding:'10px 8px',borderRadius:12,
-                border:`1px solid ${p.color}30`,background:`${p.color}08`,
-                display:'flex',flexDirection:'column',gap:4}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
-                  fontSize:13,color:p.color,fontWeight:400,marginBottom:2}}>{p.name}</div>
-                {p.sub&&<div style={{fontSize:8,color:p.color,fontFamily:"'Lexend Giga',sans-serif",
-                  fontWeight:700,opacity:.7,marginBottom:4,textTransform:'uppercase',
-                  letterSpacing:'1px'}}>{p.sub}</div>}
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
-                  fontSize:18,color:'var(--tx)',lineHeight:1}}>{p.price}</div>
-                {p.period&&<div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,
-                  color:'var(--tx3)',marginBottom:4}}>{p.period}</div>}
-                {p.features.map(f=>(
-                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:5}}>
-                    <span style={{color:p.color,fontSize:8,marginTop:2,flexShrink:0}}>✓</span>
-                    <span style={{fontSize:9,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",
-                      fontWeight:300,lineHeight:1.4}}>{f}</span>
-                  </div>
-                ))}
+          <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
+              background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginBottom:2}}>Cuenta personal</div>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--ac)',fontWeight:400}}>{planLabel}</div>
               </div>
-            ))}
+              {planId==='lite'&&(
+                <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>↑ Mejorar</span>
+              )}
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
+              background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginBottom:2}}>Cuenta equipo</div>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx2)',fontWeight:400}}>Desde $1.50/persona</div>
+              </div>
+              <span style={{fontSize:9,color:'var(--ac)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Ver →</span>
+            </div>
           </div>
           <div style={{marginTop:10,textAlign:'center'}}>
             <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',

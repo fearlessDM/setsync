@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -23,6 +23,20 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [showCrearColeccion,setShowCrearColeccion]=useState(false);
   const [nuevaColeccion,setNuevaColeccion]=useState({nombre:'',color:'#c8a97e',canciones:[]});
   const [coleccionSel,setColeccionSel]=useState(null);
+  const [songParaVariar,setSongParaVariar]=useState(null); // nombre de canción con selector de versión abierto
+
+  // Abre una canción: si tiene variaciones (partituras/notas por instrumento)
+  // muestra el selector de versión primero; si no, abre directo como siempre.
+  const abrirCancion=(name)=>{
+    if((variacionesDB[name]||[]).length>0){ setSongParaVariar(name); }
+    else { onOpenSong&&onOpenSong(name); }
+  };
+  const agregarVariacion=(name)=>{
+    const label=prompt('Nombre de la variación (ej: Piano, Batería, Voz guía):');
+    if(!label?.trim())return;
+    setVariacionesDB(prev=>({...prev,[name]:[...(prev[name]||[]),{id:`v${Date.now()}`,label:label.trim()}]}));
+    onToast({text:'Variación agregada',sub:label.trim()});
+  };
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
   const fast=fl.filter(s=>s.bpm>=120).sort((a,b)=>b.bpm-a.bpm);
@@ -50,9 +64,18 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       <div className={`bpm-bar ${type}`}/>
       <div className="sg">
         {songs.map(s=>(
-          <div key={s.n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}>
-            <div className="scard-n">{s.n}</div>
+          <div key={s.n} className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}>
+            <div className="scard-n" style={{paddingRight:16}}>{s.n}</div>
             <div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div>
+            <button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}}
+              title="Versiones de esta canción"
+              style={{position:'absolute',top:5,right:5,display:'flex',alignItems:'center',gap:2,
+                background:'none',border:'none',cursor:'pointer',padding:2}}>
+              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={(variacionesDB[s.n]||[]).length>0?'var(--ac)':'var(--tx3)'} strokeWidth="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+              {(variacionesDB[s.n]||[]).length>0&&<span style={{fontSize:8,color:'var(--ac)',fontWeight:700}}>{(variacionesDB[s.n]||[]).length}</span>}
+            </button>
           </div>
         ))}
       </div>
@@ -484,7 +507,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </button>
           </div>
         ):bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)
-        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><div key={s.n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}><div className="scard-n">{s.n}</div><div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div></div>)}</div>)
+        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><div key={s.n} className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}><div className="scard-n" style={{paddingRight:16}}>{s.n}</div><div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div><button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}} title="Versiones de esta canción" style={{position:'absolute',top:5,right:5,display:'flex',alignItems:'center',gap:2,background:'none',border:'none',cursor:'pointer',padding:2}}><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={(variacionesDB[s.n]||[]).length>0?'var(--ac)':'var(--tx3)'} strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>{(variacionesDB[s.n]||[]).length>0&&<span style={{fontSize:8,color:'var(--ac)',fontWeight:700}}>{(variacionesDB[s.n]||[]).length}</span>}</button></div>)}</div>)
       )}
 
       {tab==='universal'&&(
@@ -710,6 +733,46 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
             </label>
           )}
+        </div>
+      )}
+
+      {songParaVariar&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:200,
+          display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
+          onClick={()=>setSongParaVariar(null)}>
+          <div className="card" style={{width:'100%',maxWidth:360,padding:18}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',fontWeight:400}}>{songParaVariar}</div>
+              <button onClick={()=>setSongParaVariar(null)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
+            </div>
+            <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:14}}>
+              Elige qué versión abrir — cada una puede tener su propia letra, acordes o notas.
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
+              <button onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,'original');setSongParaVariar(null);}}
+                style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
+                  border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',textAlign:'left'}}>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <span style={{fontSize:12,fontWeight:700,color:'var(--tx)',flex:1,fontFamily:"'Lexend Giga',sans-serif"}}>Original</span>
+              </button>
+              {(variacionesDB[songParaVariar]||[]).map(v=>(
+                <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
+                  style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
+                    border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.06)',cursor:'pointer',textAlign:'left'}}>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <span style={{fontSize:12,fontWeight:700,color:'var(--ac)',flex:1,fontFamily:"'Lexend Giga',sans-serif"}}>{v.label}</span>
+                </button>
+              ))}
+            </div>
+            {isAdmin&&(
+              <button onClick={()=>agregarVariacion(songParaVariar)}
+                style={{width:'100%',padding:'9px 12px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',
+                  background:'rgba(255,255,255,.03)',color:'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif"}}>
+                + Agregar variación (partitura o notas por instrumento)
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

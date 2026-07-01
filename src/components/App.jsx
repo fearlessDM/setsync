@@ -97,6 +97,8 @@ export default function App(){
   );
   const [repertorio,setRepertorio]=useState(()=>appMode==='banda'?SEED_BANDA_REPERTORIO:CANCIONES.map(c=>({...c})));
   const [colecciones,setColecciones]=useState([]);
+  const [ensayos,setEnsayos]=useState([]); // sesión local — no persiste a Firestore aún
+  const [variacionesDB,setVariacionesDB]=useState({}); // {nombreCancion: [{id,label}]} — versiones/partituras por instrumento
 
   // ── Sync con Firestore (CAPA 1 — sesión compartida). Si Firebase no
   // está configurado (firebaseListo=false) o el usuario está offline,
@@ -152,8 +154,17 @@ export default function App(){
   // ── Apertura de SongView: cualquier pantalla puede abrirlo pasando el
   // array de canciones de su contexto (repertorio completo o setlist de
   // un evento puntual) — ya no depende de un "activeSunday" fijo global ──
-  const abrirSongDesdeRepertorio=(name)=>{
+  const abrirSongDesdeRepertorio=(name,variacionId)=>{
     const fuente = appMode==='banda'?repertorio:CANCIONES; // CANCIONES se muta en vivo desde Cancionero.jsx
+    if(variacionId && variacionId!=='original'){
+      const base=fuente.find(c=>c.n===name);
+      if(!base)return;
+      const v=(variacionesDB[name]||[]).find(x=>x.id===variacionId);
+      const displayName = v ? `${name} · ${v.label}` : name;
+      setSongViewSongs([{name:displayName,key:base.key,bpm:base.bpm}]);
+      setSongView(0);
+      return;
+    }
     const songs=fuente.map(c=>({name:c.n,key:c.key,bpm:c.bpm}));
     const idx=songs.findIndex(s=>s.name===name);
     if(idx>=0){setSongViewSongs(songs);setSongView(idx);}
@@ -421,7 +432,7 @@ export default function App(){
         <div className="pw">
           {view==='inicio'&&(
             <Inicio mode={appMode} lang={lang} userRole={userRole}
-              equipos={equipos} personas={personas} eventos={eventos}
+              equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
               planActivo={planActivo} planId={planId}
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
               onNavigate={setView}/>
@@ -432,13 +443,13 @@ export default function App(){
             onSelectDay={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);}}
             onOpenFecha={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);setView('misetlist');}}
             mesNav={mesNav} lang={lang}
-            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}} userRole={userRole} onToast={showToast} lang={lang} equipos={equipos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords}/>}
+            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} ensayos={ensayos}/>}
+          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}} userRole={userRole} onToast={showToast} lang={lang} equipos={equipos} ensayos={ensayos}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
-            onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang}
+            onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang} ensayos={ensayos} setEnsayos={setEnsayos}
             equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}
             guardarSetlistEnEvento={guardarSetlistEnEvento} onLangChange={setLang}
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
