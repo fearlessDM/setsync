@@ -31,7 +31,7 @@ const PERMISOS_TOTAL={
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={}}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -247,6 +247,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
   const sonaKey=tpKey(curKey,-capo);
+
+  // ── Carpeta de canción (v36-ampliación) ──────────────────────────────────
+  // baseName: nombre "real" de la canción sin el sufijo " · Variación" que
+  // arma abrirSongDesdeRepertorio() en App.jsx al abrir una variación. Es
+  // una heurística basada en esa convención de nombres — si esa convención
+  // cambia, esto necesita un prop explícito baseCancionName en su lugar.
+  const baseName=(song?.name||'').split(' · ')[0];
+  const [showCarpeta,setShowCarpeta]=useState(false);
+  const carpetaActual=archivosDB[baseName]||{trackReferencia:null,secuencia:[]};
 
   // ── Anotaciones (canvas de dibujo libre) — ver songview/useAnotaciones.js
   const{cvRef,startD,moveD,endD,undo,clear}=useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx});
@@ -638,9 +647,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const refWaveRef=useRef(null);
   const refAnimRef=useRef(null);
   // ── Referencia Capa 2 — Grabaciones de ensayo (v36) ──────────────────────
-  // NOTA: estado 100% local por ahora (sin Firebase Storage/Firestore aún —
-  // decisión de Danny 01-Jul-2026: armar UI/estado local primero, conectar
-  // Firebase en sesión aparte). ENSAYOS_MOCK más abajo es placeholder.
+  // NOTA: los slots de grabación en Ensayo siguen 100% locales por ahora
+  // (sin Firebase Storage/Firestore aún — decisión de Danny 01-Jul-2026).
+  // El destino "Canción" en cambio SÍ persiste, en archivosDB (App.jsx).
   const [refTab,setRefTab]=useState('track');           // 'track' | 'grabaciones'
   const [grabaciones,setGrabaciones]=useState([null,null,null]); // 3 slots fijos (v36)
   const [isRecording,setIsRecording]=useState(false);
@@ -660,6 +669,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const iv=setInterval(()=>setRecordElapsed(s=>s+1),1000);
     return ()=>clearInterval(iv);
   },[isRecording]);
+
+  // Auto-carga de carpeta (v36-ampliación): si la canción ya tiene un
+  // track de referencia guardado (subido o grabado en una sesión previa),
+  // se carga solo al entrar — pedido de Danny: "si hay grabaciones o
+  // referencias también deben aparecer". No pisa nada que el usuario ya
+  // haya cargado en esta misma sesión (refUrl truthy).
+  useEffect(()=>{
+    const tr=archivosDB[baseName]?.trackReferencia;
+    if(tr&&!refUrl){
+      setRefAudio({name:tr.nombre});
+      setRefUrl(tr.url);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[baseName]);
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
 
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
@@ -1048,6 +1071,74 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     {db:-10,pct:55},{db:-20,pct:40},{db:-30,pct:28},{db:-50,pct:14}
   ];
 
+  // ── Carpeta de canción (v36-ampliación) — vista de contenidos. Sin
+  // useState/useEffect propios (solo lee estado del nivel de SongView),
+  // por eso es seguro llamarla como componente inline igual que las otras.
+  const CarpetaModal=()=>{
+    if(!showCarpeta) return null;
+    const vars=variacionesDB[baseName]||[];
+    return createPortal((
+      <div style={{position:'fixed',inset:0,zIndex:250,background:'rgba(0,0,0,.7)',
+        display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
+        onClick={()=>setShowCarpeta(false)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:380,maxHeight:'80vh',overflowY:'auto',
+          padding:18,borderRadius:16,background:'var(--bg)',border:'1px solid rgba(255,255,255,.1)',
+          boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',fontWeight:400}}>{baseName}</div>
+            <button onClick={()=>setShowCarpeta(false)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
+          </div>
+
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Original</div>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',marginBottom:14}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span style={{fontSize:11,color:'var(--tx2)'}}>Letra y acordes</span>
+          </div>
+
+          {vars.length>0&&(
+            <>
+              <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Variaciones · {vars.length}</div>
+              {vars.map(v=>(
+                <div key={v.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'rgba(200,169,126,.06)',marginBottom:5}}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--ac)" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <span style={{fontSize:11,color:'var(--ac)'}}>{v.label}</span>
+                </div>
+              ))}
+              <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:14,fontStyle:'italic'}}>Se abren desde Cancionero — cierra esta canción y vuelve a entrar eligiendo la variación.</div>
+            </>
+          )}
+
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Secuencia · {(carpetaActual.secuencia||[]).length}</div>
+          {(carpetaActual.secuencia||[]).length===0?(
+            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>Sin tracks — se agregan desde Cancionero.</div>
+          ):(
+            <div style={{marginBottom:14}}>
+              {carpetaActual.secuencia.map(sq=>(
+                <div key={sq.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',marginBottom:5}}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <span style={{fontSize:11,color:'var(--tx2)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{sq.nombre}</span>
+                </div>
+              ))}
+              <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic'}}>Reproducción integrada en el mezclador de Secuencia — pendiente.</div>
+            </div>
+          )}
+
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Track de referencia</div>
+          {carpetaActual.trackReferencia?(
+            <button onClick={()=>{setBottomTab('referencia');setRefTab('track');setShowCarpeta(false);}}
+              style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,
+                border:'none',background:'rgba(48,192,183,.1)',cursor:'pointer',textAlign:'left'}}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span style={{fontSize:11,color:'var(--gn)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{carpetaActual.trackReferencia.nombre}</span>
+            </button>
+          ):(
+            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic'}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
+          )}
+        </div>
+      </div>
+    ), document.body);
+  };
+
   const MonitorPanel=() => {
     const h=window.innerHeight;
     const trackH=Math.max(100, h*0.32);
@@ -1268,14 +1359,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const loadFile=(file)=>{
     if(refUrl) URL.revokeObjectURL(refUrl);
+    const url=URL.createObjectURL(file);
     setRefAudio(file);
-    setRefUrl(URL.createObjectURL(file));
+    setRefUrl(url);
     setRefPlaying(false);
     setRefTime(0);
     setRefDuration(0);
     setRefLoopIn(null);
     setRefLoopOut(null);
     setRefLooping(false);
+    // Persiste en la carpeta de la canción — 1 solo slot, reemplazable (Capa 1, v35)
+    setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
+      trackReferencia:{url,nombre:file.name,fecha:new Date(),origen:'subido'}}}));
     const esMp3=file.type.includes('mpeg')||file.name.toLowerCase().endsWith('.mp3');
     setToast(esMp3?'✓ MP3 cargado (se convertirá a AAC 96kbps al sincronizar)':'✓ Track cargado');
   };
@@ -1312,13 +1407,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const fmtDur=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 
   // ── Helpers Capa 2 — Grabaciones de ensayo (v36) ─────────────────────────
-  // ENSAYOS_MOCK: placeholder hasta tener Fecha/Evento→Ensayo real en
-  // Firestore (decisión Danny 01-Jul-2026: UI/estado local primero). Cuando
-  // se conecte Firebase esto debe venir por prop, filtrado por equipo.
-  const ENSAYOS_MOCK=[
-    {id:'e1',nombre:'Ensayo general · hoy'},
-    {id:'e2',nombre:'Ensayo jóvenes · sábado'},
-  ];
+  // ENSAYOS_MOCK eliminado — ahora usa ensayosDisponibles (prop real desde
+  // App.jsx, viene del mismo estado `ensayos` que crea BackstageView →
+  // "Crear ensayo"). Si está vacío, el diálogo de destino avisa en vez de
+  // mostrar opciones inventadas.
 
   const fmtFechaCorta=(d)=>d.toLocaleDateString('es-CL',{day:'2-digit',month:'short'})+' · '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
 
@@ -1371,10 +1463,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const guardarEnCancion=()=>{
     if(!pendingRecording) return;
     if(refUrl) URL.revokeObjectURL(refUrl);
-    setRefAudio({name:`Grabación de ensayo · ${fmtFechaCorta(new Date())}`});
+    const nombre=`Grabación de ensayo · ${fmtFechaCorta(new Date())}`;
+    setRefAudio({name:nombre});
     setRefUrl(pendingRecording.url);
     setRefPlaying(false);setRefTime(0);setRefDuration(0);
     setRefLoopIn(null);setRefLoopOut(null);setRefLooping(false);
+    // Persiste en la carpeta de la canción — reemplaza el slot único (Capa 1, v35)
+    setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
+      trackReferencia:{url:pendingRecording.url,nombre,fecha:new Date(),origen:'grabado'}}}));
     setPendingRecording(null);
     setSelectedEnsayoId(null);
     setRefTab('track');
@@ -1383,7 +1479,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const guardarEnEnsayo=()=>{
     if(!pendingRecording||!selectedEnsayoId) return;
-    const ensayo=ENSAYOS_MOCK.find(e=>e.id===selectedEnsayoId);
+    const ensayo=ensayosDisponibles.find(e=>e.id===selectedEnsayoId);
     const idx=pendingRecording.slotIdx;
     setGrabaciones(g=>{
       const n=[...g];
@@ -1723,12 +1819,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2,marginBottom:8,lineHeight:1.4}}>
               Se autoborra 2 semanas después de la fecha del evento.
             </div>
-            <select value={selectedEnsayoId||''} onChange={e=>setSelectedEnsayoId(e.target.value||null)}
-              style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',
-                background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
-              <option value="">Elegir ensayo…</option>
-              {ENSAYOS_MOCK.map(en=>(<option key={en.id} value={en.id}>{en.nombre}</option>))}
-            </select>
+            {ensayosDisponibles.length===0?(
+              <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",padding:'8px 0',fontStyle:'italic'}}>
+                No hay ensayos creados todavía — crea uno desde Backstage → Crear ensayo.
+              </div>
+            ):(
+              <select value={selectedEnsayoId||''} onChange={e=>setSelectedEnsayoId(e.target.value||null)}
+                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',
+                  background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
+                <option value="">Elegir ensayo…</option>
+                {ensayosDisponibles.map(en=>(<option key={en.id} value={en.id}>{en.nombre}{en.setlistNombre?` · ${en.setlistNombre}`:''}</option>))}
+              </select>
+            )}
             <button disabled={!selectedEnsayoId} onClick={guardarEnEnsayo}
               style={{width:'100%',padding:'9px 0',borderRadius:8,border:'none',cursor:selectedEnsayoId?'pointer':'not-allowed',
                 background:selectedEnsayoId?'var(--ac)':'rgba(255,255,255,.1)',color:selectedEnsayoId?'#000':'var(--tx3)',
@@ -2159,6 +2261,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
             </div>
           </div>
+          <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
+            style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+              background:'none',border:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
+            <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+              background:'rgba(200,169,126,.12)'}}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <span style={{fontSize:8,fontWeight:700,color:'var(--ac)'}}>
+              {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
+            </span>
+          </button>
           <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
             {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'rgba(255,255,255,.25)',transition:'all .3s'}}/>))}
           </div>
@@ -2171,6 +2286,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <MonitorPanel/>
         <ReferenciaPanel/>
         <SecuenciaPanel/>
+        <CarpetaModal/>
         <BottomTabBar/>
       </div>
     );
@@ -2190,6 +2306,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
           </div>
         </div>
+        <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
+          style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+            background:'none',border:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
+          <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+            background:'rgba(200,169,126,.12)'}}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <span style={{fontSize:8,fontWeight:700,color:'var(--ac)'}}>
+            {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
+          </span>
+        </button>
         <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
           <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
         </div>
@@ -2199,6 +2328,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <MonitorPanel/>
         <ReferenciaPanel/>
         <SecuenciaPanel/>
+        <CarpetaModal/>
       <BottomTabBar/>
     </div>
   );

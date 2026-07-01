@@ -12,7 +12,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},variacionesDB={}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -298,41 +298,65 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             )}
           </div>
           {slCanciones.length>0&&(
-            <div className="sg" style={{marginBottom:12}}>
-              {slCanciones.map((s,i)=>(
-                <div key={s+i} className="scard" style={{position:'relative',cursor:'default'}}>
-                  <span className="scard-n" style={{paddingRight:36}}>{i+1}. {s}</span>
-                  <div style={{position:'absolute',top:6,right:6,display:'flex',gap:3}}>
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:12}}>
+              {slCanciones.map((s,i)=>{
+                const vars=variacionesDB[s.cancion]||[];
+                return(
+                <div key={s.cancion+i} style={{padding:'10px 12px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:vars.length||personas.length?8:0}}>
+                    <span style={{flex:1,fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{i+1}. {s.cancion}</span>
                     <button disabled={i===0} onClick={()=>moverCancion(i,i-1)}
-                      style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
+                      style={{width:18,height:18,border:'none',background:'rgba(255,255,255,.08)',
                         color:i===0?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
                         borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
                     </button>
                     <button disabled={i===slCanciones.length-1} onClick={()=>moverCancion(i,i+1)}
-                      style={{width:16,height:16,border:'none',background:'rgba(255,255,255,.08)',
+                      style={{width:18,height:18,border:'none',background:'rgba(255,255,255,.08)',
                         color:i===slCanciones.length-1?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===slCanciones.length-1?'not-allowed':'pointer',
                         borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <button onClick={()=>setSlCanciones(prev=>prev.filter((_,j)=>j!==i))}
-                      style={{width:16,height:16,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
-                        color:'var(--tx3)',cursor:'pointer',fontSize:11,lineHeight:1,display:'flex',
+                      style={{width:18,height:18,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                        color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                         alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                   </div>
+                  {/* Asignación: qué variación/partitura toca esta persona (v36-ampliación) */}
+                  {(vars.length>0||personas.length>0)&&(
+                    <div style={{display:'flex',gap:6}}>
+                      {vars.length>0&&(
+                        <select value={s.variacionId||'original'} onChange={e=>setSlCanciones(prev=>prev.map((x,j)=>j===i?{...x,variacionId:e.target.value}:x))}
+                          style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                            color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                          <option value="original">Original (letra/acordes)</option>
+                          {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}</option>))}
+                        </select>
+                      )}
+                      {personas.length>0&&(
+                        <select value={s.personaId||''} onChange={e=>setSlCanciones(prev=>prev.map((x,j)=>j===i?{...x,personaId:e.target.value||null}:x))}
+                          style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                            color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                          <option value="">Sin asignar</option>
+                          {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
+                        </select>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
           <input className="inp" placeholder="Buscar canción..." value={slSearch} onChange={e=>setSlSearch(e.target.value)} style={{marginBottom:10}}/>
           <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
-            {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.includes(s.n)).map(s=>(
-              <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,s.n]);}}>
+            {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).map(s=>(
+              <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,{cancion:s.n,variacionId:'original',personaId:null}]);}}>
                 <span className="scard-n">{s.n}</span>
                 <span className="scard-s">{s.key}<span>{s.bpm} bpm</span></span>
               </div>
             ))}
-            {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.includes(s.n)).length===0&&(
+            {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).length===0&&(
               <div style={{padding:'12px',textAlign:'center',fontSize:12,color:'var(--tx3)',width:'100%'}}>No hay coincidencias</div>
             )}
           </div>

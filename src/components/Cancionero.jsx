@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -25,17 +25,27 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [coleccionSel,setColeccionSel]=useState(null);
   const [songParaVariar,setSongParaVariar]=useState(null); // nombre de canción con selector de versión abierto
 
-  // Abre una canción: si tiene variaciones (partituras/notas por instrumento)
-  // muestra el selector de versión primero; si no, abre directo como siempre.
-  const abrirCancion=(name)=>{
-    if((variacionesDB[name]||[]).length>0){ setSongParaVariar(name); }
-    else { onOpenSong&&onOpenSong(name); }
-  };
+  // Abre una canción: SIEMPRE muestra el selector de la carpeta primero
+  // (letra/acordes original + variaciones/partituras si existen) — nunca
+  // salta directo a la letra. Pedido de Danny 01-Jul-2026: una canción es
+  // una carpeta, así que siempre se elige qué abrir dentro de ella.
+  const abrirCancion=(name)=>{ setSongParaVariar(name); };
   const agregarVariacion=(name)=>{
     const label=prompt('Nombre de la variación (ej: Piano, Batería, Voz guía):');
     if(!label?.trim())return;
     setVariacionesDB(prev=>({...prev,[name]:[...(prev[name]||[]),{id:`v${Date.now()}`,label:label.trim()}]}));
     onToast({text:'Variación agregada',sub:label.trim()});
+  };
+
+  // Sube un track de secuencia a la carpeta de la canción (lista abierta,
+  // a diferencia del track de referencia que es 1 solo slot — v35/v36)
+  const agregarSecuencia=(name,file)=>{
+    if(!file)return;
+    const url=URL.createObjectURL(file);
+    const item={id:`sq${Date.now()}`,nombre:file.name.replace(/\.[^.]+$/,''),url,size:(file.size/1024).toFixed(0)+'kb'};
+    setArchivosDB(prev=>({...prev,[name]:{...(prev[name]||{trackReferencia:null,secuencia:[]}),
+      secuencia:[...((prev[name]||{}).secuencia||[]),item]}}));
+    onToast({text:'Track de secuencia agregado',sub:file.name});
   };
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
@@ -63,24 +73,40 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       </div>
       <div className={`bpm-bar ${type}`}/>
       <div className="sg">
-        {songs.map(s=>(
-          <div key={s.n} className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}>
-            <div className="scard-n" style={{paddingRight:16}}>{s.n}</div>
-            <div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div>
-            <button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}}
-              title="Versiones de esta canción"
-              style={{position:'absolute',top:5,right:5,display:'flex',alignItems:'center',gap:2,
-                background:'none',border:'none',cursor:'pointer',padding:2}}>
-              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={(variacionesDB[s.n]||[]).length>0?'var(--ac)':'var(--tx3)'} strokeWidth="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-              {(variacionesDB[s.n]||[]).length>0&&<span style={{fontSize:8,color:'var(--ac)',fontWeight:700}}>{(variacionesDB[s.n]||[]).length}</span>}
-            </button>
-          </div>
-        ))}
+        {songs.map(s=><SongCard key={s.n} s={s}/>)}
       </div>
     </div>
   );
+
+  // Chip/tarjeta de canción — componente único reutilizado en las 3 vistas
+  // (lista, por BPM, colecciones). Antes estaba triplicado con lógica
+  // distinta en cada una (una de ellas ni siquiera tenía el folder-chip).
+  // v36-ampliación: folder-chip más grande y centrado, con conteo de
+  // archivos de la carpeta (1 = original + variaciones/partituras).
+  const SongCard=({s})=>{
+    const arch=archivosDB[s.n]||{};
+    const totalArchivos=1+(variacionesDB[s.n]||[]).length+(arch.secuencia||[]).length+(arch.trackReferencia?1:0); // 1 = original (letra/acordes)
+    const hayExtra=totalArchivos>1;
+    return(
+      <div className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}>
+        <div className="scard-n" style={{paddingRight:32}}>{s.n}</div>
+        <div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div>
+        <button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}}
+          title="Ver carpeta de esta canción"
+          style={{position:'absolute',top:6,right:6,display:'flex',flexDirection:'column',
+            alignItems:'center',gap:1,background:'none',border:'none',cursor:'pointer',padding:0}}>
+          <div style={{width:24,height:24,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+            background:hayExtra?'rgba(200,169,126,.15)':'rgba(255,255,255,.06)'}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke={hayExtra?'var(--ac)':'var(--tx3)'} strokeWidth="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <span style={{fontSize:8,fontWeight:700,color:hayExtra?'var(--ac)':'var(--tx3)'}}>{totalArchivos}</span>
+        </button>
+      </div>
+    );
+  };
 
   // MODAL CREAR CANCIÓN
   if(showCrear)return(
@@ -100,10 +126,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:900,
             fontSize:20,color:'var(--tx)',marginBottom:4}}>
-            Subir nueva canción
+            Subir canción/carpeta
           </div>
           <div style={{fontSize:12,color:'var(--tx3)',marginBottom:24,lineHeight:1.5}}>
-            Elige cómo quieres agregar la canción a tu cancionero.
+            En Setsync una canción es una carpeta. Dentro podrás agregar variaciones, partituras por instrumento y audios de referencia.
           </div>
           {/* Opción 1: Manual */}
           <div onClick={()=>setCrearModo('manual')}
@@ -133,11 +159,39 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </div>
-          {/* Opción 2: Partitura */}
-          <div onClick={()=>setCrearModo('partitura')}
+          {/* Opción 2: Drive masivo (enlace de Drive) */}
+          <div onClick={()=>setCrearModo('drive')}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
               borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
               marginBottom:10,cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+              background:'rgba(255,255,255,.05)',
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                stroke="var(--tx3)" strokeWidth="1.5">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
+                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
+                Subir por Drive
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
+                Conecta una carpeta de Google Drive con archivos .txt o .xml 
+                y carga todo el repertorio de una vez.
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+          {/* Opción 3: Partitura */}
+          <div onClick={()=>setCrearModo('partitura')}
+            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              cursor:'pointer'}}>
             <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
               background:'rgba(94,206,160,.1)',
               display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -156,34 +210,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
                 <strong style={{color:'var(--gn)'}}>MusicXML</strong> — transposición + reproducción MIDI.{' '}
                 <strong style={{color:'var(--rd)'}}>PDF</strong> — visualización directa.
-              </div>
-            </div>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
-              stroke="var(--tx3)" strokeWidth="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </div>
-          {/* Opción 3: Drive masivo */}
-          <div onClick={()=>setCrearModo('drive')}
-            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
-              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
-              cursor:'pointer'}}>
-            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
-              background:'rgba(255,255,255,.05)',
-              display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
-                stroke="var(--tx3)" strokeWidth="1.5">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
-                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
-                Subir por Drive
-              </div>
-              <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4}}>
-                Conecta una carpeta de Google Drive con archivos .txt o .xml 
-                y carga todo el repertorio de una vez.
               </div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -448,7 +474,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Agregar canción
+          Subir canción/carpeta
         </button>
       </div>
       <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
@@ -503,11 +529,11 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               Agregá tu primera canción — a mano, desde una partitura PDF/MusicXML, o desde Google Drive.
             </div>
             <button onClick={()=>setShowCrear(true)} className="btn-p" style={{padding:'10px 20px',borderRadius:10,fontSize:13,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-              + Agregar canción
+              + Subir canción/carpeta
             </button>
           </div>
         ):bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)
-        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><div key={s.n} className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}><div className="scard-n" style={{paddingRight:16}}>{s.n}</div><div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div><button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}} title="Versiones de esta canción" style={{position:'absolute',top:5,right:5,display:'flex',alignItems:'center',gap:2,background:'none',border:'none',cursor:'pointer',padding:2}}><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke={(variacionesDB[s.n]||[]).length>0?'var(--ac)':'var(--tx3)'} strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>{(variacionesDB[s.n]||[]).length>0&&<span style={{fontSize:8,color:'var(--ac)',fontWeight:700}}>{(variacionesDB[s.n]||[]).length}</span>}</button></div>)}</div>)
+        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><SongCard key={s.n} s={s}/>)}</div>)
       )}
 
       {tab==='universal'&&(
@@ -602,12 +628,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   {colecciones[coleccionSel].canciones.map(n=>{
                     const s=CANCIONES.find(x=>x.n===n);
                     if(!s) return null;
-                    return(
-                      <div key={n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}>
-                        <div className="scard-n">{s.n}</div>
-                        <div className="scard-s">{s.key} · {s.bpm} BPM</div>
-                      </div>
-                    );
+                    return <SongCard key={n} s={s}/>;
                   })}
                 </div>
               )}
@@ -740,7 +761,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:200,
           display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
           onClick={()=>setSongParaVariar(null)}>
-          <div className="card" style={{width:'100%',maxWidth:360,padding:18}} onClick={e=>e.stopPropagation()}>
+          <div style={{width:'100%',maxWidth:360,padding:18,borderRadius:16,
+              background:'var(--bg)',border:'1px solid var(--bd)',boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}
+            onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
               <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',fontWeight:400}}>{songParaVariar}</div>
               <button onClick={()=>setSongParaVariar(null)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
@@ -772,6 +795,50 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 + Agregar variación (partitura o notas por instrumento)
               </button>
             )}
+
+            {/* ── Secuencia — lista abierta de tracks (v36-ampliación) ── */}
+            <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid var(--bd)'}}>
+              <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
+                Secuencia · {(archivosDB[songParaVariar]?.secuencia||[]).length}
+              </div>
+              {(archivosDB[songParaVariar]?.secuencia||[]).map(sq=>(
+                <div key={sq.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',
+                  borderRadius:8,background:'rgba(255,255,255,.03)',marginBottom:5}}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <span style={{fontSize:11,color:'var(--tx2)',flex:1,fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{sq.nombre}</span>
+                  <span style={{fontSize:9,color:'var(--tx3)'}}>{sq.size}</span>
+                </div>
+              ))}
+              {isAdmin&&(
+                <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+                  padding:'9px 12px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',
+                  background:'rgba(255,255,255,.03)',color:'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif"}}>
+                  <input type="file" accept="audio/*" style={{display:'none'}}
+                    onChange={e=>{agregarSecuencia(songParaVariar,e.target.files[0]);e.target.value='';}}/>
+                  + Agregar track de secuencia
+                </label>
+              )}
+            </div>
+
+            {/* ── Track de referencia — 1 slot, se maneja desde SongView ── */}
+            <div style={{marginTop:14,paddingTop:14,borderTop:'1px solid var(--bd)'}}>
+              <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
+                Track de referencia
+              </div>
+              {archivosDB[songParaVariar]?.trackReferencia?(
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,background:'rgba(48,192,183,.08)'}}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <span style={{fontSize:11,color:'var(--gn)',flex:1,fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{archivosDB[songParaVariar].trackReferencia.nombre}</span>
+                </div>
+              ):(
+                <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic'}}>
+                  Sin track — se sube o graba desde la pestaña Referencia dentro de la canción.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -99,6 +99,13 @@ export default function App(){
   const [colecciones,setColecciones]=useState([]);
   const [ensayos,setEnsayos]=useState([]); // sesión local — no persiste a Firestore aún
   const [variacionesDB,setVariacionesDB]=useState({}); // {nombreCancion: [{id,label}]} — versiones/partituras por instrumento
+  // ── Carpeta de canción (v36-ampliación) — 100% local por ahora, igual que
+  // ensayos/variacionesDB: {nombreCancion: {trackReferencia:{url,nombre,
+  // fecha,origen}|null, secuencia:[{id,nombre,url,size}]}}. trackReferencia
+  // es UN solo slot reemplazable (Capa 1, definido en v35); secuencia es
+  // lista abierta de tracks. Compartido entre Cancionero y SongView para
+  // que la carpeta sea la misma se mire desde donde se mire.
+  const [archivosDB,setArchivosDB]=useState({});
 
   // ── Sync con Firestore (CAPA 1 — sesión compartida). Si Firebase no
   // está configurado (firebaseListo=false) o el usuario está offline,
@@ -171,11 +178,26 @@ export default function App(){
   };
   const abrirSongDesdeEvento=(idx,setlist)=>{
     if(!setlist||!setlist.length)return;
-    // setlist puede venir como array de nombres (strings) — mapear a objetos
-    // completos de CANCIONES para que SongView tenga key/bpm/n disponibles.
+    // Los ítems del setlist pueden venir en 3 formatos (compatibilidad):
+    // - string (nombre de canción, formato viejo)
+    // - objeto ya resuelto con name/key/bpm (formato viejo de variaciones)
+    // - {cancion, variacionId, personaId} — formato nuevo con asignación
+    //   de variación/partitura por persona (v36-ampliación)
     const songs=setlist.map(item=>{
-      if(typeof item==='object'&&item)return item;
-      return CANCIONES.find(c=>c.n===item)||{n:item,name:item,key:'',bpm:''};
+      if(typeof item==='string')return CANCIONES.find(c=>c.n===item)||{n:item,name:item,key:'',bpm:''};
+      if(item&&item.cancion){
+        const base=CANCIONES.find(c=>c.n===item.cancion)||{n:item.cancion,key:'',bpm:''};
+        const v=item.variacionId&&item.variacionId!=='original'
+          ?(variacionesDB[item.cancion]||[]).find(x=>x.id===item.variacionId):null;
+        const persona=item.personaId?personas.find(p=>p.id===item.personaId):null;
+        return{
+          name: v?`${item.cancion} · ${v.label}`:item.cancion,
+          key: base.key, bpm: base.bpm,
+          asignadoA: persona?.name||null,
+        };
+      }
+      if(typeof item==='object'&&item)return item; // ya resuelto (compatibilidad hacia atrás)
+      return {n:String(item),name:String(item),key:'',bpm:''};
     });
     setSongViewSongs(songs);setSongView(idx);
   };
@@ -445,7 +467,7 @@ export default function App(){
             mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} ensayos={ensayos}/>}
           {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}} userRole={userRole} onToast={showToast} lang={lang} equipos={equipos} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
@@ -455,6 +477,7 @@ export default function App(){
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
+            variacionesDB={variacionesDB}
             onNavigate={setView}/>}
           <Footer/>
         </div>
@@ -471,7 +494,8 @@ export default function App(){
         <>
           <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
-            sidebarVisible={false} sidebarCollapsed={sbCol}/>
+            sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
+            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB}/>
           {(tienePads||tieneClick||tieneMultitracks)&&(
             <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
               {mostrarMultitracks&&tieneMultitracks&&(
