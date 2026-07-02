@@ -278,7 +278,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
 
 // ── Vista principal ────────────────────────────────────────────────────────
 export function AdminView({mode, activeSunday, userRole, onLive, onToast,
-  onSelectDay, onOpenFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], ensayos=[]}){
+  onSelectDay, onOpenFecha, onAbrirFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], personas=[], ensayos=[]}){
   const tx = getT(lang);
   const [selDay, setSelDay] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -374,7 +374,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   badge={pub ? tx.published : tx.draft}
                   isLeader={isLeader}
                   tx={tx}
-                  onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);if(onOpenFecha)onOpenFecha(day,mesNav);}}
+                  onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);
+                    onAbrirFecha&&onAbrirFecha({origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
                 />
               </div>
@@ -406,7 +407,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   equipos={equipos}
                   isLeader={isLeader}
                   tx={tx}
-                  onOpen={()=>{if(onOpenFecha)onOpenFecha(ev.dia||new Date(ev.fecha).getDate(),mesNav);}}
+                  onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                   tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
                 />
@@ -439,7 +440,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 equipos={equipos}
                 isLeader={isLeader}
                 tx={tx}
-                onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);if(onOpenFecha)onOpenFecha(ev.dia,mesNav);}}
+                onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);
+                  onAbrirFecha&&onAbrirFecha({origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                 onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
               />
             ))}
@@ -499,8 +501,9 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
 }
 
 // ── Mensaje al equipo ──────────────────────────────────────────────────────
-export const generarMensaje=(activeSunday,sl,mesNombre,diasAntes)=>{
-  const canciones=sl.map((s,i)=>`${i+1}. ${s.name} (${s.key} - ${s.bpm} BPM)`).join('\n');
+export const generarMensaje=(fecha,sl,diasAntes)=>{
+  const resolverNombre=(item)=> typeof item==='string' ? item : (item?.cancion||item?.name||item?.n||'');
+  const canciones=sl.map((s,i)=>`${i+1}. ${resolverNombre(s)}`).join('\n');
   const animos=[
     'No tocamos para impresionar, tocamos para ministrar. ¡Preparemos nuestros corazones!',
     'Somos instrumentos en manos del Señor. Que cada nota sea una ofrenda genuina.',
@@ -508,10 +511,13 @@ export const generarMensaje=(activeSunday,sl,mesNombre,diasAntes)=>{
     '¡Gracias por su fidelidad! Juntos vamos a levantar una adoración que glorifique a Dios.',
   ];
   const animo=animos[Math.floor(Math.random()*animos.length)];
-  return `Hola equipo hermoso! 🎸\n\nLes recuerdo que este domingo ${activeSunday} de ${mesNombre} tenemos servicio.\n\n📋 SETLIST:\n${canciones}\n\n⏰ Llegada: 8:30 AM | Ensayo: 9:00 AM | Servicio: 10:00 AM\n\nPor favor repasa las canciones con ${diasAntes} día${diasAntes>1?'s':''} de anticipación. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
+  const cuando = fecha?.fechaStr ? `el ${fecha.fechaStr}` : `en ${fecha?.nombre||'el próximo evento'}`;
+  const horaLinea = fecha?.hora ? `\n⏰ Hora: ${fecha.hora}${fecha.lugar?` · ${fecha.lugar}`:''}\n` : (fecha?.lugar?`\n📍 ${fecha.lugar}\n`:'');
+  return `Hola equipo hermoso! 🎸\n\nLes recuerdo que ${cuando} tenemos ${fecha?.nombre||'servicio'}.\n\n📋 SETLIST:\n${canciones}\n${horaLinea}\nPor favor repasa las canciones con ${diasAntes} día${diasAntes>1?'s':''} de anticipación. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
 };
 
-export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
+export function MiSetlistNotif({onToast,fecha,sl}){
+  const activeSunday=fecha; // alias interno, evita renombrar todo el resto del componente
   const [avisoActivo,setAvisoActivo]=useState(1);
   const [dias1,setDias1]=useState(3);
   const [dias2,setDias2]=useState(1);
@@ -520,8 +526,8 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
   const [msg2,setMsg2]=useState('');
   const msg = avisoActivo===1?msg1:msg2;
   const setMsg = avisoActivo===1?setMsg1:setMsg2;
-  useEffect(()=>{setMsg1(generarMensaje(activeSunday,sl,mesNombre,dias1));},[dias1,activeSunday]);
-  useEffect(()=>{setMsg2(generarMensaje(activeSunday,sl,mesNombre,dias2));},[dias2,activeSunday]);
+  useEffect(()=>{setMsg1(generarMensaje(activeSunday,sl,dias1));},[dias1,activeSunday]);
+  useEffect(()=>{setMsg2(generarMensaje(activeSunday,sl,dias2));},[dias2,activeSunday]);
   const [custom1,setCustom1]=useState(false);
   const [custom2,setCustom2]=useState(false);
   const custom = avisoActivo===1?custom1:custom2;
@@ -570,7 +576,7 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
       </div>)}
       {custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,mesNombre,diasAntes));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
+        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,diasAntes));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
       </div>)}
       <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
@@ -588,36 +594,46 @@ export function MiSetlistNotif({onToast,activeSunday,sl,mesNombre}){
 }
 
 // ── Mi Setlist ─────────────────────────────────────────────────────────────
-export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[]}){
+export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[]}){
   const tx=getT(lang);
-  const sl=SETLISTS[activeSunday]||[];
-  const MESES_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const mesNombre=MESES_ES[new Date().getMonth()];
-  // Buscar lugar/hora del evento activo en EVENTOS_ESPECIALES
-  const evEspecial = EVENTOS_ESPECIALES.find(e=>e.dia===activeSunday&&e.mes===7);
-  const lugar = evEspecial?.lugar || 'Iglesia Central';
-  const hora  = evEspecial?.hora  || '10:00';
+  // fecha: {origen:'evento'|'legacy'|'especial', id, nombre, fechaStr, lugar, hora, setlist}
+  // setlist puede traer 3 formatos (compatibilidad, ver App.jsx abrirSongDesdeEvento):
+  //   string (legacy) | {name,key,bpm} ya resuelto | {cancion,asignaciones} (v36, nuevo)
+  const f = fecha || {origen:'legacy',id:'legacy',nombre:'Sin fecha',fechaStr:null,lugar:'',hora:'',setlist:[]};
+  const sl = f.setlist||[];
 
-  const ITINERARIO=[
-    {hora:'08:30',label:'Llegada y preparación técnica'},
-    {hora:'09:00',label:'Prueba de sonido'},
-    {hora:'09:30',label:lang==='en'?'Team rehearsal':'Ensayo con el equipo'},
-    {hora:'10:00',label:'Inicio del servicio'},
-    {hora:'10:05',label:'Bloque de adoración (4 canciones)'},
-    {hora:'10:30',label:'Mensaje'},
-    {hora:'11:00',label:'Cierre y oración'},
-  ];
+  // Ensayos reales de este evento (solo aplica a origen==='evento')
+  const ensayosDelEvento = f.origen==='evento' ? ensayos.filter(en=>en.ref===`evento:${f.id}`) : [];
+  // Equipos convocados: si hay ensayos con equipos asignados, filtrar a esos;
+  // si no, mostrar todos (mismo comportamiento que antes, sin regresión)
+  const equipoIdsConvocados = new Set(ensayosDelEvento.flatMap(en=>en.equipos||[]));
+  const equiposAMostrar = equipoIdsConvocados.size>0 ? equipos.filter(eq=>equipoIdsConvocados.has(eq.id)) : equipos;
+
+  // Resuelve nombre + asignaciones (variación/persona) por ítem del setlist,
+  // sin importar el formato en que venga
+  const resolverItem=(item)=>{
+    if(typeof item==='string') return {nombre:item,asignaciones:[]};
+    if(item&&item.cancion){
+      const asignaciones=(item.asignaciones||[]).map(a=>{
+        const v=a.variacionId&&a.variacionId!=='original'?(variacionesDB[item.cancion]||[]).find(x=>x.id===a.variacionId):null;
+        const persona=a.personaId?personas.find(p=>p.id===a.personaId):null;
+        return (v||persona)?{variacion:v?.label||'Original',persona:persona?.name||null}:null;
+      }).filter(Boolean);
+      return {nombre:item.cancion,key:'',bpm:'',asignaciones};
+    }
+    return {nombre:item.name||item.n||'',key:item.key,bpm:item.bpm,asignaciones:[]};
+  };
 
   return(
     <div style={{padding:'var(--sp-sm) var(--pw-x,16px)',paddingBottom:90}}>
       <div style={{marginBottom:'var(--sp-md)'}}>
         <div style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
-              Dom <span style={{color:'var(--ac)'}}>{activeSunday} {mesNombre}</span>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:26,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+              {f.nombre}
             </div>
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5}}>
-              Tu setlist para este domingo. Repasa con tiempo.
+              Tu setlist para esta fecha. Repasa con tiempo.
             </div>
           </div>
           <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',border:'1px solid rgba(48,192,183,.35)',background:'rgba(48,192,183,.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
@@ -628,20 +644,22 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
             <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700}}>Interpretar</span>
           </button>
         </div>
-        {/* Lugar y hora del próximo domingo */}
+        {/* Lugar y hora */}
         <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',border:'1px solid var(--bd)'}}>
           <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
-            <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{lugar}</span>
+            <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{f.lugar||'Sin lugar asignado'}</span>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>{hora}</span>
-          </div>
+          {f.hora&&(
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>{f.hora}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -654,27 +672,55 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
           </span>
         </div>
         {sl.length===0
-          ?<div style={{textAlign:'center',padding:24,color:'var(--tx3)',fontSize:13}}>Sin setlist para este domingo</div>
-          :sl.map((s,i)=>(
+          ?<div style={{textAlign:'center',padding:24,color:'var(--tx3)',fontSize:13}}>Sin setlist para esta fecha</div>
+          :sl.map((item,i)=>{
+            const r=resolverItem(item);
+            return(
             <div key={i} onClick={()=>onOpenSong(i)} style={{display:'flex',alignItems:'center',gap:'var(--sp-sm)',padding:'13px var(--sp-md)',borderBottom:i<sl.length-1?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer'}}>
               <span style={{fontSize:13,fontWeight:900,color:'var(--tx3)',minWidth:16,textAlign:'right'}}>{i+1}</span>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:700,fontSize:11,color:'var(--tx)'}}>{s.name}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>{s.key} · {s.bpm} BPM</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:11,color:'var(--tx)'}}>{r.nombre}</div>
+                <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
+                  {r.key?`${r.key} · ${r.bpm} BPM`:''}
+                  {r.asignaciones.length>0&&r.asignaciones.map((a,ai)=>(
+                    <span key={ai} style={{color:'var(--ac)',marginLeft:r.key?6:0,background:'rgba(200,169,126,.12)',padding:'1px 6px',borderRadius:100,marginRight:4}}>
+                      {a.persona?`${a.variacion} → ${a.persona}`:a.variacion}
+                    </span>
+                  ))}
+                </div>
               </div>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-          ))}
+            );
+          })}
       </div>
 
+      {/* Ensayos de este evento */}
+      {ensayosDelEvento.length>0&&(
+        <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+          <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>
+              Ensayos · {ensayosDelEvento.length}
+            </span>
+          </div>
+          {ensayosDelEvento.map((en,i)=>(
+            <div key={en.id} style={{padding:'11px var(--sp-md)',borderBottom:i<ensayosDelEvento.length-1?'1px solid rgba(255,255,255,.04)':'none',display:'flex',alignItems:'center',gap:8}}>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              <span style={{fontSize:12,color:'var(--tx)',flex:1}}>{en.nombre||'Ensayo'}{en.setlistNombre?` · ${en.setlistNombre}`:''}</span>
+              <span style={{fontSize:10,color:'var(--tx3)'}}>{(en.equipos||[]).length} equipo{(en.equipos||[]).length!==1?'s':''}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Equipos */}
-      {equipos.length>0&&(
+      {equiposAMostrar.length>0&&(
         <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
             <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Equipos convocados</span>
-            <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equipos.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
+            <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
           </div>
-          {equipos.map(eq=>(
+          {equiposAMostrar.map(eq=>(
             <div key={eq.id} style={{borderBottom:'1px solid rgba(255,255,255,.04)'}}>
               <div style={{padding:'8px var(--sp-md)',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
@@ -695,20 +741,7 @@ export function MiSetlist({activeSunday,onOpenSong,onLive,userRole,onToast,lang=
         </div>
       )}
 
-      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} activeSunday={activeSunday} sl={sl} mesNombre={mesNombre}/>}
-
-      {/* Itinerario */}
-      <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
-        <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
-          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Itinerario</span>
-        </div>
-        {ITINERARIO.map((it,i)=>(
-          <div key={i} style={{display:'flex',gap:'var(--sp-sm)',padding:'11px var(--sp-md)',borderBottom:i<ITINERARIO.length-1?'1px solid rgba(255,255,255,.04)':'none',alignItems:'flex-start'}}>
-            <span style={{fontSize:11,fontWeight:900,color:'var(--ac)',minWidth:40,fontFamily:"'Outfit',sans-serif"}}>{it.hora}</span>
-            <span style={{fontSize:12,color:'var(--tx)',fontWeight:200,lineHeight:1.4}}>{it.label}</span>
-          </div>
-        ))}
-      </div>
+      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl}/>}
     </div>
   );
 }

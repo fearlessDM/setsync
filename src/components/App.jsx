@@ -162,6 +162,14 @@ export default function App(){
   const [songView,setSongView]=useState(null);
   const [mesNav,setMesNav]=useState(6); // Julio (mes 6, 0-indexed) donde están los datos demo
   const [activeSunday,setActiveSunday]=useState(()=>Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1);
+  // ── Fecha abierta en "Mi Setlist" (v39-ampliación) ──────────────────────
+  // Antes Mi Setlist recalculaba todo desde activeSunday+SETLISTS, sin
+  // importar si la tarjeta tocada era un evento real (Firestore), uno del
+  // calendario viejo, o un evento especial — mostraba datos incorrectos al
+  // abrir un evento real. abrirFecha() normaliza los 3 orígenes a una
+  // misma forma antes de navegar, así Mi Setlist siempre muestra lo real.
+  const [fechaAbierta,setFechaAbierta]=useState(null);
+  const abrirFecha=(fecha)=>{ setFechaAbierta(fecha); setView('misetlist'); };
   const contentDB = appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
 
   // Demo: contenido propio para las variaciones de letra "Bajo" y "Piano"
@@ -548,9 +556,15 @@ Voicings extendidos para teclado
             onToast={showToast}
             onSelectDay={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);}}
             onOpenFecha={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);setView('misetlist');}}
+            onAbrirFecha={abrirFecha}
             mesNav={mesNav} lang={lang}
-            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} ensayos={ensayos}/>}
-          {view==='misetlist'&&<MiSetlist activeSunday={activeSunday} onOpenSong={i=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(i);}} onLive={()=>{setSongViewSongs(SETLISTS[activeSunday]||[]);setSongView(0);}} userRole={userRole} onToast={showToast} lang={lang} equipos={equipos} ensayos={ensayos}/>}
+            eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} personas={personas} ensayos={ensayos}/>}
+          {view==='misetlist'&&<MiSetlist
+            fecha={fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Dom ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]}}
+            onOpenSong={i=>abrirSongDesdeEvento(i,(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[])}
+            onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
+            userRole={userRole} onToast={showToast} lang={lang}
+            equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
