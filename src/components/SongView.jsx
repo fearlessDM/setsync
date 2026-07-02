@@ -1266,7 +1266,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
         </div>
 
-        {/* Panel de conexión — marca + IP (v36-ampliación) */}
+        {/* Panel de conexión — marca + IP (v36/v37-ampliación) */}
         {showConectarMesa&&(
           <div style={{padding:'10px 12px',borderBottom:'1px solid rgba(255,255,255,.07)',
             display:'flex',flexDirection:'column',gap:8,flexShrink:0,background:'rgba(255,255,255,.02)'}}>
@@ -1275,15 +1275,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               style={{padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
                 background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
               {MARCAS_MESA.map(m=>(
-                <option key={m.id} value={m.id}>{m.nombre}{m.disponible?'':' — próximamente (requiere app nativa)'}</option>
+                <option key={m.id} value={m.id}>{m.nombre}{m.disponible?'':' — próximamente'}</option>
               ))}
             </select>
             <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
               {MARCAS_MESA.find(m=>m.id===mesaMarca)?.modelos}
             </div>
+            {MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente&&(
+              <div style={{fontSize:9,color:'#e0a458',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,
+                padding:'7px 9px',borderRadius:8,background:'rgba(224,164,88,.08)',border:'1px solid rgba(224,164,88,.2)'}}>
+                Esta mesa necesita un puente corriendo en un notebook de la misma red (no se conecta directo). Ingresa la IP de ESE notebook, no la de la mesa.
+              </div>
+            )}
             <div style={{display:'flex',gap:6}}>
               <input value={mesaIP} onChange={e=>setMesaIP(e.target.value)} disabled={mesaConectada}
-                placeholder="IP de la mesa (ej: 10.10.1.1)"
+                placeholder={MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente?'IP del puente (ej: 192.168.1.50:8080)':'IP de la mesa (ej: 10.10.1.1)'}
                 style={{flex:1,padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
                   background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif"}}/>
               {mesaConectada?(

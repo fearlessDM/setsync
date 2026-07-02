@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "firebase": "^11.0.0",
+    "osc-js": "^2.4.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "soundcraft-ui-connection": "^7.0.1"

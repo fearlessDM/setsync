@@ -23,6 +23,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const isLeader=userRole==='leader'||isAdmin;
   const [activeEq,setActiveEq]=useState(null);
   const [verMiembros,setVerMiembros]=useState(false);
+  const [nuevoMiembro,setNuevoMiembro]=useState(null); // {nombre,email,equipoId} — reemplaza prompt()
   const [nuevaBanda,setNuevaBanda]=useState('');
   const [nuevosRoles,setNuevosRoles]=useState('');
   const [evNombre,setEvNombre]=useState('');
@@ -467,16 +468,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
           <button
             onClick={()=>{
-              const nombre=prompt('Nombre completo del nuevo miembro:');
-              if(!nombre?.trim())return;
-              const email=prompt('Correo del miembro (opcional):')||'';
-              const equipo=equipos[0];
-              if(!equipo){onToast({text:'Crea un equipo primero'});return;}
-              const nuevo={id:Date.now(),name:nombre.trim(),email:email.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
-              const upd={...equipo,miembros:[...(equipo.miembros||[]),nuevo]};
-              setEquipos(prev=>prev.map(e=>e.id===equipo.id?upd:e));
-              persistirEquipo(upd);
-              onToast({text:'Miembro agregado',sub:nombre.trim()});
+              if(!equipos.length){onToast({text:'Crea un equipo primero'});return;}
+              setNuevoMiembro({nombre:'',email:'',equipoId:equipos[0].id});
             }}
             className="btn btn-g btn-xs">
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2">
@@ -486,6 +479,43 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             Agregar miembro
           </button>
         </div>
+
+        {/* Formulario real de nuevo miembro — reemplaza el prompt() de antes */}
+        {nuevoMiembro&&(
+          <div style={{padding:14,borderRadius:12,border:'1px solid var(--bd)',background:'var(--s1)',marginBottom:16,
+            display:'flex',flexDirection:'column',gap:10}}>
+            <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Nuevo miembro</div>
+            <input className="inp" placeholder="Nombre completo" value={nuevoMiembro.nombre}
+              onChange={e=>setNuevoMiembro(v=>({...v,nombre:e.target.value}))} autoFocus/>
+            <input className="inp" placeholder="Correo (opcional)" type="email" value={nuevoMiembro.email}
+              onChange={e=>setNuevoMiembro(v=>({...v,email:e.target.value}))}/>
+            {equipos.length>1&&(
+              <select className="inp" value={nuevoMiembro.equipoId} style={{cursor:'pointer'}}
+                onChange={e=>setNuevoMiembro(v=>({...v,equipoId:e.target.value}))}>
+                {equipos.map(eq=>(<option key={eq.id} value={eq.id}>{eq.name}</option>))}
+              </select>
+            )}
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-g" style={{flex:1}} onClick={()=>setNuevoMiembro(null)}>Cancelar</button>
+              <button className="btn btn-p" style={{flex:2,justifyContent:'center'}}
+                disabled={!nuevoMiembro.nombre.trim()}
+                onClick={()=>{
+                  const equipo=equipos.find(e=>e.id===nuevoMiembro.equipoId)||equipos[0];
+                  const nombre=nuevoMiembro.nombre.trim();
+                  const nuevo={id:Date.now(),name:nombre,email:nuevoMiembro.email.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
+                  const upd={...equipo,miembros:[...(equipo.miembros||[]),nuevo]};
+                  setEquipos(prev=>prev.map(e=>e.id===equipo.id?upd:e));
+                  persistirEquipo(upd);
+                  onToast({text:'Miembro agregado',sub:nombre});
+                  setNuevoMiembro(null);
+                }}>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Guardar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Lista desplegable de miembros con nombre completo y correo */}
         <button onClick={()=>setVerMiembros(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:8,
           padding:'10px 12px',borderRadius:'var(--rad-sm)',border:'1px solid var(--bd)',background:'var(--s1)',
