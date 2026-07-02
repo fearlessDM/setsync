@@ -533,6 +533,10 @@ input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;tra
     -2px 0 0 rgba(0,0,0,.4) inset;
 }
 
+/* ── Rueda de BPM (Secuencia) — ocultar scrollbar en Chrome/Safari,
+   scrollbarWidth inline ya cubre Firefox ── */
+.bpm-wheel::-webkit-scrollbar{ display:none; }
+
 /* ── No colored card borders globally ── */
 .card{ border-color: var(--bd) !important; }
 

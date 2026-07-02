@@ -983,6 +983,68 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // siempre el valor más reciente vía ref, sin esperar al re-render.
   const seqBpmRef = useRef(seqBpm);
   useEffect(()=>{ seqBpmRef.current = seqBpm; }, [seqBpm]);
+
+  // ── Rueda de selección de BPM (Secuencia) ──────────────────────────────
+  // Reemplaza los botones −/+ con auto-repeat: en touch, ese patrón podía
+  // quedar corriendo sin control si el navegador no entregaba un pointerup
+  // limpio. Un scroll nativo con scroll-snap no tiene esa clase de bug —
+  // el navegador maneja el touch, nosotros solo leemos dónde quedó.
+  const BPM_MIN=40, BPM_MAX=300, WHEEL_ITEM_H=26;
+  const wheelRef=useRef(null);
+  const wheelScrollTimeout=useRef(null);
+  const wheelSyncing=useRef(false); // true mientras nosotros movemos el scroll por código
+  const scrollWheelTo=useCallback((bpm,smooth=false)=>{
+    const el=wheelRef.current;
+    if(!el)return;
+    wheelSyncing.current=true;
+    el.scrollTo({top:(Math.max(BPM_MIN,Math.min(BPM_MAX,bpm))-BPM_MIN)*WHEEL_ITEM_H,behavior:smooth?'smooth':'auto'});
+    requestAnimationFrame(()=>{setTimeout(()=>{wheelSyncing.current=false;},50);});
+  },[]);
+  const handleWheelScroll=()=>{
+    if(wheelSyncing.current)return;
+    clearTimeout(wheelScrollTimeout.current);
+    wheelScrollTimeout.current=setTimeout(()=>{
+      const el=wheelRef.current;
+      if(!el)return;
+      const idx=Math.round(el.scrollTop/WHEEL_ITEM_H);
+      const v=Math.max(BPM_MIN,Math.min(BPM_MAX,BPM_MIN+idx));
+      if(v!==seqBpmRef.current){
+        seqBpmRef.current=v;
+        setSeqBpm(v);
+        if(clickActivo){stopClick();startClick(v);}
+      }
+    },120);
+  };
+  // Mantener la rueda sincronizada cuando seqBpm cambia desde afuera
+  // (cambio de canción, tap tempo) — idempotente si el cambio vino de la
+  // rueda misma, así que es seguro correrlo siempre.
+  useEffect(()=>{ scrollWheelTo(seqBpm); },[seqBpm,scrollWheelTo]);
+
+  // Tap tempo — mismo patrón que en Cancionero, pero escribe directo en
+  // seqBpm/seqBpmRef y anima la rueda hasta el valor calculado.
+  const tapsSeqRef=useRef([]);
+  const [tapSeqLit,setTapSeqLit]=useState(false);
+  const handleTapSeq=()=>{
+    const now=performance.now();
+    const taps=tapsSeqRef.current;
+    if(taps.length&&now-taps[taps.length-1]>2000) taps.length=0;
+    taps.push(now);
+    if(taps.length>8) taps.shift();
+    setTapSeqLit(true);
+    setTimeout(()=>setTapSeqLit(false),120);
+    if(taps.length>=2){
+      const intervals=[];
+      for(let i=1;i<taps.length;i++) intervals.push(taps[i]-taps[i-1]);
+      const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+      const bpm=Math.round(60000/avgMs);
+      if(bpm>=BPM_MIN&&bpm<=BPM_MAX){
+        seqBpmRef.current=bpm;
+        setSeqBpm(bpm);
+        scrollWheelTo(bpm,true);
+        if(clickActivo){stopClick();startClick(bpm);}
+      }
+    }
+  };
   // Sync when song changes (using ref to detect change)
   const prevSongRef = useRef(null);
   if(song?.name !== prevSongRef.current){
@@ -2146,51 +2208,48 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           background:'rgba(255,255,255,.04)',borderRadius:12,
           border:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
 
-          {/* − BPM + */}
-          <button
-            style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-              background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
-              display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
-            onPointerDown={e=>{
-              e.preventDefault();
-              const btn=e.currentTarget;
-              // setPointerCapture — todos los eventos de este puntero (move/up/cancel)
-              // quedan atados a este botón aunque el dedo se corra unos px, que es
-              // justo lo que rompía el bug: en touch, sin esto, a veces no llega
-              // ningún pointerup/pointerleave y el interval queda corriendo para
-              // siempre ("se descontrola hasta el bug").
-              btn.setPointerCapture(e.pointerId);
-              clearTimeout(btn._t);clearInterval(btn._iv);
-              const fire=()=>{const v=Math.max(40,seqBpmRef.current-1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
-              fire();
-              btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
-            }}
-            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);b.releasePointerCapture(e.pointerId);}}
-            onPointerCancel={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
-            onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
-
-          <div style={{textAlign:'center',padding:'0 6px'}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,
-              color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
-            <div style={{fontSize:7,color:'var(--tx3)',fontWeight:700,letterSpacing:1}}>BPM</div>
+          {/* Rueda de selección de BPM — scroll nativo, sin bugs de touch */}
+          <div style={{position:'relative',width:52,height:78,flexShrink:0}}>
+            <div ref={wheelRef} onScroll={handleWheelScroll} className="bpm-wheel"
+              style={{height:'100%',overflowY:'scroll',scrollSnapType:'y mandatory',
+                scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
+              <div style={{height:WHEEL_ITEM_H}}/>
+              {Array.from({length:BPM_MAX-BPM_MIN+1},(_,i)=>BPM_MIN+i).map(n=>(
+                <div key={n} style={{height:WHEEL_ITEM_H,scrollSnapAlign:'center',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  fontFamily:"'Special Gothic Expanded One',sans-serif",
+                  fontSize:n===seqBpm?19:12,
+                  color:n===seqBpm?(clickActivo?'var(--gn)':'var(--ac)'):'var(--tx3)',
+                  transition:'font-size .1s,color .1s'}}>{n}</div>
+              ))}
+              <div style={{height:WHEEL_ITEM_H}}/>
+            </div>
+            {/* Marco central — indica la selección, no intercepta touch */}
+            <div style={{position:'absolute',top:WHEEL_ITEM_H,left:0,right:0,height:WHEEL_ITEM_H,
+              borderTop:'1px solid rgba(255,255,255,.15)',borderBottom:'1px solid rgba(255,255,255,.15)',
+              pointerEvents:'none'}}/>
+            {/* Fades arriba/abajo para que se sienta como rueda, no lista cortada */}
+            <div style={{position:'absolute',top:0,left:0,right:0,height:18,
+              background:'linear-gradient(180deg,var(--bg),transparent)',pointerEvents:'none'}}/>
+            <div style={{position:'absolute',bottom:0,left:0,right:0,height:18,
+              background:'linear-gradient(0deg,var(--bg),transparent)',pointerEvents:'none'}}/>
+            <div style={{position:'absolute',bottom:-11,left:0,right:0,textAlign:'center',
+              fontSize:7,color:'var(--tx3)',fontWeight:700,letterSpacing:1,pointerEvents:'none'}}>BPM</div>
           </div>
 
-          <button
-            style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-              background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
-              display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
-            onPointerDown={e=>{
-              e.preventDefault();
-              const btn=e.currentTarget;
-              btn.setPointerCapture(e.pointerId);
-              clearTimeout(btn._t);clearInterval(btn._iv);
-              const fire=()=>{const v=Math.min(300,seqBpmRef.current+1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
-              fire();
-              btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
-            }}
-            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);b.releasePointerCapture(e.pointerId);}}
-            onPointerCancel={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
-            onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>+</button>
+          {/* Tap tempo con LED */}
+          <button onClick={handleTapSeq}
+            style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+              gap:5,width:40,height:56,borderRadius:10,marginLeft:8,flexShrink:0,
+              border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.06)',
+              cursor:'pointer'}}>
+            <div style={{width:9,height:9,borderRadius:'50%',
+              background:tapSeqLit?'var(--gn)':'rgba(255,255,255,.15)',
+              boxShadow:tapSeqLit?'0 0 8px rgba(48,192,183,.9)':'none',
+              transition:'background .08s,box-shadow .08s'}}/>
+            <span style={{fontSize:7,fontWeight:900,color:'var(--tx3)',
+              fontFamily:"'Lexend Giga',sans-serif",letterSpacing:.5}}>TAP</span>
+          </button>
 
           {/* Divisor */}
           <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
@@ -2274,19 +2333,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div>
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:10}}>Multitracks</div>
           {seqData?.multitracks?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8}}>
+            <div style={{display:'grid',gridTemplateColumns:isTablet?'repeat(3,1fr)':'repeat(2,1fr)',gap:8}}>
               {seqData.multitracks.slice(0,6).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 return(
-                  <div key={i} style={{display:'flex',flexDirection:'column',gap:8,
-                    padding:'12px 12px 10px',borderRadius:12,overflow:'visible',
+                  <div key={i} style={{display:'flex',flexDirection:'column',gap:6,
+                    padding:'7px 12px 6px',borderRadius:12,overflow:'visible',
                     background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                     border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
                     {/* Dot + Label */}
                     <div style={{display:'flex',alignItems:'center',gap:7}}>
                       <div style={{width:7,height:7,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                      <div style={{fontSize:13,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
+                      <div style={{fontSize:11,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
                         fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
                         textOverflow:'ellipsis',flex:1}}>{tr.label}</div>
                     </div>

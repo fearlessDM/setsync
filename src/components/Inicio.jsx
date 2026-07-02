@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
+import { PLANES_SETSYNC } from '../data/planes';
 
 const BG_IMGS_IGLESIA = [
   'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80',
@@ -12,6 +13,35 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
+
+// Cuenta Equipo — precios por persona/mes según tamaño (confirmados,
+// no viven en planes.js porque ese archivo es solo para planes
+// individuales; blanco-etiqueta desde el tier 21-40 hacia arriba).
+const TEAM_TIERS = [
+  {rango:'1–5',     precio:'$6.90'},
+  {rango:'6–10',    precio:'$11.90'},
+  {rango:'11–20',   precio:'$24.90'},
+  {rango:'21–40',   precio:'$36.00', nota:'Marca blanca incluida'},
+  {rango:'41+',     precio:'Contáctanos'},
+];
+
+// Diferenciadores de SetSync — sintetizado de los documentos de estrategia
+// (misma info del HTML que ya se había armado, versión condensada para
+// un bloque chico al final de Inicio).
+const FEATURES_MKT = [
+  {icon:'layers',   title:'Todo en una pantalla',   desc:'Setlist, monitoreo y secuencias juntos — nadie más lo integra.'},
+  {icon:'globe',    title:'Hecho para LatAm',        desc:'Español nativo, no traducido.'},
+  {icon:'split',    title:'Iglesia y Banda',         desc:'Dos interfaces, un mismo motor.'},
+  {icon:'library',  title:'Cancionero Universal',    desc:'Banco de canciones compartido entre iglesias.'},
+  {icon:'tag',      title:'Precio pensado para LatAm', desc:'No en dólares por tamaño de equipo.'},
+];
+const FEATURES_MKT_ICONS = {
+  layers: <><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></>,
+  globe:  <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></>,
+  split:  <><path d="M6 3v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V3"/><line x1="12" y1="12" x2="12" y2="21"/></>,
+  library:<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>,
+  tag:    <><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3v6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></>,
+};
 
 const FAQS = [
   {q:'¿Cómo creo mi primer setlist?', a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
@@ -414,13 +444,22 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
   const Card = ({children, cols=1, onClick, style={}}) => (
     <div onClick={onClick} style={{
+      position:'relative',
       background:'var(--s1)',borderRadius:'var(--rad-lg)',
       padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
       gridColumn:`span ${cols}`,transition:'background .15s',...style,
     }}
     onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
     onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
-    >{children}</div>
+    >
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
+        style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
+        <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+        <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+        <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+      </svg>
+      {children}
+    </div>
   );
 
   const Lbl = ({children}) => (
@@ -613,27 +652,47 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'planes': return (
         <Card cols={2} key="planes">
           <Lbl>Planes SetSync</Lbl>
-          <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
-            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
-              background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginBottom:2}}>Cuenta personal</div>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--ac)',fontWeight:400}}>{planLabel}</div>
-              </div>
-              {planId==='lite'&&(
-                <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>↑ Mejorar</span>
-              )}
-            </div>
-            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
-              background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.06)'}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',marginBottom:2}}>Cuenta equipo</div>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx2)',fontWeight:400}}>Desde $1.50/persona</div>
-              </div>
-              <span style={{fontSize:9,color:'var(--ac)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Ver →</span>
-            </div>
+
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>Planes personales</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
+            {Object.values(PLANES_SETSYNC).map(p=>{
+              const isCurrent = planId===p.id;
+              return (
+                <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
+                  background:isCurrent?'rgba(48,192,183,.1)':'rgba(255,255,255,.04)',
+                  border:isCurrent?'1px solid rgba(48,192,183,.35)':'1px solid rgba(255,255,255,.06)'}}>
+                  <div style={{fontSize:8,fontWeight:900,color:isCurrent?'var(--gn)':'var(--tx3)',
+                    textTransform:'uppercase',letterSpacing:'.5px',marginBottom:5,
+                    fontFamily:"'Lexend Giga',sans-serif"}}>{p.label}</div>
+                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,
+                    color:'var(--tx)',fontWeight:400}}>
+                    {p.precioMensual===0?'Gratis':`$${p.precioMensual.toFixed(2)}`}
+                  </div>
+                  {p.precioMensual>0&&<div style={{fontSize:7,color:'var(--tx3)',marginTop:1}}>/mes</div>}
+                  {isCurrent&&<div style={{fontSize:7,color:'var(--gn)',fontWeight:700,marginTop:4}}>Tu plan</div>}
+                </div>
+              );
+            })}
           </div>
-          <div style={{marginTop:10,textAlign:'center'}}>
+
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>Planes equipo · por persona/mes</div>
+          <div style={{display:'flex',flexDirection:'column',gap:5}}>
+            {TEAM_TIERS.map(t=>(
+              <div key={t.rango} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+                padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.04)',
+                border:'1px solid rgba(255,255,255,.06)'}}>
+                <div>
+                  <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400}}>{t.rango} personas</span>
+                  {t.nota&&<div style={{fontSize:8,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{t.nota}</div>}
+                </div>
+                <span style={{fontSize:12,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>{t.precio}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{marginTop:12,textAlign:'center'}}>
             <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',
               fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
               Ver planes completos →
@@ -675,6 +734,17 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       {/* Grid con bloques arrastrables */}
       <div style={{padding:'var(--sp-md) var(--pw-x,var(--sp-md))'}}>
+        {/* Indicador de que los bloques se pueden arrastrar/reordenar */}
+        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:10,opacity:.5}}>
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
+            <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+            <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+            <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+          </svg>
+          <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+            Mantén presionado y arrastra para reordenar
+          </span>
+        </div>
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
           return (
@@ -694,6 +764,36 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             </div>
           );
         })}
+
+        {/* ── Bloque marketero — fijo al final, fuera del reordenamiento ── */}
+        <div style={{marginTop:4,padding:'var(--sp-md)',borderRadius:'var(--rad-lg)',
+          background:'var(--s1)',border:'1px solid rgba(48,192,183,.15)'}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+            fontSize:15,color:'var(--tx)',marginBottom:2}}>Por qué SetSync</div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,
+            color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
+            La única pantalla que un músico necesita en el escenario.
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {FEATURES_MKT.map(f=>(
+              <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  background:'rgba(48,192,183,.1)'}}>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="1.8">
+                    {FEATURES_MKT_ICONS[f.icon]}
+                  </svg>
+                </div>
+                <div style={{flex:1,paddingTop:2}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'var(--tx)',
+                    fontFamily:"'Lexend Giga',sans-serif",marginBottom:1}}>{f.title}</div>
+                  <div style={{fontSize:10,fontWeight:300,color:'var(--tx3)',
+                    fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
