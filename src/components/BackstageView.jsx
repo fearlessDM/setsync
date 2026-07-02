@@ -9,7 +9,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // equipos ya no se importa directo — llega por props (equipos/setEquipos)
 // para poder sincronizar con Firestore.
 import { initials } from '../utils/music';
-import { ItinerarioEditor } from './ItinerarioEditor';
+import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
 export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},variacionesDB={}}){
@@ -29,10 +29,26 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [evNombre,setEvNombre]=useState('');
   const [evTipo,setEvTipo]=useState('domingo');
   const [evFecha,setEvFecha]=useState('');
+  const [evLugar,setEvLugar]=useState('');
+  const [evHora,setEvHora]=useState('');
   const [evNotas,setEvNotas]=useState('');
-  const [evSetlist,setEvSetlist]=useState([]);
+  const [evSetlist,setEvSetlist]=useState([]); // {cancion,asignaciones:[{id,variacionId,personaId}]}[] — v40, antes strings planos
   const [evArchivo,setEvArchivo]=useState(null);
   const [evSearch,setEvSearch]=useState('');
+  const [evEquipos,setEvEquipos]=useState(null); // null=todavía no inicializado; se llena con todos los equipos al entrar
+  const [evItinerario,setEvItinerario]=useState(ITINERARIO_DEFAULT);
+  const [evNuevoEquipo,setEvNuevoEquipo]=useState('');
+  // Por defecto, todos los equipos están convocados — el admin puede
+  // destildar los que no correspondan. Se inicializa una sola vez (o
+  // cuando aparece un equipo nuevo que evEquipos todavía no conoce).
+  useEffect(()=>{
+    setEvEquipos(prev=>{
+      if(prev===null) return equipos.map(e=>e.id);
+      const idsConocidos=new Set(prev);
+      const nuevos=equipos.map(e=>e.id).filter(id=>!idsConocidos.has(id));
+      return nuevos.length ? [...prev,...nuevos] : prev;
+    });
+  },[equipos]);
   const [notifDest,setNotifDest]=useState([]);
   const [notifTipo,setNotifTipo]=useState('recordatorio');
   const [notifMsg,setNotifMsg]=useState('');
@@ -113,29 +129,92 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>Crea setlist</div>
-        <div style={{fontSize:10,color:'var(--tx2)',fontWeight:300,marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>
-          Selecciona las canciones del setlist
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Lugar y hora</div>
+        <div style={{display:'flex',gap:8}}>
+          <input className="inp" placeholder="Lugar (ej: Iglesia Central)" style={{flex:2}}
+            value={evLugar} onChange={e=>setEvLugar(e.target.value)}/>
+          <input className="inp" type="time" style={{flex:1,cursor:'pointer'}}
+            value={evHora} onChange={e=>setEvHora(e.target.value)}/>
         </div>
-        <input className="inp" placeholder="Buscar canción..." value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
+      </div>
+      <div className="card" style={{padding:14,marginBottom:14}}>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>Selecciona las canciones</div>
+        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
+          También puedes asignar diferentes variaciones de la canción a cada persona
+        </div>
         {evSetlist.length>0&&(
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
-            {evSetlist.map((s,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 6px 6px 12px',
-                borderRadius:100,background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.3)'}}>
-                <span style={{fontSize:9,color:'var(--tx3)',fontWeight:400}}>{i+1}</span>
-                <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{s}</span>
-                <button onClick={()=>setEvSetlist(l=>l.filter((_,j)=>j!==i))}
-                  style={{width:16,height:16,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
-                    color:'var(--tx3)',cursor:'pointer',fontSize:11,lineHeight:1,display:'flex',
-                    alignItems:'center',justifyContent:'center'}}>×</button>
+          <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:12}}>
+            {evSetlist.map((s,i)=>{
+              const vars=variacionesDB[s.cancion]||[];
+              const asignaciones=s.asignaciones||[{id:`ea${i}`,variacionId:'original',personaId:null}];
+              const actualizarAsignacion=(aId,campo,valor)=>{
+                setEvSetlist(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                  asignaciones:(x.asignaciones||asignaciones).map(a=>a.id===aId?{...a,[campo]:valor}:a)}));
+              };
+              const agregarAsignacion=()=>{
+                setEvSetlist(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                  asignaciones:[...(x.asignaciones||asignaciones),{id:`ea${Date.now()}${j}`,variacionId:'original',personaId:null}]}));
+              };
+              const quitarAsignacion=(aId)=>{
+                setEvSetlist(prev=>prev.map((x,j)=>j!==i?x:{...x,
+                  asignaciones:(x.asignaciones||asignaciones).filter(a=>a.id!==aId)}));
+              };
+              return(
+              <div key={s.cancion+i} style={{padding:'10px 12px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:vars.length||personas.length?8:0}}>
+                  <span style={{flex:1,minWidth:0,fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
+                    overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{i+1}. {s.cancion}</span>
+                  <button onClick={()=>setEvSetlist(l=>l.filter((_,j)=>j!==i))}
+                    style={{width:18,height:18,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                      color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
+                      alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+                </div>
+                {(vars.length>0||personas.length>0)&&(
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    {asignaciones.map(a=>(
+                      <div key={a.id} style={{display:'flex',gap:6,alignItems:'center'}}>
+                        {vars.length>0&&(
+                          <select value={a.variacionId||'original'} onChange={e=>actualizarAsignacion(a.id,'variacionId',e.target.value)}
+                            style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                              color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                            <option value="original">Original (letra/acordes)</option>
+                            {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
+                          </select>
+                        )}
+                        {personas.length>0&&(
+                          <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
+                            style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
+                              color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
+                            <option value="">Sin asignar</option>
+                            {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
+                          </select>
+                        )}
+                        {asignaciones.length>1&&(
+                          <button onClick={()=>quitarAsignacion(a.id)}
+                            style={{width:20,height:20,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.08)',
+                              color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
+                              alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+                        )}
+                      </div>
+                    ))}
+                    <button onClick={agregarAsignacion}
+                      style={{alignSelf:'flex-start',display:'flex',alignItems:'center',gap:5,padding:'4px 10px',
+                        borderRadius:100,border:'1px dashed rgba(255,255,255,.2)',background:'transparent',
+                        color:'var(--gn)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                      <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Asignar otra variación
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
+        <input className="inp" placeholder="Buscar canción..." value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
         <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
-          {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.includes(s.n)).map(s=>(
-            <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,s.n])}>
+          {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.some(x=>x.cancion===s.n)).map(s=>(
+            <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,{cancion:s.n,asignaciones:[{id:`ea${Date.now()}`,variacionId:'original',personaId:null}]}])}>
               <span className="scard-n">{s.n}</span>
               <span className="scard-s">{s.key}<span>{s.bpm} bpm</span></span>
             </div>
@@ -145,20 +224,35 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Equipos convocados</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
-          {equipos.map(eq=>(
-            <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',transition:'all .15s'}}>
-              <input type="checkbox" defaultChecked onChange={()=>{}} style={{accentColor:eq.color,width:13,height:13}}/>
+          {equipos.map(eq=>{
+            const marcado=(evEquipos||[]).includes(eq.id);
+            return(
+            <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',transition:'all .15s',opacity:marcado?1:.5}}>
+              <input type="checkbox" checked={marcado}
+                onChange={()=>setEvEquipos(prev=>marcado?(prev||[]).filter(id=>id!==eq.id):[...(prev||[]),eq.id])}
+                style={{accentColor:eq.color,width:13,height:13}}/>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
               <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
               <span style={{fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
             </label>
-          ))}
+            );
+          })}
         </div>
         <div style={{borderTop:'1px solid var(--bd)',paddingTop:10}}>
           <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',marginBottom:7}}>¿Necesitas un equipo adicional?</div>
           <div style={{display:'flex',gap:8}}>
-            <input className="inp" placeholder="Nombre del equipo personalizado..." id="eq-custom" style={{flex:1,fontSize:12}}/>
-            <button onClick={()=>{const v=document.getElementById('eq-custom').value.trim();if(v){onToast({text:'Equipo agregado',sub:v});document.getElementById('eq-custom').value='';}}}
+            <input className="inp" placeholder="Nombre del equipo personalizado..." style={{flex:1,fontSize:12}}
+              value={evNuevoEquipo} onChange={e=>setEvNuevoEquipo(e.target.value)}/>
+            <button onClick={()=>{
+              const v=evNuevoEquipo.trim();
+              if(!v)return;
+              const nuevoEquipo={id:Date.now(),name:v,color:'#30C0B7',roles:[],miembros:[]};
+              setEquipos(prev=>[...prev,nuevoEquipo]);
+              persistirEquipo(nuevoEquipo);
+              setEvEquipos(prev=>[...(prev||[]),nuevoEquipo.id]);
+              onToast({text:'Equipo agregado',sub:v});
+              setEvNuevoEquipo('');
+            }}
               style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(200,169,126,.35)',background:'rgba(200,169,126,.08)',color:'var(--ac)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
               + Agregar
             </button>
@@ -167,7 +261,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Itinerario</div>
-        <ItinerarioEditor/>
+        <ItinerarioEditor items={evItinerario} onChange={setEvItinerario}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:18}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notas del evento</div>
@@ -214,11 +308,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           disabled={!evNombre.trim()&&!evFecha}
           onClick={()=>{
             const label=`${evNombre||'Nuevo evento'}`;
-            const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,lugar:'',setlist:[...evSetlist],archivo:evArchivo?{name:evArchivo.name}:null};
+            const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,
+              lugar:evLugar,hora:evHora,setlist:[...evSetlist],
+              equiposConvocados:evEquipos||equipos.map(e=>e.id),
+              itinerario:[...evItinerario],
+              archivo:evArchivo?{name:evArchivo.name}:null};
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
             onToast({text:'Evento creado',sub:`${label} · ${evSetlist.length} canciones`});
             setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');setEvArchivo(null);
+            setEvLugar('');setEvHora('');setEvEquipos(equipos.map(e=>e.id));setEvItinerario(ITINERARIO_DEFAULT);
             setBsView(null);
           }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>

@@ -1,6 +1,9 @@
 // Editor de itinerario para eventos (usado en BackstageView)
+// v40-ampliación: ahora es un componente CONTROLADO (items/onChange) — antes
+// tenía su propio useState interno sin props, así que nada de lo que se
+// editaba acá se guardaba nunca en el evento. Se perdía al salir de la
+// pantalla.
 import { useState } from 'react';
-
 
 // ─── ITINERARIO EDITOR ────────────────────────────────
 export const ITINERARIO_DEFAULT=[
@@ -12,12 +15,11 @@ export const ITINERARIO_DEFAULT=[
   {hora:'10:30',label:'Mensaje'},
   {hora:'11:00',label:'Cierre y oración'},
 ];
-export function ItinerarioEditor(){
-  const [items,setItems]=useState(ITINERARIO_DEFAULT);
+export function ItinerarioEditor({items,onChange}){
   const [edit,setEdit]=useState(false);
-  const update=(i,field,val)=>setItems(prev=>prev.map((it,j)=>j===i?{...it,[field]:val}:it));
-  const addItem=()=>setItems(prev=>[...prev,{hora:'',label:''}]);
-  const removeItem=i=>setItems(prev=>prev.filter((_,j)=>j!==i));
+  const update=(i,field,val)=>onChange(items.map((it,j)=>j===i?{...it,[field]:val}:it));
+  const addItem=()=>onChange([...items,{hora:'',label:''}]);
+  const removeItem=i=>onChange(items.filter((_,j)=>j!==i));
 
   return(
     <div>

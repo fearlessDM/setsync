@@ -407,7 +407,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   equipos={equipos}
                   isLeader={isLeader}
                   tx={tx}
-                  onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
+                  onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[],equiposConvocados:ev.equiposConvocados||null,itinerario:ev.itinerario||null});}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                   tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
                 />
@@ -604,9 +604,12 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
 
   // Ensayos reales de este evento (solo aplica a origen==='evento')
   const ensayosDelEvento = f.origen==='evento' ? ensayos.filter(en=>en.ref===`evento:${f.id}`) : [];
-  // Equipos convocados: si hay ensayos con equipos asignados, filtrar a esos;
-  // si no, mostrar todos (mismo comportamiento que antes, sin regresión)
-  const equipoIdsConvocados = new Set(ensayosDelEvento.flatMap(en=>en.equipos||[]));
+  // Equipos convocados: prioridad 1) campo real del evento (v40), 2) inferir
+  // desde los ensayos si el evento no lo tiene (eventos viejos, legacy,
+  // especiales), 3) mostrar todos como último fallback.
+  const equipoIdsConvocados = f.equiposConvocados
+    ? new Set(f.equiposConvocados)
+    : new Set(ensayosDelEvento.flatMap(en=>en.equipos||[]));
   const equiposAMostrar = equipoIdsConvocados.size>0 ? equipos.filter(eq=>equipoIdsConvocados.has(eq.id)) : equipos;
 
   // Resuelve nombre + asignaciones (variación/persona) por ítem del setlist,
@@ -742,6 +745,22 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       )}
 
       {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl}/>}
+
+      {/* Itinerario — v40: ahora viene del evento real (ItinerarioEditor en
+          Crear evento), ya no es texto fijo inventado sin conexión */}
+      {f.itinerario&&f.itinerario.length>0&&(
+        <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
+          <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px'}}>Itinerario</span>
+          </div>
+          {f.itinerario.map((it,i)=>(
+            <div key={i} style={{display:'flex',gap:'var(--sp-sm)',padding:'11px var(--sp-md)',borderBottom:i<f.itinerario.length-1?'1px solid rgba(255,255,255,.04)':'none',alignItems:'flex-start'}}>
+              <span style={{fontSize:11,fontWeight:900,color:'var(--ac)',minWidth:40,fontFamily:"'Outfit',sans-serif"}}>{it.hora}</span>
+              <span style={{fontSize:12,color:'var(--tx)',fontWeight:200,lineHeight:1.4}}>{it.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
