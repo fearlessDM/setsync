@@ -94,8 +94,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         display:'flex',alignItems:'center',gap:compact?6:8,
         padding:compact?'5px 8px':'8px 10px',
         borderRadius:compact?8:10,
-        background:mesaConectada?'rgba(48,192,183,.1)':'rgba(255,255,255,.04)',
-        border:'1px solid '+(mesaConectada?'rgba(48,192,183,.25)':'rgba(255,255,255,.08)'),
+        background:mesaConectada?'rgba(48,192,183,.1)':'var(--s1)',
+        border:'1px solid '+(mesaConectada?'rgba(48,192,183,.25)':'var(--s3)'),
       }}>
         {/* Headphones icon */}
         <svg viewBox="0 0 24 24" width={compact?12:14} height={compact?12:14} fill="none"
@@ -123,7 +123,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               height: 4+b*3,
               borderRadius:1,
               background:mesaConectada&&b<=wifiStrength
-                ?'var(--gn)':'rgba(255,255,255,.15)',
+                ?'var(--gn)':'var(--bd2)',
               transition:'background .3s',
             }}/>
           ))}
@@ -321,7 +321,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             const isOn=capo===c;
             return(
               <button key={c} onClick={()=>{setCapo(c);setCapoOpen(false);setToast(c===0?{text:tx.noCapo,sub:tx.original}:{text:`Capo ${c}`,sub:`Suena en ${notaSuena}`});}}
-                style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all .15s'}}>
+                style={{width:'100%',padding:'7px 10px',marginBottom:3,border:'none',borderRadius:8,background:isOn?'rgba(200,169,126,.15)':'var(--s1)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all .15s'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   {isOn?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--ac)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>:<div style={{width:10}}/>}
                   <span style={{fontFamily:"'Outfit',sans-serif",fontWeight:900,fontSize:13,color:isOn?'var(--ac)':'var(--tx)',lineHeight:1}}>{c===0?tx.noCapo:c}</span>
@@ -364,8 +364,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // fijo en la barra de controles cuando la pantalla es angosta ───────────
   const PopupVelocidad=()=>(
     <div onClick={()=>setShowSpeedPopup(false)} style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:'#111113',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,color:'var(--tx)',marginBottom:16}}>Velocidad de Auto Scroll</div>
+      <div onClick={e=>e.stopPropagation()} style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:16}}>Velocidad de Auto Scroll</div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <FaderVelocidad/>
         </div>
@@ -379,7 +379,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',overflowX:'auto',scrollbarWidth:'none'}}>
         {perm.anotacionesPropias&&(
-          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'var(--s1)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
         )}
@@ -415,7 +415,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             setTonoOpen(o=>!o);
           }} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,
             border:(tpOff!==0||capo>0)?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
-            background:(tpOff!==0||capo>0)?'rgba(200,169,126,.12)':'rgba(255,255,255,.04)',
+            background:(tpOff!==0||capo>0)?'rgba(200,169,126,.12)':'var(--s1)',
             color:(tpOff!==0||capo>0)?'var(--ac)':'var(--tx3)',
             cursor:'pointer',fontSize:12,fontWeight:900,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13}}>{curKey}</span>
@@ -444,7 +444,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   </div>
                   <button onClick={()=>doTp(1)} style={{width:36,height:36,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center'}}>#</button>
                 </div>
-                {tpOff!==0&&<button onClick={()=>{setTpOff(0);setToast({text:`♩ ${song.key}`,sub:tx.original});}} style={{width:'100%',padding:'6px',borderRadius:8,border:'1px solid var(--bd)',background:'rgba(255,255,255,.05)',color:'var(--tx3)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Outfit',sans-serif",marginBottom:10}}>Restaurar original</button>}
+                {tpOff!==0&&<button onClick={()=>{setTpOff(0);setToast({text:`♩ ${song.key}`,sub:tx.original});}} style={{width:'100%',padding:'6px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:10,fontWeight:700,fontFamily:"'Outfit',sans-serif",marginBottom:10}}>Restaurar original</button>}
                 {/* Capo */}
                 <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Capo</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5,marginBottom:14}}>
@@ -454,7 +454,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     return(
                       <button key={c} onClick={()=>{setCapo(c);setToast(c===0?{text:tx.noCapo,sub:tx.original}:{text:`Capo ${c}`,sub:`Suena en ${notaSuena}`});}}
                         style={{padding:'6px 4px',borderRadius:8,border:isOn?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
-                          background:isOn?'rgba(200,169,126,.15)':'rgba(255,255,255,.04)',
+                          background:isOn?'rgba(200,169,126,.15)':'var(--s1)',
                           cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,transition:'all .15s'}}>
                         <span style={{fontSize:12,fontWeight:900,color:isOn?'var(--ac)':'var(--tx)',fontFamily:"'Outfit',sans-serif"}}>{c===0?'—':c}</span>
                         <span style={{fontSize:8,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'Outfit',sans-serif",fontWeight:700}}>{notaSuena}</span>
@@ -463,7 +463,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   })}
                 </div>
                 {/* Notación */}
-                <div style={{borderTop:'1px solid rgba(255,255,255,.08)',paddingTop:10}}>
+                <div style={{borderTop:'1px solid var(--s3)',paddingTop:10}}>
                   <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notación</div>
                   <div style={{display:'flex',flexDirection:'column',gap:4}}>
                     {['americano','latino','grados'].map(opt=>{
@@ -471,7 +471,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       return(
                         <button key={opt} onClick={()=>setNotacion(opt)}
                           style={{padding:'7px 10px',border:'none',borderRadius:8,
-                            background:isOn?'rgba(167,139,250,.15)':'rgba(255,255,255,.04)',
+                            background:isOn?'rgba(167,139,250,.15)':'var(--s1)',
                             cursor:'pointer',display:'flex',alignItems:'center',gap:8,transition:'all .15s'}}>
                           {isOn
                             ?<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#a78bfa" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -490,12 +490,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
 
         {perm.verAcordes&&(
-          <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
+          <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'var(--s1)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             {showChords?tx.lyricsOnly:tx.withChords}
           </button>
         )}
         {perm.autoScroll&&(
-          <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'rgba(255,255,255,.04)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
+          <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'var(--s1)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
             {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
             {tx.autoScroll}
           </button>
@@ -520,7 +520,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {showAnnoBar&&(
         <div style={{display:'flex',alignItems:'center',gap:3,padding:'0 10px 5px',overflowX:'auto',scrollbarWidth:'none'}}>
           {[['draw','Lápiz'],['erase','Borrar']].map(([t,l])=>(
-            <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'rgba(255,255,255,.09)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>{l}</button>
+            <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'var(--s3)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>{l}</button>
           ))}
           <div style={{width:1,height:16,background:'var(--bd)',margin:'0 3px'}}/>
           {COLS.map(c=>(<button key={c} onClick={()=>setColor(c)} style={{width:18,height:18,borderRadius:'50%',background:c,border:color===c?'2px solid #fff':'2px solid transparent',cursor:'pointer',flexShrink:0}}/>))}
@@ -553,8 +553,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── Popup Guardar ──────────────────────────────────────────────────────────
   const PopupGuardar=()=>(
     <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
-      <div style={{background:'#111113',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:17,color:'var(--tx)',marginBottom:8}}>Guardar cambios</div>
+      <div style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:8}}>Guardar cambios</div>
         <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'none',background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>Guardar y salir</button>
@@ -566,7 +566,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
   // ── Popup modo bloques — solo la primera vez ──────────────────────────────
   const PopupModoBloques=()=>(
-    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.6)',backdropFilter:'blur(8px)'}} onClick={()=>setShowModePopup(false)}>
+    <div style={{position:'fixed',inset:0,zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--ov-modal)',backdropFilter:'blur(8px)'}} onClick={()=>setShowModePopup(false)}>
       <div onClick={e=>e.stopPropagation()} style={{background:isLight?'rgba(240,234,222,.97)':'rgba(10,6,22,.97)',backdropFilter:'blur(40px)',border:'1px solid var(--bd2)',borderRadius:20,padding:'28px 24px',maxWidth:320,width:'90%',boxShadow:'0 24px 60px rgba(0,0,0,.5)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
           <div style={{width:44,height:44,borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -635,7 +635,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
                   letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Partitura · {song.partitura.nombre}</div>
                 <img src={song.partitura.url} alt={song.partitura.nombre}
-                  style={{maxWidth:'100%',borderRadius:14,border:'1px solid rgba(255,255,255,.1)',
+                  style={{maxWidth:'100%',borderRadius:14,border:'1px solid var(--bd)',
                     boxShadow:'0 20px 50px rgba(0,0,0,.4)'}}/>
               </div>
             :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
@@ -812,7 +812,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return(
       <div style={{
         position:'fixed',bottom:0,left:0,right:0,
-        background:'rgba(8,8,9,.97)',borderTop:'1px solid rgba(255,255,255,.1)',
+        background:'rgba(8,8,9,.97)',borderTop:'1px solid var(--bd)',
         backdropFilter:'blur(20px)',zIndex:120,
         display:'flex',alignItems:'stretch',
         paddingBottom:'env(safe-area-inset-bottom,0px)',
@@ -826,13 +826,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{
             display:'flex',alignItems:'center',gap:3,
             padding:'5px 10px',borderRadius:20,
-            background:canPrev?'rgba(255,255,255,.1)':'transparent',
-            border:canPrev?'1px solid rgba(255,255,255,.2)':'1px solid transparent',
+            background:canPrev?'var(--bd)':'transparent',
+            border:canPrev?'1px solid var(--div)':'1px solid transparent',
             transition:'all .2s',
           }}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={canPrev?'var(--tx)':'rgba(255,255,255,.15)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={canPrev?'var(--tx)':'var(--bd2)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',
-              fontFamily:"'Lexend Giga',sans-serif",color:canPrev?'var(--tx)':'rgba(255,255,255,.15)'}}>Ant</span>
+              fontFamily:"'Lexend Giga',sans-serif",color:canPrev?'var(--tx)':'var(--bd2)'}}>Ant</span>
           </div>
         </button>
 
@@ -1102,7 +1102,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     return(
       <div style={{
         display:'flex',height:28,flexShrink:0,
-        borderBottom:'1px solid rgba(255,255,255,.07)',
+        borderBottom:'1px solid var(--s3)',
         background:'rgba(8,8,9,.95)',
         overflowX:'auto',scrollbarWidth:'none',
       }}>
@@ -1143,7 +1143,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const ClickPanel=()=>(
     <div>
       <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>Click · Metrónomo</div>
-      <div style={{borderRadius:14,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',padding:'12px 14px',display:'flex',flexDirection:'column',gap:12}}>        {/* Fila 1: BPM + Play */}
+      <div style={{borderRadius:14,background:'var(--s1)',border:'1px solid var(--s3)',padding:'12px 14px',display:'flex',flexDirection:'column',gap:12}}>        {/* Fila 1: BPM + Play */}
         <div style={{display:'flex',alignItems:'center',gap:12}}>
           {/* BPM */}
           <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
@@ -1192,8 +1192,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               flex:1,
               padding:'8px 12px',
               borderRadius:10,
-              border:'1px solid rgba(255,255,255,.12)',
-              background:'rgba(255,255,255,.07)',
+              border:'1px solid var(--bd)',
+              background:'var(--s3)',
               color:'var(--ac)',
               fontSize:16,fontWeight:700,
               fontFamily:"'Special Gothic Expanded One',sans-serif",
@@ -1261,7 +1261,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
         onClick={()=>setShowCarpeta(false)}>
         <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:380,maxHeight:'80vh',overflowY:'auto',
-          padding:18,borderRadius:16,background:'var(--bg)',border:'1px solid rgba(255,255,255,.1)',
+          padding:18,borderRadius:16,background:'var(--bg)',border:'1px solid var(--bd)',
           boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',fontWeight:400}}>{baseName}</div>
@@ -1269,7 +1269,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
 
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>Original</div>
-          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'var(--s1)',marginBottom:14}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             <span style={{fontSize:11,color:'var(--tx2)'}}>Letra y acordes</span>
           </div>
@@ -1291,7 +1291,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {(carpetaActual.secuencia||[]).length>0&&(
             <div style={{marginBottom:8}}>
               {carpetaActual.secuencia.map(sq=>(
-                <div key={sq.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',marginBottom:5}}>
+                <div key={sq.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:'var(--s1)',marginBottom:5}}>
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                   <span style={{fontSize:11,color:'var(--tx2)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{sq.nombre}</span>
                   <span style={{fontSize:9,color:'var(--tx3)'}}>{sq.size}</span>
@@ -1301,8 +1301,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
           {isAdmin?(
             <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,
-              padding:'9px 12px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',
-              background:'rgba(255,255,255,.03)',color:'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,
+              padding:'9px 12px',borderRadius:10,border:'1px dashed var(--div)',
+              background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,
               fontFamily:"'Lexend Giga',sans-serif",marginBottom:14}}>
               <input type="file" accept="audio/*" style={{display:'none'}}
                 onChange={e=>{agregarSecuenciaDesdeCarpeta(e.target.files[0]);e.target.value='';}}/>
@@ -1338,7 +1338,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <button onClick={guardarNotaCarpeta}
             style={{width:'100%',marginTop:6,padding:'8px 0',borderRadius:8,border:'none',cursor:'pointer',
               fontSize:10,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
-              background:notaCarpetaGuardada?'var(--gn)':'rgba(255,255,255,.08)',
+              background:notaCarpetaGuardada?'var(--gn)':'var(--s3)',
               color:notaCarpetaGuardada?'#000':'var(--tx3)',transition:'all .2s'}}>
             {notaCarpetaGuardada?'✓ Guardada':'Guardar nota'}
           </button>
@@ -1366,7 +1366,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
-          borderBottom:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
+          borderBottom:'1px solid var(--s3)',flexShrink:0}}>
           <button onClick={()=>setShowConectarMesa(v=>!v)}
             style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0,background:'none',border:'none',cursor:'pointer',padding:0,textAlign:'left'}}>
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
@@ -1384,13 +1384,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {[1,2,3,4].map(b=>(
               <button key={b} onClick={()=>setMonitorBus(b)}
                 style={{width:20,height:20,borderRadius:5,border:'none',cursor:'pointer',
-                  background:monitorBus===b?'var(--gn)':'rgba(255,255,255,.08)',
+                  background:monitorBus===b?'var(--gn)':'var(--s3)',
                   color:monitorBus===b?'#000':'var(--tx3)',fontSize:8,fontWeight:900}}>
                 {b}
               </button>
             ))}
           </div>
-          <div style={{display:'inline-flex',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',overflow:'hidden'}}>
+          <div style={{display:'inline-flex',borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
               <button key={l} onClick={()=>setMonitorLayer(l)}
                 style={{padding:'2px 8px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
@@ -1402,7 +1402,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             ))}
           </div>
           <button onClick={()=>setShowMonitor(false)}
-            style={{width:20,height:20,borderRadius:5,border:'1px solid rgba(255,255,255,.1)',
+            style={{width:20,height:20,borderRadius:5,border:'1px solid var(--bd)',
               background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
               display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
         </div>
@@ -1415,11 +1415,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Panel de conexión — marca + IP (v36/v37-ampliación) */}
         {showConectarMesa&&(
-          <div style={{padding:'10px 12px',borderBottom:'1px solid rgba(255,255,255,.07)',
-            display:'flex',flexDirection:'column',gap:8,flexShrink:0,background:'rgba(255,255,255,.02)'}}>
+          <div style={{padding:'10px 12px',borderBottom:'1px solid var(--s3)',
+            display:'flex',flexDirection:'column',gap:8,flexShrink:0,background:'var(--s1)'}}>
             <select value={mesaMarca} onChange={e=>{setMesaMarca(e.target.value);setMesaErrorMsg(null);}}
               disabled={mesaConectada}
-              style={{padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+              style={{padding:'7px 9px',borderRadius:8,border:'1px solid var(--bd)',
                 background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
               {MARCAS_MESA.map(m=>(
                 <option key={m.id} value={m.id}>{m.nombre}{m.disponible?'':' — próximamente'}</option>
@@ -1437,7 +1437,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{display:'flex',gap:6}}>
               <input value={mesaIP} onChange={e=>setMesaIP(e.target.value)} disabled={mesaConectada}
                 placeholder={MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente?'IP del puente (ej: 192.168.1.50:8080)':'IP de la mesa (ej: 10.10.1.1)'}
-                style={{flex:1,padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
+                style={{flex:1,padding:'7px 9px',borderRadius:8,border:'1px solid var(--bd)',
                   background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif"}}/>
               {mesaConectada?(
                 <button onClick={desconectarMesa}
@@ -1448,7 +1448,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               ):(
                 <button onClick={conectarMesa} disabled={mesaEstado==='conectando'}
                   style={{padding:'7px 14px',borderRadius:8,border:'none',
-                    background:mesaEstado==='conectando'?'rgba(255,255,255,.1)':'var(--ac)',
+                    background:mesaEstado==='conectando'?'var(--bd)':'var(--ac)',
                     color:mesaEstado==='conectando'?'var(--tx3)':'#000',cursor:mesaEstado==='conectando'?'not-allowed':'pointer',
                     fontSize:10,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
                   {mesaEstado==='conectando'?'Conectando…':'Conectar'}
@@ -1473,8 +1473,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div key={ci} style={{
                 flex:1,display:'flex',flexDirection:'column',alignItems:'center',
                 gap:2,minWidth:0,padding:'4px 2px 4px',borderRadius:6,
-                background:muted?'rgba(253,128,131,.06)':'rgba(255,255,255,.03)',
-                border:`1px solid ${muted?'rgba(253,128,131,.2)':'rgba(255,255,255,.06)'}`,
+                background:muted?'rgba(253,128,131,.06)':'var(--s1)',
+                border:`1px solid ${muted?'rgba(253,128,131,.2)':'var(--s3)'}`,
                 overflow:'visible',
               }}>
                 <div style={{fontSize:7,fontWeight:700,
@@ -1490,7 +1490,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     {DB_MARKS.map(({db,pct})=>(
                       <div key={db} style={{
                         position:'absolute',right:0,bottom:`${pct}%`,
-                        fontSize:4.5,color:'rgba(255,255,255,.3)',
+                        fontSize:4.5,color:'var(--em)',
                         fontFamily:"'Lexend Giga',sans-serif",
                         lineHeight:1,transform:'translateY(50%)',textAlign:'right',
                       }}>{db>0?'+'+db:db}</div>
@@ -1506,7 +1506,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       {/* Track line via pseudo — usamos un div real */}
                       <div style={{position:'absolute',top:0,bottom:0,left:'50%',
                         transform:'translateX(-50%)',width:5,
-                        background:'rgba(255,255,255,.1)',borderRadius:3,pointerEvents:'none'}}/>
+                        background:'var(--bd)',borderRadius:3,pointerEvents:'none'}}/>
                       {/* VU meter — señal de entrada (animada independiente del fader) */}
                       <div style={{
                         position:'absolute',top:3,bottom:3,right:3,width:4,
@@ -1519,7 +1519,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           return(
                             <div key={si} style={{
                               flex:1,borderRadius:.5,
-                              background:lit?col:'rgba(255,255,255,.08)',
+                              background:lit?col:'var(--s3)',
                               boxShadow:lit&&si>=8?`0 0 3px ${col}`:'none',
                             }}/>
                           );
@@ -1604,7 +1604,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 }} style={{
                   width:'100%',padding:'3px 0',borderRadius:4,border:'none',cursor:'pointer',
                   flexShrink:0,
-                  background:muted?'#8B0000':'rgba(255,255,255,.06)',
+                  background:muted?'#8B0000':'var(--s3)',
                   color:muted?'#ff4444':'var(--tx3)',
                   fontSize:7,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
                   letterSpacing:'.5px',
@@ -1774,7 +1774,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const panel = (
         <div style={{
           position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.08)',
+          background:'rgba(8,8,9,.98)',borderTop:'1px solid var(--s3)',
           backdropFilter:'blur(40px)',zIndex:110,
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
@@ -1782,7 +1782,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           maxHeight:'62vh',
         }}>
           {/* Header */}
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid rgba(255,255,255,.06)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8">
               <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
             </svg>
@@ -1793,7 +1793,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {refTab==='track'&&(
               <>
                 <button onClick={()=>refInputRef.current?.click()}
-                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                   {refAudio?'Cambiar':'Subir audio'}
                 </button>
                 <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
@@ -1807,14 +1807,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <button onClick={()=>setRefTab('track')}
               style={{flex:1,padding:'7px 0',borderRadius:9,border:'none',cursor:'pointer',
                 fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.5px',
-                background:refTab==='track'?'rgba(255,255,255,.1)':'transparent',
+                background:refTab==='track'?'var(--bd)':'transparent',
                 color:refTab==='track'?'var(--tx)':'var(--tx3)'}}>
               TRACK
             </button>
             <button onClick={()=>setRefTab('grabaciones')}
               style={{flex:1,padding:'7px 0',borderRadius:9,border:'none',cursor:'pointer',
                 fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.5px',
-                background:refTab==='grabaciones'?'rgba(255,255,255,.1)':'transparent',
+                background:refTab==='grabaciones'?'var(--bd)':'transparent',
                 color:refTab==='grabaciones'?'var(--tx)':'var(--tx3)'}}>
               GRABACIONES · {grabActivas}/3
             </button>
@@ -1824,7 +1824,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             !refUrl?(
               /* Estado vacío */
               <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,padding:20}}>
-                <div style={{width:56,height:56,borderRadius:'50%',border:'2px dashed rgba(255,255,255,.15)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
+                <div style={{width:56,height:56,borderRadius:'50%',border:'2px dashed var(--bd2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}
                   onClick={()=>refInputRef.current?.click()}>
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--tx3)" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1858,7 +1858,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   style={{display:'none'}}/>
 
                 {/* Waveform / Progress bar principal */}
-                <div style={{position:'relative',height:48,borderRadius:10,background:'rgba(255,255,255,.05)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
+                <div style={{position:'relative',height:48,borderRadius:10,background:'var(--s1)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
                   onClick={e=>seekTo(e,e.currentTarget)}
                   onPointerDown={e=>{
                     e.preventDefault();
@@ -1882,7 +1882,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           height:`${Math.max(15,h*100)}%`,
                           background: filled
                             ? inLoop&&refLooping?'var(--gn)':'rgba(200,169,126,.9)'
-                            : inLoop?'rgba(48,192,183,.3)':'rgba(255,255,255,.12)',
+                            : inLoop?'rgba(48,192,183,.3)':'var(--bd)',
                           transition:'background .1s',
                         }}/>
                       );
@@ -1919,7 +1919,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
                   {/* Retroceder 5s */}
                   <button onClick={()=>{if(audio){audio.currentTime=Math.max(0,audio.currentTime-5);}}}
-                    style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    style={{width:34,height:34,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L4 9v6h6l-2.18-2.18A6.93 6.93 0 0 1 12.5 11c3.02 0 5.6 2 6.54 4.77l1.92-.64A9 9 0 0 0 12.5 8z"/></svg>
                   </button>
 
@@ -1933,7 +1933,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       }
                       audio.play();setRefPlaying(true);
                     }
-                  }} style={{width:48,height:48,borderRadius:'50%',border:'none',background:'var(--ac)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 20px rgba(255,255,255,.2)'}}>
+                  }} style={{width:48,height:48,borderRadius:'50%',border:'none',background:'var(--ac)',color:'#000',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 0 20px var(--div)'}}>
                     {refPlaying
                       ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                       :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1942,7 +1942,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
                   {/* Adelantar 5s */}
                   <button onClick={()=>{if(audio){audio.currentTime=Math.min(refDuration,audio.currentTime+5);}}}
-                    style={{width:34,height:34,borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    style={{width:34,height:34,borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 9c-1.85-1.6-4.25-2.6-6.9-2.6A9 9 0 0 0 2.54 15.13l1.92.64A7 7 0 0 1 11.1 11c1.89 0 3.63.76 4.9 2L14 15h6V9l-2 2z"/></svg>
                   </button>
 
@@ -1954,7 +1954,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       <button key={s} onClick={()=>{setRefSpeed(s);if(audio)audio.playbackRate=s;}}
                         style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
                           fontFamily:"'Lexend Giga',sans-serif",
-                          background:refSpeed===s?'rgba(200,169,126,.25)':'rgba(255,255,255,.06)',
+                          background:refSpeed===s?'rgba(200,169,126,.25)':'var(--s3)',
                           color:refSpeed===s?'var(--ac)':'var(--tx3)'}}>
                         {s}x
                       </button>
@@ -1965,16 +1965,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {/* Loop controls */}
                 <div style={{display:'flex',gap:6,flexShrink:0}}>
                   <button onClick={markIn}
-                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'rgba(255,255,255,.1)'}`,
-                      background:refLoopIn!=null?'rgba(48,192,183,.1)':'rgba(255,255,255,.05)',
+                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'var(--bd)'}`,
+                      background:refLoopIn!=null?'rgba(48,192,183,.1)':'var(--s1)',
                       color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
                       fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
                     <span style={{fontSize:8,letterSpacing:'.5px'}}>▶ IN</span>
                     {refLoopIn!=null&&<span style={{opacity:.7}}>{fmt(refLoopIn)}</span>}
                   </button>
                   <button onClick={markOut}
-                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'rgba(255,255,255,.1)'}`,
-                      background:refLoopOut!=null?'rgba(253,128,131,.1)':'rgba(255,255,255,.05)',
+                    style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'var(--bd)'}`,
+                      background:refLoopOut!=null?'rgba(253,128,131,.1)':'var(--s1)',
                       color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
                       fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
                     <span style={{fontSize:8,letterSpacing:'.5px'}}>OUT ■</span>
@@ -1990,8 +1990,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     }
                   }} disabled={refLoopIn==null||refLoopOut==null}
                     style={{width:60,padding:'6px 8px',borderRadius:8,
-                      border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
-                      background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
+                      border:`1px solid ${refLooping?'var(--gn)':'var(--bd)'}`,
+                      background:refLooping?'rgba(48,192,183,.2)':'var(--s1)',
                       color:refLooping?'var(--gn)':'var(--tx3)',
                       cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
                       fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
@@ -2002,7 +2002,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   </button>
                   {(refLoopIn!=null||refLoopOut!=null)&&(
                     <button onClick={clearLoop}
-                      style={{width:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
+                      style={{width:30,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',
                         color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>
                       ×
                     </button>
@@ -2022,9 +2022,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               )}
               {grabaciones.map((slot,i)=>(
                 <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:12,
-                  background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)'}}>
+                  background:'var(--s1)',border:'1px solid var(--s3)'}}>
                   <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
-                    background:slot?'rgba(48,192,183,.15)':'rgba(255,255,255,.06)',
+                    background:slot?'rgba(48,192,183,.15)':'var(--s3)',
                     color:slot?'var(--gn)':'var(--tx3)',fontSize:11,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
                     {i+1}
                   </div>
@@ -2049,8 +2049,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     </button>
                   ):(
                     <button disabled={isRecording} onClick={()=>iniciarGrabacion(i)}
-                      style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',cursor:isRecording?'not-allowed':'pointer',
-                        background:'rgba(255,255,255,.07)',color:'var(--tx2)',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+                      style={{padding:'6px 10px',borderRadius:8,border:'1px solid var(--bd2)',cursor:isRecording?'not-allowed':'pointer',
+                        background:'var(--s3)',color:'var(--tx2)',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
                         flexShrink:0,opacity:isRecording?.4:1}}>
                       {slot?'Reemplazar':'Grabar'}
                     </button>
@@ -2068,7 +2068,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         display:'flex',alignItems:'flex-end',justifyContent:'center'}}
         onClick={descartarPending}>
         <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:480,background:'#0d0d10',
-          borderTop:'1px solid rgba(255,255,255,.1)',borderRadius:'16px 16px 0 0',padding:'18px 18px calc(18px + env(safe-area-inset-bottom,0px))',
+          borderTop:'1px solid var(--bd)',borderRadius:'16px 16px 0 0',padding:'18px 18px calc(18px + env(safe-area-inset-bottom,0px))',
           display:'flex',flexDirection:'column',gap:12}}>
           <div style={{fontSize:12,fontWeight:900,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
             ¿Dónde guardamos la grabación? · {fmtDur(pendingRecording.duracionSeg)}
@@ -2083,7 +2083,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           </button>
 
-          <div style={{padding:'12px 14px',borderRadius:12,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}>
+          <div style={{padding:'12px 14px',borderRadius:12,border:'1px solid var(--bd)',background:'var(--s1)'}}>
             <div style={{fontSize:11,fontWeight:900,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>En un Ensayo</div>
             <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2,marginBottom:8,lineHeight:1.4}}>
               Se autoborra 2 semanas después de la fecha del evento.
@@ -2094,7 +2094,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               </div>
             ):(
               <select value={selectedEnsayoId||''} onChange={e=>setSelectedEnsayoId(e.target.value||null)}
-                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',
+                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid var(--bd2)',
                   background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
                 <option value="">Elegir ensayo…</option>
                 {ensayosDisponibles.map(en=>(<option key={en.id} value={en.id}>{en.nombre}{en.setlistNombre?` · ${en.setlistNombre}`:''}</option>))}
@@ -2102,7 +2102,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             )}
             <button disabled={!selectedEnsayoId} onClick={guardarEnEnsayo}
               style={{width:'100%',padding:'9px 0',borderRadius:8,border:'none',cursor:selectedEnsayoId?'pointer':'not-allowed',
-                background:selectedEnsayoId?'var(--ac)':'rgba(255,255,255,.1)',color:selectedEnsayoId?'#000':'var(--tx3)',
+                background:selectedEnsayoId?'var(--ac)':'var(--bd)',color:selectedEnsayoId?'#000':'var(--tx3)',
                 fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif"}}>
               Guardar en este ensayo
             </button>
@@ -2196,7 +2196,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchMove={e=>e.stopPropagation()}
         style={{
         position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-        background:'rgba(8,8,9,.98)',borderTop:'1px solid rgba(255,255,255,.1)',
+        background:'rgba(8,8,9,.98)',borderTop:'1px solid var(--bd)',
         backdropFilter:'blur(40px)',zIndex:110,
         maxHeight:'72vh',
         transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
@@ -2213,7 +2213,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
         {guias&&guias.length>0&&(
-          <div style={{display:'flex',height:34,borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+          <div style={{display:'flex',height:34,borderBottom:'1px solid var(--s3)',flexShrink:0}}>
             {guias.map((g,i)=>{
               const pct=(g.compases||4)/totalComp*100;
               let acc=0; for(let j=0;j<i;j++) acc+=(guias[j].compases||4);
@@ -2228,7 +2228,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     transition:'all .15s'}}>
                   <span style={{fontSize:8,fontWeight:900,color:isActive?g.color:`${g.color}cc`,
                     fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',lineHeight:1}}>{isTablet?g.label:abrevMapaSecuencia(g.label)}</span>
-                  <span style={{fontSize:5,color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
+                  <span style={{fontSize:5,color:'var(--div)',fontWeight:700}}>{g.compases||4}c</span>
                 </button>
               );
             })}
@@ -2239,7 +2239,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 0',flexShrink:0}}>
           <div
             style={{height:44,position:'relative',cursor:'pointer',borderRadius:8,
-              background:'rgba(255,255,255,.03)',overflow:'hidden',touchAction:'none'}}
+              background:'var(--s1)',overflow:'hidden',touchAction:'none'}}
             onPointerDown={e=>{
               e.preventDefault();
               const el=e.currentTarget;
@@ -2258,7 +2258,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 // Highlight del bloque seleccionado
                 const inHL=seqHighlight&&pr>=seqHighlight.from&&pr<=seqHighlight.to;
                 // Color de sección
-                let sc='rgba(255,255,255,.09)';
+                let sc='var(--s3)';
                 if(guias&&totalComp){
                   let acc=0;
                   for(const g of guias){
@@ -2273,7 +2273,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     height:`${Math.max(12,h*100)}%`,
                     background: inHL
                       ? (played?sc+'ee':sc+'55')  // bloque seleccionado: más brillante
-                      : (played?sc+'99':'rgba(255,255,255,.09)'),
+                      : (played?sc+'99':'var(--s3)'),
                     transition:'background .08s',
                   }}/>
                 );
@@ -2293,8 +2293,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* ── BARRA ÚNICA: BPM + Cifra + Controles ── */}
         <div style={{display:'flex',alignItems:'center',gap:0,
           margin:'8px 14px',padding:'8px 12px',
-          background:'rgba(255,255,255,.04)',borderRadius:12,
-          border:'1px solid rgba(255,255,255,.07)',flexShrink:0}}>
+          background:'var(--s1)',borderRadius:12,
+          border:'1px solid var(--s3)',flexShrink:0}}>
 
           {/* Rueda de selección de BPM — scroll nativo, sin bugs de touch */}
           <div style={{position:'relative',width:52,height:78,flexShrink:0}}>
@@ -2314,7 +2314,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
             {/* Marco central — indica la selección, no intercepta touch */}
             <div style={{position:'absolute',top:WHEEL_ITEM_H,left:0,right:0,height:WHEEL_ITEM_H,
-              borderTop:'1px solid rgba(255,255,255,.15)',borderBottom:'1px solid rgba(255,255,255,.15)',
+              borderTop:'1px solid var(--bd2)',borderBottom:'1px solid var(--bd2)',
               pointerEvents:'none'}}/>
             {/* Fades arriba/abajo para que se sienta como rueda, no lista cortada */}
             <div style={{position:'absolute',top:0,left:0,right:0,height:18,
@@ -2329,10 +2329,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <button onClick={handleTapSeq}
             style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
               gap:5,width:40,height:56,borderRadius:10,marginLeft:8,flexShrink:0,
-              border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.06)',
+              border:'1px solid var(--bd)',background:'var(--s3)',
               cursor:'pointer'}}>
             <div style={{width:9,height:9,borderRadius:'50%',
-              background:tapSeqLit?'var(--gn)':'rgba(255,255,255,.15)',
+              background:tapSeqLit?'var(--gn)':'var(--bd2)',
               boxShadow:tapSeqLit?'0 0 8px rgba(48,192,183,.9)':'none',
               transition:'background .08s,box-shadow .08s'}}/>
             <span style={{fontSize:7,fontWeight:900,color:'var(--tx3)',
@@ -2340,29 +2340,29 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </button>
 
           {/* Divisor */}
-          <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
+          <div style={{width:1,height:26,background:'var(--bd)',margin:'0 10px',flexShrink:0}}/>
 
           {/* Cifra — sin label */}
           <div style={{position:'relative',flexShrink:0}}>
             <select value={seqCifra}
               onChange={e=>{const c=e.target.value;setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
               style={{padding:'5px 20px 5px 8px',borderRadius:8,
-                border:'1px solid rgba(255,255,255,.12)',
-                background:'rgba(255,255,255,.07)',color:'var(--ac)',
+                border:'1px solid var(--bd)',
+                background:'var(--s3)',color:'var(--ac)',
                 fontSize:14,fontWeight:700,
                 fontFamily:"'Special Gothic Expanded One',sans-serif",
                 outline:'none',WebkitAppearance:'none',appearance:'none',
                 cursor:'pointer',minWidth:52}}>
               {CIFRAS.map(c=><option key={c} value={c} style={{background:'#0a0a0a'}}>{c}</option>)}
             </select>
-            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="2.5"
+            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="var(--em)" strokeWidth="2.5"
               style={{position:'absolute',right:5,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}}>
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </div>
 
           {/* Divisor */}
-          <div style={{width:1,height:26,background:'rgba(255,255,255,.1)',margin:'0 10px',flexShrink:0}}/>
+          <div style={{width:1,height:26,background:'var(--bd)',margin:'0 10px',flexShrink:0}}/>
 
           {/* Controles: ⏮ Play ⏭ */}
           {/* Sección anterior */}
@@ -2374,8 +2374,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               if(seqPos<to+.001){gotoBloque(Math.max(0,j-1));break;}
               cur+=guias[j].compases||4;
             }
-          }} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',
+          }} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
+            background:'var(--s1)',color:'var(--tx)',cursor:'pointer',
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <polygon points="19 20 9 12 19 4 19 20"/>
@@ -2404,8 +2404,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               if(seqPos<to-.001){gotoBloque(Math.min(guias.length-1,j+1));break;}
               cur+=guias[j].compases||4;
             }
-          }} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',
+          }} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
+            background:'var(--s1)',color:'var(--tx)',cursor:'pointer',
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginLeft:6}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <polygon points="5 4 15 12 5 20 5 4"/>
@@ -2416,7 +2416,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         </div>{/* fin área scrollable */}
         {/* ── Multitracks FUERA del scroll para touch libre ── */}
-        <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid rgba(255,255,255,.06)'}}>
+        <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid var(--s3)'}}>
         {/* ── Multitracks con faders — tope de 6 pistas, 2 por fila (50%/50%) ── */}
         <div>
           <div style={{marginBottom:10}}>
@@ -2431,14 +2431,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 return(
                   <div key={i} style={{position:'relative',display:'flex',flexDirection:'column',gap:5,
                     padding:'6px 10px 5px',borderRadius:12,overflow:'visible',
-                    background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-                    border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
+                    background:muted?'rgba(253,128,131,.08)':'var(--s1)',
+                    border:`1px solid ${muted?'rgba(253,128,131,.3)':'var(--s3)'}`}}>
                     {/* Mute — arriba a la derecha */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
                       style={{position:'absolute',top:5,right:5,fontSize:8,fontWeight:900,
                         padding:'2px 6px',borderRadius:5,border:'none',
                         cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
-                        background:muted?'var(--rd)':'rgba(255,255,255,.08)',
+                        background:muted?'var(--rd)':'var(--s3)',
                         color:muted?'#fff':'var(--tx3)'}}>
                       {muted?'MUTE':'M'}
                     </button>
@@ -2494,7 +2494,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               })}
             </div>
           ):(
-            <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
+            <div style={{padding:'16px',borderRadius:12,border:'1px dashed var(--bd)',textAlign:'center'}}>
               <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
             </div>
           )}
@@ -2518,7 +2518,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </button>
       )}
       <button onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>i+1);}}
-        style={{position:'fixed',right:12,bottom:72,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,border:'1px solid rgba(255,255,255,.18)',background:'rgba(255,255,255,.12)',backdropFilter:'blur(20px)',color:'var(--tx)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
+        style={{position:'fixed',right:12,bottom:72,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,border:'1px solid var(--bd2)',background:'var(--bd)',backdropFilter:'blur(20px)',color:'var(--tx)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
         {idx===songs.length-1?tx.done:tx.next}
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
@@ -2534,7 +2534,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
           <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
             <div style={{fontSize:8,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
               {song.autor||song.artista||'—'}
               {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
@@ -2555,7 +2555,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </span>
           </button>
           <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
-            {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'rgba(255,255,255,.25)',transition:'all .3s'}}/>))}
+            {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
           </div>
           <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
             <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
@@ -2580,7 +2580,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:8,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
             {song.autor||song.artista||'—'}
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
