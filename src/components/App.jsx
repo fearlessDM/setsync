@@ -343,11 +343,11 @@ Voicings extendidos para teclado
       const v=(variacionesDB[name]||[]).find(x=>x.id===variacionId);
       const displayName = v ? `${name} · ${v.label}` : name;
       const partitura = v?.tipo==='partitura' ? {url:v.archivoUrl,nombre:v.archivoNombre} : null;
-      setSongViewSongs([{name:displayName,key:base.key,bpm:base.bpm,partitura}]);
+      setSongViewSongs([{...base,name:displayName,key:base.key,bpm:base.bpm,partitura}]);
       setSongView(0);
       return;
     }
-    const songs=fuente.map(c=>({name:c.n,key:c.key,bpm:c.bpm}));
+    const songs=fuente.map(c=>({...c,name:c.n,key:c.key,bpm:c.bpm}));
     const idx=songs.findIndex(s=>s.name===name);
     if(idx>=0){setSongViewSongs(songs);setSongView(idx);}
   };
@@ -373,6 +373,7 @@ Voicings extendidos para teclado
             return (v||persona)?{variacion:v?.label||'Original',persona:persona?.name||null}:null;
           }).filter(Boolean);
         return{
+          ...base,
           name: item.cancion,
           key: base.key, bpm: base.bpm,
           asignaciones,

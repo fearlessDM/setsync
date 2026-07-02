@@ -904,6 +904,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {label:'Click/Perc',color:'#FD8083'},
         {label:'Keys pad',color:'#30C0B7'},
         {label:'Brass',color:'#f59e0b'},
+        {label:'Guitarra',color:'#a78bfa'},
+        {label:'Bajo',color:'#52555c'},
       ],
     },
     'GLORIA EN GLORIA':{
@@ -922,6 +924,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {label:'Guía vocal',color:'#EE227D'},
         {label:'Click 6/8',color:'#FD8083'},
         {label:'Strings',color:'#30C0B7'},
+        {label:'Guitarra',color:'#a78bfa'},
+        {label:'Bajo',color:'#52555c'},
+        {label:'Coros',color:'#f59e0b'},
       ],
     },
   };
@@ -2071,7 +2076,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     borderBottom:isActive?`2px solid ${g.color}`:'2px solid transparent',
                     display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
                     transition:'all .15s'}}>
-                  <span style={{fontSize:8,fontWeight:900,color:isActive?g.color:`${g.color}66`,
+                  <span style={{fontSize:8,fontWeight:900,color:isActive?g.color:`${g.color}cc`,
                     fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',lineHeight:1}}>{g.label}</span>
                   <span style={{fontSize:5,color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
                 </button>
@@ -2149,14 +2154,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             onPointerDown={e=>{
               e.preventDefault();
               const btn=e.currentTarget;
-              // Limpieza defensiva — evita timers huérfanos si quedó alguno
-              // vivo de un pointerdown anterior (doble evento touch+mouse).
+              // setPointerCapture — todos los eventos de este puntero (move/up/cancel)
+              // quedan atados a este botón aunque el dedo se corra unos px, que es
+              // justo lo que rompía el bug: en touch, sin esto, a veces no llega
+              // ningún pointerup/pointerleave y el interval queda corriendo para
+              // siempre ("se descontrola hasta el bug").
+              btn.setPointerCapture(e.pointerId);
               clearTimeout(btn._t);clearInterval(btn._iv);
               const fire=()=>{const v=Math.max(40,seqBpmRef.current-1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
               fire();
               btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
             }}
-            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
+            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);b.releasePointerCapture(e.pointerId);}}
+            onPointerCancel={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
             onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
 
           <div style={{textAlign:'center',padding:'0 6px'}}>
@@ -2172,12 +2182,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             onPointerDown={e=>{
               e.preventDefault();
               const btn=e.currentTarget;
+              btn.setPointerCapture(e.pointerId);
               clearTimeout(btn._t);clearInterval(btn._iv);
               const fire=()=>{const v=Math.min(300,seqBpmRef.current+1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
               fire();
               btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
             }}
-            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
+            onPointerUp={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);b.releasePointerCapture(e.pointerId);}}
+            onPointerCancel={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}
             onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>+</button>
 
           {/* Divisor */}
@@ -2267,49 +2279,48 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 return(
-                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,
-                    padding:'10px 6px 8px',borderRadius:12,overflow:'visible',
+                  <div key={i} style={{display:'flex',flexDirection:'column',gap:8,
+                    padding:'12px 12px 10px',borderRadius:12,overflow:'visible',
                     background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                     border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
-                    {/* Dot color */}
-                    <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                    {/* Label */}
-                    <div style={{fontSize:9,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
-                      fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
-                      width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
-                      padding:'0 2px',flexShrink:0}}>{tr.label}</div>
-                    {/* Fader Secuencia */}
-                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
-                      <div className="fader-track"
-                        style={{height:110}}>
-                        <div className="fader-knob"
-                          style={{bottom:`calc(${vol}% - 11px)`}}
+                    {/* Dot + Label */}
+                    <div style={{display:'flex',alignItems:'center',gap:7}}>
+                      <div style={{width:7,height:7,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                      <div style={{fontSize:13,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
+                        fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
+                        textOverflow:'ellipsis',flex:1}}>{tr.label}</div>
+                    </div>
+                    {/* Fader Secuencia — horizontal */}
+                    <div style={{width:'100%',padding:'2px 0',overflow:'visible'}}>
+                      <div className="fader-track-h">
+                        <div className="fader-knob-h"
+                          style={{left:`calc(${vol}% - 11px)`}}
                           onPointerDown={e=>{
-                            /* ⚠️ ZONA BLINDADA — mismo patrón crítico que MonitorPanel.
-                             * NO recalcular rect en move. NO usar setState en move.
-                             * knob.style.bottom se mueve directo en DOM; setState solo en pointerup. */
+                            /* ⚠️ Mismo patrón crítico que .fader-knob (ZONA
+                             * BLINDADA), solo con eje X en vez de Y.
+                             * NO recalcular rect en move. NO usar setState
+                             * en move. knob.style.left se mueve directo en
+                             * DOM; setState solo en pointerup. */
                             e.preventDefault();
                             e.stopPropagation();
                             const knob=e.currentTarget;
                             const track=knob.parentElement;
                             knob.setPointerCapture(e.pointerId);
                             const r=track.getBoundingClientRect();
-                            const trackH=r.height;
-                            const trackTop=r.top;
-                            const calcPct=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-trackTop)/trackH)))*100);
+                            const trackW=r.width;
+                            const trackLeft=r.left;
+                            const calcPct=ev=>Math.round(Math.max(0,Math.min(1,(ev.clientX-trackLeft)/trackW))*100);
                             let curVol=calcPct(e);
-                            // Mover directo en DOM — sin re-render React
-                            knob.style.bottom=`calc(${curVol}% - 11px)`;
+                            knob.style.left=`calc(${curVol}% - 11px)`;
                             const move=ev=>{
                               ev.preventDefault();
                               curVol=calcPct(ev);
-                              knob.style.bottom=`calc(${curVol}% - 11px)`;
+                              knob.style.left=`calc(${curVol}% - 11px)`;
                             };
                             const up=ev=>{
                               knob.releasePointerCapture(ev.pointerId);
                               knob.removeEventListener('pointermove',move);
                               knob.removeEventListener('pointerup',up);
-                              // State solo al soltar
                               setTrackVols(v=>{const n=[...v];n[i]=curVol;return n;});
                             };
                             knob.addEventListener('pointermove',move,{passive:false});
@@ -2319,17 +2330,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         >{/* knob */}</div>
                       </div>
                     </div>
-                    {/* Valor */}
-                    <div style={{fontSize:10,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
-                      fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
-                    {/* Mute */}
-                    <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                      style={{fontSize:8,fontWeight:900,padding:'3px 8px',borderRadius:5,border:'none',
-                        cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
-                        background:muted?'var(--rd)':'rgba(255,255,255,.08)',
-                        color:muted?'#fff':'var(--tx3)'}}>
-                      {muted?'MUTE':'M'}
-                    </button>
+                    {/* Valor + Mute */}
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div style={{fontSize:11,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
+                        fontFamily:"'Lexend Giga',sans-serif"}}>{vol}</div>
+                      <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
+                        style={{fontSize:8,fontWeight:900,padding:'3px 8px',borderRadius:5,border:'none',
+                          cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
+                          background:muted?'var(--rd)':'rgba(255,255,255,.08)',
+                          color:muted?'#fff':'var(--tx3)'}}>
+                        {muted?'MUTE':'M'}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
