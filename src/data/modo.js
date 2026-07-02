@@ -47,7 +47,6 @@ export const MODO_TEXTOS = {
 export const MODO_FEATURES = {
   iglesia: {
     cancioneroUniversal: true,   // banco comunitario entre iglesias
-    pads:                true,   // pads ambientales por tonalidad — protagonista en worship
     click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     multitracks:         true,   // multipistas — disponible en ambos modos
     monitoreo:           true,   // monitoreo OSC — disponible en ambos modos (mesa es mesa)
@@ -59,7 +58,6 @@ export const MODO_FEATURES = {
   },
   banda: {
     cancioneroUniversal: false,  // no existe en Banda
-    pads:                false,  // existe técnicamente (Vista Escenario) pero no es protagonista
     click:               true,   // click/metrónomo — útil en ambos modos, sin restricción de modo
     multitracks:         true,   // multipistas — disponible en ambos modos
     monitoreo:           true,   // monitoreo OSC — disponible en ambos modos (mesa es mesa)

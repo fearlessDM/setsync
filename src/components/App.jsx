@@ -16,7 +16,6 @@ import { EquiposView } from './EquiposView';
 import { BackstageView } from './BackstageView';
 import { Inicio } from './Inicio';
 import { Click } from './Click';
-import { Pads } from './Pads';
 import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
 import { t as getT, LANGS } from '../i18n';
@@ -78,7 +77,6 @@ export default function App(){
   const planActivo=getPlan(planId);
   const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
-  const tienePads=featureDisponible('pads',feat,planActivo);
   const tieneClick=featureDisponible('click',feat,planActivo);
   const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
   const tieneMonitoreo=featureDisponible('monitoreo',feat,planActivo);
@@ -683,12 +681,11 @@ Voicings extendidos para teclado
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
             archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB}/>
-          {(tienePads||tieneClick||tieneMultitracks)&&(
+          {(tieneClick||tieneMultitracks)&&(
             <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
               {mostrarMultitracks&&tieneMultitracks&&(
                 <Multitracks tracks={[]} lang={lang} onToast={showToast}/>
               )}
-              {tienePads&&<Pads songKey={songViewSongs[songView]?.key} lang={lang}/>}
               {tieneClick&&<Click songBpm={songViewSongs[songView]?.bpm} lang={lang}/>}
               {tieneMultitracks&&(
                 <button onClick={()=>setMostrarMultitracks(v=>!v)}
