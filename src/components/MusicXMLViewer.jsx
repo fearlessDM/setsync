@@ -99,9 +99,9 @@ export function MusicXMLViewer({url}){
     <div style={{color:'var(--tx3)',fontSize:13,textAlign:'center',padding:20}}>Cargando partitura...</div>
   );
   return(
-    <div style={{width:'100%',maxWidth:700,fontFamily:"'Lato',sans-serif"}}>
-      <div style={{fontSize:20,fontWeight:900,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
-      {content.composer&&<div style={{fontSize:12,color:'var(--tx3)',marginBottom:20}}>{content.composer}</div>}
+    <div style={{width:'100%',maxWidth:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
+      {content.composer&&<div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',marginBottom:20}}>{content.composer}</div>}
       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
         {content.measures.map((m,mi)=>(
           <div key={mi} style={{
@@ -110,7 +110,7 @@ export function MusicXMLViewer({url}){
             minWidth:80,
           }}>
             <div style={{fontSize:9,color:'var(--tx3)',marginBottom:4,
-              fontWeight:700,letterSpacing:'1px'}}>C{m.number}</div>
+              fontWeight:900,letterSpacing:'1.5px'}}>C{m.number}</div>
             <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
               {m.notes.map((n,ni)=>(
                 <div key={ni} style={{

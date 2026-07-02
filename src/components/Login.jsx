@@ -43,10 +43,10 @@ export function Login({onToast}){
       alignItems:'center',justifyContent:'center',padding:24}}>
       <div style={{width:'100%',maxWidth:360}}>
         <div style={{textAlign:'center',marginBottom:32}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,color:'var(--tx)',marginBottom:8}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,fontWeight:200,color:'var(--tx)',marginBottom:8}}>
             Set<span style={{color:'var(--gn)'}}>Sync</span>
           </div>
-          <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+          <div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
             {modo==='entrar'?'Inicia sesión para continuar':'Crea tu cuenta'}
           </div>
         </div>
@@ -55,14 +55,14 @@ export function Login({onToast}){
           <button onClick={()=>{setModo('entrar');setError(null);}}
             style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
-              background:modo==='entrar'?'rgba(255,255,255,.1)':'transparent',
+              background:modo==='entrar'?'var(--bd)':'transparent',
               color:modo==='entrar'?'var(--tx)':'var(--tx3)'}}>
             Iniciar sesión
           </button>
           <button onClick={()=>{setModo('crear');setError(null);}}
             style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
-              background:modo==='crear'?'rgba(255,255,255,.1)':'transparent',
+              background:modo==='crear'?'var(--bd)':'transparent',
               color:modo==='crear'?'var(--tx)':'var(--tx3)'}}>
             Crear cuenta
           </button>
@@ -71,14 +71,14 @@ export function Login({onToast}){
         <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:10}}>
           {modo==='crear'&&(
             <input placeholder="Tu nombre" value={nombre} onChange={e=>setNombre(e.target.value)}
-              style={{padding:'12px 14px',borderRadius:10,border:'1px solid rgba(255,255,255,.12)',
+              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
                 background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
           )}
           <input type="email" placeholder="Correo electrónico" value={email} onChange={e=>setEmail(e.target.value)}
-            style={{padding:'12px 14px',borderRadius:10,border:'1px solid rgba(255,255,255,.12)',
+            style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
               background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
           <input type="password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}
-            style={{padding:'12px 14px',borderRadius:10,border:'1px solid rgba(255,255,255,.12)',
+            style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
               background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
 
           {error&&(
@@ -90,22 +90,22 @@ export function Login({onToast}){
 
           <button type="submit" disabled={cargando}
             style={{padding:'13px 0',borderRadius:10,border:'none',cursor:cargando?'not-allowed':'pointer',
-              background:'var(--ac)',color:'#000',fontSize:12,fontWeight:900,
+              background:'var(--ac)',color:'#000',fontSize:11,fontWeight:700,
               fontFamily:"'Lexend Giga',sans-serif",opacity:cargando?.6:1,marginTop:4}}>
             {cargando?'Un momento…':modo==='entrar'?'Iniciar sesión':'Crear cuenta'}
           </button>
         </form>
 
         <div style={{display:'flex',alignItems:'center',gap:10,margin:'18px 0'}}>
-          <div style={{flex:1,height:1,background:'rgba(255,255,255,.08)'}}/>
-          <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>O</span>
-          <div style={{flex:1,height:1,background:'rgba(255,255,255,.08)'}}/>
+          <div style={{flex:1,height:1,background:'var(--s3)'}}/>
+          <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>O</span>
+          <div style={{flex:1,height:1,background:'var(--s3)'}}/>
         </div>
 
         <button onClick={conGoogle} disabled={cargando}
-          style={{width:'100%',padding:'12px 0',borderRadius:10,border:'1px solid rgba(255,255,255,.14)',
+          style={{width:'100%',padding:'12px 0',borderRadius:10,border:'1px solid var(--bd2)',
             cursor:cargando?'not-allowed':'pointer',background:'var(--s1)',color:'var(--tx)',
-            fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+            fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
             display:'flex',alignItems:'center',justifyContent:'center',gap:10,opacity:cargando?.6:1}}>
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -116,7 +116,7 @@ export function Login({onToast}){
           Continuar con Google
         </button>
 
-        <div style={{textAlign:'center',marginTop:24,fontSize:10,color:'var(--tx3)',
+        <div style={{textAlign:'center',marginTop:24,fontSize:8,fontWeight:700,color:'var(--tx3)',
           fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.6}}>
           Al continuar, aceptas que SetSync organice tu repertorio y equipo.<br/>
           Tu contenido con derechos de autor sigue siendo tu responsabilidad.

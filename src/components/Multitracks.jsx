@@ -128,7 +128,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
   if(tracks.length===0){
     return(
       <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',
-        color:'var(--tx3)',fontSize:12,fontFamily:"'Lexend Giga',sans-serif"}}>
+        color:'var(--tx2)',fontSize:11,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>
         {lang==='en'
           ?'No tracks loaded yet for this song. Track upload (Firebase Storage) is coming in a future phase.'
           :'Todavía no hay pistas cargadas para esta canción. La carga de pistas (Firebase Storage) llega en una fase futura.'}
@@ -157,7 +157,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
           }}>
           <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${progress*100}%`,borderRadius:2,background:'var(--ac)'}}/>
         </div>
-        <span style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+        <span style={{fontSize:8,fontWeight:700,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
           {Math.floor(progress*duration/60)}:{String(Math.floor((progress*duration)%60)).padStart(2,'0')}
         </span>
       </div>
@@ -166,7 +166,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
         const s = trackStates[t.id]||{volume:0.8,muted:false,solo:false};
         return(
           <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:'1px solid var(--bd)'}}>
-            <span style={{fontSize:11,fontWeight:600,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",width:70,
+            <span style={{fontSize:11,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",width:70,
               overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{t.name}</span>
             <input type="range" min="0" max="1" step="0.01" value={s.volume}
               onChange={e=>setTrack(t.id,{volume:Number(e.target.value)})}

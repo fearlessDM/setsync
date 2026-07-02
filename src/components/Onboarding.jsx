@@ -16,7 +16,7 @@ export function Onboarding({onFinish}){
           <div className="ob-step">
             <div className="ob-lgo">
               <div className="logo-mk"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:22,color:'var(--tx)'}}>Setlist</div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)'}}>Setlist</div>
             </div>
             <div className="ob-lbl">Paso 1 de 3 · Step 1 of 3</div>
             <div className="ob-ttl">Elige tu idioma <span style={{color:'var(--ac)'}}>/ Choose</span></div>
@@ -24,15 +24,15 @@ export function Onboarding({onFinish}){
               {[['es','Español','Spanish'],['en','English','Inglés']].map(([l,n,s])=>(
                 <div key={l} className={`ob-lang${lang===l?' on':''}`} onClick={()=>setLang(l)}>
                   <div>
-                    <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:16,color:'var(--tx)'}}>{n}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',marginTop:2}}>{s}</div>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{n}</div>
+                    <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',marginTop:2}}>{s}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="ob-ft">
               <div className="ob-dots"><div className="ob-dot on"/><div className="ob-dot"/><div className="ob-dot"/></div>
-              <button onClick={()=>setStep(2)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid rgba(255,255,255,.25)',background:'rgba(255,255,255,.12)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
+              <button onClick={()=>setStep(2)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid var(--div)',background:'var(--s3)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
             </div>
@@ -51,9 +51,9 @@ export function Onboarding({onFinish}){
                     {k==='studio'&&<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>}
                   </div>
                   <div>
-                    <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.8px',marginBottom:2}}>{v.sub}</div>
-                    <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:15,color:'var(--tx)'}}>{v.label}</div>
-                    <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.4,marginTop:2}}>{v.events}</div>
+                    <div style={{fontSize:9,color:'var(--ac)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>{v.sub}</div>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{v.label}</div>
+                    <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',lineHeight:1.4,marginTop:2}}>{v.events}</div>
                   </div>
                 </div>
               ))}
@@ -63,7 +63,7 @@ export function Onboarding({onFinish}){
               <div className="ob-dots"><div className="ob-dot done"/><div className="ob-dot on"/><div className="ob-dot"/></div>
               <div style={{display:'flex',gap:7}}>
                 <button className="btn btn-g btn-sm" onClick={()=>setStep(1)}>{lang==='en'?'Back':'Atrás'}</button>
-                <button onClick={()=>setStep(3)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid rgba(255,255,255,.25)',background:'rgba(255,255,255,.12)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
+                <button onClick={()=>setStep(3)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid var(--div)',background:'var(--s3)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
               </div>
@@ -77,7 +77,7 @@ export function Onboarding({onFinish}){
             <div className="ob-sub">{lang==='en'?'Config saved. Change it in Settings.':'Configuración guardada. Cámbiala en Ajustes.'}</div>
             <div className="ob-sum">
               {[[lang==='en'?'Language':'Idioma',lang==='en'?'English':'Español'],[lang==='en'?'Mode':'Modo',SUM[mode]?.[lang]],[lang==='en'?'Events':'Eventos',EVSM[mode]?.[lang]]].map(([l,v])=>(
-                <div key={l} className="ob-sr"><span style={{fontSize:11,color:"var(--tx3)",fontWeight:600,letterSpacing:".3px"}}>{l}</span><span style={{fontSize:13,fontWeight:700,color:'var(--tx)'}}>{v}</span></div>
+                <div key={l} className="ob-sr"><span style={{fontSize:9,color:"var(--tx3)",fontWeight:900,textTransform:'uppercase',letterSpacing:'1.5px'}}>{l}</span><span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13,fontWeight:400,color:'var(--tx)'}}>{v}</span></div>
               ))}
             </div>
             <div className="ob-ft">
