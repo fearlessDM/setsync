@@ -234,12 +234,12 @@ function TutorialPage({ tut, onClose }) {
     <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',
       paddingBottom:80}}>
       <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
-        borderBottom:'1px solid rgba(255,255,255,.08)',padding:'12px 14px',
+        borderBottom:'1px solid var(--s3)',padding:'12px 14px',
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
-        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
-          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',fontSize:18,
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
+          background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:18,
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,fontWeight:400,color:'var(--tx)'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400,color:'var(--tx)'}}>
           {tut.titulo}
         </div>
       </div>
@@ -288,12 +288,12 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
   return (
     <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',paddingBottom:80}}>
       <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
-        borderBottom:'1px solid rgba(255,255,255,.08)',padding:'12px 14px',
+        borderBottom:'1px solid var(--s3)',padding:'12px 14px',
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
-        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid rgba(255,255,255,.12)',
-          background:'rgba(255,255,255,.05)',color:'var(--tx)',cursor:'pointer',fontSize:18,
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
+          background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:18,
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,fontWeight:400}}>
+        <div style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400}}>
           Ideas & Notas
         </div>
         <button onClick={onCreate}
@@ -309,7 +309,7 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
           </div>
         ):notas.map((n,i)=>(
           <div key={i} style={{padding:'12px 10px',borderRadius:12,
-            background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',
+            background:'var(--s1)',border:'1px solid var(--s3)',
             cursor:'pointer',position:'relative'}}>
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,
               color:'var(--tx)',marginBottom:4,lineHeight:1.3,
@@ -372,8 +372,8 @@ function NotasBlock() {
           <textarea value={texto} onChange={e=>setTexto(e.target.value)}
             autoFocus
             placeholder="Escribe tu idea, nota o pendiente..."
-            style={{width:'100%',minHeight:72,background:'rgba(255,255,255,.04)',
-              border:'1px solid rgba(255,255,255,.12)',borderRadius:8,
+            style={{width:'100%',minHeight:72,background:'var(--s1)',
+              border:'1px solid var(--bd)',borderRadius:8,
               color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,
               fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'none',outline:'none',
               boxSizing:'border-box'}}/>
@@ -477,7 +477,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
           <Lbl>{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
           {proximoEvento ? (<>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,
               color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
               {proximoEvento.nombre}
             </div>
@@ -512,8 +512,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
-                  background:'rgba(255,255,255,.04)',cursor:'pointer',
-                  border:'1px solid rgba(255,255,255,.06)'}}>
+                  background:'var(--s1)',cursor:'pointer',
+                  border:'1px solid var(--s3)'}}>
                 <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
                   fontSize:28,color,lineHeight:1,fontWeight:400}}>{val}</div>
                 <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:9,
@@ -569,7 +569,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
               {NOTIFICACIONES_DEMO.map((n,i)=>(
                 <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start',
-                  padding:'9px 0',borderBottom:i<NOTIFICACIONES_DEMO.length-1?'1px solid rgba(255,255,255,.05)':'none'}}>
+                  padding:'9px 0',borderBottom:i<NOTIFICACIONES_DEMO.length-1?'1px solid var(--s1)':'none'}}>
                   <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
                     background:`${n.color}18`,display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <span style={{fontSize:12}}>{n.icon}</span>
@@ -605,10 +605,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <div key={tut.slug}
                 onClick={()=>setTutorialActivo(tut)}
                 style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
-                  background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.07)',
+                  background:'var(--s1)',border:'1px solid var(--s3)',
                   display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
-                onPointerEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}
-                onPointerLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.04)'}>
+                onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
+                onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
                 <div style={{fontSize:18}}>{tut.icon}</div>
                 <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,
                   color:'var(--tx)',lineHeight:1.3}}>{tut.titulo}</div>
@@ -627,7 +627,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>Preguntas frecuentes</Lbl>
           <div style={{display:'flex',flexDirection:'column',gap:0}}>
             {FAQS.map((faq,i)=>(
-              <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid rgba(255,255,255,.05)':'none'}}>
+              <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
                 <button onClick={()=>toggleFaq(i)}
                   style={{width:'100%',background:'none',border:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
@@ -660,8 +660,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               const isCurrent = planId===p.id;
               return (
                 <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
-                  background:isCurrent?'rgba(48,192,183,.1)':'rgba(255,255,255,.04)',
-                  border:isCurrent?'1px solid rgba(48,192,183,.35)':'1px solid rgba(255,255,255,.06)'}}>
+                  background:isCurrent?'rgba(48,192,183,.1)':'var(--s1)',
+                  border:isCurrent?'1px solid rgba(48,192,183,.35)':'1px solid var(--s3)'}}>
                   <div style={{fontSize:8,fontWeight:900,color:isCurrent?'var(--gn)':'var(--tx3)',
                     textTransform:'uppercase',letterSpacing:'.5px',marginBottom:5,
                     fontFamily:"'Lexend Giga',sans-serif"}}>{p.label}</div>
@@ -681,8 +681,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
             {TEAM_TIERS.map(t=>(
               <div key={t.rango} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.04)',
-                border:'1px solid rgba(255,255,255,.06)'}}>
+                padding:'8px 12px',borderRadius:10,background:'var(--s1)',
+                border:'1px solid var(--s3)'}}>
                 <div>
                   <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400}}>{t.rango} personas</span>
                   {t.nota&&<div style={{fontSize:8,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{t.nota}</div>}
@@ -722,10 +722,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',
           display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
-            fontSize:26,color:'#fff',lineHeight:1.1}}>
+            fontSize:28,color:'#fff',lineHeight:1.1}}>
             Hola <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'rgba(255,255,255,.45)',marginTop:4}}>
             SetSync · {mode==='iglesia'?'Tu plataforma de worship profesional':'Tu plataforma para bandas en vivo'}
           </div>
@@ -769,9 +769,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <div style={{marginTop:4,padding:'var(--sp-md)',borderRadius:'var(--rad-lg)',
           background:'var(--s1)',border:'1px solid rgba(48,192,183,.15)'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
-            fontSize:15,color:'var(--tx)',marginBottom:2}}>Por qué SetSync</div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,
-            color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
+            fontSize:16,color:'var(--tx)',marginBottom:2}}>Por qué SetSync</div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
+            color:'var(--tx2)',marginBottom:12,lineHeight:1.5}}>
             La única pantalla que un músico necesita en el escenario.
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:8}}>
