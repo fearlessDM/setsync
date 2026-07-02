@@ -42,6 +42,11 @@ const SEED_BANDA_EVENTOS=[
     equiposConvocados:['sonido','visuales','roadies','catering','movilizacion'],
     ensayosPrevios:[{fecha:'2026-07-26',lugar:'Sala de ensayo',duracion:'4h'}],
     notas:'Festival con 3 bandas. Slot de 45 minutos. Compartir backline.',notifs:['Confirmado 35 min de set','Rider aprobado']},
+  {id:'banda-4',tipo:'sesion',fecha:'2026-07-20',lugar:'Estudio Manicomio',ciudad:'Santiago',nombre:'Grabación EP',
+    setlist:[{name:'CIUDAD DE VIDRIO',key:'Dm',bpm:80},{name:'MAR ADENTRO',key:'D',bpm:68}],
+    equiposConvocados:['sonido','produccion'],
+    ensayosPrevios:[],
+    notas:'Sesión de grabación para el EP — pistas de base. Llevar instrumentos afinados a 440Hz.',notifs:['Estudio confirmado','Ingeniero de grabación asignado']},
 ];
 const SEED_BANDA_PERSONAS=[
   {id:'b1',nombre:'Carlos',rol:'baterista',email:null,equipoId:null},
@@ -51,7 +56,18 @@ const SEED_BANDA_PERSONAS=[
   {id:'b5',nombre:'Matías',rol:'corista2',email:null,equipoId:null},
   {id:'b6',nombre:'Pedro',rol:'sonido',email:null,equipoId:null},
 ];
-const SEED_BANDA_REPERTORIO=[]; // sin canciones precargadas — lienzo en blanco para que el usuario lo llene
+// Repertorio de Banda — antes vacío ("lienzo en blanco"), pero eso dejaba
+// huérfanas las canciones que ya aparecían en los setlists de los eventos
+// demo de arriba (NOCHE SIN FIN, FUEGO CRUZADO, etc. no existían en ningún
+// cancionero). Se pobló con esas mismas 5 canciones originales de la banda
+// ficticia, mismo shape que CANCIONES ({n,key,bpm,artista}).
+const SEED_BANDA_REPERTORIO=[
+  {n:'NOCHE SIN FIN',   key:'Am', bpm:74, artista:'Composición propia'},
+  {n:'FUEGO CRUZADO',   key:'Em', bpm:92, artista:'Composición propia'},
+  {n:'TIERRA ROJA',     key:'G',  bpm:76, artista:'Composición propia'},
+  {n:'MAR ADENTRO',     key:'D',  bpm:68, artista:'Composición propia'},
+  {n:'CIUDAD DE VIDRIO',key:'Dm', bpm:80, artista:'Composición propia'},
+];
 const ROLES_BANDA=[
   {id:'encargado',label:'Encargado'},{id:'guitarrista_e',label:'Guitarra Eléctrica'},
   {id:'guitarrista_a',label:'Guitarra Acústica'},{id:'bajista',label:'Bajista'},
@@ -66,6 +82,11 @@ export default function App(){
   const vx=getModoTexto(appMode,lang);
   const feat=getModoFeatures(appMode);
   const [view,setView]=useState('inicio');
+  // backstageKey — cambia cada vez que se toca el botón "Backstage" del nav,
+  // incluso si ya estabas ahí adentro de una subpágina. BackstageView escucha
+  // este valor y se resetea a su home (bsView=null) cuando cambia.
+  const [backstageKey,setBackstageKey]=useState(0);
+  const goToView=id=>{setView(id);if(id==='backstage')setBackstageKey(k=>k+1);};
   const [sbCol,setSbCol]=useState(false);
   const [toast,setToast]=useState(null);
   const [theme,setTheme]=useState('dark');
@@ -512,9 +533,9 @@ Voicings extendidos para teclado
         <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'min(760px,95vw)',padding:'0 clamp(16px,4vw,40px)',display:'flex',flexDirection:'column',alignItems:'center'}}>
 
           {/* Logo vertical — visible con tagline */}
-          <div style={{paddingTop:48,paddingBottom:32,display:'flex',flexDirection:'column',alignItems:'center'}}>
+          <div style={{paddingTop:40,paddingBottom:10,display:'flex',flexDirection:'column',alignItems:'center'}}>
             <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
-              height:'clamp(160px,28vw,240px)',width:'auto',objectFit:'contain',
+              height:'clamp(200px,36vw,300px)',width:'auto',objectFit:'contain',
               filter:'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
             }}/>
           </div>
@@ -609,7 +630,7 @@ Voicings extendidos para teclado
         </div>
         <div className="sb-nav">
           {BNS.map(n=>(
-            <div key={n.id} className={`ni${view===n.id?' on':''}`} onClick={()=>setView(n.id)}>
+            <div key={n.id} className={`ni${view===n.id?' on':''}`} onClick={()=>goToView(n.id)}>
               <div className="ni-ic"><NavIco id={n.id} active={view===n.id}/></div>
               <span className="ni-lb">{n.label}</span>
               {view===n.id&&<div className="ni-dot"/>}
@@ -663,13 +684,14 @@ Voicings extendidos para teclado
             variacionesDB={variacionesDB}
             currentUser={currentUser} onCerrarSesion={cerrarSesion}
             persistirEnsayo={persistirEnsayo}
+            navResetKey={backstageKey}
             onNavigate={setView}/>}
           <Footer/>
         </div>
       </main>
       <nav className="bot">
         {BNS.map(n=>(
-          <div key={n.id} className={`bn${view===n.id?' on':''}`} onClick={()=>setView(n.id)}>
+          <div key={n.id} className={`bn${view===n.id?' on':''}`} onClick={()=>goToView(n.id)}>
             <NavIco id={n.id} active={view===n.id}/><span className="bn-lb">{n.label}</span>
           </div>
         ))}

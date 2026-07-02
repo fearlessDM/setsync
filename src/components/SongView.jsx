@@ -652,7 +652,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [faderVols,setFaderVols]=useState(()=>FADER_NAMES.map(()=>75));
   const [trackVols,setTrackVols]=useState(()=>Array(20).fill(80));
   const [trackMutes,setTrackMutes]=useState(()=>Array(20).fill(false));
-  const [seqLayer,setSeqLayer]=useState('A'); // 'A' primeros 8, 'B' segundos 8
+  // seqLayer eliminado — con tope de 6 pistas ya no hace falta selector de capas A/B
   const [seqPos,setSeqPos]=useState(0);          // posición de playback 0-1
   const [seqHighlight,setSeqHighlight]=useState(null); // {from:0-1, to:0-1} bloque activo
   // ── Referencia (audio player) ───────────────────────────────────────────
@@ -969,6 +969,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const defaultCifra = SECUENCIA_DATA[song?.name]?.click.compas || '4/4';
   const [seqBpm, setSeqBpm] = useState(defaultBpm);
   const [seqCifra, setSeqCifra] = useState(defaultCifra);
+  // seqBpmRef — espejo sincrónico de seqBpm para los botones +/- con
+  // auto-repeat (mantener presionado). FIX bug "BPM se descontrola":
+  // antes, el closure `fire` capturaba seqBpm del render en que se hizo
+  // pointerdown y el setInterval lo re-usaba sin cambios en cada tick,
+  // así que valores repetidos o intervalos huérfanos (por doble evento
+  // pointerdown en touch) hacían saltar el número. Ahora fire lee/escribe
+  // siempre el valor más reciente vía ref, sin esperar al re-render.
+  const seqBpmRef = useRef(seqBpm);
+  useEffect(()=>{ seqBpmRef.current = seqBpm; }, [seqBpm]);
   // Sync when song changes (using ref to detect change)
   const prevSongRef = useRef(null);
   if(song?.name !== prevSongRef.current){
@@ -2140,7 +2149,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             onPointerDown={e=>{
               e.preventDefault();
               const btn=e.currentTarget;
-              const fire=()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
+              // Limpieza defensiva — evita timers huérfanos si quedó alguno
+              // vivo de un pointerdown anterior (doble evento touch+mouse).
+              clearTimeout(btn._t);clearInterval(btn._iv);
+              const fire=()=>{const v=Math.max(40,seqBpmRef.current-1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
               fire();
               btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
             }}
@@ -2160,7 +2172,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             onPointerDown={e=>{
               e.preventDefault();
               const btn=e.currentTarget;
-              const fire=()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
+              clearTimeout(btn._t);clearInterval(btn._iv);
+              const fire=()=>{const v=Math.min(300,seqBpmRef.current+1);seqBpmRef.current=v;setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}};
               fire();
               btn._t=setTimeout(()=>{btn._iv=setInterval(fire,80);},400);
             }}
@@ -2245,45 +2258,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>{/* fin área scrollable */}
         {/* ── Multitracks FUERA del scroll para touch libre ── */}
         <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid rgba(255,255,255,.06)'}}>
-        {/* ── Multitracks con faders (8+8) ── */}
+        {/* ── Multitracks con faders — tope de 6 pistas, 2 por fila (50%/50%) ── */}
         <div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-            <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
-            {/* Selector Capa A/B */}
-            <div style={{display:'inline-flex',borderRadius:16,border:'1px solid var(--bd)',overflow:'hidden'}}>
-              {['A','B'].map(l=>(
-                <button key={l} onClick={()=>setSeqLayer(l)}
-                  style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
-                    fontFamily:"'Lexend Giga',sans-serif",
-                    background:seqLayer===l?'rgba(255,255,255,.12)':'transparent',
-                    color:seqLayer===l?'var(--tx)':'var(--tx3)'}}>
-                  {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:10}}>Multitracks</div>
           {seqData?.multitracks?(
-            <div style={{display:'grid',gridTemplateColumns:'repeat(8,1fr)',gap:5}}>
-              {(seqLayer==='A'?seqData.multitracks.slice(0,8):seqData.multitracks.slice(8,16)).map((tr,li)=>{
-                const i = seqLayer==='A'?li:li+8;
+            <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8}}>
+              {seqData.multitracks.slice(0,6).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 return(
-                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
-                    padding:'6px 3px 5px',borderRadius:10,overflow:'visible',
+                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,
+                    padding:'10px 6px 8px',borderRadius:12,overflow:'visible',
                     background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
                     border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
                     {/* Dot color */}
-                    <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                    <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
                     {/* Label */}
-                    <div style={{fontSize:6,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
+                    <div style={{fontSize:9,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
                       fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
                       width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                       padding:'0 2px',flexShrink:0}}>{tr.label}</div>
                     {/* Fader Secuencia */}
-                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'2px 0',overflow:'visible'}}>
+                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'4px 0',overflow:'visible'}}>
                       <div className="fader-track"
-                        style={{height:72}}>
+                        style={{height:110}}>
                         <div className="fader-knob"
                           style={{bottom:`calc(${vol}% - 11px)`}}
                           onPointerDown={e=>{
@@ -2322,11 +2320,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       </div>
                     </div>
                     {/* Valor */}
-                    <div style={{fontSize:7,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
+                    <div style={{fontSize:10,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
                       fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
                     {/* Mute */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                      style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
+                      style={{fontSize:8,fontWeight:900,padding:'3px 8px',borderRadius:5,border:'none',
                         cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
                         background:muted?'var(--rd)':'rgba(255,255,255,.08)',
                         color:muted?'#fff':'var(--tx3)'}}>
@@ -2379,7 +2377,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
             <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
-              {curKey} · {song.bpm} BPM
+              {song.autor||song.artista||'—'}
               {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
               {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
             </div>
@@ -2425,7 +2423,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:17,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:10,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
-            {curKey} · {song.bpm} BPM
+            {song.autor||song.artista||'—'}
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
             {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
           </div>

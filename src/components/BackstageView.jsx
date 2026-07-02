@@ -12,12 +12,15 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
   const tipos=getTiposEventoDisponibles(mode,lang);
   const [bsView,setBsView]=useState(null);
+  // Volver a Backstage home al re-tocar el botón del nav, aunque ya
+  // estuvieras adentro de una subpágina — no solo con la flecha atrás.
+  useEffect(()=>{ if(navResetKey>0) setBsView(null); },[navResetKey]);
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;
@@ -1435,31 +1438,22 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   }
 
   const ITEMS=[
-    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',color:'#c8a97e',adminOnly:false},
-    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',color:'#30C0B7',adminOnly:false},
-    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'mic',color:'#FD8083',adminOnly:false},
-    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',color:'#30C0B7',adminOnly:true},
-    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',color:'#c8a97e',adminOnly:true},
-    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',color:'#FD8083',adminOnly:false},
-    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',color:'#7dd3c0',adminOnly:false},
-    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',color:'#e0a458',adminOnly:true}]:[]),
-    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'star',color:'#c8a97e',adminOnly:true},
+    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
+    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',color:'#30C0B7',adminOnly:false,img:'/backstage/setlist.jpg'},
+    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'mic',color:'#FD8083',adminOnly:false,img:'/backstage/ensayo.jpg'},
+    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',color:'#30C0B7',adminOnly:true,img:'/backstage/equipos.jpg'},
+    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',color:'#c8a97e',adminOnly:true,img:'/backstage/permisos.jpg'},
+    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',color:'#FD8083',adminOnly:false,img:'/backstage/notif.jpg'},
+    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
+    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
+    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;
   });
 
-  const ITEM_ICONS={
-    calendar:<path d="M3 10h18M8 3v4M16 3v4M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>,
-    music:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
-    mic:<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></>,
-    team:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
-    shield:<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>,
-    bell:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
-    settings:<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
-    book:<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>,
-    star:<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
-  };
+  // ITEM_ICONS eliminado — los bloques ahora usan imagen de fondo (it.img)
+  // en vez del icono de color chico.
 
   return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
@@ -1473,11 +1467,19 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
-            style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10}}>
-            <div style={{width:32,height:32,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',background:`${it.color}1c`}}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={it.color} strokeWidth="1.8">{ITEM_ICONS[it.icon]}</svg>
-            </div>
-            <div>
+            style={{position:'relative',overflow:'hidden',background:'var(--s1)',border:'none',borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
+            {/* Imagen de fondo del bloque — sube el archivo con este mismo
+                nombre a /public/backstage/ y aparece sola; hasta entonces
+                el bloque queda plano y limpio sin romper nada. */}
+            <img src={it.img} alt="" aria-hidden="true"
+              onError={e=>{e.currentTarget.style.display='none';}}
+              style={{position:'absolute',left:'-16%',bottom:'-24%',width:'78%',height:'92%',
+                objectFit:'cover',opacity:.22,transform:'rotate(-13deg)',borderRadius:10,
+                pointerEvents:'none'}}/>
+            <div style={{position:'absolute',inset:0,
+              background:'linear-gradient(115deg,transparent 32%,var(--s1) 86%)',
+              pointerEvents:'none'}}/>
+            <div style={{position:'relative'}}>
               <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:15,marginBottom:5}}>{it.label}</div>
               <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
             </div>

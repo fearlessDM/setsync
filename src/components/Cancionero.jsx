@@ -15,6 +15,27 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',letra:''});
+  // Tap tempo — para identificar BPM tocando el ritmo con el dedo/mouse
+  // en vez de adivinar el número. tapsRef guarda timestamps (no re-renderea
+  // en cada tap); tapCount solo se usa para el feedback visual del punto.
+  const tapsRef=useRef([]);
+  const [tapCount,setTapCount]=useState(0);
+  const handleTap=()=>{
+    const now=performance.now();
+    const taps=tapsRef.current;
+    // Si pasó más de 2s desde el último tap, es un tap nuevo (reinicia)
+    if(taps.length&&now-taps[taps.length-1]>2000) taps.length=0;
+    taps.push(now);
+    if(taps.length>8) taps.shift(); // solo los últimos 8 taps para que el promedio reaccione a cambios de tempo
+    setTapCount(taps.length);
+    if(taps.length>=2){
+      const intervals=[];
+      for(let i=1;i<taps.length;i++) intervals.push(taps[i]-taps[i-1]);
+      const avgMs=intervals.reduce((a,b)=>a+b,0)/intervals.length;
+      const bpm=Math.round(60000/avgMs);
+      if(bpm>=40&&bpm<=300) setNueva(v=>({...v,bpm:String(bpm)}));
+    }
+  };
   const [partituras,setPartituras]=useState([]);
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
@@ -285,6 +306,20 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 style={{flex:1,padding:'9px 12px',borderRadius:8,
                   border:'1px solid var(--bd)',background:'var(--s2)',
                   color:'var(--tx)',fontSize:13}}/>
+              <button type="button" onClick={handleTap}
+                title="Tocá el ritmo de la canción — calculamos el BPM por vos"
+                style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                  gap:2,width:58,padding:'6px 4px',borderRadius:8,flexShrink:0,
+                  border:'1px solid var(--bd)',
+                  background:tapCount>0?'rgba(48,192,183,.12)':'var(--s2)',
+                  color:tapCount>0?'var(--gn)':'var(--tx2)',
+                  cursor:'pointer',fontSize:9,fontWeight:900,
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  transition:'background .15s,color .15s'}}>
+                <span style={{width:6,height:6,borderRadius:'50%',
+                  background:tapCount>0?'var(--gn)':'var(--tx3)'}}/>
+                TAP
+              </button>
             </div>
           </div>
           <div className="card" style={{padding:14,marginBottom:16}}>
@@ -322,7 +357,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               onClick={()=>setCrearModo(null)}>Cancelar</button>
             <button className="btn-p" disabled={!nueva.nombre.trim()}
               onClick={()=>{
-                CANCIONES.push({n:nueva.nombre.trim().toUpperCase(),key:nueva.key,bpm:Number(nueva.bpm)||90});
+                CANCIONES.push({n:nueva.nombre.trim().toUpperCase(),key:nueva.key,bpm:Number(nueva.bpm)||90,autor:nueva.autor.trim()});
                 if(nueva.letra.trim()){
                   const encabezado = `${nueva.nombre.trim().toUpperCase()}\n${nueva.autor.trim()}\n\n`;
                   onSaveChords(nueva.nombre.trim().toUpperCase(), encabezado + nueva.letra);
@@ -330,6 +365,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 onToast(`✓ ${nueva.nombre.trim()} agregada`);
                 setShowCrear(false);setCrearModo(null);
                 setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});
+                tapsRef.current=[];setTapCount(0);
               }}
               style={{flex:2,padding:'10px',borderRadius:10,fontSize:13,fontWeight:700,
                 fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',
