@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -19,7 +19,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
   const [crearModo,setCrearModo]=useState(null);
-  const [colecciones,setColecciones]=useState([]);
+  // colecciones ahora es prop (levantado a App.jsx para poder sincronizar
+  // con Firestore, v44-ampliación — antes vivía solo acá, se perdía al
+  // recargar y no se compartía entre dispositivos)
   const [showCrearColeccion,setShowCrearColeccion]=useState(false);
   const [nuevaColeccion,setNuevaColeccion]=useState({nombre:'',color:'#c8a97e',canciones:[]});
   const [coleccionSel,setColeccionSel]=useState(null);
@@ -702,7 +704,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Cancelar</button>
                   <button disabled={!nuevaColeccion.nombre.trim()}
                     onClick={()=>{
-                      setColecciones(v=>[...v,{...nuevaColeccion}]);
+                      const nueva={id:Date.now(),...nuevaColeccion};
+                      setColecciones(v=>[...v,nueva]);
+                      persistirColeccion(nueva);
                       onToast&&onToast({text:'Colección creada',sub:nuevaColeccion.nombre});
                       setNuevaColeccion({nombre:'',color:'#c8a97e',canciones:[]});
                       setShowCrearColeccion(false);

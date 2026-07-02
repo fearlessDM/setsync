@@ -12,7 +12,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -1325,6 +1325,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     const duplicarEnsayo = (en) => {
       const copia={...en,id:`ens${Date.now()}`,nombre:`${en.nombre||'Ensayo'} (copia)`};
       setEnsayos(prev=>[...prev,copia]);
+      persistirEnsayo(copia);
       onToast({text:'Ensayo duplicado',sub:copia.nombre});
     };
     return(
@@ -1421,6 +1422,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             const sl=slGuardados.find(s=>s.id===ensSetlistId);
             const nuevo={id:`ens${Date.now()}`,ref:ensRef,setlistId:ensSetlistId,setlistNombre:sl?.nombre||'',equipos:[...ensEquipos],archivo:ensArchivo,notas:ensNotas,nombre:'Ensayo'};
             setEnsayos(prev=>[...prev,nuevo]);
+            persistirEnsayo(nuevo);
             onToast({text:'Ensayo creado',sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});
             setEnsRef('');setEnsSetlistId('');setEnsEquipos([]);setEnsArchivo(null);setEnsNotas('');setBsView(null);
           }}>

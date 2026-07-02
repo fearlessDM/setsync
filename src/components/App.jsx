@@ -26,7 +26,7 @@ import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } fr
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -163,13 +163,71 @@ export default function App(){
         setEquipos(data);
       }
     });
-    return ()=>{ unsubEv(); unsubPe(); unsubEq(); };
+    const unsubEn = subscribeEnsayos(accountId, data=>{
+      if(data.length===0 && ensayos.length>0){
+        ensayos.forEach(en=>guardarEnsayo(accountId, en));
+      } else if(data.length>0){
+        setEnsayos(data);
+      }
+    });
+    const unsubCo = subscribeColecciones(accountId, data=>{
+      if(data.length===0 && colecciones.length>0){
+        colecciones.forEach(co=>guardarColeccion(accountId, co));
+      } else if(data.length>0){
+        setColecciones(data);
+      }
+    });
+    return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online]);
 
   const persistirPersona = (persona) => { if(firebaseListo && online) guardarPersona(accountId, persona); };
   const persistirEvento = (evento) => { if(firebaseListo && online) guardarEvento(accountId, evento); };
   const persistirEquipo = (equipo) => { if(firebaseListo && online) guardarEquipo(accountId, equipo); };
+  const persistirEnsayo = (ensayo) => { if(firebaseListo && online) guardarEnsayo(accountId, ensayo); };
+  const persistirColeccion = (coleccion) => { if(firebaseListo && online) guardarColeccion(accountId, coleccion); };
+
+  // ── variacionesDB / archivosDB (v44-ampliación) — a diferencia de arriba,
+  // estos son mapas que se editan desde muchos lugares distintos (Cancionero,
+  // SongView), no un único "crear X" — así que en vez de perseguir cada
+  // punto de mutación, se sincroniza el mapa completo cada vez que cambia.
+  // Los "skip" refs evitan el eco: cuando el cambio viene DE Firestore, no
+  // hay que volver a subirlo de inmediato.
+  const skipVarSaveRef = useRef(false);
+  const skipArchSaveRef = useRef(false);
+  useEffect(()=>{
+    if(!firebaseListo || appMode===null || !online) return;
+    const unsubVar = subscribeVariacionesDB(accountId, data=>{
+      if(data===null){
+        guardarVariacionesDB(accountId, variacionesDB);
+      } else {
+        skipVarSaveRef.current = true;
+        setVariacionesDB(data);
+      }
+    });
+    const unsubArch = subscribeArchivosDB(accountId, data=>{
+      if(data===null){
+        guardarArchivosDB(accountId, archivosDB);
+      } else {
+        skipArchSaveRef.current = true;
+        setArchivosDB(data);
+      }
+    });
+    return ()=>{ unsubVar(); unsubArch(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appMode, online]);
+  useEffect(()=>{
+    if(!firebaseListo || !online) return;
+    if(skipVarSaveRef.current){ skipVarSaveRef.current=false; return; }
+    guardarVariacionesDB(accountId, variacionesDB);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[variacionesDB]);
+  useEffect(()=>{
+    if(!firebaseListo || !online) return;
+    if(skipArchSaveRef.current){ skipArchSaveRef.current=false; return; }
+    guardarArchivosDB(accountId, archivosDB);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[archivosDB]);
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
@@ -594,7 +652,7 @@ Voicings extendidos para teclado
             onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             userRole={userRole} onToast={showToast} lang={lang}
             equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
@@ -606,6 +664,7 @@ Voicings extendidos para teclado
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             variacionesDB={variacionesDB}
             currentUser={currentUser} onCerrarSesion={cerrarSesion}
+            persistirEnsayo={persistirEnsayo}
             onNavigate={setView}/>}
           <Footer/>
         </div>

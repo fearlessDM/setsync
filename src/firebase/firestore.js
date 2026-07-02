@@ -120,3 +120,69 @@ export async function resolverInvitacion(codigo){
   const snap = await getDoc(doc(db, 'invites', codigo.toUpperCase().trim()));
   return snap.exists() ? snap.data().accountId : null;
 }
+
+// ── Ensayos (v44-ampliación) — misma forma que Eventos/Personas/Equipos ──
+export function subscribeEnsayos(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'accounts', accountId, 'ensayos');
+  return onSnapshot(query(ref), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+export async function guardarEnsayo(accountId, ensayo){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'ensayos', String(ensayo.id)), ensayo);
+}
+export async function borrarEnsayo(accountId, ensayoId){
+  if(!firebaseListo) return;
+  await deleteDoc(doc(db, 'accounts', accountId, 'ensayos', String(ensayoId)));
+}
+
+// ── Colecciones (v44-ampliación) — misma forma que Eventos/Personas/Equipos.
+// Antes vivía SOLO como estado local dentro de Cancionero.jsx, nunca subía
+// a ningún lado — se perdía al recargar y no se compartía entre
+// dispositivos. Ahora sigue el mismo patrón que el resto. ─────────────────
+export function subscribeColecciones(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'accounts', accountId, 'colecciones');
+  return onSnapshot(query(ref), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+export async function guardarColeccion(accountId, coleccion){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'colecciones', String(coleccion.id)), coleccion);
+}
+export async function borrarColeccion(accountId, coleccionId){
+  if(!firebaseListo) return;
+  await deleteDoc(doc(db, 'accounts', accountId, 'colecciones', String(coleccionId)));
+}
+
+// ── variacionesDB / archivosDB (v44-ampliación) — estas NO son listas de
+// ítems con id propio, son mapas {nombreCancion: [...] / {...}}. En vez de
+// una colección de un doc por canción (más compleja y sin beneficio real a
+// esta escala), se guardan como UN solo documento con el mapa completo —
+// más simple, y de sobra dentro del límite de 1MB/doc de Firestore para el
+// tamaño de un cancionero real. ──────────────────────────────────────────
+export function subscribeVariacionesDB(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'variacionesDB');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().db||{}) : null);
+  });
+}
+export async function guardarVariacionesDB(accountId, db_){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'variacionesDB'), {db: db_});
+}
+export function subscribeArchivosDB(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'archivosDB');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().db||{}) : null);
+  });
+}
+export async function guardarArchivosDB(accountId, db_){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'archivosDB'), {db: db_});
+}
