@@ -2,10 +2,22 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
 /* ── Colores ── */
---bg:#080809;--s1:rgba(255,255,255,.05);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
---bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
+--bg:#080809;--s1:rgba(255,255,255,.04);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
+--bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.15);
+--div:rgba(255,255,255,.2);--em:rgba(255,255,255,.3);
+--ov-modal:rgba(0,0,0,.6);--ov-strong:rgba(0,0,0,.8);
 --ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.68);--tx3:#7a7e88;
 --gn:#30C0B7;--rd:#FD8083;--btn-c:#080809;
+
+/* ── ESCALA TIPOGRÁFICA — aprobada v47 Parte B ── */
+--fs-display:28px;--fw-display:200;
+--fs-title1:20px;--fw-title1:400;
+--fs-title2:16px;--fw-title2:400;
+--fs-title3:13px;--fw-title3:400;
+--fs-body:11px;--fw-body:300;
+--fs-ui:11px;--fw-ui:700;
+--fs-label:9px;--fw-label:900;
+--fs-caption:8px;--fw-caption:700;
 
 /* ── Sistema de espaciado — tokens globales ── */
 --sp-xs:8px;
@@ -74,6 +86,16 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .page-sub{font-size:15px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx2);line-height:1.4;}
 .page-sub-sm{font-size:12px;font-weight:200;font-family:'Lexend Giga',sans-serif;color:var(--tx3);line-height:1.5;}
 .sc-n{font-family:'Special Gothic Expanded One',sans-serif;font-weight:400;font-size:clamp(32px,6vw,42px);color:var(--tx);line-height:1;}
+
+/* ── ESCALA TIPOGRÁFICA v47 — clases listas para usar ── */
+.fs-display{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-display);font-weight:var(--fw-display);color:var(--tx);}
+.fs-title1{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title1);font-weight:var(--fw-title1);color:var(--tx);}
+.fs-title2{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title2);font-weight:var(--fw-title2);color:var(--tx);}
+.fs-title3{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title3);font-weight:var(--fw-title3);color:var(--tx);}
+.fs-body{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-body);font-weight:var(--fw-body);color:var(--tx2);}
+.fs-ui{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-ui);font-weight:var(--fw-ui);color:var(--tx);}
+.fs-label{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-label);font-weight:var(--fw-label);color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;}
+.fs-caption{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-caption);font-weight:var(--fw-caption);color:var(--tx3);}
 
 /* ── BG FX ── */
 .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;}

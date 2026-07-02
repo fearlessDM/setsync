@@ -24,16 +24,16 @@ export function ItinerarioEditor({items,onChange}){
   return(
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>Horarios del evento</span>
+        <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Horarios del evento</span>
         <button onClick={()=>setEdit(v=>!v)} style={{fontSize:11,fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
           {edit?'Listo':'Editar'}
         </button>
       </div>
       {items.map((it,i)=>(
-        <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'5px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+        <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'5px 0',borderBottom:'1px solid var(--bd)'}}>
           {edit
-            ?<input value={it.hora} onChange={e=>update(i,'hora',e.target.value)} style={{fontFamily:"'Source Code Pro',monospace",fontSize:11,color:'var(--ac)',background:'rgba(200,169,126,.08)',border:'1px solid rgba(200,169,126,.2)',borderRadius:5,padding:'2px 6px',width:52,outline:'none'}}/>
-            :<span style={{fontFamily:"'Source Code Pro',monospace",fontSize:11,color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
+            ?<input value={it.hora} onChange={e=>update(i,'hora',e.target.value)} style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:11,color:'var(--ac)',background:'rgba(200,169,126,.08)',border:'1px solid rgba(200,169,126,.2)',borderRadius:5,padding:'2px 6px',width:52,outline:'none'}}/>
+            :<span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:11,color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
           }
           {edit
             ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:11,color:'var(--tx)',background:'var(--s2)',border:'1px solid var(--bd)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"'Lexend Giga',sans-serif"}}/>

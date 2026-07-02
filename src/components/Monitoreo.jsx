@@ -48,10 +48,10 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
     <div>
       <div className="ph" style={{marginBottom:14,alignItems:'flex-start'}}>
         <div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>
             Monitoreo
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginTop:5}}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.5,marginTop:5}}>
             {lang==='en'?'Personal mix — 16 channels, 2 layers of 8':'Mezcla personal — 16 canales, 2 capas de 8'}
           </div>
         </div>
@@ -61,15 +61,15 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
         <div style={{fontSize:11,color:'var(--rd)',fontWeight:700,marginBottom:2,fontFamily:"'Lexend Giga',sans-serif"}}>
           ⚠ {lang==='en'?'Not connected':'Sin conexión'}
         </div>
-        <div style={{fontSize:11,color:'var(--tx3)',lineHeight:1.6,fontFamily:"'Lexend Giga',sans-serif"}}>
+        <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',lineHeight:1.6,fontFamily:"'Lexend Giga',sans-serif"}}>
           {lang==='en'
             ?'This UI is ready, but real-time OSC connection to the console needs a network bridge that doesn\'t exist yet. Moving faders here doesn\'t change anything on the physical mixer.'
             :'Esta UI está lista, pero la conexión OSC real con la mesa necesita un puente de red que todavía no existe. Mover estos faders no cambia nada en la mesa física.'}
         </div>
       </div>
 
-      <div style={{padding:'20px',borderRadius:14,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center',marginTop:8}}>
-        <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
+      <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',marginTop:8}}>
+        <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
           {lang==='en'
             ?'Monitor mixing will be available once the OSC bridge is connected.'
             :'La mezcla de monitoreo estará disponible una vez conectado el puente OSC.'}
