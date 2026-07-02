@@ -24,6 +24,8 @@ import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../dat
 import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
+import { onAuthChange, cerrarSesion } from '../firebase/auth';
+import { Login } from './Login';
 import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
@@ -81,7 +83,18 @@ export default function App(){
   const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
   const tieneMonitoreo=featureDisponible('monitoreo',feat,planActivo);
   const [online,setOnline]=useState(true); // toggle online/offline — no cierra la app, solo pausa el sync
-  const accountId=getAccountId();
+  // ── Auth real (v42) — reemplaza el accountId fantasma por dispositivo.
+  // currentUser: undefined="todavía no sabemos" (esperando a Firebase),
+  // null="no hay sesión" (mostrar Login), objeto="hay sesión real".
+  // Si Firebase no está configurado, currentUser queda null pero el gate
+  // de Login más abajo se salta (mismo comportamiento 100% local de
+  // siempre) — accountId cae al viejo generador local como fallback.
+  const [currentUser,setCurrentUser]=useState(undefined);
+  useEffect(()=>{
+    const unsub = onAuthChange(setCurrentUser);
+    return unsub;
+  },[]);
+  const accountId = currentUser?.uid || getAccountId();
   const [mostrarMultitracks,setMostrarMultitracks]=useState(false);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
@@ -343,6 +356,22 @@ Voicings extendidos para teclado
     return null;
   };
 
+  // ── Gate de autenticación (v42) ───────────────────────────────────────
+  // Solo aplica si Firebase está configurado — si no, currentUser queda
+  // null pero firebaseListo también es false, así que este bloque nunca
+  // bloquea el modo 100% local (comportamiento de siempre, sin romper
+  // nada para quien todavía no configuró las variables de entorno).
+  if(firebaseListo && currentUser===undefined){
+    return(
+      <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,color:'var(--tx3)'}}>Set<span style={{color:'var(--gn)'}}>Sync</span></div>
+      </div>
+    );
+  }
+  if(firebaseListo && currentUser===null){
+    return <Login/>;
+  }
+
   // ── Pantalla de bienvenida: idioma + modo ─────────────────────────────────
   if(appMode===null){
     const T={
@@ -576,6 +605,7 @@ Voicings extendidos para teclado
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             variacionesDB={variacionesDB}
+            currentUser={currentUser} onCerrarSesion={cerrarSesion}
             onNavigate={setView}/>}
           <Footer/>
         </div>

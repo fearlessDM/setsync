@@ -12,7 +12,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},variacionesDB={}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -1103,6 +1103,26 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               </button>
             )}
           </div>
+        </div>
+      )}
+      {firebaseListo&&currentUser&&(
+        <div className="card" style={{padding:14,marginBottom:12}}>
+          <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Cuenta</div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+            <div style={{width:36,height:36,borderRadius:10,background:'rgba(48,192,183,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--tx)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.displayName||'Sin nombre'}</div>
+              <div style={{fontSize:11,color:'var(--tx3)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.email}</div>
+            </div>
+          </div>
+          <button onClick={onCerrarSesion}
+            style={{width:'100%',padding:'10px 0',borderRadius:10,border:'1px solid rgba(253,128,131,.3)',
+              background:'rgba(253,128,131,.06)',color:'var(--rd)',cursor:'pointer',fontSize:11,fontWeight:700,
+              fontFamily:"'Lexend Giga',sans-serif"}}>
+            Cerrar sesión
+          </button>
         </div>
       )}
 
