@@ -379,7 +379,15 @@ Voicings extendidos para teclado
           asignaciones,
         };
       }
-      if(typeof item==='object'&&item)return item; // ya resuelto (compatibilidad hacia atrás)
+      if(typeof item==='object'&&item){
+        // Compatibilidad hacia atrás — pero antes esto devolvía el objeto
+        // tal cual, y los setlists de SETLISTS (formato viejo, solo
+        // {name,key,bpm}) nunca traían artista/autor. Se enriquece contra
+        // CANCIONES si existe una coincidencia, sin pisar key/bpm propios
+        // del item (pueden venir ajustados para ese evento puntual).
+        const base=CANCIONES.find(c=>c.n===item.name);
+        return base?{...base,...item}:item;
+      }
       return {n:String(item),name:String(item),key:'',bpm:''};
     });
     setSongViewSongs(songs);setSongView(idx);
@@ -659,7 +667,7 @@ Voicings extendidos para teclado
               onNavigate={setView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
-            onLive={()=>{const sl=SETLISTS[activeSunday]||[];if(sl.length>0){setSongViewSongs(sl);setSongView(0);}}}
+            onLive={()=>{const sl=SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             onToast={showToast}
             onSelectDay={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);}}
             onOpenFecha={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);setView('misetlist');}}
