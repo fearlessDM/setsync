@@ -410,7 +410,7 @@ Voicings extendidos para teclado
   const dataTheme = theme==='dark' ? undefined : theme;
 
   const Footer=()=>(
-    <div style={{padding:'32px 24px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
+    <div style={{padding:'32px 24px 20px',borderTop:'1px solid var(--s1)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
       <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
       <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
         © {new Date().getFullYear()} SetSync · {tx.allRights}
@@ -450,7 +450,7 @@ Voicings extendidos para teclado
   if(firebaseListo && currentUser===undefined){
     return(
       <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,color:'var(--tx3)'}}>Set<span style={{color:'var(--gn)'}}>Sync</span></div>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx3)'}}>Set<span style={{color:'var(--gn)'}}>Sync</span></div>
       </div>
     );
   }
@@ -494,7 +494,7 @@ Voicings extendidos para teclado
           @keyframes textura-drift { 0%{transform:translate(0,0) rotate(0deg) scale(1.15);} 33%{transform:translate(-30px,20px) rotate(1.2deg) scale(1.08);} 66%{transform:translate(20px,-15px) rotate(-.6deg) scale(1.18);} 100%{transform:translate(0,0) rotate(0deg) scale(1.15);} }
           @keyframes textura-drift2 { 0%{transform:translate(0,0) rotate(0deg) scale(1.12);} 40%{transform:translate(25px,-18px) rotate(-1deg) scale(1.06);} 80%{transform:translate(-15px,22px) rotate(.8deg) scale(1.14);} 100%{transform:translate(0,0) rotate(0deg) scale(1.12);} }
           @keyframes textura-fade { 0%,100%{opacity:.06;} 50%{opacity:.18;} }
-          @keyframes wheel-glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 20px 2px rgba(255,255,255,.06);} }
+          @keyframes wheel-glow { 0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 20px 2px var(--s3);} }
           .wheel-item { transition: all .3s cubic-bezier(.4,0,.2,1); }
           .mode-card { transition: transform .2s, box-shadow .2s, border-color .2s; }
           .mode-card:hover { transform:translateY(-2px); }
@@ -552,7 +552,7 @@ Voicings extendidos para teclado
           {/* Selector de idioma tipo rueda */}
           <div style={{marginBottom:36,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
-            <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',animation:'wheel-glow 4s ease-in-out infinite'}}>
+            <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l,i)=>{
                 const isActive=lang===l.code;
                 return(
@@ -561,7 +561,7 @@ Voicings extendidos para teclado
                     style={{
                       padding:isActive?'8px 16px':'6px 10px',
                       borderRadius:40,border:'none',cursor:'pointer',
-                      background:isActive?'rgba(255,255,255,.15)':'transparent',
+                      background:isActive?'var(--bd2)':'transparent',
                       display:'flex',alignItems:'center',gap:isActive?6:0,
                       overflow:'hidden',
                     }}>
@@ -575,7 +575,7 @@ Voicings extendidos para teclado
 
           {/* Título */}
           <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:22,color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
               {tl.choose}
             </div>
             <div style={{fontSize:11,color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
@@ -590,12 +590,12 @@ Voicings extendidos para teclado
                 className="mode-card"
                 style={{
                   padding:'clamp(20px,3vw,36px) clamp(14px,2.5vw,28px) clamp(16px,2.5vw,28px)',borderRadius:18,
-                  border:'1px solid rgba(255,255,255,.1)',
-                  background:'rgba(255,255,255,.04)',
+                  border:'1px solid var(--bd)',
+                  background:'var(--s1)',
                   cursor:'pointer',textAlign:'left',
                   backdropFilter:'blur(20px)',
                 }}>
-                <div style={{fontSize:'clamp(7px,1.2vw,10px)',fontWeight:900,color:'rgba(255,255,255,.35)',letterSpacing:'2px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>
+                <div style={{fontSize:'clamp(7px,1.2vw,10px)',fontWeight:900,color:'var(--em)',letterSpacing:'2px',marginBottom:10,fontFamily:"'Lexend Giga',sans-serif"}}>
                   {item.data.tag}
                 </div>
                 <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'clamp(22px,4vw,32px)',color:'#fff',marginBottom:14,lineHeight:1}}>
@@ -604,7 +604,7 @@ Voicings extendidos para teclado
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   {item.data.lines.map((line,i)=>(
                     <div key={i} style={{display:'flex',alignItems:'flex-start',gap:6}}>
-                      <div style={{width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.3)',flexShrink:0,marginTop:5}}/>
+                      <div style={{width:4,height:4,borderRadius:'50%',background:'var(--em)',flexShrink:0,marginTop:5}}/>
                       <span style={{fontSize:'clamp(9px,1.3vw,12px)',color:'rgba(255,255,255,.5)',lineHeight:1.6,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>{line}</span>
                     </div>
                   ))}
@@ -617,7 +617,7 @@ Voicings extendidos para teclado
           </div>
 
           {/* Nota: se puede cambiar */}
-          <div style={{fontSize:9,color:'rgba(255,255,255,.25)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
+          <div style={{fontSize:9,color:'var(--div)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
             {tl.canChange}
           </div>
         </div>

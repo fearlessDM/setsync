@@ -100,7 +100,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Crear fecha <span style={{color:'var(--ac)'}}>o evento</span></div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Crear fecha <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Nombre del evento</div>
@@ -168,7 +168,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   <span style={{flex:1,minWidth:0,fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",
                     overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{i+1}. {s.cancion}</span>
                   <button onClick={()=>setEvSetlist(l=>l.filter((_,j)=>j!==i))}
-                    style={{width:18,height:18,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                    style={{width:18,height:18,borderRadius:'50%',border:'none',background:'var(--bd)',
                       color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                       alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                 </div>
@@ -194,7 +194,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                         )}
                         {asignaciones.length>1&&(
                           <button onClick={()=>quitarAsignacion(a.id)}
-                            style={{width:20,height:20,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.08)',
+                            style={{width:20,height:20,borderRadius:'50%',border:'none',background:'var(--s3)',
                               color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                               alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                         )}
@@ -202,7 +202,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                     ))}
                     <button onClick={agregarAsignacion}
                       style={{alignSelf:'flex-start',display:'flex',alignItems:'center',gap:5,padding:'4px 10px',
-                        borderRadius:100,border:'1px dashed rgba(255,255,255,.2)',background:'transparent',
+                        borderRadius:100,border:'1px dashed var(--div)',background:'transparent',
                         color:'var(--gn)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
                       <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Asignar otra variación
@@ -291,7 +291,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         ):(
           <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,
-            padding:'16px',borderRadius:10,border:'1px dashed rgba(255,255,255,.15)',
+            padding:'16px',borderRadius:10,border:'1px dashed var(--bd2)',
             cursor:'pointer',color:'var(--tx3)'}}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -365,7 +365,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
         <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
@@ -379,7 +379,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx3)',fontSize:10,marginLeft:6}}>· opcional, puedes hacerlo después</span>
           </div>
           {eventos.length===0?(
-            <div style={{padding:'12px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
+            <div style={{padding:'12px',borderRadius:10,background:'var(--s1)',border:'1px dashed var(--bd)',textAlign:'center'}}>
               <div style={{fontSize:12,color:'var(--tx3)',marginBottom:6}}>Aún no hay eventos creados</div>
               <button onClick={()=>setBsView('evento')} style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                 + Crear un evento primero →
@@ -439,19 +439,19 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                       {resumenVars.length>0&&<span style={{fontWeight:400,color:'var(--gn)',fontSize:10,marginLeft:6}}>· {resumenVars.join(', ')}</span>}
                     </span>
                     <button disabled={i===0} onClick={()=>moverCancion(i,i-1)}
-                      style={{width:18,height:18,border:'none',background:'rgba(255,255,255,.08)',
-                        color:i===0?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
+                      style={{width:18,height:18,border:'none',background:'var(--s3)',
+                        color:i===0?'var(--div)':'var(--tx2)',cursor:i===0?'not-allowed':'pointer',
                         borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="18 15 12 9 6 15"/></svg>
                     </button>
                     <button disabled={i===slCanciones.length-1} onClick={()=>moverCancion(i,i+1)}
-                      style={{width:18,height:18,border:'none',background:'rgba(255,255,255,.08)',
-                        color:i===slCanciones.length-1?'rgba(255,255,255,.2)':'var(--tx2)',cursor:i===slCanciones.length-1?'not-allowed':'pointer',
+                      style={{width:18,height:18,border:'none',background:'var(--s3)',
+                        color:i===slCanciones.length-1?'var(--div)':'var(--tx2)',cursor:i===slCanciones.length-1?'not-allowed':'pointer',
                         borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                       <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <button onClick={()=>setSlCanciones(prev=>prev.filter((_,j)=>j!==i))}
-                      style={{width:18,height:18,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.1)',
+                      style={{width:18,height:18,borderRadius:'50%',border:'none',background:'var(--bd)',
                         color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                         alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                   </div>
@@ -480,7 +480,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                           )}
                           {asignaciones.length>1&&(
                             <button onClick={()=>quitarAsignacion(a.id)}
-                              style={{width:20,height:20,borderRadius:'50%',border:'none',background:'rgba(255,255,255,.08)',
+                              style={{width:20,height:20,borderRadius:'50%',border:'none',background:'var(--s3)',
                                 color:'var(--tx3)',cursor:'pointer',fontSize:12,lineHeight:1,display:'flex',
                                 alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
                           )}
@@ -488,7 +488,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                       ))}
                       <button onClick={agregarAsignacion}
                         style={{alignSelf:'flex-start',display:'flex',alignItems:'center',gap:5,padding:'4px 10px',
-                          borderRadius:100,border:'1px dashed rgba(255,255,255,.2)',background:'transparent',
+                          borderRadius:100,border:'1px dashed var(--div)',background:'transparent',
                           color:'var(--gn)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
                         <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Asignar otra variación
@@ -519,7 +519,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               Setlists guardados ({slGuardados.length})
             </div>
             {slGuardados.map(sl=>(
-              <div key={sl.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
+              <div key={sl.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--s1)'}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:700,fontSize:13,color:'var(--tx)'}}>{sl.nombre}</div>
                   <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
@@ -556,7 +556,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:26,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
         </div>
         <div style={{fontSize:11,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
@@ -635,7 +635,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             border:'1px solid var(--bd)',overflow:'hidden'}}>
             {personas.map((m,i)=>(
               <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
-                borderBottom:i<personas.length-1?'1px solid rgba(255,255,255,.05)':'none',background:'var(--s1)'}}>
+                borderBottom:i<personas.length-1?'1px solid var(--s1)':'none',background:'var(--s1)'}}>
                 {m.foto
                   ?<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
                   :<div style={{width:26,height:26,borderRadius:'50%',background:`${colorForName(m.name)}22`,border:`1px solid ${colorForName(m.name)}55`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:colorForName(m.name),flexShrink:0,fontFamily:"'Lexend Giga',sans-serif"}}>{initials(m.name)}</div>
@@ -701,15 +701,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{borderRadius:14,background:'var(--s1)',border:`1px solid ${eq.color}40`,padding:14,marginBottom:14}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
                 <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`}}/>
-                <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,fontSize:14,color:'var(--tx)',flex:1}}>{eq.name}</span>
+                <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flex:1}}>{eq.name}</span>
                 <button onClick={e=>{e.stopPropagation();setActiveEq(null);}} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:18,lineHeight:1}}>×</button>
               </div>
               {/* Miembros del equipo */}
               {(eq.miembros||[]).map(m=>(
-                <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.04)'}}>
+                <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--s1)'}}>
                   {m.foto
                     ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
-                    :<div style={{width:28,height:28,borderRadius:'50%',background:'rgba(255,255,255,.08)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
+                    :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s3)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
                   }
                   <span style={{flex:1,fontSize:12,fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
                   <select value={m.role} onChange={e=>{
@@ -743,7 +743,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 </div>
               ))}
               {/* Editar roles del equipo */}
-              <div style={{marginTop:12,padding:'10px 0',borderTop:'1px solid rgba(255,255,255,.06)'}}>
+              <div style={{marginTop:12,padding:'10px 0',borderTop:'1px solid var(--s3)'}}>
                 <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
                   letterSpacing:'1.5px',marginBottom:6,fontFamily:"'Lexend Giga',sans-serif"}}>
                   Roles del equipo
@@ -758,7 +758,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                         const upd={...eq,roles:(eq.roles||[]).filter((_,j)=>j!==ri)};
                         setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
                       }} style={{width:14,height:14,borderRadius:'50%',border:'none',
-                        background:'rgba(255,255,255,.1)',color:'var(--tx3)',cursor:'pointer',
+                        background:'var(--bd)',color:'var(--tx3)',cursor:'pointer',
                         fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',
                         lineHeight:1}}>×</button>
                     </div>
@@ -833,7 +833,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
       </div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.6,marginBottom:20}}>
@@ -942,7 +942,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Notificaciones</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Notificaciones</div>
       <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.6,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
       <div className="card" style={{padding:16,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
@@ -994,7 +994,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Personalización</div>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Personalización</div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Logo, tema visual e idioma a tu estilo</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Mi organización</div>
@@ -1045,13 +1045,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 <div style={{display:'flex',gap:4}}>
                   {th.preview.map((c,i)=>(
                     <div key={i} style={{width:16,height:16,borderRadius:3,background:c,
-                                         border:'1px solid rgba(255,255,255,.25)',
+                                         border:'1px solid var(--div)',
                                          boxShadow:'0 1px 4px rgba(0,0,0,.4)'}}/>
                   ))}
                 </div>
                 {onGetTheme()===th.id&&(
                   <div style={{position:'absolute',top:6,right:6,width:20,height:20,borderRadius:'50%',
-                               background:'rgba(0,0,0,.6)',backdropFilter:'blur(4px)',
+                               background:'var(--ov-modal)',backdropFilter:'blur(4px)',
                                display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
@@ -1152,7 +1152,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Palabra del <span style={{color:'var(--ac)'}}>Pastor</span>
       </div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Versículo y notas para el domingo</div>
@@ -1281,7 +1281,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               </div>
               <button onClick={()=>onElegir(p)} disabled={activo===p.id}
                 style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:activo===p.id?'default':'pointer',
-                  background:activo===p.id?'rgba(255,255,255,.06)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
+                  background:activo===p.id?'var(--s3)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
                   fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
                 {activo===p.id?'Plan actual':'Elegir'}
               </button>
@@ -1296,7 +1296,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
         </div>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Planes <span style={{color:'var(--ac)'}}>y precios</span>
         </div>
         <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:22}}>
@@ -1337,7 +1337,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
       </div>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>
       </div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Agenda un ensayo y convoca a los equipos que necesitas</div>
@@ -1407,7 +1407,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <button onClick={()=>setEnsArchivo(null)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:16}}>×</button>
           </div>
         ):(
-          <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed rgba(255,255,255,.2)',background:'rgba(255,255,255,.03)',cursor:'pointer'}}>
+          <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,border:'1px dashed var(--div)',background:'var(--s1)',cursor:'pointer'}}>
             <input type="file" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)setEnsArchivo(f.name);}}/>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div>
@@ -1459,7 +1459,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',lineHeight:1.05}}>Backstage</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>Backstage</div>
           <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
         </div>
         <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:4}}>Panel de control del equipo</div>
@@ -1480,8 +1480,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               background:'linear-gradient(115deg,transparent 32%,var(--s1) 86%)',
               pointerEvents:'none'}}/>
             <div style={{position:'relative'}}>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:15,marginBottom:5}}>{it.label}</div>
-              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:10,color:'var(--tx3)',lineHeight:1.5}}>{it.sub}</div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:16,marginBottom:5}}>{it.label}</div>
+              <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.5}}>{it.sub}</div>
             </div>
           </button>
         ))}
@@ -1549,7 +1549,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             </div>
             <button onClick={()=>setOnline(o=>!o)}
               style={{width:40,height:22,borderRadius:11,border:'none',cursor:'pointer',flexShrink:0,
-                background:online?'var(--gn)':'rgba(255,255,255,.1)',position:'relative',transition:'background .2s'}}>
+                background:online?'var(--gn)':'var(--bd)',position:'relative',transition:'background .2s'}}>
               <div style={{position:'absolute',top:2,left:online?20:2,width:18,height:18,borderRadius:9,
                 background:'#fff',transition:'left .2s',boxShadow:'0 1px 4px rgba(0,0,0,.3)'}}/>
             </button>
