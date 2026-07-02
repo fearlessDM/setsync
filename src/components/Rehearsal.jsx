@@ -58,7 +58,7 @@ export function Rehearsal({songs,onClose,onToast}){
       <div className="sv-hdr">
         <div className="sv-back" onClick={onClose}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:17,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:10,color:'var(--ac)',fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>{curKey} · {song.bpm} BPM{tpOff!==0?` · ${tpOff>0?'+':''}${tpOff}st`:''}</div>
         </div>
         <div style={{display:'flex',gap:3,alignItems:'center',flexShrink:0}}>
@@ -71,9 +71,9 @@ export function Rehearsal({songs,onClose,onToast}){
         <button onClick={onClose} style={{width:28,height:28,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>×</button>
       </div>
       <div style={{display:'flex',gap:5,padding:'6px 10px',overflowX:'auto',scrollbarWidth:'none',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
-        <button onClick={()=>setSelMember('todos')} style={{flexShrink:0,padding:'4px 11px',borderRadius:100,border:selMember==='todos'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:selMember==='todos'?'rgba(200,169,126,.1)':'transparent',color:selMember==='todos'?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Todos</button>
+        <button onClick={()=>setSelMember('todos')} style={{flexShrink:0,padding:'4px 11px',borderRadius:100,border:selMember==='todos'?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:selMember==='todos'?'rgba(200,169,126,.1)':'transparent',color:selMember==='todos'?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Todos</button>
         {miembros.map(m=>(
-          <button key={m.id} onClick={()=>setSelMember(m.id)} style={{flexShrink:0,padding:'4px 11px',borderRadius:100,border:selMember===m.id?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:selMember===m.id?'rgba(200,169,126,.1)':'transparent',color:selMember===m.id?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+          <button key={m.id} onClick={()=>setSelMember(m.id)} style={{flexShrink:0,padding:'4px 11px',borderRadius:100,border:selMember===m.id?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:selMember===m.id?'rgba(200,169,126,.1)':'transparent',color:selMember===m.id?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
             {m.name.split(' ')[0]}
           </button>
         ))}
@@ -81,17 +81,17 @@ export function Rehearsal({songs,onClose,onToast}){
       </div>
       <div style={{borderBottom:'1px solid var(--bd)',background:'rgba(5,5,14,.92)',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px'}}>
-          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',borderRadius:7,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>
+          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 10px',borderRadius:7,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'var(--s1)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Anotar
             <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" style={{transform:showAnnoBar?'rotate(180deg)':'none',transition:'transform .2s'}}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div style={{flex:1}}/>
-          <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:7,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'rgba(255,255,255,.04)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
+          <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:7,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'var(--s1)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             {showChords?'Solo letra':'Con acordes'}
           </button>
-          <button onClick={()=>onToast({text:'Anotaciones guardadas',sub:selMember==='todos'?'Todos':miembros.find(m=>m.id===selMember)?.name})} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:7,border:'1px solid rgba(94,206,160,.28)',background:'rgba(94,206,160,.07)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
+          <button onClick={()=>onToast({text:'Anotaciones guardadas',sub:selMember==='todos'?'Todos':miembros.find(m=>m.id===selMember)?.name})} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:7,border:'1px solid rgba(94,206,160,.28)',background:'rgba(94,206,160,.07)',color:'var(--gn)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             Guardar
           </button>
@@ -99,7 +99,7 @@ export function Rehearsal({songs,onClose,onToast}){
         {showAnnoBar&&(
           <div style={{display:'flex',alignItems:'center',gap:3,padding:'0 10px 5px',overflowX:'auto',scrollbarWidth:'none'}}>
             {[['draw','Lápiz'],['erase','Borrar']].map(([t,l])=>(
-              <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'rgba(255,255,255,.09)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>{l}</button>
+              <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'var(--s3)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{l}</button>
             ))}
             <div style={{width:1,height:16,background:'var(--bd)',margin:'0 3px'}}/>
             {COLS.map(c=>(<button key={c} onClick={()=>setColor(c)} style={{width:18,height:18,borderRadius:'50%',background:c,border:color===c?'2px solid #fff':'2px solid transparent',cursor:'pointer',flexShrink:0}}/>))}
@@ -122,7 +122,7 @@ export function Rehearsal({songs,onClose,onToast}){
             <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',letterSpacing:'.5px'}}>#</span>
           </button>
           <div style={{width:'100%',padding:'8px 0',textAlign:'center',borderBottom:'1px solid var(--bd)'}}>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:20,color:'var(--ac)',lineHeight:1}}>{curKey}</div>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:20,color:'var(--ac)',lineHeight:1}}>{curKey}</div>
             {tpOff!==0&&<div style={{fontSize:8,color:'var(--tx3)',fontWeight:700,marginTop:2}}>{tpOff>0?'+':''}{tpOff}</div>}
           </div>
           <button onClick={()=>doTp(-1)} style={{width:'100%',padding:'8px 0',border:'none',background:'transparent',color:'var(--tx2)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderBottom:'1px solid var(--bd)'}}>
@@ -132,7 +132,7 @@ export function Rehearsal({songs,onClose,onToast}){
           <div style={{borderTop:'1px solid var(--bd)',width:'100%',display:'flex',flexDirection:'column',alignItems:'center',paddingTop:4}}>
             <span style={{fontSize:7,fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',color:'var(--tx3)',marginBottom:3}}>CAPO</span>
             {[0,1,2,3,4,5,6].map(c=>(
-              <button key={c} onClick={()=>setCapoR(c)} style={{width:38,height:22,border:'none',background:capoR===c?'rgba(200,169,126,.2)':'transparent',color:capoR===c?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:capoR===c?900:400,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",borderRadius:5,transition:'all .1s'}}>
+              <button key={c} onClick={()=>setCapoR(c)} style={{width:38,height:22,border:'none',background:capoR===c?'rgba(200,169,126,.2)':'transparent',color:capoR===c?'var(--ac)':'var(--tx3)',fontSize:10,fontWeight:capoR===c?900:400,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",borderRadius:5,transition:'all .1s'}}>
                 {c===0?'—':c}
               </button>
             ))}
@@ -144,7 +144,7 @@ export function Rehearsal({songs,onClose,onToast}){
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Anterior
         </button>
         <div className="sv-ni">
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:13,color:'var(--tx)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:9,color:'var(--tx3)',marginTop:1,fontWeight:700}}>Canción {idx+1} de {songs.length}</div>
         </div>
         <button className="nb p" onClick={()=>{if(idx===songs.length-1){onClose();onToast({text:'Finalizado',sub:songs.length+' canciones'});}else nav(1);}}>

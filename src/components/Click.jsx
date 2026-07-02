@@ -3,11 +3,13 @@
 // (patrón estándar de Web Audio API para timing preciso, no depende de
 // setInterval directo que deriva con el tiempo). Sin librerías externas.
 import { useState, useRef, useEffect } from 'react';
+import { t as getT } from '../i18n';
 
 const LOOKAHEAD_MS = 25;      // cada cuánto el scheduler revisa qué programar
 const SCHEDULE_AHEAD_S = 0.1; // cuánto tiempo adelante programa eventos de audio
 
 export function Click({songBpm, lang='es'}){
+  const tx=getT(lang);
   const [playing,setPlaying] = useState(false);
   const [bpm,setBpm] = useState(songBpm||90);
   const [volume,setVolume] = useState(0.5);
@@ -103,7 +105,7 @@ export function Click({songBpm, lang='es'}){
             style={{flex:1,accentColor:'var(--ac)'}}/>
           <input type="range" min="0" max="1" step="0.01" value={volume}
             onChange={e=>setVolume(Number(e.target.value))}
-            style={{flex:1,accentColor:'var(--tx3)'}} title={lang==='en'?'Volume':'Volumen'}/>
+            style={{flex:1,accentColor:'var(--tx3)'}} title={tx.volume}/>
         </div>
       </div>
     </div>

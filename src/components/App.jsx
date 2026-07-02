@@ -423,9 +423,9 @@ Voicings extendidos para teclado
 
   // ── Navegación — misma para ambos modos, etiquetas vía vx ────────────
   const BNS=[
-    {id:'inicio',     label:lang==='en'?'Home':'Inicio'},
-    {id:'fechas',     label:lang==='en'?'Dates':'Fechas'},
-    {id:'misetlist',  label:lang==='en'?'Next date':'Próx. Fecha'},
+    {id:'inicio',     label:tx.home},
+    {id:'fechas',     label:tx.fechas},
+    {id:'misetlist',  label:tx.nextDate},
     {id:'repertorio', label:vx.repertorioTab},
     {id:'backstage',  label:'Backstage'},
   ];
@@ -455,7 +455,7 @@ Voicings extendidos para teclado
     );
   }
   if(firebaseListo && currentUser===null){
-    return <Login/>;
+    return <Login lang={lang}/>;
   }
 
   // ── Pantalla de bienvenida: idioma + modo ─────────────────────────────────
@@ -722,7 +722,7 @@ Voicings extendidos para teclado
                 <button onClick={()=>setMostrarMultitracks(v=>!v)}
                   style={{padding:'7px 10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
                     color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-                  {mostrarMultitracks?(lang==='en'?'Hide tracks':'Ocultar pistas'):(lang==='en'?'Show tracks':'Ver pistas')}
+                  {mostrarMultitracks?tx.hideTracks:tx.showTracks}
                 </button>
               )}
             </div>

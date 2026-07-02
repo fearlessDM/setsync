@@ -58,9 +58,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [notacionOpen,setNotacionOpen]=useState(false);
   const [notacionPos,setNotacionPos]=useState(null);
   const notacionBtnRef=useRef(null);
-  const NOTACION_LABELS=lang==='en'
-    ?{americano:'American',latino:'Latin',grados:'Degrees'}
-    :{americano:'Americano',latino:'Latino',grados:'Grados'};
+  const NOTACION_LABELS={americano:tx.notationAmerican,latino:tx.notationLatin,grados:tx.degrees};
   const [toast,setToast]=useState(null);
   const [showMonitor,setShowMonitor]=useState(false);
   const [monitorBus,setMonitorBus]=useState(1);

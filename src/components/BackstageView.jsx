@@ -264,7 +264,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Itinerario</div>
-        <ItinerarioEditor items={evItinerario} onChange={setEvItinerario}/>
+        <ItinerarioEditor items={evItinerario} onChange={setEvItinerario} lang={lang}/>
       </div>
       <div className="card" style={{padding:14,marginBottom:18}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Notas del evento</div>

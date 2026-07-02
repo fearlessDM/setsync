@@ -4,6 +4,7 @@
 // editaba acá se guardaba nunca en el evento. Se perdía al salir de la
 // pantalla.
 import { useState } from 'react';
+import { t as getT } from '../i18n';
 
 // ─── ITINERARIO EDITOR ────────────────────────────────
 export const ITINERARIO_DEFAULT=[
@@ -15,7 +16,8 @@ export const ITINERARIO_DEFAULT=[
   {hora:'10:30',label:'Mensaje'},
   {hora:'11:00',label:'Cierre y oración'},
 ];
-export function ItinerarioEditor({items,onChange}){
+export function ItinerarioEditor({items,onChange,lang='es'}){
+  const tx=getT(lang);
   const [edit,setEdit]=useState(false);
   const update=(i,field,val)=>onChange(items.map((it,j)=>j===i?{...it,[field]:val}:it));
   const addItem=()=>onChange([...items,{hora:'',label:''}]);
@@ -24,9 +26,9 @@ export function ItinerarioEditor({items,onChange}){
   return(
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Horarios del evento</span>
+        <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.eventSchedule}</span>
         <button onClick={()=>setEdit(v=>!v)} style={{fontSize:11,fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-          {edit?'Listo':'Editar'}
+          {edit?tx.done:tx.edit}
         </button>
       </div>
       {items.map((it,i)=>(
@@ -45,7 +47,7 @@ export function ItinerarioEditor({items,onChange}){
       {edit&&(
         <button onClick={addItem} style={{marginTop:8,fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Agregar ítem
+          {tx.addItem}
         </button>
       )}
     </div>

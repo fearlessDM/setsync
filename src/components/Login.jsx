@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { registrarse, iniciarSesion, iniciarSesionConGoogle } from '../firebase/auth';
+import { t as getT } from '../i18n';
 
 // Login.jsx — Primera pantalla real de autenticación de SetSync. Antes la
 // app nunca pedía iniciar sesión (generaba un accountId silencioso por
 // dispositivo) — ahora que Auth está conectado de verdad, esto reemplaza
 // esa identidad fantasma por una cuenta real.
-export function Login({onToast}){
+export function Login({onToast, lang='es'}){
+  const tx=getT(lang);
   const [modo,setModo]=useState('entrar'); // 'entrar' | 'crear'
   const [nombre,setNombre]=useState('');
   const [email,setEmail]=useState('');
@@ -16,7 +18,7 @@ export function Login({onToast}){
   const submit=async(e)=>{
     e.preventDefault();
     setError(null);
-    if(!email.trim()||!password){ setError('Completa correo y contraseña.'); return; }
+    if(!email.trim()||!password){ setError(tx.errorFillFields); return; }
     setCargando(true);
     try{
       if(modo==='crear') await registrarse(nombre,email,password);
@@ -47,7 +49,7 @@ export function Login({onToast}){
             Set<span style={{color:'var(--gn)'}}>Sync</span>
           </div>
           <div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
-            {modo==='entrar'?'Inicia sesión para continuar':'Crea tu cuenta'}
+            {modo==='entrar'?tx.signInToContinue:tx.createYourAccount}
           </div>
         </div>
 
@@ -57,27 +59,27 @@ export function Login({onToast}){
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
               background:modo==='entrar'?'var(--bd)':'transparent',
               color:modo==='entrar'?'var(--tx)':'var(--tx3)'}}>
-            Iniciar sesión
+            {tx.signIn}
           </button>
           <button onClick={()=>{setModo('crear');setError(null);}}
             style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
               background:modo==='crear'?'var(--bd)':'transparent',
               color:modo==='crear'?'var(--tx)':'var(--tx3)'}}>
-            Crear cuenta
+            {tx.createAccount}
           </button>
         </div>
 
         <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:10}}>
           {modo==='crear'&&(
-            <input placeholder="Tu nombre" value={nombre} onChange={e=>setNombre(e.target.value)}
+            <input placeholder={tx.yourName} value={nombre} onChange={e=>setNombre(e.target.value)}
               style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
                 background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
           )}
-          <input type="email" placeholder="Correo electrónico" value={email} onChange={e=>setEmail(e.target.value)}
+          <input type="email" placeholder={tx.emailPlaceholder} value={email} onChange={e=>setEmail(e.target.value)}
             style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
               background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
-          <input type="password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}
+          <input type="password" placeholder={tx.passwordPlaceholder} value={password} onChange={e=>setPassword(e.target.value)}
             style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
               background:'var(--s1)',color:'var(--tx)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}/>
 
@@ -92,13 +94,13 @@ export function Login({onToast}){
             style={{padding:'13px 0',borderRadius:10,border:'none',cursor:cargando?'not-allowed':'pointer',
               background:'var(--ac)',color:'#000',fontSize:11,fontWeight:700,
               fontFamily:"'Lexend Giga',sans-serif",opacity:cargando?.6:1,marginTop:4}}>
-            {cargando?'Un momento…':modo==='entrar'?'Iniciar sesión':'Crear cuenta'}
+            {cargando?tx.oneMoment:modo==='entrar'?tx.signIn:tx.createAccount}
           </button>
         </form>
 
         <div style={{display:'flex',alignItems:'center',gap:10,margin:'18px 0'}}>
           <div style={{flex:1,height:1,background:'var(--s3)'}}/>
-          <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>O</span>
+          <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700}}>{tx.or}</span>
           <div style={{flex:1,height:1,background:'var(--s3)'}}/>
         </div>
 
@@ -113,13 +115,13 @@ export function Login({onToast}){
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Continuar con Google
+          {tx.continueWithGoogle}
         </button>
 
         <div style={{textAlign:'center',marginTop:24,fontSize:8,fontWeight:700,color:'var(--tx3)',
           fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.6}}>
-          Al continuar, aceptas que SetSync organice tu repertorio y equipo.<br/>
-          Tu contenido con derechos de autor sigue siendo tu responsabilidad.
+          {tx.loginDisclaimer1}<br/>
+          {tx.loginDisclaimer2}
         </div>
       </div>
     </div>

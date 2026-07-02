@@ -1,5 +1,6 @@
 // Reproductor y visor de partituras MusicXML (con Tone.js para MIDI)
 import { useState, useEffect } from 'react';
+import { t as getT } from '../i18n';
 
 export function playMusicXML(url, onEnd){
   // Cargar Tone.js dinámicamente si no está cargado
@@ -62,7 +63,8 @@ export function _playMusicXML(url, onEnd){
     .catch(err=>{ console.error('Error cargando partitura:', err); onEnd(); });
 }
 
-export function MusicXMLViewer({url}){
+export function MusicXMLViewer({url,lang='es'}){
+  const tx=getT(lang);
   const [content,setContent]=useState(null);
   const [error,setError]=useState(null);
   useEffect(()=>{
@@ -71,7 +73,7 @@ export function MusicXMLViewer({url}){
       .then(xml=>{
         const parser=new DOMParser();
         const doc=parser.parseFromString(xml,'text/xml');
-        const title=doc.querySelector('work-title,movement-title')?.textContent||'Partitura';
+        const title=doc.querySelector('work-title,movement-title')?.textContent||tx.sheetMusic;
         const composer=doc.querySelector('creator[type="composer"]')?.textContent||'';
         const measures=Array.from(doc.querySelectorAll('measure'));
         const parsed=measures.map(m=>{
@@ -89,14 +91,14 @@ export function MusicXMLViewer({url}){
         });
         setContent({title,composer,measures:parsed});
       })
-      .catch(()=>setError('No se pudo leer el archivo MusicXML.'));
+      .catch(()=>setError(tx.couldNotReadMusicXML));
   },[url]);
 
   if(error)return(
     <div style={{color:'var(--rd)',fontSize:13,textAlign:'center',padding:20}}>{error}</div>
   );
   if(!content)return(
-    <div style={{color:'var(--tx3)',fontSize:13,textAlign:'center',padding:20}}>Cargando partitura...</div>
+    <div style={{color:'var(--tx3)',fontSize:13,textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
   );
   return(
     <div style={{width:'100%',maxWidth:700,fontFamily:"'Lexend Giga',sans-serif"}}>

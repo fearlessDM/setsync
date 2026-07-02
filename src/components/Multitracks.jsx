@@ -15,8 +15,10 @@
 // el componente acepta `tracks` como prop (array de {id,name,url}) en
 // vez de tener una fuente de datos propia: hoy no hay de dónde cargarlos.
 import { useState, useRef, useEffect } from 'react';
+import { t as getT } from '../i18n';
 
 export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
+  const tx=getT(lang);
   const [playing,setPlaying] = useState(false);
   const [progress,setProgress] = useState(0); // 0–1
   const [duration,setDuration] = useState(0);
@@ -47,7 +49,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
           buffersRef.current[t.id]=buf;
           setDuration(d=>Math.max(d,buf.duration));
         }catch(err){
-          onToast(lang==='en'?`Could not load "${t.name}"`:`No se pudo cargar "${t.name}"`);
+          onToast(tx.couldNotLoadTrack(t.name));
         }
       }
     })();
@@ -79,7 +81,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
   const playAll = () => {
     const ctx = ctxRef.current;
     if(!ctx || Object.keys(buffersRef.current).length===0){
-      onToast(lang==='en'?'Tracks still loading...':'Las pistas todavía están cargando...');
+      onToast(tx.tracksLoading);
       return;
     }
     if(ctx.state==='suspended') ctx.resume();
@@ -129,9 +131,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
     return(
       <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',
         color:'var(--tx2)',fontSize:11,fontWeight:300,fontFamily:"'Lexend Giga',sans-serif"}}>
-        {lang==='en'
-          ?'No tracks loaded yet for this song. Track upload (Firebase Storage) is coming in a future phase.'
-          :'Todavía no hay pistas cargadas para esta canción. La carga de pistas (Firebase Storage) llega en una fase futura.'}
+        {tx.noTracksYet}
       </div>
     );
   }

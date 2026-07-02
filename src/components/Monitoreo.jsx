@@ -10,6 +10,7 @@
 // 16 canales en 2 capas de 8 (mismo límite técnico de los X32/M32: layer
 // A = canales 1-8, layer B = canales 9-16).
 import { useState } from 'react';
+import { t as getT } from '../i18n';
 
 const NOMBRES_DEFAULT = [
   'Voz Líder','Coro 1','Coro 2','Guitarra Ac.','Guitarra El.','Bajo','Batería','Teclado',
@@ -17,6 +18,7 @@ const NOMBRES_DEFAULT = [
 ];
 
 export function Monitoreo({lang='es', onToast=()=>{}}){
+  const tx=getT(lang);
   const [layer,setLayer] = useState('A'); // 'A' = canales 1-8, 'B' = canales 9-16
   const [canales,setCanales] = useState(()=>
     NOMBRES_DEFAULT.map((nombre,i)=>({id:i+1,nombre,nivel:i===15?0.85:0.6,muted:false}))
@@ -52,27 +54,23 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
             Monitoreo
           </div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.5,marginTop:5}}>
-            {lang==='en'?'Personal mix — 16 channels, 2 layers of 8':'Mezcla personal — 16 canales, 2 capas de 8'}
+            {tx.monitoringSubtitle}
           </div>
         </div>
       </div>
 
       <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(253,128,131,.06)',border:'1px solid rgba(253,128,131,.25)',marginBottom:16}}>
         <div style={{fontSize:11,color:'var(--rd)',fontWeight:700,marginBottom:2,fontFamily:"'Lexend Giga',sans-serif"}}>
-          ⚠ {lang==='en'?'Not connected':'Sin conexión'}
+          ⚠ {tx.notConnected}
         </div>
         <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',lineHeight:1.6,fontFamily:"'Lexend Giga',sans-serif"}}>
-          {lang==='en'
-            ?'This UI is ready, but real-time OSC connection to the console needs a network bridge that doesn\'t exist yet. Moving faders here doesn\'t change anything on the physical mixer.'
-            :'Esta UI está lista, pero la conexión OSC real con la mesa necesita un puente de red que todavía no existe. Mover estos faders no cambia nada en la mesa física.'}
+          {tx.notConnectedDesc}
         </div>
       </div>
 
       <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',marginTop:8}}>
         <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
-          {lang==='en'
-            ?'Monitor mixing will be available once the OSC bridge is connected.'
-            :'La mezcla de monitoreo estará disponible una vez conectado el puente OSC.'}
+          {tx.monitoringComingSoon}
         </div>
       </div>
     </div>
