@@ -7,15 +7,7 @@ import { useState } from 'react';
 import { t as getT } from '../i18n';
 
 // ─── ITINERARIO EDITOR ────────────────────────────────
-export const ITINERARIO_DEFAULT=[
-  {hora:'08:30',label:'Llegada y preparación'},
-  {hora:'09:00',label:'Prueba de sonido'},
-  {hora:'09:30',label:'Ensayo con el equipo'},
-  {hora:'10:00',label:'Inicio del servicio'},
-  {hora:'10:05',label:'Adoración'},
-  {hora:'10:30',label:'Mensaje'},
-  {hora:'11:00',label:'Cierre y oración'},
-];
+export const getItinerarioDefault=(lang='es')=>getT(lang).defaultItinerary;
 export function ItinerarioEditor({items,onChange,lang='es'}){
   const tx=getT(lang);
   const [edit,setEdit]=useState(false);

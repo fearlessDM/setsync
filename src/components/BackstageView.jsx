@@ -10,7 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // equipos ya no se importa directo — llega por props (equipos/setEquipos)
 // para poder sincronizar con Firestore.
 import { initials } from '../utils/music';
-import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
+import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
 export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,cuentaEquipo={activa:false,tramoId:null},setCuentaEquipo=()=>{},tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
@@ -40,7 +40,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [evArchivo,setEvArchivo]=useState(null);
   const [evSearch,setEvSearch]=useState('');
   const [evEquipos,setEvEquipos]=useState(null); // null=todavía no inicializado; se llena con todos los equipos al entrar
-  const [evItinerario,setEvItinerario]=useState(ITINERARIO_DEFAULT);
+  const [evItinerario,setEvItinerario]=useState(getItinerarioDefault(lang));
   const [evNuevoEquipo,setEvNuevoEquipo]=useState('');
   // Por defecto, todos los equipos están convocados — el admin puede
   // destildar los que no correspondan. Se inicializa una sola vez (o
@@ -319,7 +319,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             persistirEvento(nuevoEv);
             onToast({text:tx.eventCreatedToast,sub:`${label} · ${evSetlist.length} canciones`});
             setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');setEvArchivo(null);
-            setEvLugar('');setEvHora('');setEvEquipos(equipos.map(e=>e.id));setEvItinerario(ITINERARIO_DEFAULT);
+            setEvLugar('');setEvHora('');setEvEquipos(equipos.map(e=>e.id));setEvItinerario(getItinerarioDefault(lang));
             setBsView(null);
           }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>

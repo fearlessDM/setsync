@@ -4,13 +4,14 @@ import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 
 const MESES_CORTO =['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const MESES_LARGO =['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_LARGO =tx.monthsFull;
 const DIAS_SEMANA =['D','L','M','M','J','V','S']; // 0=Dom,...,6=Sáb (getDay order)
 // Para cabecera de columnas en grilla lun-dom:
 const HDR = ['L','M','M','J','V','S','D'];
 
 // ── Mini calendario ────────────────────────────────────────────────────────
-export function MiniCalEvento({mes, eventos=[], onSelectDay=()=>{}, selectedDay=null}){
+export function MiniCalEvento({mes, eventos=[], onSelectDay=()=>{}, selectedDay=null, lang='es'}){
+  const tx = getT(lang);
   const now   = new Date();
   const year  = now.getFullYear();
   const month = mes !== undefined ? mes : now.getMonth();
@@ -188,7 +189,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
           {!isPast && tieneEnsayo && (
             <div style={{display:'flex',alignItems:'center',gap:4,marginTop:4}}>
               <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>Ensayo asignado</span>
+              <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.rehearsalAssigned}</span>
             </div>
           )}
         </div>
@@ -320,10 +321,10 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{MESES_LARGO[mesNav]}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'var(--tx2)',lineHeight:1.5}}>
-            {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : 'Navega por los meses y revisa los próximos eventos agendados'}
+            {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : tx.navMonthsHint}
           </div>
         </div>
-        <MiniCalEvento mes={mesNav} eventos={eventos}
+        <MiniCalEvento mes={mesNav} eventos={eventos} lang={lang}
           onSelectDay={d=>{setSelDay(d);if(onSelectDay)onSelectDay(d);}} selectedDay={selDay}/>
       </div>
 
@@ -357,7 +358,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                     margin:'4px 0 var(--sp-xs)'}}>
                     <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(200,169,126,.4))'}}/>
                     <span style={{fontSize:9,fontWeight:900,color:'var(--ac)',
-                      textTransform:'uppercase',letterSpacing:'1.5px',flexShrink:0}}>Fecha actual</span>
+                      textTransform:'uppercase',letterSpacing:'1.5px',flexShrink:0}}>{tx.currentDateLbl}</span>
                     <div style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
                   </div>
                 )}
@@ -390,7 +391,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
           <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
             marginBottom:'var(--gap)',paddingTop:setlistsDelMes.length>0?'var(--sp-xs)':0}}>
             {setlistsDelMes.length>0&&<><div style={{flex:1,height:1,background:'var(--s3)'}}/>
-            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Eventos creados</span>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.eventsCreatedLbl}</span>
             <div style={{flex:1,height:1,background:'var(--s3)'}}/></>}
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
@@ -424,7 +425,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
               marginBottom:'var(--gap)'}}>
               <div style={{flex:1,height:1,background:'var(--s3)'}}/>
-              <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Eventos especiales</span>
+              <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.specialEventsLbl}</span>
               <div style={{flex:1,height:1,background:'var(--s3)'}}/>
             </div>
           )}
@@ -457,7 +458,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             <div style={{fontSize:36,marginBottom:'var(--sp-sm)'}}>📭</div>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
               fontSize:17,color:'var(--tx)',marginBottom:8}}>
-              {tx.noEvents||'Sin eventos este mes'}
+              {tx.noEvents||tx.noEventsThisMonth}
             </div>
             <div style={{fontSize:12,color:'var(--ac)',fontWeight:600}}>
               {tx.noEventsSub||'Crea un evento desde Backstage'}
@@ -471,13 +472,13 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
         <div className="mov" onClick={e=>e.target===e.currentTarget&&setShowPicker(false)}>
           <div className="modal">
             <div className="m-hdr">
-              <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:19,color:'var(--tx)'}}>Agregar canción</span>
+              <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:19,color:'var(--tx)'}}>{tx.addSong}</span>
               <button className="ib" onClick={()=>setShowPicker(false)}>
                 <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
             <input className="inp" style={{margin:'9px 13px',width:'calc(100% - 26px)'}}
-              placeholder="Buscar..." value={pFilter} onChange={e=>setPFilter(e.target.value)}/>
+              placeholder={tx.searchPlaceholder} value={pFilter} onChange={e=>setPFilter(e.target.value)}/>
             <div className="m-body">
               {CANCIONES.filter(s=>s.n.toLowerCase().includes(pFilter.toLowerCase())).map((s,i)=>(
                 <div key={s.n} className={`so${sel.has(s.n)?' on':''}`}
@@ -490,8 +491,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
               ))}
             </div>
             <div className="m-ftr">
-              <button className="btn btn-g btn-sm" onClick={()=>setShowPicker(false)}>Cancelar</button>
-              <button className="btn btn-p btn-sm" onClick={()=>{setShowPicker(false);onToast({text:'Actualizado',sub:`${sel.size} canciones`});}}>Agregar</button>
+              <button className="btn btn-g btn-sm" onClick={()=>setShowPicker(false)}>{tx.cancel}</button>
+              <button className="btn btn-p btn-sm" onClick={()=>{setShowPicker(false);onToast({text:tx.updatedLbl,sub:`${sel.size} canciones`});}}>{tx.addBtn}</button>
             </div>
           </div>
         </div>
@@ -516,7 +517,8 @@ export const generarMensaje=(fecha,sl,diasAntes)=>{
   return `Hola equipo hermoso! 🎸\n\nLes recuerdo que ${cuando} tenemos ${fecha?.nombre||'servicio'}.\n\n📋 SETLIST:\n${canciones}\n${horaLinea}\nPor favor repasa las canciones con ${diasAntes} día${diasAntes>1?'s':''} de anticipación. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
 };
 
-export function MiSetlistNotif({onToast,fecha,sl}){
+export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
+  const tx = getT(lang);
   const activeSunday=fecha; // alias interno, evita renombrar todo el resto del componente
   const [avisoActivo,setAvisoActivo]=useState(1);
   const [dias1,setDias1]=useState(3);
@@ -536,13 +538,13 @@ export function MiSetlistNotif({onToast,fecha,sl}){
   if(!open)return(
     <div style={{marginBottom:'var(--sp-md)'}}>
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
-        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>Recordatorio al equipo</div>
+        <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{tx.teamReminderLbl}</div>
         <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
           <div style={{width:38,height:38,borderRadius:'var(--rad-sm)',background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div style={{flex:1,textAlign:'left'}}>
-            <div style={{fontWeight:900,fontSize:14,color:'var(--ac)'}}>Enviar recordatorio</div>
+            <div style={{fontWeight:900,fontSize:14,color:'var(--ac)'}}>{tx.sendReminderBtn}</div>
             <div style={{fontSize:11,color:'var(--tx2)',marginTop:2}}>Aviso 1 y 2 · Info del evento + ánimo al equipo</div>
           </div>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -554,7 +556,7 @@ export function MiSetlistNotif({onToast,fecha,sl}){
     <div style={{marginBottom:'var(--sp-md)',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.05)'}}>
       <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span style={{fontWeight:900,fontSize:13,color:'var(--tx)'}}>Mensaje al equipo</span>
+        <span style={{fontWeight:900,fontSize:13,color:'var(--tx)'}}>{tx.teamMessageLbl}</span>
         <button onClick={()=>setOpen(false)} style={{marginLeft:'auto',background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:16,lineHeight:1}}>×</button>
       </div>
       <div style={{display:'flex',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
@@ -563,16 +565,16 @@ export function MiSetlistNotif({onToast,fecha,sl}){
         ))}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
-        <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>Anticipación:</span>
+        <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{tx.leadTimeLbl}</span>
         <select value={diasAntes} onChange={e=>{const v=Number(e.target.value);if(avisoActivo===1)setDias1(v);else setDias2(v);}}
           className="inp" style={{width:'auto',padding:'4px 8px',fontSize:12}}>
           {[1,2,3,4,5,6,7].map(d=>(<option key={d} value={d}>{d} día{d>1?'s':''} antes</option>))}
         </select>
       </div>
       {!custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
-        <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>Vista previa</div>
+        <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{tx.previewLbl}</div>
         <div style={{padding:'10px var(--sp-sm)',borderRadius:'var(--rad-sm)',background:'var(--s1)',border:'1px solid var(--bd)',fontSize:11,color:'var(--tx)',lineHeight:1.7,whiteSpace:'pre-wrap',maxHeight:160,overflowY:'auto'}}>{msg}</div>
-        <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Editar mensaje</button>
+        <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:11,color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.editMessageLbl}</button>
       </div>)}
       {custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
@@ -583,8 +585,8 @@ export function MiSetlistNotif({onToast,fecha,sl}){
         Se envía por correo y notificación dentro de la app.
       </div>
       <div style={{display:'flex',gap:'var(--sp-xs)'}}>
-        <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>Cancelar</button>
-        <button onClick={()=>{onToast({text:'Mensaje enviado',sub:`Aviso ${avisoActivo} · correo y notificación`});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
+        <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>{tx.cancel}</button>
+        <button onClick={()=>{onToast({text:tx.messageSentToast,sub:`Aviso ${avisoActivo} · correo y notificación`});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Enviar al equipo
         </button>
@@ -599,7 +601,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
   // fecha: {origen:'evento'|'legacy'|'especial', id, nombre, fechaStr, lugar, hora, setlist}
   // setlist puede traer 3 formatos (compatibilidad, ver App.jsx abrirSongDesdeEvento):
   //   string (legacy) | {name,key,bpm} ya resuelto | {cancion,asignaciones} (v36, nuevo)
-  const f = fecha || {origen:'legacy',id:'legacy',nombre:'Sin fecha',fechaStr:null,lugar:'',hora:'',setlist:[]};
+  const f = fecha || {origen:'legacy',id:'legacy',nombre:tx.noDateLbl,fechaStr:null,lugar:'',hora:'',setlist:[]};
   const sl = f.setlist||[];
 
   // Ensayos reales de este evento (solo aplica a origen==='evento')
@@ -620,7 +622,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       const asignaciones=(item.asignaciones||[]).map(a=>{
         const v=a.variacionId&&a.variacionId!=='original'?(variacionesDB[item.cancion]||[]).find(x=>x.id===a.variacionId):null;
         const persona=a.personaId?personas.find(p=>p.id===a.personaId):null;
-        return (v||persona)?{variacion:v?.label||'Original',persona:persona?.name||null}:null;
+        return (v||persona)?{variacion:v?.label||tx.originalLbl,persona:persona?.name||null}:null;
       }).filter(Boolean);
       return {nombre:item.cancion,key:'',bpm:'',asignaciones};
     }
@@ -644,7 +646,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
               <span style={{fontSize:11,fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
             </div>
-            <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700}}>Interpretar</span>
+            <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
           </button>
         </div>
         {/* Lugar y hora */}
@@ -653,7 +655,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
-            <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{f.lugar||'Sin lugar asignado'}</span>
+            <span style={{fontSize:12,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{f.lugar||tx.noPlaceAssignedLbl}</span>
           </div>
           {f.hora&&(
             <div style={{display:'flex',alignItems:'center',gap:6}}>
@@ -669,13 +671,13 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       {/* Canciones */}
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
         <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Setlist</span>
+          <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.setlistLbl}</span>
           <span style={{padding:'2px 8px',borderRadius:'var(--rad-full)',border:'1px solid rgba(94,206,160,.4)',background:'rgba(94,206,160,.08)',color:'var(--gn)',fontSize:9,fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
             <div style={{width:5,height:5,borderRadius:'50%',background:'var(--gn)'}}/>Publicado
           </span>
         </div>
         {sl.length===0
-          ?<div style={{textAlign:'center',padding:24,color:'var(--tx3)',fontSize:13}}>Sin setlist para esta fecha</div>
+          ?<div style={{textAlign:'center',padding:24,color:'var(--tx3)',fontSize:13}}>{tx.noSetlistForDateLbl}</div>
           :sl.map((item,i)=>{
             const r=resolverItem(item);
             return(
@@ -709,7 +711,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           {ensayosDelEvento.map((en,i)=>(
             <div key={en.id} style={{padding:'11px var(--sp-md)',borderBottom:i<ensayosDelEvento.length-1?'1px solid var(--s1)':'none',display:'flex',alignItems:'center',gap:8}}>
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-              <span style={{fontSize:12,color:'var(--tx)',flex:1}}>{en.nombre||'Ensayo'}{en.setlistNombre?` · ${en.setlistNombre}`:''}</span>
+              <span style={{fontSize:12,color:'var(--tx)',flex:1}}>{en.nombre||tx.rehearsalLbl}{en.setlistNombre?` · ${en.setlistNombre}`:''}</span>
               <span style={{fontSize:10,color:'var(--tx3)'}}>{(en.equipos||[]).length} equipo{(en.equipos||[]).length!==1?'s':''}</span>
             </div>
           ))}
@@ -720,7 +722,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       {equiposAMostrar.length>0&&(
         <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Equipos convocados</span>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.teamsCalledLbl}</span>
             <span style={{fontSize:10,fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
           </div>
           {equiposAMostrar.map(eq=>(
@@ -744,14 +746,14 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
         </div>
       )}
 
-      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl}/>}
+      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl} lang={lang}/>}
 
       {/* Itinerario — v40: ahora viene del evento real (ItinerarioEditor en
           Crear evento), ya no es texto fijo inventado sin conexión */}
       {f.itinerario&&f.itinerario.length>0&&(
         <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
-            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Itinerario</span>
+            <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.itineraryLbl}</span>
           </div>
           {f.itinerario.map((it,i)=>(
             <div key={i} style={{display:'flex',gap:'var(--sp-sm)',padding:'11px var(--sp-md)',borderBottom:i<f.itinerario.length-1?'1px solid var(--s1)':'none',alignItems:'flex-start'}}>
@@ -771,9 +773,10 @@ const PREMIERES=[
   {id:2,name:'Majestad',album:'Maverick City en Español',sello:'Maverick City Music',key:'D',bpm:72,dias:20,oficial:true,desc:'Nueva versión en español del clásico moderno sobre la majestad de Dios.'},
   {id:3,name:'Gloria Eterna',album:'',sello:'Red Music Latinoamérica',key:'A',bpm:118,dias:null,oficial:false,desc:'Próximamente. Red Music prepara este lanzamiento para sus iglesias asociadas.'},
 ];
-export function PremiereView({onToast}){
+export function PremiereView({onToast,lang='es'}){
+  const tx = getT(lang);
   const [sel,setSel]=useState(null);
   const top=PREMIERES[0];
-  if(sel){const p=PREMIERES.find(x=>x.id===sel);return(<div style={{padding:'0 0 90px'}}><div style={{padding:'var(--sp-md)',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setSel(null)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg><span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Premiere</span></div><div style={{margin:'0 var(--pw-x,16px)',padding:'var(--sp-lg)',borderRadius:'var(--rad-md)',background:'linear-gradient(135deg,rgba(200,169,126,.15),rgba(100,80,180,.1))',border:'1px solid rgba(200,169,126,.3)',marginBottom:'var(--sp-md)'}}><div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{p.oficial?'✓ Cifrado oficial':'Próximamente'}</div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',marginBottom:4}}>{p.name}</div><div style={{fontSize:13,color:'var(--tx2)',marginBottom:'var(--sp-sm)'}}>{p.album&&`${p.album} · `}{p.sello}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'var(--sp-md)'}}><span style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.25)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.key}</span><span style={{fontSize:11,fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.bpm} BPM</span>{p.dias&&<span style={{fontSize:11,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.1)',border:'1px solid rgba(255,82,82,.28)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>⚡ En {p.dias} días</span>}</div><div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7}}>{p.desc}</div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}><button className="btn btn-p" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:'Agregado al setlist',sub:p.name})}><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Agregar al setlist</button><button className="btn btn-g" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:'Te notificaremos',sub:`Al estreno de ${p.name}`})}><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notificarme</button></div></div>);}
-  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',border:'1px solid rgba(200,169,126,.25)',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:14}}>★</span><span style={{fontSize:9,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Próximo estreno</span></div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:12,color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:12,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',border:'1px solid rgba(255,82,82,.3)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:11,color:'var(--tx3)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:11,color:'var(--tx3)'}}>{p.album||p.sello}</div><div style={{fontSize:10,color:'var(--tx3)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:11,fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>PRÓX.</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:11,color:'var(--tx3)',textAlign:'center',lineHeight:1.7}}>¿Representas un sello o artista?<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:'Próximamente',sub:'Contacto con sellos'})}>Publica aquí tus estrenos →</span></div></div></div>);
+  if(sel){const p=PREMIERES.find(x=>x.id===sel);return(<div style={{padding:'0 0 90px'}}><div style={{padding:'var(--sp-md)',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setSel(null)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg><span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.premiereLbl}</span></div><div style={{margin:'0 var(--pw-x,16px)',padding:'var(--sp-lg)',borderRadius:'var(--rad-md)',background:'linear-gradient(135deg,rgba(200,169,126,.15),rgba(100,80,180,.1))',border:'1px solid rgba(200,169,126,.3)',marginBottom:'var(--sp-md)'}}><div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{p.oficial?tx.officialChordsLbl:tx.comingSoonLbl}</div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',marginBottom:4}}>{p.name}</div><div style={{fontSize:13,color:'var(--tx2)',marginBottom:'var(--sp-sm)'}}>{p.album&&`${p.album} · `}{p.sello}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'var(--sp-md)'}}><span style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.25)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.key}</span><span style={{fontSize:11,fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.bpm} BPM</span>{p.dias&&<span style={{fontSize:11,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.1)',border:'1px solid rgba(255,82,82,.28)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>⚡ En {p.dias} días</span>}</div><div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7}}>{p.desc}</div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}><button className="btn btn-p" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.addToSetlistBtn,sub:p.name})}><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>{tx.addToSetlistBtn}</button><button className="btn btn-g" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.willNotifyToast,sub:tx.atPremiereOfLbl(p.name)})}><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>{tx.notifyMeBtn}</button></div></div>);}
+  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',border:'1px solid rgba(200,169,126,.25)',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:14}}>★</span><span style={{fontSize:9,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.nextPremiereLbl}</span></div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:12,color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:12,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',border:'1px solid rgba(255,82,82,.3)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:11,color:'var(--tx3)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:11,color:'var(--tx3)'}}>{p.album||p.sello}</div><div style={{fontSize:10,color:'var(--tx3)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:11,fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{tx.shortComingSoonLbl}</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:11,color:'var(--tx3)',textAlign:'center',lineHeight:1.7}}>{tx.representLabelQuestion}<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:tx.comingSoonLbl,sub:tx.labelContactLbl})}>{tx.publishHereLbl}</span></div></div></div>);
 }
