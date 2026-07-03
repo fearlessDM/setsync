@@ -1,4 +1,5 @@
 import { t as getT, LANGS } from '../i18n';
+import { PLANES_SETSYNC, TRAMOS_EQUIPO, getTramoEquipo, precioTramoEquipo } from '../data/planes';
 import { CANCIONES } from '../data/constants';
 // BackstageView: panel completo de backstage para Iglesia — gestión de eventos,
 // setlists, equipos, permisos, notificaciones y configuración de tema.
@@ -12,7 +13,7 @@ import { initials } from '../utils/music';
 import { ItinerarioEditor, ITINERARIO_DEFAULT } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,cuentaEquipo={activa:false,tramoId:null},setCuentaEquipo=()=>{},tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -64,8 +65,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [ensArchivo,setEnsArchivo]=useState(null);
   const [ensNotas,setEnsNotas]=useState('');
   // ── Planes y precios ──
-  const [periodoPersonal,setPeriodoPersonal]=useState('mensual');
-  const [periodoEquipo,setPeriodoEquipo]=useState('mensual');
 
   // ── Setlist Creator ──
   const [slNombre,setSlNombre]=useState('');
@@ -98,7 +97,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Crear fecha <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Configura nombre, fecha, setlist y equipo en un solo lugar</div>
@@ -118,15 +117,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Fecha</div>
         <div style={{display:'flex',gap:8}}>
           <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}} value={evFecha.split('-')[2]||''} onChange={e=>{const d=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[2]=d.padStart(2,'0');return parts.join('-');});}}>
-            <option value="">Día</option>
+            <option value="">{tx.dayLbl}</option>
             {Array.from({length:31},(_,i)=>i+1).map(d=>(<option key={d} value={d}>{d}</option>))}
           </select>
           <select className="inp" style={{flex:1.4,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value={evFecha.split('-')[1]||''} onChange={e=>{const m=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[1]=m.padStart(2,'0');return parts.join('-');});}}>
-            <option value="">Mes</option>
-            {['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
+            <option value="">{tx.monthPlaceholderLbl}</option>
+            {tx.monthsFull.map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
           </select>
           <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}} value={evFecha.split('-')[0]||''} onChange={e=>{const y=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[0]=y;return parts.join('-');});}}>
-            <option value="">Año</option>
+            <option value="">{tx.yearLbl}</option>
             {['2026','2027','2028'].map(y=>(<option key={y} value={y}>{y}</option>))}
           </select>
         </div>
@@ -188,7 +187,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                           <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
                             style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
                               color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                            <option value="">Sin asignar</option>
+                            <option value="">{tx.notAssignedLbl}</option>
                             {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
                           </select>
                         )}
@@ -253,7 +252,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               setEquipos(prev=>[...prev,nuevoEquipo]);
               persistirEquipo(nuevoEquipo);
               setEvEquipos(prev=>[...(prev||[]),nuevoEquipo.id]);
-              onToast({text:'Equipo agregado',sub:v});
+              onToast({text:tx.teamAddedToast,sub:v});
               setEvNuevoEquipo('');
             }}
               style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(200,169,126,.35)',background:'rgba(200,169,126,.08)',color:'var(--ac)',fontWeight:700,fontSize:12,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
@@ -306,11 +305,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
 
       <div style={{display:'flex',gap:9}}>
-        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
         <button className="btn btn-p" style={{flex:2,justifyContent:'center'}}
           disabled={!evNombre.trim()&&!evFecha}
           onClick={()=>{
-            const label=`${evNombre||'Nuevo evento'}`;
+            const label=`${evNombre||tx.newEventDefault}`;
             const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,
               lugar:evLugar,hora:evHora,setlist:[...evSetlist],
               equiposConvocados:evEquipos||equipos.map(e=>e.id),
@@ -318,7 +317,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               archivo:evArchivo?{name:evArchivo.name}:null};
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
-            onToast({text:'Evento creado',sub:`${label} · ${evSetlist.length} canciones`});
+            onToast({text:tx.eventCreatedToast,sub:`${label} · ${evSetlist.length} canciones`});
             setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');setEvArchivo(null);
             setEvLugar('');setEvHora('');setEvEquipos(equipos.map(e=>e.id));setEvItinerario(ITINERARIO_DEFAULT);
             setBsView(null);
@@ -341,7 +340,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     };
 
     const guardarSetlist=()=>{
-      if(!slCanciones.length){onToast({text:'Agrega al menos una canción',sub:'El setlist está vacío'});return;}
+      if(!slCanciones.length){onToast({text:tx.addAtLeastOneSong,sub:tx.setlistEmptyToast});return;}
       const nuevo={
         id:Date.now(),
         nombre:slNombre||`Setlist ${new Date().toLocaleDateString('es-CL')}`,
@@ -354,7 +353,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       if(slEventoId){
         setEventos(prev=>prev.map(ev=>ev.id===parseInt(slEventoId)?{...ev,setlist:slCanciones}:ev));
       }
-      onToast({text:'Setlist guardado',sub:`${slCanciones.length} canciones${slEventoId?' · Asignado al evento':''}`});
+      onToast({text:tx.setlistSavedToast,sub:`${slCanciones.length} canciones${slEventoId?' · Asignado al evento':''}`});
       setSlCanciones([]);setSlNombre('');setSlEventoId('');setSlSearch('');
       setBsView(null);
     };
@@ -363,7 +362,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
@@ -474,7 +473,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                             <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
                               style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
                                 color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                              <option value="">Sin asignar</option>
+                              <option value="">{tx.notAssignedLbl}</option>
                               {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
                             </select>
                           )}
@@ -527,7 +526,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                     {sl.eventoId&&<span style={{color:'var(--gn)',marginLeft:6}}>· Asignado ✓</span>}
                   </div>
                 </div>
-                <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlNombre(sl.nombre);setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:'Editando setlist',sub:sl.nombre});}}
+                <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlNombre(sl.nombre);setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:tx.editingSetlistLbl,sub:sl.nombre});}}
                   style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                   Editar
                 </button>
@@ -538,10 +537,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         )}
         <div style={{display:'flex',gap:9}}>
-          <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
+          <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
           <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!slCanciones.length} onClick={guardarSetlist}>
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-            {slEventoId?'Guardar y asignar al evento':'Guardar setlist'}
+            {slEventoId?tx.saveAndAssignBtn:tx.saveSetlistBtn}
           </button>
         </div>
       </div>
@@ -554,7 +553,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
@@ -570,7 +569,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
           <button
             onClick={()=>{
-              if(!equipos.length){onToast({text:'Crea un equipo primero'});return;}
+              if(!equipos.length){onToast({text:tx.createTeamFirstToast});return;}
               setNuevoMiembro({nombre:'',email:'',equipoId:equipos[0].id});
             }}
             className="btn btn-g btn-xs">
@@ -598,17 +597,17 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               </select>
             )}
             <div style={{display:'flex',gap:8}}>
-              <button className="btn btn-g" style={{flex:1}} onClick={()=>setNuevoMiembro(null)}>Cancelar</button>
+              <button className="btn btn-g" style={{flex:1}} onClick={()=>setNuevoMiembro(null)}>{tx.cancel}</button>
               <button className="btn btn-p" style={{flex:2,justifyContent:'center'}}
                 disabled={!nuevoMiembro.nombre.trim()}
                 onClick={()=>{
                   const equipo=equipos.find(e=>e.id===nuevoMiembro.equipoId)||equipos[0];
                   const nombre=nuevoMiembro.nombre.trim();
-                  const nuevo={id:Date.now(),name:nombre,email:nuevoMiembro.email.trim(),role:(equipo.roles||[])[0]||'General',foto:null};
+                  const nuevo={id:Date.now(),name:nombre,email:nuevoMiembro.email.trim(),role:(equipo.roles||[])[0]||tx.generalLbl,foto:null};
                   const upd={...equipo,miembros:[...(equipo.miembros||[]),nuevo]};
                   setEquipos(prev=>prev.map(e=>e.id===equipo.id?upd:e));
                   persistirEquipo(upd);
-                  onToast({text:'Miembro agregado',sub:nombre});
+                  onToast({text:tx.memberAddedToast,sub:nombre});
                   setNuevoMiembro(null);
                 }}>
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -642,7 +641,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 }
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12,fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:'Sin correo registrado'}</div>
+                  <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:tx.noEmailRegistered}</div>
                 </div>
               </div>
             ))}
@@ -736,7 +735,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   <button onClick={()=>{
                     const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
                     setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                    onToast({text:'Removido',sub:m.name});
+                    onToast({text:tx.removedToast,sub:m.name});
                   }} style={{width:22,height:22,borderRadius:6,border:'1px solid rgba(253,128,131,.2)',background:'transparent',color:'var(--rd)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                     <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -749,7 +748,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   Roles del equipo
                 </div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:8}}>
-                  {(eq.roles||['General']).map((r,ri)=>(
+                  {(eq.roles||[tx.generalLbl]).map((r,ri)=>(
                     <div key={ri} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px 4px 10px',
                       borderRadius:100,background:eq.color+'18',border:`1px solid ${eq.color}30`}}>
                       <span style={{fontSize:10,fontWeight:700,color:eq.color,
@@ -787,9 +786,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 const persona=personas.find(m=>String(m.id)===e.target.value);
                 if(!persona)return;
                 const ya=(eq.miembros||[]).find(em=>em.id===persona.id);
-                const upd={...eq,miembros:ya?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||'General',foto:null}]};
+                const upd={...eq,miembros:ya?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||tx.generalLbl,foto:null}]};
                 setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                onToast({text:'Agregado a '+eq.name,sub:persona.name});
+                onToast({text:tx.addedToToast(eq.name),sub:persona.name});
               }}>
                 <option value="">Agregar miembro al equipo...</option>
                 {personas.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
@@ -812,10 +811,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             const color=colores[equipos.length%colores.length];
             const roles=nuevosRoles.trim()
               ?nuevosRoles.split(',').map(r=>r.trim()).filter(Boolean)
-              :['General','Líder'];
+              :[tx.generalLbl,tx.leaderLbl];
             const nuevoEq={id:`eq${Date.now()}`,name:nuevaBanda.trim(),color,roles,miembros:[]};
             setEquipos(prev=>[...prev,nuevoEq]);persistirEquipo(nuevoEq);
-            onToast({text:'Equipo creado',sub:nuevaBanda});setNuevaBanda('');setNuevosRoles('');
+            onToast({text:tx.teamCreatedToast,sub:nuevaBanda});setNuevaBanda('');setNuevosRoles('');
           }}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Crear equipo
@@ -831,7 +830,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
@@ -884,16 +883,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </select>
         </div>
         <div style={{marginBottom:14}}>
-          <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Permisos</div>
+          <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.permissionsLbl}</div>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {[
-              {id:'setlist',label:'Editar setlist',desc:'Agregar, reordenar y publicar canciones'},
-              {id:'convocar',label:'Convocar equipo',desc:'Invitar y confirmar asistencia de miembros'},
-              {id:'notif',label:'Enviar notificaciones',desc:'Avisar al equipo por push y email'},
-              {id:'itinerario',label:'Editar itinerario',desc:'Modificar horarios del evento'},
-              {id:'equipos',label:'Gestionar equipos',desc:'Agregar y remover miembros de su área'},
-              {id:'pastor',label:'Palabra del pastor',desc:'Editar versículo y notas del mensaje'},
-              {id:'backstage_view',label:'Ver Backstage',desc:'Acceso de solo lectura a todos los eventos'},
+              {id:'setlist',label:tx.permEditSetlist,desc:tx.permEditSetlistDesc},
+              {id:'convocar',label:tx.permCallTeam,desc:tx.permCallTeamDesc},
+              {id:'notif',label:tx.permSendNotif,desc:tx.permSendNotifDesc},
+              {id:'itinerario',label:tx.permEditItinerary,desc:tx.permEditItineraryDesc},
+              {id:'equipos',label:tx.permManageTeams,desc:tx.permManageTeamsDesc},
+              {id:'pastor',label:tx.permPastorWord,desc:tx.permPastorWordDesc},
+              {id:'backstage_view',label:tx.permViewBackstage,desc:tx.permViewBackstageDesc},
             ].map(perm=>{
               const isOn=selectedPermisos.includes(perm.id);
               return(
@@ -923,11 +922,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <button className="btn btn-live" style={{width:'100%',justifyContent:'center'}}
           onClick={()=>{
             const p=personas.find(x=>String(x.id)===selectedIntegrante);
-            if(!p){onToast({text:'Selecciona un integrante',sub:''});return;}
-            if(selectedPermisos.length===0){onToast({text:'Selecciona al menos un permiso',sub:''});return;}
-            setLideresActuales(prev=>[...prev,{name:p.name,av:p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),rol:'Líder',permisos:selectedPermisos.map(id=>id.replace('_',' '))}]);
+            if(!p){onToast({text:tx.selectMemberToast,sub:''});return;}
+            if(selectedPermisos.length===0){onToast({text:tx.selectAtLeastOnePermToast,sub:''});return;}
+            setLideresActuales(prev=>[...prev,{name:p.name,av:p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),rol:tx.leaderLbl,permisos:selectedPermisos.map(id=>id.replace('_',' '))}]);
             setSelectedPermisos([]);setSelectedIntegrante('');
-            onToast({text:'Líder agregado',sub:p.name});
+            onToast({text:tx.leaderAddedToast,sub:p.name});
           }}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           Guardar líder
@@ -940,14 +939,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>Notificaciones</div>
       <div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.6,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
       <div className="card" style={{padding:16,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
-          {['Todo el equipo',...equipos.map(e=>e.name)].map(dest=>(
+          {[tx.wholeTeamLbl,...equipos.map(e=>e.name)].map(dest=>(
             <button key={dest} onClick={()=>setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest])} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",border:notifDest.includes(dest)?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
           ))}
         </div>
@@ -955,10 +954,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div className="card" style={{padding:16,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:14,color:'var(--tx)',marginBottom:12}}>Tipo de aviso</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-          {[{id:'recordatorio',label:'Recordatorio',color:'#c8a97e',icon:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>},
-            {id:'cambio',label:'Cambio setlist',color:'#30C0B7',icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>},
-            {id:'urgente',label:'Urgente',color:'#FD8083',icon:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>},
-            {id:'general',label:'General',color:'#7dd3c0',icon:<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>}].map(t=>(
+          {[{id:'recordatorio',label:tx.reminderLbl,color:'#c8a97e',icon:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>},
+            {id:'cambio',label:tx.setlistChangeLbl,color:'#30C0B7',icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>},
+            {id:'urgente',label:tx.urgentLbl,color:'#FD8083',icon:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>},
+            {id:'general',label:tx.generalLbl,color:'#7dd3c0',icon:<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>}].map(t=>(
             <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',border:notifTipo===t.id?`1px solid ${t.color}80`:'1px solid var(--bd)',background:notifTipo===t.id?`${t.color}14`:'var(--s1)',fontFamily:"'Lexend Giga',sans-serif"}}>
               <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={t.color} strokeWidth="1.8" style={{marginBottom:6,display:'block'}}>{t.icon}</svg>
               <div style={{fontSize:12,fontWeight:700,color:notifTipo===t.id?t.color:'var(--tx)'}}>{t.label}</div>
@@ -978,8 +977,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <span style={{fontSize:12,fontWeight:700,color:notifCorreo?'var(--ac)':'var(--tx2)',textAlign:'left',flex:1}}>También agregar por correo</span>
       </button>
       <div style={{display:'flex',gap:9}}>
-        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
-        <button className="btn btn-p" style={{flex:2}} disabled={!notifMsg.trim()||!notifDest.length} onClick={()=>{onToast({text:'Notificación enviada',sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});setBsView(null);}}>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
+        <button className="btn btn-p" style={{flex:2}} disabled={!notifMsg.trim()||!notifDest.length} onClick={()=>{onToast({text:tx.notifSentToast,sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});setBsView(null);}}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Enviar
         </button>
@@ -992,7 +991,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>Personalización</div>
       <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>Logo, tema visual e idioma a tu estilo</div>
@@ -1002,7 +1001,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{display:'flex',gap:8,marginBottom:8}}>
           <input className="inp" placeholder="Ciudad" style={{flex:1}}/>
           <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
-            {['Chile','Argentina','Colombia','México','Perú','España','Venezuela','Ecuador','Bolivia','Uruguay','Paraguay','Costa Rica','Guatemala'].map(p=>(<option key={p} value={p}>{p}</option>))}
+            {tx.countriesList.map(p=>(<option key={p} value={p}>{p}</option>))}
           </select>
         </div>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8,marginTop:4}}>Logotipo</div>
@@ -1021,23 +1020,23 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Tema visual</div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10}}>
           {[
-            {id:'dark',      label:'Oscuro',           sub:'Gris/violeta · Rosa neón',
+            {id:'dark',      label:tx.themeDarkLbl,    sub:tx.themeDarkSub,
               bg:'linear-gradient(135deg,#0f0f0f 0%,#1a0a1f 100%)',
               preview:['#0f0f0f','#EE227D','#30C0B7']},
-            {id:'gray',      label:'Gris',             sub:'Carbón · Naranja quemado',
+            {id:'gray',      label:tx.themeGrayLbl,    sub:tx.themeGraySub,
               bg:'linear-gradient(135deg,#22232a 0%,#3a3830 60%,#e07820 100%)',
               preview:['#22232a','#e07820','#f2ede6']},
-            {id:'cream',     label:'Claro',            sub:'Blanco hueso · Contraste fuerte',
+            {id:'cream',     label:tx.themeCreamLbl,   sub:tx.themeCreamSub,
               bg:'linear-gradient(135deg,#EDE8DC 0%,#d8cfc0 100%)',
               preview:['#F5F0E8','#D4500A','#1a1208']},
             {id:'bubblegum', label:'Bubblegum Pop',    sub:'Rosa neón · Teal profundo',
               bg:'linear-gradient(135deg,#0d1f1f 0%,#062a2a 40%,#FF69B4 100%)',
               preview:['#0d1f1f','#FF69B4','#00F0FF']},
-            {id:'cosmos',    label:'Cosmos',           sub:'Azul marino · Violeta eléctrico',
+            {id:'cosmos',    label:tx.themeCosmosLbl,  sub:tx.themeCosmosSub,
               bg:'linear-gradient(135deg,#07081a 0%,#0d0a2e 50%,#a78bfa 100%)',
               preview:['#07081a','#a78bfa','#34d399']},
           ].map(th=>(
-            <div key={th.id} onClick={()=>{onSetTheme(th.id);onToast({text:'Tema aplicado',sub:th.label});}}
+            <div key={th.id} onClick={()=>{onSetTheme(th.id);onToast({text:tx.themeAppliedToast,sub:th.label});}}
               style={{borderRadius:12,cursor:'pointer',overflow:'hidden',transition:'all .2s',
                       border:onGetTheme()===th.id?'2px solid var(--ac)':'1px solid var(--bd)',
                       boxShadow:onGetTheme()===th.id?'0 0 0 1px var(--ac),0 4px 20px rgba(0,0,0,.4)':'none'}}>
@@ -1116,7 +1115,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,fontWeight:700,color:'var(--tx)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.displayName||'Sin nombre'}</div>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--tx)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.displayName||tx.noNameLbl}</div>
               <div style={{fontSize:11,color:'var(--tx3)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.email}</div>
             </div>
           </div>
@@ -1150,7 +1149,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Palabra del <span style={{color:'var(--ac)'}}>Pastor</span>
@@ -1194,7 +1193,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <input type="file" accept=".ppt,.pptx,.pdf,.jpg,.jpeg,.png,.gif" multiple style={{display:'none'}}
             onChange={e=>{
               const files=Array.from(e.target.files||[]);
-              if(files.length) onToast({text:`${files.length} archivo${files.length>1?'s':''} listo${files.length>1?'s':''}`,sub:'El equipo multimedia puede verlo'});
+              if(files.length) onToast({text:`${files.length} archivo${files.length>1?'s':''} listo${files.length>1?'s':''}`,sub:tx.mediaTeamCanSeeIt});
             }}/>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FD8083" strokeWidth="1.8">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
@@ -1206,8 +1205,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </label>
       </div>
       <div style={{display:'flex',gap:8,marginTop:4}}>
-        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
-        <button className="btn btn-p" style={{flex:2}} onClick={()=>{onToast({text:'Guardado',sub:'Palabra del Pastor actualizada'});setBsView(null);}}>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
+        <button className="btn btn-p" style={{flex:2}} onClick={()=>{onToast({text:tx.savedToast,sub:tx.pastorWordUpdatedToast});setBsView(null);}}>
           Guardar
         </button>
       </div>
@@ -1216,108 +1215,92 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── PLANES Y PRECIOS ──
   if(bsView==='planes'){
+    const numPersonasEquipo = personas.length||1;
+    const tramoActual = getTramoEquipo(numPersonasEquipo);
     const PLANES_PERSONAL=[
-      {id:'lite',name:'Lite',mensual:0,anual:0,color:'var(--tx3)',sub:'Para empezar',
-        desc:'Ideal si recién estás probando SetSync o tienes un equipo muy chico. Gestionas tu música sin invitar a nadie más.',
-        features:['Solo tú, sin invitados','10 canciones en tu cancionero','Setlists básicos para tus fechas']},
-      {id:'pro',name:'Pro',mensual:7.90,anual:5.53,color:'var(--gn)',sub:'El más popular',
-        desc:'Para el líder que ya arma equipo. Invita hasta 5 personas para que vean setlists, acordes y se sumen a la convocatoria.',
-        features:['Tú + hasta 5 invitados','Cancionero completo, sin límite de canciones','Monitoreo por WiFi para tu mesa X32/M32/XR18','Secuencias & Click sincronizado']},
-      {id:'premium',name:'Premium',mensual:19.90,anual:13.93,color:'var(--ac)',sub:'Producción pro',
-        desc:'Cuando necesitas producción completa: multitracks, partituras y varias bandas o equipos bajo tu misma cuenta.',
-        features:['Tú + hasta 15 invitados','Todo lo de Pro','Multitracks para tus secuencias','Partituras (MusicXML/PDF)','Gestiona varias bandas o equipos']},
+      {id:'lite',name:PLANES_SETSYNC.lite.label,mensual:PLANES_SETSYNC.lite.precioMensual,color:'var(--tx3)',sub:tx.liteSub,
+        desc:tx.litePersonalDesc, features:tx.litePersonalFeatures},
+      {id:'pro',name:PLANES_SETSYNC.pro.label,mensual:PLANES_SETSYNC.pro.precioMensual,color:'var(--gn)',sub:tx.proSub,
+        desc:tx.proPersonalDesc, features:tx.proPersonalFeatures},
+      {id:'premium',name:PLANES_SETSYNC.premium.label,mensual:PLANES_SETSYNC.premium.precioMensual,color:'var(--ac)',sub:tx.premiumSub,
+        desc:tx.premiumPersonalDesc, features:tx.premiumPersonalFeatures},
     ];
-    const PLANES_EQUIPO=[
-      {id:'eq-1-10',name:'1–10 personas',mensual:4.90,anual:3.43,color:'var(--gn)',sub:'Equipos chicos',
-        desc:'Toda tu iglesia o banda con Pro completo, cada persona con su propia sesión.',
-        features:['Hasta 10 miembros con acceso completo','Cancionero, monitoreo por WiFi y secuencias','Precio por persona, no por cuenta']},
-      {id:'eq-11-25',name:'11–25 personas',mensual:3.90,anual:2.73,color:'var(--ac)',sub:'Equipos medianos',
-        desc:'Para congregaciones o bandas con varios equipos rotativos (alabanza, proyección, sonido).',
-        features:['Hasta 25 miembros con acceso completo','Todo lo del tramo anterior','Precio por persona más bajo']},
-      {id:'eq-26-40',name:'26–40 personas',mensual:2.90,anual:2.03,color:'#a78bfa',sub:'Equipos grandes',
-        desc:'Multi-equipo, multi-servicio: varios grupos trabajando en paralelo bajo una sola organización.',
-        features:['Hasta 40 miembros con acceso completo','Todo lo del tramo anterior','Ideal para múltiples sedes o servicios']},
-      {id:'eq-40+',name:'40+ personas',mensual:1.50,anual:1.05,color:'var(--tx3)',sub:'Redes y multi-sede',
-        desc:'Para redes de iglesias o productoras con muchos equipos. Hablamos directo para ajustar el trato.',
-        features:['Miembros ilimitados','Todo lo de los tramos anteriores','Soporte prioritario y onboarding asistido']},
-    ];
-    const BloquePlanes=({planes,periodo,setPeriodo,activo,onElegir})=>(
-      <>
-        <div style={{display:'flex',gap:6,marginBottom:12}}>
-          {['mensual','anual'].map(p=>(
-            <button key={p} onClick={()=>setPeriodo(p)} style={{flex:1,padding:9,borderRadius:'var(--rad-sm)',
-              border:periodo===p?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',
-              background:periodo===p?'rgba(200,169,126,.08)':'var(--s1)',
-              color:periodo===p?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:11,cursor:'pointer',
-              fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:5}}>
-              {p==='mensual'?'Mensual':'Anual'}
-              {p==='anual'&&<span style={{fontSize:8,color:'var(--gn)',fontWeight:900}}>−30%</span>}
-            </button>
-          ))}
-        </div>
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>
-          {planes.map(p=>(
-            <div key={p.id} className="card" style={{padding:14,
-              border:activo===p.id?`1px solid ${p.color}`:'1px solid var(--bd)',
-              background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
-              <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:p.color,fontWeight:400}}>{p.name}</div>
-                <div style={{textAlign:'right'}}>
-                  <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,color:'var(--tx)'}}>
-                    {p[periodo]===0?'Gratis':`$${p[periodo].toFixed(2)}`}
-                  </span>
-                  {p[periodo]>0&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}> USD/mes</span>}
-                </div>
+    const coloresEquipo={'eq-1-10':'var(--gn)','eq-11-25':'var(--ac)','eq-26-35':'#a78bfa','eq-36+':'var(--tx3)'};
+    const PLANES_EQUIPO=TRAMOS_EQUIPO.map(t=>({
+      id:t.id,
+      name:t.label,
+      mensual:precioTramoEquipo(t.id,numPersonasEquipo),
+      esDesde:t.id==='eq-36+',
+      color:coloresEquipo[t.id],
+      sub:tx.teamSub,
+      desc:tx.teamAccountDesc,
+      features:t.marcaBlanca?[...tx.teamFeaturesBase,tx.whiteLabelIncluded]:tx.teamFeaturesBase,
+    }));
+    const BloquePlanes=({planes,activo,onElegir})=>(
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {planes.map(p=>(
+          <div key={p.id} className="card" style={{padding:14,
+            border:activo===p.id?`1px solid ${p.color}`:'1px solid var(--bd)',
+            background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:p.color,fontWeight:400}}>{p.name}</div>
+              <div style={{textAlign:'right'}}>
+                <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:18,color:'var(--tx)'}}>
+                  {p.mensual===0?tx.freeLbl:`${p.esDesde?tx.fromLbl+' ':''}$${p.mensual}`}
+                </span>
+                {p.mensual>0&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}> {tx.perMonthLbl}</span>}
               </div>
-              <div style={{fontSize:9,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.75,textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{p.sub}</div>
-              <div style={{fontSize:11,color:'var(--tx2)',lineHeight:1.6,marginBottom:10,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{p.desc}</div>
-              <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:10}}>
-                {p.features.map(f=>(
-                  <div key={f} style={{display:'flex',alignItems:'flex-start',gap:6}}>
-                    <span style={{color:p.color,fontSize:10,marginTop:1,flexShrink:0}}>✓</span>
-                    <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5}}>{f}</span>
-                  </div>
-                ))}
-              </div>
-              <button onClick={()=>onElegir(p)} disabled={activo===p.id}
-                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:activo===p.id?'default':'pointer',
-                  background:activo===p.id?'var(--s3)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
-                  fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-                {activo===p.id?'Plan actual':'Elegir'}
-              </button>
             </div>
-          ))}
-        </div>
-      </>
+            <div style={{fontSize:9,color:p.color,fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,opacity:.75,textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{p.sub}</div>
+            <div style={{fontSize:11,color:'var(--tx2)',lineHeight:1.6,marginBottom:10,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>{p.desc}</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:10}}>
+              {p.features.map(f=>(
+                <div key={f} style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                  <span style={{color:p.color,fontSize:10,marginTop:1,flexShrink:0}}>✓</span>
+                  <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5}}>{f}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>onElegir(p)} disabled={activo===p.id}
+              style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:activo===p.id?'default':'pointer',
+                background:activo===p.id?'var(--s3)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
+                fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+              {activo===p.id?tx.currentPlanBtn:(planes===PLANES_EQUIPO?tx.activateBtn:tx.chooseBtn)}
+            </button>
+          </div>
+        ))}
+      </div>
     );
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
-          Planes <span style={{color:'var(--ac)'}}>y precios</span>
+          {tx.plansAndPricesTitle}
         </div>
         <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:22}}>
-          SetSync tiene dos formas de pagar: por tu cuenta personal (tú invitas gente con límite) o por equipo (todos con acceso completo, precio por persona).
+          {tx.plansIntro}
         </div>
 
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>Cuenta personal</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.personalAccountLbl}</div>
         <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
-          Tú administras la cuenta y decides a quién invitar, con un tope de invitados que crece según el plan.
+          {tx.personalAccountDesc}
         </div>
         <div style={{marginBottom:28}}>
-          <BloquePlanes planes={PLANES_PERSONAL} periodo={periodoPersonal} setPeriodo={setPeriodoPersonal}
-            activo={planId} onElegir={p=>{setPlanId(p.id);onToast({text:'Plan actualizado',sub:p.name});}}/>
+          <BloquePlanes planes={PLANES_PERSONAL}
+            activo={cuentaEquipo?.activa?null:planId}
+            onElegir={p=>{setPlanId(p.id);onToast({text:tx.planUpdatedToast,sub:p.name});}}/>
         </div>
 
-        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>Cuenta equipo</div>
+        <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.teamAccountLbl}</div>
         <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
-          Todos los miembros quedan con funciones completas (Cancionero, monitoreo por WiFi, multitracks y partituras). El precio es por persona y baja mientras más grande es el equipo — te conviene desde que ya todos necesitan Pro.
+          {tx.teamAccountDesc}
         </div>
-        <BloquePlanes planes={PLANES_EQUIPO} periodo={periodoEquipo} setPeriodo={setPeriodoEquipo}
-          activo={null} onElegir={p=>onToast({text:'Solicitud enviada',sub:`Cotización para ${p.name}`})}/>
+        <BloquePlanes planes={PLANES_EQUIPO}
+          activo={cuentaEquipo?.activa?cuentaEquipo.tramoId:null}
+          onElegir={p=>{setCuentaEquipo({activa:true,tramoId:p.id});onToast({text:tx.teamActivatedToast,sub:p.name});}}/>
       </div>
     );
   }
@@ -1326,16 +1309,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   if(bsView==='ensayo'){
     const ensayosDelEvento = ensRef ? ensayos.filter(e=>e.ref===ensRef) : [];
     const duplicarEnsayo = (en) => {
-      const copia={...en,id:`ens${Date.now()}`,nombre:`${en.nombre||'Ensayo'} (copia)`};
+      const copia={...en,id:`ens${Date.now()}`,nombre:`${en.nombre||tx.rehearsalLbl} (copia)`};
       setEnsayos(prev=>[...prev,copia]);
       persistirEnsayo(copia);
-      onToast({text:'Ensayo duplicado',sub:copia.nombre});
+      onToast({text:tx.rehearsalDuplicatedToast,sub:copia.nombre});
     };
     return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>Backstage</span>
+        <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>
@@ -1357,8 +1340,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
           {ensayosDelEvento.map(en=>(
             <div key={en.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0'}}>
-              <span style={{flex:1,fontSize:12,color:'var(--tx)'}}>{en.nombre||'Ensayo'}</span>
-              <button onClick={()=>duplicarEnsayo(en)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>Duplicar</button>
+              <span style={{flex:1,fontSize:12,color:'var(--tx)'}}>{en.nombre||tx.rehearsalLbl}</span>
+              <button onClick={()=>duplicarEnsayo(en)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.duplicateBtn}</button>
             </div>
           ))}
         </div>
@@ -1419,14 +1402,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
 
       <div style={{display:'flex',gap:9}}>
-        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>Cancelar</button>
+        <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
         <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!ensEquipos.length}
           onClick={()=>{
             const sl=slGuardados.find(s=>s.id===ensSetlistId);
-            const nuevo={id:`ens${Date.now()}`,ref:ensRef,setlistId:ensSetlistId,setlistNombre:sl?.nombre||'',equipos:[...ensEquipos],archivo:ensArchivo,notas:ensNotas,nombre:'Ensayo'};
+            const nuevo={id:`ens${Date.now()}`,ref:ensRef,setlistId:ensSetlistId,setlistNombre:sl?.nombre||'',equipos:[...ensEquipos],archivo:ensArchivo,notas:ensNotas,nombre:tx.rehearsalLbl};
             setEnsayos(prev=>[...prev,nuevo]);
             persistirEnsayo(nuevo);
-            onToast({text:'Ensayo creado',sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});
+            onToast({text:tx.rehearsalCreatedToast,sub:`${ensEquipos.length} equipo${ensEquipos.length>1?'s':''} convocado${ensEquipos.length>1?'s':''}`});
             setEnsRef('');setEnsSetlistId('');setEnsEquipos([]);setEnsArchivo(null);setEnsNotas('');setBsView(null);
           }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1438,15 +1421,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   }
 
   const ITEMS=[
-    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:'Configura setlist, equipos y convocatoria',icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
-    {id:'setlist',label:'Crear setlist',sub:'Arma el orden de canciones para el evento',icon:'music',color:'#30C0B7',adminOnly:false,img:'/backstage/setlist.jpg'},
-    {id:'ensayo',label:'Crear ensayo',sub:'Asigna fecha o setlist, convoca equipos y sube archivos',icon:'mic',color:'#FD8083',adminOnly:false,img:'/backstage/ensayo.jpg'},
-    {id:'equipos',label:'Gestión de equipos',sub:'Miembros, equipos y roles',icon:'team',color:'#30C0B7',adminOnly:true,img:'/backstage/equipos.jpg'},
-    {id:'permisos',label:'Delegar permisos',sub:'Dar acceso a líderes de área',icon:'shield',color:'#c8a97e',adminOnly:true,img:'/backstage/permisos.jpg'},
-    {id:'notif',label:'Notificaciones',sub:'Convoca y recuerda al equipo',icon:'bell',color:'#FD8083',adminOnly:false,img:'/backstage/notif.jpg'},
-    {id:'personalizar',label:'Personalización',sub:'Logo, tema visual e idioma',icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
-    ...(feat.cancioneroUniversal?[{id:'pastor',label:'Palabra del Pastor',sub:'Versículo, notas y archivos para multimedia',icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
-    {id:'planes',label:'Planes y precios',sub:'Compara y mejora tu plan SetSync',icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
+    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:tx.navCreateEventSub,icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
+    {id:'setlist',label:tx.navCreateSetlistLbl,sub:tx.navCreateSetlistSub,icon:'music',color:'#30C0B7',adminOnly:false,img:'/backstage/setlist.jpg'},
+    {id:'ensayo',label:tx.navCreateRehearsalLbl,sub:tx.navCreateRehearsalSub,icon:'mic',color:'#FD8083',adminOnly:false,img:'/backstage/ensayo.jpg'},
+    {id:'equipos',label:tx.navTeamManagementLbl,sub:tx.navTeamManagementSub,icon:'team',color:'#30C0B7',adminOnly:true,img:'/backstage/equipos.jpg'},
+    {id:'permisos',label:tx.navDelegatePermissionsLbl,sub:tx.navDelegatePermissionsSub,icon:'shield',color:'#c8a97e',adminOnly:true,img:'/backstage/permisos.jpg'},
+    {id:'notif',label:tx.navNotificationsLbl,sub:tx.navNotificationsSub,icon:'bell',color:'#FD8083',adminOnly:false,img:'/backstage/notif.jpg'},
+    {id:'personalizar',label:tx.navPersonalizationLbl,sub:tx.navPersonalizationSub,icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
+    ...(feat.cancioneroUniversal?[{id:'pastor',label:tx.navPastorWordLbl,sub:tx.navPastorWordSub,icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
+    {id:'planes',label:tx.navPlansLbl,sub:tx.navPlansSub,icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;
@@ -1459,10 +1442,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>Backstage</div>
-          <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?'Super Admin':'Líder'}</span>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>{tx.backstage}</div>
+          <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?tx.superAdminLbl:tx.leaderLbl}</span>
         </div>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:4}}>Panel de control del equipo</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
@@ -1502,7 +1485,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               dmiranda@fearless.cl · Super Admin
             </div>
           </div>
-          <button onClick={()=>onToast({text:'Cerrando sesión...',sub:'Hasta pronto'})}
+          <button onClick={()=>onToast({text:tx.closingSessionLbl,sub:tx.seeYouSoonLbl})}
             style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(253,128,131,.3)',
               background:'rgba(253,128,131,.06)',color:'var(--rd)',cursor:'pointer',
               fontSize:10,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
@@ -1522,9 +1505,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           border:'1px solid var(--bd)'}}>
           <div>
             <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>Plan actual</div>
+              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>{tx.currentPlanBtn}</div>
             <div style={{fontSize:13,fontWeight:700,color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",
-              textTransform:'capitalize'}}>{planId}</div>
+              textTransform:'capitalize'}}>{cuentaEquipo?.activa?'Premium':planId}</div>
           </div>
           <button onClick={()=>{}}
             style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(48,192,183,.3)',

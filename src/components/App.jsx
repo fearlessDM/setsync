@@ -20,7 +20,7 @@ import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
 import { t as getT, LANGS } from '../i18n';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
-import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
+import { getPlan, featureDisponible, mensajeUpgrade, planEfectivo, TRAMOS_EQUIPO, getTramoEquipo, precioTramoEquipo } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
@@ -93,9 +93,14 @@ export default function App(){
   const [userRole]=useState('superadmin');
   const isAdmin=userRole==='superadmin';
   const [planId,setPlanId]=useState('lite'); // 'lite' | 'pro' | 'premium' — selector temporal de prueba,
-  // hasta que exista cobro real. El plan es SIEMPRE del usuario individual,
-  // nunca se hereda del líder/equipo (mismo principio que ya regía SongView).
-  const planActivo=getPlan(planId);
+  // hasta que exista cobro real. El plan personal es SIEMPRE del usuario
+  // individual (mismo principio que ya regía SongView) — PERO si la cuenta
+  // tiene Cuenta Equipo activa, ese plan personal queda sobrescrito por
+  // Premium completo para todos los miembros (arquitectura v53/v57,
+  // ver planes.js → planEfectivo). cuentaEquipo también es selector
+  // temporal de prueba hasta que exista cobro real de Cuenta Equipo.
+  const [cuentaEquipo,setCuentaEquipo]=useState({activa:false,tramoId:null});
+  const planActivo=planEfectivo(planId,cuentaEquipo);
   const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
   const tieneClick=featureDisponible('click',feat,planActivo);
@@ -662,7 +667,7 @@ Voicings extendidos para teclado
           {view==='inicio'&&(
             <Inicio mode={appMode} lang={lang} userRole={userRole}
               equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
-              planActivo={planActivo} planId={planId}
+              planActivo={planActivo} planId={planId} cuentaEquipo={cuentaEquipo}
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
               onNavigate={setView}/>
           )}
@@ -689,6 +694,7 @@ Voicings extendidos para teclado
             guardarSetlistEnEvento={guardarSetlistEnEvento} onLangChange={setLang}
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
+            cuentaEquipo={cuentaEquipo} setCuentaEquipo={setCuentaEquipo}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             variacionesDB={variacionesDB}
             currentUser={currentUser} onCerrarSesion={cerrarSesion}

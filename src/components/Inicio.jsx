@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
-import { PLANES_SETSYNC } from '../data/planes';
+import { PLANES_SETSYNC, TRAMOS_EQUIPO, precioTramoEquipo } from '../data/planes';
 import { t as getT } from '../i18n';
 
 const BG_IMGS_IGLESIA = [
@@ -15,16 +15,9 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
 
-// Cuenta Equipo — precios por persona/mes según tamaño (confirmados,
-// no viven en planes.js porque ese archivo es solo para planes
-// individuales; blanco-etiqueta desde el tier 21-40 hacia arriba).
-const TEAM_TIERS = [
-  {rango:'1–5',     precio:'$6.90'},
-  {rango:'6–10',    precio:'$11.90'},
-  {rango:'11–20',   precio:'$24.90'},
-  {rango:'21–40',   precio:'$36.00', nota:'Marca blanca incluida'},
-  {rango:'41+',     precio:'Contáctanos'},
-];
+// Cuenta Equipo — tramos y precios vienen ahora de planes.js (fuente única
+// de verdad, ver TRAMOS_EQUIPO). Antes vivían hardcodeados acá con el
+// modelo viejo de 5 tramos — reemplazado en la sesión de pricing v51-v57.
 
 // Diferenciadores de SetSync — sintetizado de los documentos de estrategia
 // (misma info del HTML que ya se había armado, versión condensada para
@@ -285,7 +278,8 @@ function TutorialPage({ tut, onClose }) {
 }
 
 // ── Notas ─────────────────────────────────────────────────────────────────
-function NotasPage({notas,onClose,onDelete,onCreate}) {
+function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
+  const tx = getT(lang);
   return (
     <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:200,overflowY:'auto',paddingBottom:80}}>
       <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
@@ -295,18 +289,18 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
           background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:18,
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
         <div style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400}}>
-          Ideas & Notas
+          {tx.ideasNotesLbl}
         </div>
         <button onClick={onCreate}
           style={{padding:'6px 14px',borderRadius:8,border:'none',background:'var(--ac)',
             color:'#000',cursor:'pointer',fontSize:10,fontWeight:700,
-            fontFamily:"'Lexend Giga',sans-serif"}}>+ Nueva</button>
+            fontFamily:"'Lexend Giga',sans-serif"}}>{tx.newNoteBtn}</button>
       </div>
       <div style={{padding:'14px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
         {notas.length===0?(
           <div style={{gridColumn:'span 3',textAlign:'center',padding:'40px 0',
             fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
-            Aún no hay notas
+            {tx.noNotesYet}
           </div>
         ):notas.map((n,i)=>(
           <div key={i} style={{padding:'12px 10px',borderRadius:12,
@@ -315,7 +309,7 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,
               color:'var(--tx)',marginBottom:4,lineHeight:1.3,
               overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
-              {n.texto.slice(0,40)||(n.texto.trim().split(/\n/)[0])||'Sin título'}
+              {n.texto.slice(0,40)||(n.texto.trim().split(/\n/)[0])||tx.noTitleNote}
             </div>
             <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
               {n.fecha}
@@ -331,7 +325,8 @@ function NotasPage({notas,onClose,onDelete,onCreate}) {
   );
 }
 
-function NotasBlock() {
+function NotasBlock({lang='es'}) {
+  const tx = getT(lang);
   const HOY = new Date().toLocaleDateString('es-CL',{day:'numeric',month:'short',year:'numeric'});
   const [notas, setNotas] = useState([]);
   const [editando, setEditando] = useState(false);
@@ -348,31 +343,31 @@ function NotasBlock() {
 
   return (
     <>
-      {verTodas&&<NotasPage notas={notas} onClose={()=>setVerTodas(false)}
+      {verTodas&&<NotasPage notas={notas} onClose={()=>setVerTodas(false)} lang={lang}
         onDelete={borrar} onCreate={()=>{setVerTodas(false);setEditando(true);}}/>}
       <div style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',padding:'var(--sp-md)'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-          <Lbl2>Ideas & Notas</Lbl2>
+          <Lbl2>{tx.ideasNotesLbl}</Lbl2>
           <div style={{display:'flex',gap:8}}>
             {notas.length>0&&(
               <button onClick={()=>setVerTodas(true)}
                 style={{fontSize:9,fontWeight:700,color:'var(--tx3)',background:'none',
                   border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-                Ver todas ({notas.length})
+                {tx.seeAllLbl(notas.length)}
               </button>
             )}
             <button onClick={()=>editando?guardar():setEditando(true)}
               style={{fontSize:9,fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',
                 background:'none',border:'none',cursor:'pointer',
                 fontFamily:"'Lexend Giga',sans-serif"}}>
-              {editando?'Guardar':'+ Nueva'}
+              {editando?tx.saveNoteBtn:tx.newNoteBtn}
             </button>
           </div>
         </div>
         {editando ? (
           <textarea value={texto} onChange={e=>setTexto(e.target.value)}
             autoFocus
-            placeholder="Escribe tu idea, nota o pendiente..."
+            placeholder={tx.writeNotePlaceholder}
             style={{width:'100%',minHeight:72,background:'var(--s1)',
               border:'1px solid var(--bd)',borderRadius:8,
               color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,
@@ -393,7 +388,7 @@ function NotasBlock() {
             style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
               color:'var(--tx3)',lineHeight:1.7,cursor:'pointer',minHeight:36,
               display:'flex',alignItems:'center'}}>
-            Toca para agregar una nota...
+            {tx.tapToAddNote}
           </div>
         )}
       </div>
@@ -414,7 +409,7 @@ const NOTIFICACIONES_DEMO = [
   {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
 ];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', cuentaEquipo={activa:false,tramoId:null}, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
@@ -428,7 +423,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
     .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha))[0]||null;
   const misEquipos = equipos.filter(eq=>(eq.miembros||[]).length>0);
-  const planLabel = {lite:'Lite',pro:'Pro',premium:'Premium'}[planId]||planId;
+  const planLabel = cuentaEquipo?.activa ? 'Premium' : ({lite:'Lite',pro:'Pro',premium:'Premium'}[planId]||planId);
 
   // Bloques con orden arrastrable (por filas de 2)
   // Cada "row" es un índice de bloque
@@ -595,7 +590,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'notas': return (
         <div key="notas" style={{gridColumn:'span 2'}}>
-          <NotasBlock/>
+          <NotasBlock lang={lang}/>
         </div>
       );
 
@@ -659,7 +654,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.personalPlansLbl}</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
-              const isCurrent = planId===p.id;
+              const isCurrent = !cuentaEquipo?.activa && planId===p.id;
               return (
                 <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
                   background:isCurrent?'rgba(48,192,183,.1)':'var(--s1)',
@@ -669,7 +664,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     fontFamily:"'Lexend Giga',sans-serif"}}>{p.label}</div>
                   <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,
                     color:'var(--tx)',fontWeight:400}}>
-                    {p.precioMensual===0?tx.freeLbl:`$${p.precioMensual.toFixed(2)}`}
+                    {p.precioMensual===0?tx.freeLbl:`$${p.precioMensual}`}
                   </div>
                   {p.precioMensual>0&&<div style={{fontSize:7,color:'var(--tx3)',marginTop:1}}>/mes</div>}
                   {isCurrent&&<div style={{fontSize:7,color:'var(--gn)',fontWeight:700,marginTop:4}}>{tx.yourPlanLbl}</div>}
@@ -681,17 +676,25 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
             letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
-            {TEAM_TIERS.map(t=>(
-              <div key={t.rango} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                padding:'8px 12px',borderRadius:10,background:'var(--s1)',
-                border:'1px solid var(--s3)'}}>
-                <div>
-                  <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400}}>{t.rango} personas</span>
-                  {t.nota&&<div style={{fontSize:8,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{t.nota}</div>}
+            {TRAMOS_EQUIPO.map(t=>{
+              const isCurrentTramo = cuentaEquipo?.activa && cuentaEquipo.tramoId===t.id;
+              const precio = t.id==='eq-36+'
+                ? `${tx.fromLbl} $${precioTramoEquipo(t.id,36)}`
+                : `$${t.precioBase}`;
+              return (
+                <div key={t.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+                  padding:'8px 12px',borderRadius:10,
+                  background:isCurrentTramo?'rgba(48,192,183,.1)':'var(--s1)',
+                  border:isCurrentTramo?'1px solid rgba(48,192,183,.35)':'1px solid var(--s3)'}}>
+                  <div>
+                    <span style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400}}>{t.label}</span>
+                    {t.marcaBlanca&&<div style={{fontSize:8,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{tx.whiteLabelIncluded}</div>}
+                    {isCurrentTramo&&<div style={{fontSize:8,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{tx.yourPlanLbl}</div>}
+                  </div>
+                  <span style={{fontSize:12,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>{precio}</span>
                 </div>
-                <span style={{fontSize:12,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>{t.precio}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{marginTop:12,textAlign:'center'}}>
