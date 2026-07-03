@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
 import { PLANES_SETSYNC } from '../data/planes';
+import { t as getT } from '../i18n';
 
 const BG_IMGS_IGLESIA = [
   'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80',
@@ -415,6 +416,7 @@ const NOTIFICACIONES_DEMO = [
 
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
   const feat = getModoFeatures(mode);
+  const tx = getT(lang);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
   const [bgIdx] = useState(()=>Math.floor(Math.random()*3));
   const isAdmin = userRole==='superadmin'||userRole==='leader';
@@ -475,7 +477,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'proximo': return (
         <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
-          <Lbl>{mode==='iglesia'?'Próxima fecha':'Próximo show'}</Lbl>
+          <Lbl>{mode==='iglesia'?tx.nextDateCard:tx.nextShowCard}</Lbl>
           {proximoEvento ? (<>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,
               color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
@@ -488,14 +490,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             {ensayos.some(en=>en.ref===`evento:${proximoEvento.id}`)&&(
               <div style={{display:'flex',alignItems:'center',gap:4,marginTop:5}}>
                 <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>Ensayo asignado</span>
+                <span style={{fontSize:9,fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.rehearsalAssigned}</span>
               </div>
             )}
           </>) : (
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)',fontWeight:300}}>
-              Sin fechas próximas —{' '}
+              {tx.noUpcomingDates}{' '}
               <span style={{color:'var(--ac)',cursor:'pointer'}}
-                onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>crear una</span>
+                onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>{tx.createOne}</span>
             </div>
           )}
         </Card>
@@ -503,12 +505,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'equipo': return (
         <Card cols={2} key="equipo">
-          <Lbl>Mi equipo</Lbl>
+          <Lbl>{tx.myTeamLbl}</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
-              {label:'Personas',val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
-              {label:'Equipos',val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
-              {label:'Líderes',val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
+              {label:tx.peopleLbl,val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
+              {label:tx.teams,val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
+              {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
@@ -527,26 +529,26 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'cancionero': return (
         <Card onClick={()=>onNavigate('repertorio')} key="cancionero">
-          <Lbl>Canciones</Lbl>
+          <Lbl>{tx.songsCardLbl}</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',
-            fontWeight:300,marginTop:4}}>canciones</div>
+            fontWeight:300,marginTop:4}}>{tx.songs}</div>
           {feat.cancioneroUniversal&&(
             <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
-              fontWeight:700,marginTop:6}}>+ Universal ✓</div>
+              fontWeight:700,marginTop:6}}>{tx.universalCheck}</div>
           )}
         </Card>
       );
 
       case 'plan': return (
         <Card onClick={()=>onNavigate('backstage')} key="plan">
-          <Lbl>Mi plan</Lbl>
+          <Lbl>{tx.myPlanLbl}</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:26,
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{planLabel}</div>
           {planId==='lite'&&(
             <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
-              fontWeight:700,marginTop:8}}>↑ Mejorar</div>
+              fontWeight:700,marginTop:8}}>{tx.upgradeLbl}</div>
           )}
         </Card>
       );
@@ -558,12 +560,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <path d="M4 4h13l3 3v13H4z"/><path d="M17 4v6h6"/>
             </svg>
             <span style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>Últimas notificaciones</span>
+              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.lastNotifications}</span>
           </div>
           {NOTIFICACIONES_DEMO.length===0?(
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
-              Sin notificaciones por ahora.
+              {tx.noNotificationsYet}
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
@@ -599,7 +601,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'tutoriales': return (
         <Card cols={2} key="tutoriales">
-          <Lbl>Tutoriales</Lbl>
+          <Lbl>{tx.tutorialsLbl}</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
             {TUTORIALES.map(tut=>(
               <div key={tut.slug}
@@ -615,7 +617,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:300,
                   color:'var(--tx3)',lineHeight:1.5}}>{tut.resumen}</div>
                 <div style={{fontSize:9,color:'var(--ac)',fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>Ver más →</div>
+                  fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>{tx.seeMoreLbl}</div>
               </div>
             ))}
           </div>
@@ -624,7 +626,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'faqs': return (
         <Card cols={2} key="faqs">
-          <Lbl>Preguntas frecuentes</Lbl>
+          <Lbl>{tx.faqLbl}</Lbl>
           <div style={{display:'flex',flexDirection:'column',gap:0}}>
             {FAQS.map((faq,i)=>(
               <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
@@ -651,10 +653,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'planes': return (
         <Card cols={2} key="planes">
-          <Lbl>Planes SetSync</Lbl>
+          <Lbl>{tx.plansSetSyncLbl}</Lbl>
 
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>Planes personales</div>
+            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.personalPlansLbl}</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
               const isCurrent = planId===p.id;
@@ -667,17 +669,17 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     fontFamily:"'Lexend Giga',sans-serif"}}>{p.label}</div>
                   <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:15,
                     color:'var(--tx)',fontWeight:400}}>
-                    {p.precioMensual===0?'Gratis':`$${p.precioMensual.toFixed(2)}`}
+                    {p.precioMensual===0?tx.freeLbl:`$${p.precioMensual.toFixed(2)}`}
                   </div>
                   {p.precioMensual>0&&<div style={{fontSize:7,color:'var(--tx3)',marginTop:1}}>/mes</div>}
-                  {isCurrent&&<div style={{fontSize:7,color:'var(--gn)',fontWeight:700,marginTop:4}}>Tu plan</div>}
+                  {isCurrent&&<div style={{fontSize:7,color:'var(--gn)',fontWeight:700,marginTop:4}}>{tx.yourPlanLbl}</div>}
                 </div>
               );
             })}
           </div>
 
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>Planes equipo · por persona/mes</div>
+            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
             {TEAM_TIERS.map(t=>(
               <div key={t.rango} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -695,7 +697,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{marginTop:12,textAlign:'center'}}>
             <span style={{fontSize:10,color:'var(--gn)',fontWeight:700,cursor:'pointer',
               fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
-              Ver planes completos →
+              {tx.viewFullPlansLbl}
             </span>
           </div>
         </Card>
@@ -727,7 +729,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'rgba(255,255,255,.45)',marginTop:4}}>
-            SetSync · {mode==='iglesia'?'Tu plataforma de worship profesional':'Tu plataforma para bandas en vivo'}
+            SetSync · {mode==='iglesia'?tx.footerTaglineIglesia:tx.footerTaglineBanda}
           </div>
         </div>
       </div>

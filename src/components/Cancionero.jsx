@@ -65,7 +65,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     const id=`v${Date.now()}`;
     const label=nv.label.trim();
     if(nv.tipo==='partitura'){
-      if(!nv.archivo){onToast({text:'Selecciona un archivo',sub:'Imagen o PDF de la partitura'});return;}
+      if(!nv.archivo){onToast({text:tx.selectAFile,sub:tx.selectAFileSub});return;}
       const url=URL.createObjectURL(nv.archivo);
       setVariacionesDB(prev=>({...prev,[nv.cancion]:[...(prev[nv.cancion]||[]),
         {id,label,tipo:'partitura',archivoUrl:url,archivoNombre:nv.archivo.name}]}));
@@ -74,7 +74,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       // Contenido propio de esta variación — mismo mecanismo que "guardar acordes"
       onSaveChords(`${nv.cancion} · ${label}`, nv.contenido||'');
     }
-    onToast({text:'Variación agregada',sub:label});
+    onToast({text:tx.variationAdded,sub:label});
     setNuevaVariacion(null);
   };
 
@@ -86,7 +86,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     const item={id:`sq${Date.now()}`,nombre:file.name.replace(/\.[^.]+$/,''),url,size:(file.size/1024).toFixed(0)+'kb'};
     setArchivosDB(prev=>({...prev,[name]:{...(prev[name]||{trackReferencia:null,secuencia:[]}),
       secuencia:[...((prev[name]||{}).secuencia||[]),item]}}));
-    onToast({text:'Track de secuencia agregado',sub:file.name});
+    onToast({text:tx.sequenceTrackAdded,sub:file.name});
   };
 
   const fl=CANCIONES.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase()));
@@ -540,13 +540,13 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         
         {/* ── Chips de tab con colores ── */}
         {[
-          {id:'mi',    label:'Todas', color:'#c8a97e', bg:'rgba(200,169,126,.12)',
+          {id:'mi',    label:tx.tabAll, color:'#c8a97e', bg:'rgba(200,169,126,.12)',
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>},
-          {id:'universal', label:'Universal', color:'var(--gn)', bg:'rgba(48,192,183,.12)', show:feat.cancioneroUniversal,
+          {id:'universal', label:tx.tabUniversal, color:'var(--gn)', bg:'rgba(48,192,183,.12)', show:feat.cancioneroUniversal,
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>},
-          {id:'partituras',label:'Partituras', color:'#a78bfa', bg:'rgba(167,139,250,.12)',
+          {id:'partituras',label:tx.tabSheetMusic, color:'#a78bfa', bg:'rgba(167,139,250,.12)',
            icon:<svg viewBox="0 0 50 60" width="10" height="11" fill="currentColor"><path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/></svg>},
-          {id:'colecciones',label:'Colecciones', color:'#e07820', bg:'rgba(224,120,32,.12)',
+          {id:'colecciones',label:tx.tabCollections, color:'#e07820', bg:'rgba(224,120,32,.12)',
            icon:<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h6l2 2h8v12H4z"/></svg>},
         ].filter(t=>t.show!==false).map(t=>(
           <button key={t.id}
@@ -572,7 +572,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         <input className="inp" placeholder="Buscar canción..." style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
         <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,border:'1px solid var(--bd)',background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",height:42,display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          {bv?'Por lista':'Por BPM'}
+          {bv?tx.byList:tx.byBpm}
         </button>
       </div>
 
@@ -743,7 +743,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       const nueva={id:Date.now(),...nuevaColeccion};
                       setColecciones(v=>[...v,nueva]);
                       persistirColeccion(nueva);
-                      onToast&&onToast({text:'Colección creada',sub:nuevaColeccion.nombre});
+                      onToast&&onToast({text:tx.collectionCreated,sub:nuevaColeccion.nombre});
                       setNuevaColeccion({nombre:'',color:'#c8a97e',canciones:[]});
                       setShowCrearColeccion(false);
                     }}

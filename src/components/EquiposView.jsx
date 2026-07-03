@@ -6,12 +6,13 @@ import { getModoTexto } from '../data/modo';
 
 export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
   const vx=getModoTexto(mode,lang);
+  const tx=getT(lang);
   return(
     <div>
       <div className="ph">
         <div>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{vx.equipoPersona.plural}</div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13,color:'var(--ac)',fontWeight:400}}>Toca un equipo para ver sus integrantes y roles</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:13,color:'var(--ac)',fontWeight:400}}>{tx.tapTeamHint}</div>
         </div>
         
       </div>
@@ -21,7 +22,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
             <div style={{padding:'12px 15px',display:'flex',alignItems:'center',gap:9,borderBottom:'1px solid var(--bd)'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`,flexShrink:0}}/>
               <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flex:1}}>{eq.name}</span>
-              <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",background:'var(--s2)',border:'1px solid var(--bd)',padding:'2px 8px',borderRadius:100}}>{(eq.miembros||[]).length} integrantes</span>
+              <span style={{fontSize:8,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",background:'var(--s2)',border:'1px solid var(--bd)',padding:'2px 8px',borderRadius:100}}>{tx.memberCount((eq.miembros||[]).length)}</span>
             </div>
             <div style={{padding:'8px 15px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5}}>
               {(eq.roles||[]).map(r=><span key={r} style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 9px',borderRadius:100}}>{r}</span>)}
