@@ -4,7 +4,6 @@ import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 
 const MESES_CORTO =['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const MESES_LARGO =tx.monthsFull;
 const DIAS_SEMANA =['D','L','M','M','J','V','S']; // 0=Dom,...,6=Sáb (getDay order)
 // Para cabecera de columnas en grilla lun-dom:
 const HDR = ['L','M','M','J','V','S','D'];
@@ -115,7 +114,7 @@ function BarraMeses({mesActivo, onChange, eventos=[]}){
       WebkitOverflowScrolling:'touch',
       borderBottom:'1px solid var(--bd)',
     }}>
-      {MESES_LARGO.map((m,i)=>{
+      {tx.monthsFull.map((m,i)=>{
         const isActive = i === mesActivo;
         const count    = contarEventos(i);
         return(
@@ -318,7 +317,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       }}>
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
-            fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{MESES_LARGO[mesNav]}</div>
+            fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'var(--tx2)',lineHeight:1.5}}>
             {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : tx.navMonthsHint}
