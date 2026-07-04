@@ -1,7 +1,7 @@
 import { t as getT } from '../i18n';
 // SongView: visor de canción con transposición, capo, anotaciones,
 // vista bloques/lineal, Nashville, panel Estructura con drag touch.
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 import { tpKey } from '../utils/music';
@@ -991,11 +991,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const wheelRef=useRef(null);
   const wheelScrollTimeout=useRef(null);
   const wheelSyncing=useRef(false); // true mientras nosotros movemos el scroll por código
+  const suppressNextWheelSync=useRef(false); // true cuando quien cambió seqBpm ya posicionó la rueda a mano (tap tempo) — evita que el efecto sincronizador la vuelva a mover y corte la animación smooth a medio camino
   const scrollWheelTo=useCallback((bpm,smooth=false)=>{
     const el=wheelRef.current;
     if(!el)return;
+    const target=(Math.max(BPM_MIN,Math.min(BPM_MAX,bpm))-BPM_MIN)*WHEEL_ITEM_H;
+    // Si la rueda ya está (o casi) en la posición correcta, no la toquemos — esto es
+    // exactamente lo que pasa cuando el propio usuario la arrastró: forzar un
+    // scrollTo acá pelea con el scroll nativo y se siente como que "no responde
+    // bien al tacto". Solo corregimos cuando el cambio vino de afuera (canción
+    // nueva, tap tempo).
+    if(Math.abs(el.scrollTop-target)<1)return;
     wheelSyncing.current=true;
-    el.scrollTo({top:(Math.max(BPM_MIN,Math.min(BPM_MAX,bpm))-BPM_MIN)*WHEEL_ITEM_H,behavior:smooth?'smooth':'auto'});
+    el.scrollTo({top:target,behavior:smooth?'smooth':'auto'});
     requestAnimationFrame(()=>{setTimeout(()=>{wheelSyncing.current=false;},50);});
   },[]);
   const handleWheelScroll=()=>{
@@ -1015,8 +1023,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
   // Mantener la rueda sincronizada cuando seqBpm cambia desde afuera
   // (cambio de canción, tap tempo) — idempotente si el cambio vino de la
-  // rueda misma, así que es seguro correrlo siempre.
-  useEffect(()=>{ scrollWheelTo(seqBpm); },[seqBpm,scrollWheelTo]);
+  // rueda misma, así que es seguro correrlo siempre. useLayoutEffect (no
+  // useEffect) para que la corrección ocurra ANTES del primer pintado:
+  // con useEffect alcanzaba a pintarse un frame con la rueda en su
+  // posición nativa de scrollTop=0 (que visualmente muestra "40", por ser
+  // BPM_MIN) antes de saltar al bpm real de la canción — ese destello es
+  // el "no parte bien en 40" que se reportó.
+  useLayoutEffect(()=>{
+    if(suppressNextWheelSync.current){suppressNextWheelSync.current=false;return;}
+    scrollWheelTo(seqBpm);
+  },[seqBpm,scrollWheelTo]);
 
   // Tap tempo — mismo patrón que en Cancionero, pero escribe directo en
   // seqBpm/seqBpmRef y anima la rueda hasta el valor calculado.
@@ -1051,6 +1067,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       const bpm=Math.round(60000/avgMs);
       if(bpm>=BPM_MIN&&bpm<=BPM_MAX){
         seqBpmRef.current=bpm;
+        suppressNextWheelSync.current=true;
         setSeqBpm(bpm);
         scrollWheelTo(bpm,true);
         if(clickActivo){stopClick();startClick(bpm);}
@@ -1576,6 +1593,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.releasePointerCapture(ev.pointerId);
                           knob.removeEventListener('pointermove',move);
                           knob.removeEventListener('pointerup',up);
+                          knob.removeEventListener('pointercancel',up);
                           // Solo actualizar React state al soltar
                           setFaderVols(v=>{const n=[...v];n[ci]=curVol;return n;});
                           // Envía el valor real a la mesa conectada (v36-ampliación)
@@ -1583,6 +1601,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         };
                         knob.addEventListener('pointermove',move,{passive:false});
                         knob.addEventListener('pointerup',up,{once:true});
+                        // pointercancel: el navegador puede cancelar el puntero por
+                        // conflicto de gestos táctiles (pasa seguido en touch). Sin
+                        // este handler, 'up' nunca se dispara, el estado de React
+                        // nunca se actualiza con curVol, y en el próximo render por
+                        // cualquier otro motivo el knob "salta de vuelta" a su
+                        // posición anterior — exactamente el bug reportado.
+                        knob.addEventListener('pointercancel',up,{once:true});
                       }}>
                         <div style={{position:'absolute',top:'50%',left:'50%',
                           transform:'translate(-50%,-50%)',
@@ -2478,10 +2503,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                               knob.releasePointerCapture(ev.pointerId);
                               knob.removeEventListener('pointermove',move);
                               knob.removeEventListener('pointerup',up);
+                              knob.removeEventListener('pointercancel',up);
                               setTrackVols(v=>{const n=[...v];n[i]=curVol;return n;});
                             };
                             knob.addEventListener('pointermove',move,{passive:false});
                             knob.addEventListener('pointerup',up,{once:true});
+                            // Mismo fix que en el fader de Monitoreo: sin esto, un
+                            // pointercancel del navegador deja el estado sin
+                            // actualizar y el knob salta de vuelta a la posición
+                            // anterior en el próximo render.
+                            knob.addEventListener('pointercancel',up,{once:true});
                           }}
                           onTouchStart={e=>e.stopPropagation()}
                         >{/* knob */}</div>
