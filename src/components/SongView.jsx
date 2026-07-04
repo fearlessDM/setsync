@@ -1374,13 +1374,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchStart={e=>e.stopPropagation()}
         onTouchMove={e=>e.stopPropagation()}
         style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(6,6,14,.97)',borderTop:'2px solid rgba(48,192,183,.4)',
+          background:'rgba(6,6,14,.97)',border:'2px solid var(--gn)',borderBottom:'none',
+          borderRadius:'14px 14px 0 0',
           backdropFilter:'blur(40px)',zIndex:200,
           transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(110%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
           display:'flex',flexDirection:'column',
           maxHeight:'70vh',
         }}>
+
+        {/* Título del bloque */}
+        <div style={{padding:'10px 14px 0',flexShrink:0}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
+        </div>
 
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
@@ -1797,7 +1803,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const panel = (
         <div style={{
           position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(8,8,9,.98)',borderTop:'1px solid var(--s3)',
+          background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
+          borderRadius:'14px 14px 0 0',
           backdropFilter:'blur(40px)',zIndex:110,
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
           transition:'transform .3s cubic-bezier(.4,0,.2,1)',
@@ -1809,8 +1816,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8">
               <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
             </svg>
-            <span style={{flex:1,fontSize:10,fontWeight:900,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>
-              Referencia
+            <span style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>
+              {tx.referenceTabLbl}
             </span>
             {refTab==='track'&&refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:140,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
             {refTab==='track'&&(
@@ -2219,7 +2226,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchMove={e=>e.stopPropagation()}
         style={{
         position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-        background:'rgba(8,8,9,.98)',borderTop:'1px solid var(--bd)',
+        background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
+        borderRadius:'14px 14px 0 0',
         backdropFilter:'blur(40px)',zIndex:110,
         maxHeight:'72vh',
         transform:bottomTab==='secuencia'?'translateY(0)':'translateY(100%)',
@@ -2231,7 +2239,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* Área scrollable: mapa + waveform + controles + BPM */}
         <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
         <div style={{padding:'10px 14px 0'}}>
-          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.sequenceTabLbl}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
           <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.sequenceSubLbl}</div>
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
