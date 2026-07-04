@@ -83,7 +83,8 @@ export function MiniCalEvento({mes, eventos=[], onSelectDay=()=>{}, selectedDay=
 }
 
 // ── Barra de meses ─────────────────────────────────────────────────────────
-function BarraMeses({mesActivo, onChange, eventos=[]}){
+function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
+  const tx = getT(lang);
   const scrollRef = useRef(null);
 
   // Contar eventos por mes (EVENTOS_ESPECIALES + SETLISTS en julio + eventos Firestore)
@@ -308,7 +309,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
     <div style={{paddingBottom:90}}>
 
       {/* ── Barra de meses ── */}
-      <BarraMeses mesActivo={mesNav} onChange={handleMesChange} eventos={eventos}/>
+      <BarraMeses mesActivo={mesNav} onChange={handleMesChange} eventos={eventos} lang={lang}/>
 
       {/* ── Header mes + mini cal ── */}
       <div style={{

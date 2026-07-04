@@ -759,38 +759,42 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     mesaSubsRef.current.forEach(s=>s?.unsubscribe?.());
   },[]);
 
+  // Icono Monitor: headphone + WiFi arcs — verde con glow cuando conectado.
+  // Vive acá (nivel de SongView, no dentro de BottomTabBar) porque tanto
+  // BottomTabBar como MonitorPanel lo necesitan — declararlo dentro de
+  // BottomTabBar lo dejaba invisible para MonitorPanel (ReferenceError:
+  // IconMonitor is not defined, pantalla negra en la pestaña Monitor).
+  const IconMonitor=({active,size=22})=>{
+    const connected = mesaConectada;
+    const col = connected?'var(--gn)':active?'var(--ac)':'var(--tx3)';
+    return(
+      <svg viewBox="0 0 24 24" width={size} height={size} fill="none"
+        style={connected?{filter:'drop-shadow(0 0 5px rgba(48,192,183,.9)) drop-shadow(0 0 10px rgba(48,192,183,.5))'}:{}}>
+        {/* Auricular */}
+        <path d="M5 15v-3a7 7 0 0 1 14 0v3"
+          stroke={col} strokeWidth="2" strokeLinecap="round"/>
+        <rect x="3" y="13.5" width="4" height="5.5" rx="2"
+          fill={col} opacity={connected?1:.7}/>
+        <rect x="17" y="13.5" width="4" height="5.5" rx="2"
+          fill={col} opacity={connected?1:.7}/>
+        {/* WiFi arcos — 3 niveles, visibles solo cuando conectado */}
+        {connected&&[
+          {r:3,  sw:1.5, op:.5},
+          {r:5,  sw:1.8, op:.7},
+          {r:7,  sw:2,   op:.9},
+        ].map(({r,sw,op},i)=>(
+          <path key={i}
+            d={`M ${12-r*0.707} ${8-r*0.707} A ${r} ${r} 0 0 1 ${12+r*0.707} ${8-r*0.707}`}
+            stroke="var(--gn)" strokeWidth={sw} strokeLinecap="round" fill="none" opacity={op}/>
+        ))}
+      </svg>
+    );
+  };
+
   // ── Barra de pestañas inferior (Letra / Monitor / Secuencia) + Nav ──────
   const BottomTabBar=()=>{
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
-
-    // Icono Monitor: headphone + WiFi arcs — verde con glow cuando conectado
-    const IconMonitor=({active,size=22})=>{
-      const connected = mesaConectada;
-      const col = connected?'var(--gn)':active?'var(--ac)':'var(--tx3)';
-      return(
-        <svg viewBox="0 0 24 24" width={size} height={size} fill="none"
-          style={connected?{filter:'drop-shadow(0 0 5px rgba(48,192,183,.9)) drop-shadow(0 0 10px rgba(48,192,183,.5))'}:{}}>
-          {/* Auricular */}
-          <path d="M5 15v-3a7 7 0 0 1 14 0v3"
-            stroke={col} strokeWidth="2" strokeLinecap="round"/>
-          <rect x="3" y="13.5" width="4" height="5.5" rx="2"
-            fill={col} opacity={connected?1:.7}/>
-          <rect x="17" y="13.5" width="4" height="5.5" rx="2"
-            fill={col} opacity={connected?1:.7}/>
-          {/* WiFi arcos — 3 niveles, visibles solo cuando conectado */}
-          {connected&&[
-            {r:3,  sw:1.5, op:.5},
-            {r:5,  sw:1.8, op:.7},
-            {r:7,  sw:2,   op:.9},
-          ].map(({r,sw,op},i)=>(
-            <path key={i}
-              d={`M ${12-r*0.707} ${8-r*0.707} A ${r} ${r} 0 0 1 ${12+r*0.707} ${8-r*0.707}`}
-              stroke="var(--gn)" strokeWidth={sw} strokeLinecap="round" fill="none" opacity={op}/>
-          ))}
-        </svg>
-      );
-    };
 
     // Icono Secuencia: logo SVG provisto por Danny (public/logo secuencias.svg)
     const IconSecuencia=({active})=>(
