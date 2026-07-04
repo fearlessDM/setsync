@@ -315,6 +315,7 @@ input[type="range"].fader-velocidad{
   height:6px;border-radius:var(--rad-full);
   background:rgba(255,255,255,.12);
   outline:none;cursor:pointer;
+  touch-action:none;
 }
 input[type="range"].fader-velocidad::-webkit-slider-thumb{
   -webkit-appearance:none;appearance:none;

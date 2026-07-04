@@ -90,7 +90,10 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   // sFs (tamaño de las etiquetas de bloque) se mantiene en un cálculo simple
   // ligado al ancho de pantalla, no a la letra — es un elemento de UI fijo,
   // no parte del contenido que necesita maximizarse para llenar el espacio.
-  const sFs=Math.max(7,Math.floor(screenW/30)-4);
+  // Con techo (12px): sin él, en desktop/horizontal (screenW grande) esta
+  // fórmula escalaba sin límite y las etiquetas de bloque (VERSO 1, CORO...)
+  // salían gigantes.
+  const sFs=Math.min(12,Math.max(7,Math.floor(screenW/30)-4));
 
   // Aplica el sistema de notación elegido (Americano/Latino/Grados) a un
   // acorde ya transpuesto. Americano es passthrough (el acorde tal cual);

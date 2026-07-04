@@ -13,9 +13,10 @@ import { useRef, useEffect } from 'react';
 // tan rápido?"). El fader es la única fuente de verdad, simple y predecible
 // en toda canción, tenga o no BPM cargado.
 //
-// Rango del fader: RANGO_SCROLL define min/max en px/seg. Amplio a propósito
-// (de muy lento, para leer con calma, a rápido) para cubrir cualquier tipo
-// de canción sin que el usuario sienta que le faltan velocidades intermedias.
+// Rango del fader: RANGO_SCROLL define min/max en px/seg. Recalibrado a
+// pedido de Danny — el tope anterior (60px/s) resultaba demasiado rápido
+// para cualquier uso real de lectura de letra; el rango completo debe ir
+// de muy lento a lento, no de lento a rápido.
 //
 // NOTA PARA TANDA 3 (audio de referencia): este hook sigue siendo el punto
 // de extensión natural para el futuro "modo práctica" con audio real. La
@@ -31,7 +32,7 @@ import { useRef, useEffect } from 'react';
 //  - setAutoScroll: para desactivarlo automáticamente al llegar al final
 //  - scrollSpeed: velocidad en píxeles/segundo, definida por el fader del usuario
 //  - idx: índice de canción activa, para reiniciar el efecto al cambiar
-export const RANGO_SCROLL={min:4,max:60,default:14};
+export const RANGO_SCROLL={min:3,max:18,default:6};
 
 export function useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx}){
   const scrollRaf=useRef(null);
