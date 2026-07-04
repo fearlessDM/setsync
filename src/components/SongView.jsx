@@ -799,12 +799,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     // Icono Secuencia: logo SVG provisto por Danny (public/logo secuencias.svg)
     const IconSecuencia=({active})=>(
       <img src="/logo secuencias.svg" alt="" width="19" height="19"
-        style={{opacity:active?1:.55,filter:active?'drop-shadow(0 0 4px rgba(48,192,183,.5))':'none',
-          transition:'opacity .15s,filter .15s'}}/>
+        style={{opacity:active?1:.55,transition:'opacity .15s'}}/>
     );
 
     const tabs=[
-      {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)},
+      {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(
+        <img src="/logo referencias.svg" alt="" width="19" height="19"
+          style={{opacity:a?1:.55,transition:'opacity .15s'}}/>
+      )},
       {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>(<IconMonitor active={a}/>)},
       {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
     ];
@@ -848,7 +850,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               }
             }} style={{
               flex:1,margin:'6px 3px',borderRadius:9,
-              border:'2px solid var(--gn)',
+              border:'none',
               background:'var(--s1)',
               display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
               padding:'4px 0',
@@ -1384,8 +1386,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         }}>
 
         {/* Título del bloque */}
-        <div style={{padding:'10px 14px 0',flexShrink:0}}>
+        <div style={{padding:'10px 14px 6px',flexShrink:0}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
+          <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.wifiHintLbl}</div>
+          <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+            <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+          </div>
         </div>
 
         {/* Header */}
@@ -1424,12 +1430,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
               display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
         </div>
-        {!mesaConectada&&mesaEstado!=='conectando'&&(
-          <div style={{padding:'6px 12px 0',fontSize:9,color:'var(--tx3)',fontWeight:300,
-            fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>
-            {tx.wifiHintLbl}
-          </div>
-        )}
 
         {/* Panel de conexión — marca + IP (v36/v37-ampliación) */}
         {showConectarMesa&&(
@@ -1812,24 +1812,28 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           maxHeight:'62vh',
         }}>
           {/* Header */}
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8">
-              <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-            </svg>
-            <span style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>
-              {tx.referenceTabLbl}
-            </span>
-            {refTab==='track'&&refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:140,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
-            {refTab==='track'&&(
-              <>
-                <button onClick={()=>refInputRef.current?.click()}
-                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-                  {refAudio?tx.changeBtn:tx.uploadAudioBtn}
-                </button>
-                <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
-                  onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
-              </>
-            )}
+          <div style={{padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <img src="/logo referencias.svg" alt="" width="16" height="16"/>
+              <span style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>
+                {tx.referenceTabLbl}
+              </span>
+              {refTab==='track'&&refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:100,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
+              {refTab==='track'&&(
+                <>
+                  <button onClick={()=>refInputRef.current?.click()}
+                    style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                    {refAudio?tx.changeBtn:tx.uploadAudioBtn}
+                  </button>
+                  <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
+                    onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
+                </>
+              )}
+            </div>
+            <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:4,opacity:.7}}>{tx.referenceSubLbl}</div>
+            <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+              <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+            </div>
           </div>
 
           {/* Sub-tabs Capa 1 (Track) / Capa 2 (Grabaciones) — v36 */}
@@ -2241,6 +2245,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 0'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
           <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.sequenceSubLbl}</div>
+          <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+            <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+          </div>
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
         {guias&&guias.length>0&&(
