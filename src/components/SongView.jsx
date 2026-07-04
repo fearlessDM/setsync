@@ -1411,7 +1411,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
             padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
             border:'1px solid rgba(224,164,88,.3)'}}>
-            <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
+            <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
             <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
           </div>
         </div>
@@ -1862,7 +1862,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
                 padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
                 border:'1px solid rgba(224,164,88,.3)'}}>
-                <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
+                <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
                 <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
               </div>
             </div>
@@ -2291,7 +2291,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
             padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
             border:'1px solid rgba(224,164,88,.3)'}}>
-            <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
+            <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
             <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
           </div>
         </div>
