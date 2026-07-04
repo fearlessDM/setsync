@@ -821,20 +821,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       }}>
         {/* ← Anterior */}
         <button onClick={()=>canPrev&&setIdx(i=>i-1)} disabled={!canPrev}
-          style={{width:64,border:'none',background:'transparent',flexShrink:0,
+          style={{
+            flex:1,margin:'6px 3px',borderRadius:9,
+            border:'none',
+            background:'var(--s1)',
             display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
-            cursor:canPrev?'pointer':'default',borderTop:'2px solid transparent',padding:'0 4px'}}>
-          <div style={{
-            display:'flex',alignItems:'center',gap:3,
-            padding:'5px 10px',borderRadius:20,
-            background:canPrev?'var(--bd)':'transparent',
-            border:canPrev?'1px solid var(--div)':'1px solid transparent',
-            transition:'all .2s',
+            padding:'4px 0',
+            color:canPrev?'var(--tx)':'var(--bd2)',
+            cursor:canPrev?'pointer':'default',transition:'all .15s',
+            fontFamily:"'Lexend Giga',sans-serif",
           }}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={canPrev?'var(--tx)':'var(--bd2)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',
-              fontFamily:"'Lexend Giga',sans-serif",color:canPrev?'var(--tx)':'var(--bd2)'}}>Ant</span>
-          </div>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={canPrev?'var(--tx)':'var(--bd2)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>Ant</span>
         </button>
 
         {/* Tabs */}
@@ -866,22 +864,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Siguiente → */}
         <button onClick={()=>{ if(isLast) onClose(); else setIdx(i=>i+1); }}
-          style={{width:64,border:'none',background:'transparent',flexShrink:0,
+          style={{
+            flex:1,margin:'6px 3px',borderRadius:9,
+            border:'none',
+            background:'var(--s1)',
             display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
-            cursor:'pointer',borderTop:'2px solid transparent',padding:'0 4px'}}>
-          <div style={{
-            display:'flex',alignItems:'center',gap:3,
-            padding:'5px 10px',borderRadius:20,
-            background:isLast?'rgba(253,128,131,.2)':'rgba(48,192,183,.2)',
-            border:isLast?'1px solid rgba(253,128,131,.5)':'1px solid rgba(48,192,183,.5)',
-            transition:'all .2s',
+            padding:'4px 0',
+            color:isLast?'var(--rd)':'var(--gn)',
+            cursor:'pointer',transition:'all .15s',
+            fontFamily:"'Lexend Giga',sans-serif",
           }}>
-            <span style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'.4px',
-              fontFamily:"'Lexend Giga',sans-serif",color:isLast?'var(--rd)':'var(--gn)'}}>
-              {isLast?'Fin':'Sig'}
-            </span>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={isLast?'var(--rd)':'var(--gn)'} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={isLast?'var(--rd)':'var(--gn)'} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style={{fontSize:8,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>
+            {isLast?'Fin':'Sig'}
+          </span>
         </button>
       </div>
     );
@@ -1389,8 +1385,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 6px',flexShrink:0}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
           <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.wifiHintLbl}</div>
-          <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
-            <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+          <div style={{marginTop:6,display:'inline-flex',alignItems:'center',gap:6,
+            padding:'5px 10px',borderRadius:100,background:'rgba(224,164,88,.12)',
+            border:'1px solid rgba(224,164,88,.3)'}}>
+            <img src="/icono interfaz.svg" alt="" width="12" height="12"/>
+            <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
           </div>
         </div>
 
@@ -1398,9 +1397,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{display:'flex',alignItems:'center',gap:10,padding:'7px 12px',
           borderBottom:'1px solid var(--s3)',flexShrink:0}}>
           <button onClick={()=>setShowConectarMesa(v=>!v)}
-            style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0,background:'none',border:'none',cursor:'pointer',padding:0,textAlign:'left'}}>
+            style={{display:'flex',alignItems:'center',gap:8,flex:1,minWidth:0,cursor:'pointer',textAlign:'left',
+              borderRadius:10,padding:mesaConectada||mesaEstado==='conectando'?0:'7px 12px',
+              border:mesaConectada||mesaEstado==='conectando'?'none':'1px solid rgba(48,192,183,.4)',
+              background:mesaConectada||mesaEstado==='conectando'?'none':'rgba(48,192,183,.1)'}}>
             <span style={{display:'flex',alignItems:'center',flexShrink:0}}><IconMonitor active={false} size={16}/></span>
-            <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--tx3)',
+            <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--gn)',
               fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
               {mesaConectada?tx.connectedToLbl(mesaNombre):mesaEstado==='conectando'?tx.connectingLbl:tx.tapToConnectLbl}
             </div>
@@ -1831,8 +1833,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               )}
             </div>
             <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:4,opacity:.7}}>{tx.referenceSubLbl}</div>
-            <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
-              <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+            <div style={{marginTop:6,display:'inline-flex',alignItems:'center',gap:6,
+              padding:'5px 10px',borderRadius:100,background:'rgba(224,164,88,.12)',
+              border:'1px solid rgba(224,164,88,.3)'}}>
+              <img src="/icono interfaz.svg" alt="" width="12" height="12"/>
+              <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
             </div>
           </div>
 
@@ -2245,8 +2250,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 0'}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
           <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.sequenceSubLbl}</div>
-          <div style={{fontSize:9,color:'#e0a458',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:3,display:'flex',alignItems:'center',gap:4}}>
-            <span>🔌</span><span>{tx.audioInterfaceHintLbl}</span>
+          <div style={{marginTop:6,display:'inline-flex',alignItems:'center',gap:6,
+            padding:'5px 10px',borderRadius:100,background:'rgba(224,164,88,.12)',
+            border:'1px solid rgba(224,164,88,.3)'}}>
+            <img src="/icono interfaz.svg" alt="" width="12" height="12"/>
+            <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
           </div>
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
