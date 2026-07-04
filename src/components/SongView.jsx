@@ -342,7 +342,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // slider siempre soportó drag nativo, pero el thumb por defecto del
   // navegador es muy chico para agarrarlo con precisión en pantallas
   // táctiles, lo cual se sentía como "solo responde al clic".
-  const FaderVelocidad=()=>(
+  const FaderVelocidad=({vertical=false})=>vertical?(
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10,height:180}}>
+      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.fastLbl}</span>
+      <input
+        type="range"
+        className="fader-velocidad fader-velocidad-v"
+        min={RANGO_SCROLL.min}
+        max={RANGO_SCROLL.max}
+        value={scrollSpeed}
+        onChange={e=>setScrollSpeed(Number(e.target.value))}
+        style={{flex:1}}
+      />
+      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.slowLbl}</span>
+    </div>
+  ):(
     <>
       <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.slowLbl}</span>
       <input
@@ -359,14 +373,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   // ── Popup de velocidad — solo en móvil vertical, para no ocupar espacio
-  // fijo en la barra de controles cuando la pantalla es angosta ───────────
+  // fijo en la barra de controles cuando la pantalla es angosta. Fader
+  // vertical acá (a pedido de Danny, como experimento): un fader vertical
+  // no compite por el mismo eje de gesto que un swipe/scroll horizontal
+  // de la barra de herramientas, a diferencia del horizontal que se
+  // sentía "desaparecer" al tocarlo en algunos dispositivos. ──────────────
   const PopupVelocidad=()=>(
     <div onClick={()=>setShowSpeedPopup(false)} style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:16}}>Velocidad de Auto Scroll</div>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <FaderVelocidad/>
-        </div>
+      <div onClick={e=>e.stopPropagation()} onTouchStart={e=>e.stopPropagation()} onTouchMove={e=>e.stopPropagation()}
+        style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%',display:'flex',flexDirection:'column',alignItems:'center'}}>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:16,alignSelf:'flex-start'}}>Velocidad de Auto Scroll</div>
+        <FaderVelocidad vertical/>
         <button onClick={()=>setShowSpeedPopup(false)} style={{width:'100%',padding:'10px',marginTop:18,border:'1px solid var(--bd)',borderRadius:10,background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.readyLbl}</button>
       </div>
     </div>
@@ -799,15 +816,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     // Icono Secuencia: logo SVG provisto por Danny (public/logo secuencias.svg)
     const IconSecuencia=({active})=>(
       <div style={{width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <img src="/logo secuencias.svg" alt="" style={{width:'100%',height:'100%',objectFit:'contain',
+        <img src="/logo secuencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain',
           opacity:active?1:.55,transition:'opacity .15s'}}/>
       </div>
     );
 
     const tabs=[
       {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(
-        <img src="/logo referencias.svg" alt="" width="19" height="19"
-          style={{opacity:a?1:.55,transition:'opacity .15s'}}/>
+        <div style={{width:19,height:19,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <img src="/logo referencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain',
+            opacity:a?1:.55,transition:'opacity .15s'}}/>
+        </div>
       )},
       {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>(<IconMonitor active={a}/>)},
       {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
@@ -1389,8 +1408,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
             <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.wifiHintLbl}</div>
           </div>
-          <div style={{flex:'1 1 50%',display:'flex',alignItems:'center',gap:8,
-            padding:'6px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
+          <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
+            padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
             border:'1px solid rgba(224,164,88,.3)'}}>
             <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
             <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
@@ -1418,20 +1437,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {mesaConectada?tx.connectedToLbl(mesaNombre):mesaEstado==='conectando'?tx.connectingLbl:tx.tapToConnectLbl}
             </div>
           </button>
-          <div style={{display:'flex',alignItems:'center',gap:4}}>
+          <div style={{display:'flex',alignItems:'center',gap:4,height:26}}>
             <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
             <select value={monitorBus} onChange={e=>setMonitorBus(Number(e.target.value))}
               style={{appearance:'none',WebkitAppearance:'none',border:'1px solid var(--bd)',borderRadius:6,
-                background:'var(--s3)',color:'var(--gn)',fontSize:9,fontWeight:900,padding:'3px 6px',
+                background:'var(--s3)',color:'var(--gn)',fontSize:9,fontWeight:900,
+                height:26,padding:'0 8px',boxSizing:'border-box',
                 cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
               {[1,2,3,4].map(b=>(<option key={b} value={b}>{b}</option>))}
             </select>
           </div>
-          <div style={{display:'inline-flex',borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
+          <div style={{display:'inline-flex',height:26,borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
               <button key={l} onClick={()=>setMonitorLayer(l)}
-                style={{padding:'2px 8px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",
+                style={{padding:'0 10px',height:'100%',border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",boxSizing:'border-box',
                   background:monitorLayer===l?'rgba(48,192,183,.25)':'transparent',
                   color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
                 {l}
@@ -1439,9 +1459,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             ))}
           </div>
           <button onClick={()=>setShowMonitor(false)}
-            style={{width:20,height:20,borderRadius:5,border:'1px solid var(--bd)',
+            style={{width:26,height:26,borderRadius:6,border:'1px solid var(--bd)',
               background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
-              display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button>
+              display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1,
+              boxSizing:'border-box',flexShrink:0}}>×</button>
         </div>
 
         {/* Panel de conexión — marca + IP (v36/v37-ampliación) */}
@@ -1827,26 +1848,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {/* Header */}
           <div style={{padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <img src="/logo referencias.svg" alt="" width="16" height="16"/>
+              <div style={{width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <img src="/logo referencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain'}}/>
+              </div>
               <span style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>
                 {tx.referenceTabLbl}
               </span>
-              {refTab==='track'&&refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:100,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
-              {refTab==='track'&&(
-                <>
-                  <button onClick={()=>refInputRef.current?.click()}
-                    style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-                    {refAudio?tx.changeBtn:tx.uploadAudioBtn}
-                  </button>
-                  <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
-                    onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
-                </>
-              )}
+              <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
+                onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
             </div>
             <div style={{marginTop:4,display:'flex',alignItems:'center',gap:10}}>
               <div style={{flex:'1 1 50%',fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.referenceSubLbl}</div>
-              <div style={{flex:'1 1 50%',display:'flex',alignItems:'center',gap:8,
-                padding:'6px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
+              <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
+                padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
                 border:'1px solid rgba(224,164,88,.3)'}}>
                 <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
                 <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
@@ -1908,6 +1922,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   onLoadedMetadata={e=>setRefDuration(e.target.duration)}
                   onEnded={()=>setRefPlaying(false)}
                   style={{display:'none'}}/>
+
+                {/* Nombre del archivo + botón para cambiarlo */}
+                <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+                  <span style={{flex:1,fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
+                  <button onClick={()=>refInputRef.current?.click()}
+                    style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                    {tx.changeBtn}
+                  </button>
+                </div>
 
                 {/* Waveform / Progress bar principal */}
                 <div style={{position:'relative',height:48,borderRadius:10,background:'var(--s1)',overflow:'hidden',cursor:'pointer',flexShrink:0}}
@@ -2265,8 +2288,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
             <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.sequenceSubLbl}</div>
           </div>
-          <div style={{flex:'1 1 50%',display:'flex',alignItems:'center',gap:8,
-            padding:'6px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
+          <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
+            padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
             border:'1px solid rgba(224,164,88,.3)'}}>
             <img src="/icono interfaz.svg" alt="" width="30" height="30" style={{flexShrink:0}}/>
             <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>

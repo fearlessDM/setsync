@@ -335,6 +335,19 @@ input[type="range"].fader-velocidad::-moz-range-thumb{
 }
 input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;transform:scale(1.1);}
 
+/* Variante vertical (popup de velocidad en móvil): writing-mode es el
+   método moderno estándar para range verticales; direction:rtl hace que
+   el mínimo quede abajo y el máximo arriba, como un fader físico real. */
+input[type="range"].fader-velocidad-v{
+  writing-mode:vertical-lr;
+  direction:rtl;
+  width:6px;
+  height:100%;
+  appearance:slider-vertical;
+  -webkit-appearance:slider-vertical;
+  touch-action:none;
+}
+
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
