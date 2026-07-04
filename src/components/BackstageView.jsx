@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // equipos ya no se importa directo — llega por props (equipos/setEquipos)
 // para poder sincronizar con Firestore.
 import { initials } from '../utils/music';
+import { CustomSelect } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 
@@ -77,6 +78,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [pastorTexto,setPastorTexto]=useState('');
   const [pastorNotas,setPastorNotas]=useState('');
   const [selectedPermisos,setSelectedPermisos]=useState([]);
+  const [orgPais,setOrgPais]=useState('Chile');
   const [selectedIntegrante,setSelectedIntegrante]=useState('');
   const [lideresActuales,setLideresActuales]=useState([
     {name:'Cony Saavedra',av:'CS',rol:'Líder Banda',permisos:['editar setlist','convocar equipo']},
@@ -116,18 +118,18 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.dateFieldLbl}</div>
         <div style={{display:'flex',gap:8}}>
-          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}} value={evFecha.split('-')[2]||''} onChange={e=>{const d=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[2]=d.padStart(2,'0');return parts.join('-');});}}>
-            <option value="">{tx.dayLbl}</option>
-            {Array.from({length:31},(_,i)=>i+1).map(d=>(<option key={d} value={d}>{d}</option>))}
-          </select>
-          <select className="inp" style={{flex:1.4,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value={evFecha.split('-')[1]||''} onChange={e=>{const m=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[1]=m.padStart(2,'0');return parts.join('-');});}}>
-            <option value="">{tx.monthPlaceholderLbl}</option>
-            {tx.monthsFull.map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
-          </select>
-          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}} value={evFecha.split('-')[0]||''} onChange={e=>{const y=e.target.value;setEvFecha(prev=>{const parts=prev.split('-');parts[0]=y;return parts.join('-');});}}>
-            <option value="">{tx.yearLbl}</option>
-            {['2026','2027','2028'].map(y=>(<option key={y} value={y}>{y}</option>))}
-          </select>
+          <CustomSelect style={{flex:1}} placeholder={tx.dayLbl}
+            value={Number(evFecha.split('-')[2])||''}
+            onChange={d=>setEvFecha(prev=>{const parts=prev.split('-');parts[2]=String(d).padStart(2,'0');return parts.join('-');})}
+            options={Array.from({length:31},(_,i)=>i+1).map(d=>({value:d,label:String(d)}))}/>
+          <CustomSelect style={{flex:1.4}} placeholder={tx.monthPlaceholderLbl}
+            value={Number(evFecha.split('-')[1])||''}
+            onChange={m=>setEvFecha(prev=>{const parts=prev.split('-');parts[1]=String(m).padStart(2,'0');return parts.join('-');})}
+            options={tx.monthsFull.map((m,i)=>({value:i+1,label:m}))}/>
+          <CustomSelect style={{flex:1}} placeholder={tx.yearLbl}
+            value={evFecha.split('-')[0]||''}
+            onChange={y=>setEvFecha(prev=>{const parts=prev.split('-');parts[0]=String(y);return parts.join('-');})}
+            options={['2026','2027','2028'].map(y=>({value:y,label:y}))}/>
         </div>
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
@@ -176,20 +178,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                     {asignaciones.map(a=>(
                       <div key={a.id} style={{display:'flex',gap:6,alignItems:'center'}}>
                         {vars.length>0&&(
-                          <select value={a.variacionId||'original'} onChange={e=>actualizarAsignacion(a.id,'variacionId',e.target.value)}
-                            style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                              color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                            <option value="original">Original (letra/acordes)</option>
-                            {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
-                          </select>
+                          <CustomSelect value={a.variacionId||'original'} onChange={v=>actualizarAsignacion(a.id,'variacionId',v)}
+                            style={{flex:1,padding:'6px 8px',fontSize:10}}
+                            options={[{value:'original',label:'Original (letra/acordes)'},...vars.map(v=>({value:v.id,label:`${v.label}${v.tipo==='partitura'?' (partitura)':''}`}))]}/>
                         )}
                         {personas.length>0&&(
-                          <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
-                            style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                              color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                            <option value="">{tx.notAssignedLbl}</option>
-                            {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
-                          </select>
+                          <CustomSelect value={a.personaId||''} onChange={v=>actualizarAsignacion(a.id,'personaId',v||null)}
+                            style={{flex:1,padding:'6px 8px',fontSize:10}} placeholder={tx.notAssignedLbl}
+                            options={personas.map(p=>({value:p.id,label:p.name}))}/>
                         )}
                         {asignaciones.length>1&&(
                           <button onClick={()=>quitarAsignacion(a.id)}
@@ -385,14 +381,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               </button>
             </div>
           ):(
-            <select className="inp" value={slEventoId} onChange={e=>setSlEventoId(e.target.value)} style={{cursor:'pointer'}}>
-              <option value="">Sin asignar — guardar como borrador</option>
-              {eventos.map(ev=>(
-                <option key={ev.id} value={ev.id}>
-                  {ev.nombre}{ev.fecha?' · '+ev.fecha:''}
-                </option>
-              ))}
-            </select>
+            <CustomSelect value={slEventoId} onChange={setSlEventoId}
+              placeholder="Sin asignar — guardar como borrador"
+              options={eventos.map(ev=>({value:ev.id,label:`${ev.nombre}${ev.fecha?' · '+ev.fecha:''}`}))}/>
           )}
           {slEventoId&&(
             <div style={{marginTop:8,padding:'8px 12px',borderRadius:8,background:'rgba(94,206,160,.08)',border:'1px solid rgba(94,206,160,.2)',fontSize:11,color:'var(--gn)',fontWeight:700,display:'flex',alignItems:'center',gap:6}}>
@@ -462,20 +453,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                       {asignaciones.map(a=>(
                         <div key={a.id} style={{display:'flex',gap:6,alignItems:'center'}}>
                           {vars.length>0&&(
-                            <select value={a.variacionId||'original'} onChange={e=>actualizarAsignacion(a.id,'variacionId',e.target.value)}
-                              style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                                color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                              <option value="original">Original (letra/acordes)</option>
-                              {vars.map(v=>(<option key={v.id} value={v.id}>{v.label}{v.tipo==='partitura'?' (partitura)':''}</option>))}
-                            </select>
+                            <CustomSelect value={a.variacionId||'original'} onChange={v=>actualizarAsignacion(a.id,'variacionId',v)}
+                              style={{flex:1,padding:'6px 8px',fontSize:10}}
+                              options={[{value:'original',label:'Original (letra/acordes)'},...vars.map(v=>({value:v.id,label:`${v.label}${v.tipo==='partitura'?' (partitura)':''}`}))]}/>
                           )}
                           {personas.length>0&&(
-                            <select value={a.personaId||''} onChange={e=>actualizarAsignacion(a.id,'personaId',e.target.value||null)}
-                              style={{flex:1,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s2)',
-                                color:'var(--tx2)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-                              <option value="">{tx.notAssignedLbl}</option>
-                              {personas.map(p=>(<option key={p.id} value={p.id}>{p.name}</option>))}
-                            </select>
+                            <CustomSelect value={a.personaId||''} onChange={v=>actualizarAsignacion(a.id,'personaId',v||null)}
+                              style={{flex:1,padding:'6px 8px',fontSize:10}} placeholder={tx.notAssignedLbl}
+                              options={personas.map(p=>({value:p.id,label:p.name}))}/>
                           )}
                           {asignaciones.length>1&&(
                             <button onClick={()=>quitarAsignacion(a.id)}
@@ -591,10 +576,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <input className="inp" placeholder="Correo (opcional)" type="email" value={nuevoMiembro.email}
               onChange={e=>setNuevoMiembro(v=>({...v,email:e.target.value}))}/>
             {equipos.length>1&&(
-              <select className="inp" value={nuevoMiembro.equipoId} style={{cursor:'pointer'}}
-                onChange={e=>setNuevoMiembro(v=>({...v,equipoId:e.target.value}))}>
-                {equipos.map(eq=>(<option key={eq.id} value={eq.id}>{eq.name}</option>))}
-              </select>
+              <CustomSelect value={nuevoMiembro.equipoId}
+                onChange={v=>setNuevoMiembro(vv=>({...vv,equipoId:v}))}
+                options={equipos.map(eq=>({value:eq.id,label:eq.name}))}/>
             )}
             <div style={{display:'flex',gap:8}}>
               <button className="btn btn-g" style={{flex:1}} onClick={()=>setNuevoMiembro(null)}>{tx.cancel}</button>
@@ -711,12 +695,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                     :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s3)',border:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
                   }
                   <span style={{flex:1,fontSize:12,fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
-                  <select value={m.role} onChange={e=>{
-                    const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:e.target.value}:mm)};
+                  <CustomSelect value={m.role} onChange={v=>{
+                    const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:v}:mm)};
                     setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                  }} style={{fontSize:9,color:eq.color,background:eq.color+'12',border:`1px solid ${eq.color}30`,padding:'3px 7px',borderRadius:100,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400,outline:'none'}}>
-                    {(eq.roles||[]).map(r=>(<option key={r} value={r}>{r}</option>))}
-                  </select>
+                  }} style={{fontSize:9,color:eq.color,background:eq.color+'12',border:`1px solid ${eq.color}30`,padding:'3px 10px',borderRadius:100,fontWeight:400,width:'auto'}}
+                    options={(eq.roles||[]).map(r=>({value:r,label:r}))}/>
                   <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0}}>
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
                       const file=e.target.files?.[0];
@@ -781,18 +764,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 </div>
               </div>
               {/* Agregar miembro al equipo */}
-              <select className="inp" style={{marginTop:10,fontSize:11,cursor:'pointer',background:'var(--s1)',color:'var(--tx)'}} value="" onChange={e=>{
-                if(!e.target.value)return;
-                const persona=personas.find(m=>String(m.id)===e.target.value);
+              <CustomSelect style={{marginTop:10,fontSize:11}} value="" placeholder={tx.addMemberToTeamPlaceholder} onChange={v=>{
+                if(!v)return;
+                const persona=personas.find(m=>String(m.id)===String(v));
                 if(!persona)return;
                 const ya=(eq.miembros||[]).find(em=>em.id===persona.id);
                 const upd={...eq,miembros:ya?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||tx.generalLbl,foto:null}]};
                 setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
                 onToast({text:tx.addedToToast(eq.name),sub:persona.name});
-              }}>
-                <option value="">{tx.addMemberToTeamPlaceholder}</option>
-                {personas.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
-              </select>
+              }}
+                options={personas.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>({value:m.id,label:m.name}))}/>
             </div>
           );
         })()}
@@ -874,13 +855,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>{tx.addLeaderLbl}</div>
         <div style={{marginBottom:12}}>
           <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:6}}>{tx.memberFieldLbl}</div>
-          <select className="inp" style={{background:'var(--s1)',color:'var(--tx)',cursor:'pointer'}}
-            value={selectedIntegrante} onChange={e=>setSelectedIntegrante(e.target.value)}>
-            <option value="">{tx.selectPlaceholderLbl}</option>
-            {personas.filter(p=>!lideresActuales.find(l=>l.name===p.name)).map(p=>(
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+          <CustomSelect value={selectedIntegrante} onChange={setSelectedIntegrante}
+            placeholder={tx.selectPlaceholderLbl}
+            options={personas.filter(p=>!lideresActuales.find(l=>l.name===p.name)).map(p=>({value:p.id,label:p.name}))}/>
         </div>
         <div style={{marginBottom:14}}>
           <div style={{fontSize:9,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.permissionsLbl}</div>
@@ -1000,9 +977,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}} defaultValue="Iglesia"/>
         <div style={{display:'flex',gap:8,marginBottom:8}}>
           <input className="inp" placeholder={tx.cityPlaceholder} style={{flex:1}}/>
-          <select className="inp" style={{flex:1,cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
-            {tx.countriesList.map(p=>(<option key={p} value={p}>{p}</option>))}
-          </select>
+          <CustomSelect value={orgPais} onChange={setOrgPais} style={{flex:1}}
+            options={tx.countriesList.map(p=>({value:p,label:p}))}/>
         </div>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8,marginTop:4}}>{tx.logoFieldLbl}</div>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -1327,10 +1303,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.assignToLbl}</div>
-        <select className="inp" value={ensRef} onChange={e=>setEnsRef(e.target.value)} style={{cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
-          <option value="">Sin asignar — ensayo libre</option>
-          {eventos.map(ev=>(<option key={`ev-${ev.id}`} value={`evento:${ev.id}`}>{ev.nombre} · {ev.fecha}</option>))}
-        </select>
+        <CustomSelect value={ensRef} onChange={setEnsRef}
+          placeholder="Sin asignar — ensayo libre"
+          options={eventos.map(ev=>({value:`evento:${ev.id}`,label:`${ev.nombre} · ${ev.fecha}`}))}/>
       </div>
 
       {ensayosDelEvento.length>0&&(
@@ -1349,10 +1324,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.rehearsalSetlistLbl}</div>
-        <select className="inp" value={ensSetlistId} onChange={e=>setEnsSetlistId(e.target.value)} style={{cursor:'pointer',background:'var(--s2)',color:'var(--tx)',border:'1px solid var(--bd)'}}>
-          <option value="">{tx.noSetlistAssignedLbl}</option>
-          {slGuardados.map(sl=>(<option key={sl.id} value={sl.id}>{sl.nombre} · {sl.canciones.length} canciones</option>))}
-        </select>
+        <CustomSelect value={ensSetlistId} onChange={setEnsSetlistId}
+          placeholder={tx.noSetlistAssignedLbl}
+          options={slGuardados.map(sl=>({value:sl.id,label:`${sl.nombre} · ${sl.canciones.length} canciones`}))}/>
       </div>
 
       <div className="card" style={{padding:14,marginBottom:14}}>

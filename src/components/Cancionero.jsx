@@ -5,6 +5,7 @@ import { getModoFeatures } from '../data/modo';
 import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
+import { CustomSelect } from './common';
 
 export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
   const tx=getT(lang);
@@ -293,14 +294,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 border:'1px solid var(--bd)',background:'var(--s2)',
                 color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
             <div style={{display:'flex',gap:8}}>
-              <select value={nueva.key} onChange={e=>setNueva(v=>({...v,key:e.target.value}))}
-                style={{flex:1,padding:'9px 12px',borderRadius:8,
-                  border:'1px solid var(--bd)',background:'var(--s2)',
-                  color:'var(--tx)',fontSize:13}}>
-                {['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>(
-                  <option key={k}>{k}</option>
-                ))}
-              </select>
+              <CustomSelect value={nueva.key} onChange={v=>setNueva(vv=>({...vv,key:v}))}
+                style={{flex:1,padding:'9px 12px',fontSize:13}}
+                options={['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>({value:k,label:k}))}/>
               <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
                 placeholder="BPM" type="number"
                 style={{flex:1,padding:'9px 12px',borderRadius:8,

@@ -1,6 +1,88 @@
 // Componentes UI compartidos pequeños: Toast, MiniCal, DomStrip, ícono Diamante
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
+// ── CustomSelect ─────────────────────────────────────────────────────────
+// Reemplazo de <select> nativo con estilo 100% SetSync — ningún selector
+// nativo del sistema operativo (que no se puede restylear en iOS/Android).
+// API: value, onChange(value) [recibe el valor directo, no un evento],
+// options=[{value,label}], placeholder opcional, style/className para el
+// botón visible.
+// El menú se renderiza con createPortal en document.body (misma técnica ya
+// usada para el dropdown de notación en SongView) para no quedar recortado
+// por contenedores con overflow — el mismo bug que ya se resolvió antes.
+export function CustomSelect({value,onChange,options,placeholder='',style={},disabled=false}){
+  const [open,setOpen]=useState(false);
+  const [pos,setPos]=useState(null);
+  const btnRef=useRef(null);
+
+  useEffect(()=>{
+    if(!open)return;
+    const close=()=>setOpen(false);
+    window.addEventListener('scroll',close,true);
+    window.addEventListener('resize',close);
+    return()=>{window.removeEventListener('scroll',close,true);window.removeEventListener('resize',close);};
+  },[open]);
+
+  const current=options.find(o=>String(o.value)===String(value));
+
+  const toggle=()=>{
+    if(disabled)return;
+    if(!open){
+      const r=btnRef.current.getBoundingClientRect();
+      const maxH=260;
+      const spaceBelow=window.innerHeight-r.bottom;
+      const openUp=spaceBelow<Math.min(maxH,options.length*36+8)&&r.top>spaceBelow;
+      setPos({
+        left:r.left,width:r.width,
+        top:openUp?null:r.bottom+4,
+        bottom:openUp?window.innerHeight-r.top+4:null,
+        maxHeight:Math.min(maxH,openUp?r.top-12:window.innerHeight-r.bottom-12),
+      });
+    }
+    setOpen(o=>!o);
+  };
+
+  return(
+    <>
+      <button ref={btnRef} type="button" onClick={toggle} disabled={disabled}
+        style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,
+          border:'1px solid var(--bd)',borderRadius:8,background:'var(--s3)',color:'var(--tx)',
+          fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+          padding:'6px 10px',cursor:disabled?'default':'pointer',opacity:disabled?.5:1,
+          width:'100%',boxSizing:'border-box',...style}}>
+        <span style={{overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1,textAlign:'left'}}>
+          {current?current.label:(placeholder||'—')}
+        </span>
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" style={{flexShrink:0,transform:open?'rotate(180deg)':'none',transition:'transform .15s'}}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {open&&pos&&createPortal(
+        <>
+          <div onClick={()=>setOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+          <div style={{position:'fixed',left:pos.left,width:pos.width,
+            top:pos.top??undefined,bottom:pos.bottom??undefined,
+            maxHeight:pos.maxHeight,overflowY:'auto',zIndex:999,
+            background:'#17171b',border:'1px solid var(--bd2)',borderRadius:10,
+            boxShadow:'0 12px 32px rgba(0,0,0,.5)',padding:4}}>
+            {options.map(o=>(
+              <div key={o.value} onClick={()=>{onChange(o.value);setOpen(false);}}
+                style={{padding:'8px 10px',borderRadius:6,cursor:'pointer',fontSize:12,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",
+                  background:String(o.value)===String(value)?'rgba(48,192,183,.15)':'transparent',
+                  color:String(o.value)===String(value)?'var(--gn)':'var(--tx2)'}}>
+                {o.label}
+              </div>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
+    </>
+  );
+}
 
 export const Di = ({sz=10,c='currentColor'}) => (
   <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

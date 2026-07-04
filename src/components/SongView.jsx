@@ -5,7 +5,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react
 import { createPortal } from 'react-dom';
 
 import { tpKey } from '../utils/music';
-import { Toast } from './common';
+import { Toast, CustomSelect } from './common';
 import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
 import { useMapaCancion } from './songview/useMapaCancion';
 import { useAnotaciones } from './songview/useAnotaciones';
@@ -1217,33 +1217,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* Fila 2: Cifra como selector */}
         <div style={{display:'flex',alignItems:'center',gap:12}}>
           <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>CIFRA</span>
-          <select
+          <CustomSelect
             value={seqCifra}
-            onChange={e=>{
-              const c=e.target.value;
+            onChange={c=>{
               setSeqCifra(c);
               // Reiniciar click con nueva cifra si está activo
               if(clickActivo){ stopClick(); startClick(seqBpm,c); }
             }}
-            style={{
-              flex:1,
-              padding:'8px 12px',
-              borderRadius:10,
-              border:'1px solid var(--bd)',
-              background:'var(--s3)',
-              color:'var(--ac)',
-              fontSize:16,fontWeight:700,
-              fontFamily:"'Special Gothic Expanded One',sans-serif",
-              cursor:'pointer',
-              outline:'none',
-              appearance:'none',WebkitAppearance:'none',
-            }}>
-            {CIFRAS.map(c=>(<option key={c} value={c} style={{background:'#0a0a0a',color:'#fff',fontWeight:700}}>{c}</option>))}
-          </select>
-          {/* Flecha decorativa */}
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0,pointerEvents:'none',marginLeft:-32}}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+            options={CIFRAS.map(c=>({value:c,label:c}))}
+            style={{flex:1,padding:'8px 12px',borderRadius:10,color:'var(--ac)',
+              fontSize:16,fontWeight:700,fontFamily:"'Special Gothic Expanded One',sans-serif"}}/>
         </div>
       </div>
     </div>
@@ -1403,16 +1386,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         }}>
 
         {/* Título del bloque */}
-        <div style={{padding:'10px 14px 6px',flexShrink:0,display:'flex',alignItems:'center',gap:10}}>
-          <div style={{flex:'1 1 50%',minWidth:0}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
-            <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.wifiHintLbl}</div>
-          </div>
-          <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
-            padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
-            border:'1px solid rgba(224,164,88,.3)'}}>
-            <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
-            <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
+        <div style={{padding:'10px 14px 6px',flexShrink:0}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
+            <div style={{flex:'0 0 80%',minWidth:0}}>
+              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.wifiHintLbl}</div>
+              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.audioInterfaceHintLbl}</div>
+            </div>
+            <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+              <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
+            </div>
           </div>
         </div>
 
@@ -1437,15 +1420,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {mesaConectada?tx.connectedToLbl(mesaNombre):mesaEstado==='conectando'?tx.connectingLbl:tx.tapToConnectLbl}
             </div>
           </button>
-          <div style={{display:'flex',alignItems:'center',gap:4,height:26}}>
-            <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
-            <select value={monitorBus} onChange={e=>setMonitorBus(Number(e.target.value))}
-              style={{appearance:'none',WebkitAppearance:'none',border:'1px solid var(--bd)',borderRadius:6,
-                background:'var(--s3)',color:'var(--gn)',fontSize:9,fontWeight:900,
-                height:26,padding:'0 8px',boxSizing:'border-box',
-                cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-              {[1,2,3,4].map(b=>(<option key={b} value={b}>{b}</option>))}
-            </select>
+          <div style={{display:'flex',alignItems:'center',gap:4,height:26,width:64}}>
+            <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>Bus</span>
+            <CustomSelect value={monitorBus} onChange={v=>setMonitorBus(Number(v))}
+              options={[1,2,3,4].map(b=>({value:b,label:String(b)}))}
+              style={{height:26,padding:'0 6px',fontSize:9,fontWeight:900,color:'var(--gn)'}}/>
           </div>
           <div style={{display:'inline-flex',height:26,borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
@@ -1469,14 +1448,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {showConectarMesa&&(
           <div style={{padding:'10px 12px',borderBottom:'1px solid var(--s3)',
             display:'flex',flexDirection:'column',gap:8,flexShrink:0,background:'var(--s1)'}}>
-            <select value={mesaMarca} onChange={e=>{setMesaMarca(e.target.value);setMesaErrorMsg(null);}}
+            <CustomSelect value={mesaMarca} onChange={v=>{setMesaMarca(v);setMesaErrorMsg(null);}}
               disabled={mesaConectada}
-              style={{padding:'7px 9px',borderRadius:8,border:'1px solid var(--bd)',
-                background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",cursor:'pointer'}}>
-              {MARCAS_MESA.map(m=>(
-                <option key={m.id} value={m.id}>{m.nombre}{m.disponible?'':' — próximamente'}</option>
-              ))}
-            </select>
+              options={MARCAS_MESA.map(m=>({value:m.id,label:`${m.nombre}${m.disponible?'':' — próximamente'}`}))}
+              style={{padding:'7px 9px',fontSize:10}}/>
             <div style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
               {MARCAS_MESA.find(m=>m.id===mesaMarca)?.modelos}
             </div>
@@ -1858,12 +1833,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
             </div>
             <div style={{marginTop:4,display:'flex',alignItems:'center',gap:10}}>
-              <div style={{flex:'1 1 50%',fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.referenceSubLbl}</div>
-              <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
-                padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
-                border:'1px solid rgba(224,164,88,.3)'}}>
-                <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
-                <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
+              <div style={{flex:'0 0 80%',minWidth:0}}>
+                <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.referenceSubLbl}</div>
+                <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.micInterfaceHintLbl}</div>
+              </div>
+              <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+                <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
               </div>
             </div>
           </div>
@@ -2168,12 +2143,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 No hay ensayos creados todavía — crea uno desde Backstage → Crear ensayo.
               </div>
             ):(
-              <select value={selectedEnsayoId||''} onChange={e=>setSelectedEnsayoId(e.target.value||null)}
-                style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid var(--bd2)',
-                  background:'#111',color:'var(--tx)',fontSize:10,fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>
-                <option value="">Elegir ensayo…</option>
-                {ensayosDisponibles.map(en=>(<option key={en.id} value={en.id}>{en.nombre}{en.setlistNombre?` · ${en.setlistNombre}`:''}</option>))}
-              </select>
+              <CustomSelect value={selectedEnsayoId||''} onChange={v=>setSelectedEnsayoId(v||null)}
+                placeholder="Elegir ensayo…"
+                options={ensayosDisponibles.map(en=>({value:en.id,label:`${en.nombre}${en.setlistNombre?' · '+en.setlistNombre:''}`}))}
+                style={{width:'100%',padding:'8px 10px',fontSize:10,marginBottom:8}}/>
             )}
             <button disabled={!selectedEnsayoId} onClick={guardarEnEnsayo}
               style={{width:'100%',padding:'9px 0',borderRadius:8,border:'none',cursor:selectedEnsayoId?'pointer':'not-allowed',
@@ -2283,16 +2256,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Área scrollable: mapa + waveform + controles + BPM */}
         <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
-        <div style={{padding:'10px 14px 0',display:'flex',alignItems:'center',gap:10}}>
-          <div style={{flex:'1 1 50%',minWidth:0}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
-            <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.sequenceSubLbl}</div>
-          </div>
-          <div style={{flex:'1 1 50%',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:4,
-            padding:'8px 10px',borderRadius:12,background:'rgba(224,164,88,.12)',
-            border:'1px solid rgba(224,164,88,.3)'}}>
-            <img src="/icono interfaz.svg" alt="" style={{height:34,width:'auto',flexShrink:0}}/>
-            <span style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</span>
+        <div style={{padding:'10px 14px 0'}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
+            <div style={{flex:'0 0 80%',minWidth:0}}>
+              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.sequenceSubLbl}</div>
+              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.audioInterfaceHintLbl}</div>
+            </div>
+            <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+              <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
+            </div>
           </div>
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
@@ -2427,22 +2400,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{width:1,height:26,background:'var(--bd)',margin:'0 10px',flexShrink:0}}/>
 
           {/* Cifra — sin label */}
-          <div style={{position:'relative',flexShrink:0}}>
-            <select value={seqCifra}
-              onChange={e=>{const c=e.target.value;setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
-              style={{padding:'5px 20px 5px 8px',borderRadius:8,
-                border:'1px solid var(--bd)',
-                background:'var(--s3)',color:'var(--ac)',
-                fontSize:14,fontWeight:700,
-                fontFamily:"'Special Gothic Expanded One',sans-serif",
-                outline:'none',WebkitAppearance:'none',appearance:'none',
-                cursor:'pointer',minWidth:52}}>
-              {CIFRAS.map(c=><option key={c} value={c} style={{background:'#0a0a0a'}}>{c}</option>)}
-            </select>
-            <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="var(--em)" strokeWidth="2.5"
-              style={{position:'absolute',right:5,top:'50%',transform:'translateY(-50%)',pointerEvents:'none'}}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+          <div style={{position:'relative',flexShrink:0,minWidth:60}}>
+            <CustomSelect value={seqCifra}
+              onChange={c=>{setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
+              options={CIFRAS.map(c=>({value:c,label:c}))}
+              style={{padding:'5px 8px',fontSize:14,fontWeight:700,color:'var(--ac)',
+                fontFamily:"'Special Gothic Expanded One',sans-serif"}}/>
           </div>
 
           {/* Divisor */}

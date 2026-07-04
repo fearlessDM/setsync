@@ -2,6 +2,7 @@ import { t as getT } from '../i18n';
 import { useState, useEffect, useRef } from 'react';
 import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
+import { CustomSelect } from './common';
 
 const MESES_CORTO =['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const DIAS_SEMANA =['D','L','M','M','J','V','S']; // 0=Dom,...,6=Sáb (getDay order)
@@ -566,10 +567,9 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
         <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{tx.leadTimeLbl}</span>
-        <select value={diasAntes} onChange={e=>{const v=Number(e.target.value);if(avisoActivo===1)setDias1(v);else setDias2(v);}}
-          className="inp" style={{width:'auto',padding:'4px 8px',fontSize:12}}>
-          {[1,2,3,4,5,6,7].map(d=>(<option key={d} value={d}>{d} día{d>1?'s':''} antes</option>))}
-        </select>
+        <CustomSelect value={diasAntes} onChange={v=>{const n=Number(v);if(avisoActivo===1)setDias1(n);else setDias2(n);}}
+          style={{width:'auto',padding:'4px 8px',fontSize:12}}
+          options={[1,2,3,4,5,6,7].map(d=>({value:d,label:`${d} día${d>1?'s':''} antes`}))}/>
       </div>
       {!custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <div style={{fontSize:10,fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{tx.previewLbl}</div>
