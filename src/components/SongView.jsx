@@ -813,10 +813,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
 
-    // Icono Secuencia: logo SVG provisto por Danny (public/logo secuencias.svg)
+    // Icono Secuencia: logo PNG provisto por Danny (public/logo secuencias.png)
     const IconSecuencia=({active})=>(
       <div style={{width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <img src="/logo secuencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain',
+        <img src="/logo secuencias.png" alt="" style={{width:'90%',height:'90%',objectFit:'contain',
           opacity:active?1:.55,transition:'opacity .15s'}}/>
       </div>
     );
