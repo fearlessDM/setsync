@@ -705,6 +705,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[baseName]);
   const [faderMutes,setFaderMutes]=useState(()=>FADER_NAMES.map(()=>false));
+  // Ref: último momento en que NOSOTROS empujamos un valor de fader a la
+  // mesa, por canal. La mesa (X32/M32 vía OSC) a veces responde con un eco
+  // del valor ANTERIOR antes de confirmar el nuestro (latencia de red +
+  // el refresh periódico de /xremote) — sin esto, ese eco pisaba el valor
+  // recién puesto por el usuario apenas soltaba el dedo, y el fader
+  // "volvía a su posición inicial" aunque el drag en sí funcionara bien.
+  const lastLocalFaderWrite=useRef({});
 
   // Conectar/desconectar mesa real vía driver (v36-ampliación). Vive acá,
   // después de FADER_NAMES/faderVols/faderMutes, porque los usa — antes
@@ -725,6 +732,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       // Sincroniza los 8 faders visibles con los valores reales de la mesa
       FADER_NAMES.forEach((_,ci)=>{
         const subF=driver.onFaderChange(monitorBus, ci+1, v=>{
+          const lastWrite=lastLocalFaderWrite.current[ci];
+          if(lastWrite&&Date.now()-lastWrite<600) return; // eco de nuestro propio cambio reciente — ignorar
           setFaderVols(prev=>{const n=[...prev];n[ci]=Math.round(v*100);return n;});
         });
         const subM=driver.onMuteChange(monitorBus, ci+1, m=>{
@@ -756,11 +765,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const isLast  = idx === songs.length - 1;
 
     // Icono Monitor: headphone + WiFi arcs — verde con glow cuando conectado
-    const IconMonitor=({active})=>{
+    const IconMonitor=({active,size=22})=>{
       const connected = mesaConectada;
       const col = connected?'var(--gn)':active?'var(--ac)':'var(--tx3)';
       return(
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+        <svg viewBox="0 0 24 24" width={size} height={size} fill="none"
           style={connected?{filter:'drop-shadow(0 0 5px rgba(48,192,183,.9)) drop-shadow(0 0 10px rgba(48,192,183,.5))'}:{}}>
           {/* Auricular */}
           <path d="M5 15v-3a7 7 0 0 1 14 0v3"
@@ -783,24 +792,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       );
     };
 
-    // Icono Secuencia: soundwave + marcador
-    const IconSecuencia=({active})=>{
-      const col = active ? 'var(--ac)' : 'var(--tx3)';
-      const mk  = active ? 'var(--ac)' : 'var(--tx2)';
-      return(
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={col} strokeWidth="1.8">
-          <line x1="3"  y1="16" x2="3"  y2="9"  strokeLinecap="round"/>
-          <line x1="6"  y1="19" x2="6"  y2="6"  strokeLinecap="round"/>
-          <line x1="9"  y1="14" x2="9"  y2="11" strokeLinecap="round"/>
-          <line x1="12" y1="20" x2="12" y2="5"  strokeLinecap="round"/>
-          <line x1="15" y1="14" x2="15" y2="11" strokeLinecap="round"/>
-          <line x1="18" y1="19" x2="18" y2="6"  strokeLinecap="round"/>
-          <line x1="21" y1="16" x2="21" y2="9"  strokeLinecap="round"/>
-          <line x1="9" y1="2" x2="9" y2="4.5" strokeWidth="1.4" stroke={mk}/>
-          <polygon points="6.5,4.5 11.5,4.5 9,7.5" fill={mk} stroke="none"/>
-        </svg>
-      );
-    };
+    // Icono Secuencia: logo SVG provisto por Danny (public/logo secuencias.svg)
+    const IconSecuencia=({active})=>(
+      <img src="/logo secuencias.svg" alt="" width="19" height="19"
+        style={{opacity:active?1:.55,filter:active?'drop-shadow(0 0 4px rgba(48,192,183,.5))':'none',
+          transition:'opacity .15s,filter .15s'}}/>
+    );
 
     const tabs=[
       {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={a?'var(--ac)':'var(--tx3)'} strokeWidth="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>)},
@@ -846,10 +843,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 setBottomTab(isOn?null:tab.id);
               }
             }} style={{
-              flex:1,border:'none',background:'transparent',
+              flex:1,margin:'6px 3px',borderRadius:9,
+              border:'2px solid var(--gn)',
+              background:'var(--s1)',
               display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3,
+              padding:'4px 0',
               color: isOn?'var(--ac)':mesaConectada&&tab.id==='monitor'?'var(--gn)':'var(--tx3)',
-              borderTop: isOn?'2px solid var(--ac)':mesaConectada&&tab.id==='monitor'?'2px solid var(--gn)':'2px solid transparent',
               cursor:'pointer',transition:'all .15s',
               fontFamily:"'Lexend Giga',sans-serif",
             }}>
@@ -1364,7 +1363,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const MonitorPanel=() => {
     const h=window.innerHeight;
-    const trackH=Math.max(100, h*0.32);
+    const trackH=Math.max(100, h*0.32)-8;
 
     const panel = (
       <div
@@ -1384,26 +1383,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           borderBottom:'1px solid var(--s3)',flexShrink:0}}>
           <button onClick={()=>setShowConectarMesa(v=>!v)}
             style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0,background:'none',border:'none',cursor:'pointer',padding:0,textAlign:'left'}}>
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none"
-              stroke={mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--tx3)'} strokeWidth="2">
-              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-            </svg>
+            <span style={{display:'flex',alignItems:'center',flexShrink:0}}><IconMonitor active={false} size={16}/></span>
             <div style={{flex:1,fontSize:9,fontWeight:700,color:mesaConectada?'var(--gn)':mesaEstado==='conectando'?'#e0a458':'var(--tx3)',
               fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>
-              {mesaConectada?`Conectado · ${mesaNombre}`:mesaEstado==='conectando'?'Conectando…':'Monitor · Toca para conectar'}
+              {mesaConectada?tx.connectedToLbl(mesaNombre):mesaEstado==='conectando'?tx.connectingLbl:tx.tapToConnectLbl}
             </div>
           </button>
-          <div style={{display:'flex',alignItems:'center',gap:3}}>
+          <div style={{display:'flex',alignItems:'center',gap:4}}>
             <span style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
-            {[1,2,3,4].map(b=>(
-              <button key={b} onClick={()=>setMonitorBus(b)}
-                style={{width:20,height:20,borderRadius:5,border:'none',cursor:'pointer',
-                  background:monitorBus===b?'var(--gn)':'var(--s3)',
-                  color:monitorBus===b?'#000':'var(--tx3)',fontSize:8,fontWeight:900}}>
-                {b}
-              </button>
-            ))}
+            <select value={monitorBus} onChange={e=>setMonitorBus(Number(e.target.value))}
+              style={{appearance:'none',WebkitAppearance:'none',border:'1px solid var(--bd)',borderRadius:6,
+                background:'var(--s3)',color:'var(--gn)',fontSize:9,fontWeight:900,padding:'3px 6px',
+                cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+              {[1,2,3,4].map(b=>(<option key={b} value={b}>{b}</option>))}
+            </select>
           </div>
           <div style={{display:'inline-flex',borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
@@ -1424,7 +1417,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {!mesaConectada&&mesaEstado!=='conectando'&&(
           <div style={{padding:'6px 12px 0',fontSize:9,color:'var(--tx3)',fontWeight:300,
             fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>
-            Conecta tu mesa por WiFi y controla tu propio monitoreo desde el teléfono
+            {tx.wifiHintLbl}
           </div>
         )}
 
@@ -1597,7 +1590,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           // Solo actualizar React state al soltar
                           setFaderVols(v=>{const n=[...v];n[ci]=curVol;return n;});
                           // Envía el valor real a la mesa conectada (v36-ampliación)
-                          if(mesaConectada) mesaDriverRef.current?.setFaderLevel(monitorBus, ci+1, curVol/100);
+                          if(mesaConectada){
+                            lastLocalFaderWrite.current[ci]=Date.now();
+                            mesaDriverRef.current?.setFaderLevel(monitorBus, ci+1, curVol/100);
+                          }
                         };
                         knob.addEventListener('pointermove',move,{passive:false});
                         knob.addEventListener('pointerup',up,{once:true});

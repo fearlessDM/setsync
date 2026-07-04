@@ -45,9 +45,7 @@ export function Login({onToast, lang='es'}){
       alignItems:'center',justifyContent:'center',padding:24}}>
       <div style={{width:'100%',maxWidth:360}}>
         <div style={{textAlign:'center',marginBottom:32}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:28,fontWeight:200,color:'var(--tx)',marginBottom:8}}>
-            Set<span style={{color:'var(--gn)'}}>Sync</span>
-          </div>
+          <img src="/FAVICON SS.png" alt="SetSync" style={{width:64,height:64,objectFit:'contain',marginBottom:12}}/>
           <div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
             {modo==='entrar'?tx.signInToContinue:tx.createYourAccount}
           </div>
