@@ -1,28 +1,29 @@
 import { useRef, useEffect, useCallback } from 'react';
 
-// ── useAnotaciones — REESCRITO DESDE CERO ───────────────────────────────
+// ── useAnotaciones — SEGUNDA REESCRITURA (sin devicePixelRatio) ─────────
 // Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
-// en SongView. Trazos viven en memoria como datos vectoriales (no solo
-// píxeles), no persisten entre canciones ni recargas.
+// en SongView. Trazos viven en memoria como datos vectoriales.
 //
-// Por qué se reescribió: la versión anterior media el tamaño del canvas
-// usando `wrapRef` (el contenedor de SCROLL de la letra), pero canvas y
-// wrapRef son elementos HERMANOS dentro de un mismo contenedor padre. Un
-// scroll con overflow puede reservar espacio para su propia scrollbar de
-// forma distinta según el dispositivo/navegador — eso desalinea el
-// tamaño real del canvas respecto al de wrapRef, produciendo justo el
-// síntoma reportado ("como con zoom", "corrida del lugar donde dibujo").
-// Fix real: medir el CONTENEDOR PADRE no-scrollable que envuelve a ambos
-// (containerRef), la única referencia de tamaño que ambos hermanos
-// comparten con garantía matemática.
+// HISTORIAL: la v1 medía mal el contenedor (wrapRef en vez del padre
+// real) — arreglado, pero el síntoma ("líneas gigantes y corridas un
+// gran espacio") siguió igual. Eso apunta a un problema más profundo que
+// solo el contenedor: probablemente el escalado por devicePixelRatio
+// (ctx.scale(dpr,dpr)) se estaba aplicando de más en algún punto — un
+// factor de escala aplicado dos veces hace que la distancia entre el
+// punto donde tocás y donde se dibuja CREZCA con la distancia al origen
+// (por eso "un gran espacio", no un offset fijo), y que las líneas se
+// vean más gruesas de lo esperado ("gigantes") — encaja exactamente con
+// lo reportado.
 //
-// Segundo cambio: Pointer Events unificados (en vez de handlers
-// separados de mouse/touch con preventDefault manual) — un solo camino
-// de código para mouse, touch y stylus, con setPointerCapture para
-// seguir el trazo aunque el dedo se salga del canvas, y manejo explícito
-// de pointercancel (el navegador puede cancelar el gesto por conflicto
-// con otro reconocedor de gestos — sin esto, un trazo a medio hacer
-// podía quedar en un estado inconsistente).
+// FIX DEFINITIVO: se elimina el devicePixelRatio del todo. El canvas se
+// dimensiona en píxeles CSS puros (canvas.width = ancho en CSS, sin
+// multiplicar por dpr) y NUNCA se llama ctx.scale(). Esto vuelve
+// imposible que exista un doble-escalado, al costo de que el trazo se
+// vea un poco menos nítido en pantallas de alta densidad — un costo
+// aceptable frente a una función que no funcionaba en absoluto. Con esto,
+// 1 unidad de canvas.width/height = 1 píxel CSS = 1 unidad que devuelve
+// getBoundingClientRect — una sola unidad de medida en todo el sistema,
+// sin ninguna conversión de por medio.
 //
 // Parámetros:
 //  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
@@ -34,16 +35,13 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const cvRef=useRef(null);
   const strokes=useRef([]);       // trazos ya terminados (datos vectoriales)
   const cur=useRef(null);         // trazo en progreso
-  const dprRef=useRef(1);
   const activePointerId=useRef(null);
 
   const redraw=useCallback(()=>{
     const cv=cvRef.current;if(!cv)return;
     const ctx=cv.getContext('2d');
-    const dpr=dprRef.current;
-    ctx.setTransform(1,0,0,1,0,0);
+    // Sin ctx.scale nunca — 1 unidad = 1 píxel CSS, siempre.
     ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.scale(dpr,dpr);
     const paint=s=>{
       if(s.pts.length<2)return;
       ctx.beginPath();
@@ -63,12 +61,14 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     const cv=cvRef.current, container=containerRef.current;
     if(!cv||!container)return;
     const resize=()=>{
-      const dpr=window.devicePixelRatio||1;
       const w=container.clientWidth, h=container.clientHeight;
       if(w===0||h===0)return;
-      dprRef.current=dpr;
-      cv.width=Math.round(w*dpr);
-      cv.height=Math.round(h*dpr);
+      // canvas.width/height en píxeles CSS puros — SIN multiplicar por
+      // devicePixelRatio. El canvas puede verse un poco menos nítido en
+      // pantallas retina, pero elimina cualquier posibilidad de
+      // doble-escalado, que es lo que rompía el dibujo antes.
+      cv.width=w;
+      cv.height=h;
       redraw();
     };
     resize();
@@ -77,6 +77,8 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     return()=>ro.disconnect();
   },[idx,redraw,containerRef]);
 
+  // Coordenadas del puntero relativas al canvas, en píxeles CSS — sin
+  // ninguna conversión, porque el canvas trabaja 100% en esas unidades.
   const getP=e=>{
     const r=cvRef.current.getBoundingClientRect();
     return{x:e.clientX-r.left,y:e.clientY-r.top};
