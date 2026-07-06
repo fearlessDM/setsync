@@ -5,34 +5,37 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 // termina de diagnosticar el bug de dibujo con Danny. Sacar `debugInfo`
 // y el bloque que lo actualiza una vez resuelto — no es parte del
 // diseño final, es instrumentación de diagnóstico.
-
-// ── useAnotaciones — TERCERA REESCRITURA (autocorrección de tamaño) ─────
+//
+// ── useAnotaciones — CUARTA REESCRITURA (rect fijo por trazo) ───────────
 // Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
 // en SongView. Trazos viven en memoria como datos vectoriales.
 //
-// HISTORIAL: v1 medía mal el contenedor (wrapRef en vez del padre real)
-// — arreglado, síntoma igual. v2 sacó devicePixelRatio del todo — Danny
-// confirmó que el síntoma ("líneas gigantes y corridas un gran espacio")
-// sigue IGUAL, incluso con mouse en computador (no solo touch). Esto
-// descarta cualquier causa relacionada a touch o densidad de píxeles —
-// tiene que ser un error de ESCALA puro entre el tamaño con el que se
-// dimensiona el canvas (canvas.width/height) y su tamaño visual real.
+// HISTORIAL DE DIAGNÓSTICO:
+// v1: medía mal el contenedor (wrapRef en vez del padre real) — arreglado,
+//     síntoma igual.
+// v2: sacó devicePixelRatio del todo — Danny confirmó que fallaba IGUAL
+//     con mouse en computador, no solo touch. Eso descartó dpr/touch.
+// v3: agregó autocorrección de tamaño en cada trazo — mejoró (el trazo
+//     empezó a aparecer chico y en el lugar correcto), pero Danny reportó
+//     un síntoma nuevo: además del trazo correcto, aparecía un duplicado
+//     grande, sin que él arrastrara tanto el dedo.
+// v4 (ESTA VERSIÓN): con el panel de debug se confirmó con números reales
+//     que canvas/contenedor/rect coincidían exactamente (394x604 los 3) —
+//     descartando cualquier problema de TAMAÑO. El problema real es de
+//     POSICIÓN: getP() llamaba a getBoundingClientRect() de nuevo en CADA
+//     movimiento del trazo — si la posición en pantalla del canvas se
+//     corre aunque sea un poco a mitad de un mismo trazo (por asentamiento
+//     de layout, u otra causa), cada punto del trazo queda calculado
+//     contra una referencia distinta, y un gesto físico chico se convierte
+//     en una línea larga y errática — exactamente lo que describió Danny
+//     ("hice una marca chica y esta línea larga apareció sola"). Este es
+//     el mismo patrón ya aprendido antes con el fader de Monitoreo/
+//     Secuencia (ZONA BLINDADA): el rect se captura UNA VEZ al empezar el
+//     gesto, nunca se vuelve a leer durante el mismo gesto.
 //
-// CAUSA MÁS PROBABLE: el contenedor se mide (container.clientWidth/
-// clientHeight) en un momento en que el layout todavía no terminó de
-// acomodarse del todo (ej. un hermano de arriba —MapaMaestro— puede
-// determinar su altura final después del primer render), dejando al
-// canvas con un tamaño interno DISTINTO a su tamaño visual real. Un
-// canvas.width que no coincide con su ancho visual hace que el navegador
-// estire/comprima el contenido ya dibujado — un error de escala que
-// crece con la distancia al origen (exactamente "corrida un gran
-// espacio") y que además deforma los trazos ("gigante").
-//
-// FIX: además de medir en el resize normal (mount + ResizeObserver), se
-// verifica en CADA trazo nuevo (startD) que canvas.width/height siga
-// coincidiendo con el tamaño real del contenedor en ESE momento — si no
-// coincide, se corrige antes de dibujar. Esto autocorrige el desfase
-// aunque el ResizeObserver no haya alcanzado a disparar a tiempo.
+// FIX: rectRef captura getBoundingClientRect() UNA SOLA VEZ en startD, y
+// se reutiliza para TODOS los puntos de ESE trazo — nunca se vuelve a
+// leer hasta que empiece un trazo nuevo.
 //
 // Parámetros:
 //  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
@@ -45,6 +48,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const strokes=useRef([]);       // trazos ya terminados (datos vectoriales)
   const cur=useRef(null);         // trazo en progreso
   const activePointerId=useRef(null);
+  const rectRef=useRef(null);     // rect del canvas, capturado UNA VEZ por trazo
   const [debugInfo,setDebugInfo]=useState(null); // ⚠️ TEMPORAL — ver nota arriba
 
   const redraw=useCallback(()=>{
@@ -66,11 +70,6 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     ctx.globalCompositeOperation='source-over';
   },[]);
 
-  // Sincroniza canvas.width/height con el tamaño REAL actual del
-  // contenedor. Se llama en mount, en cada resize observado, y además
-  // se re-verifica al comienzo de cada trazo nuevo (ver startD) como
-  // red de seguridad — así nunca puede quedar desincronizado por mucho
-  // tiempo, sin importar cuándo terminó de acomodarse el layout.
   const syncSize=useCallback(()=>{
     const cv=cvRef.current, container=containerRef.current;
     if(!cv||!container)return false;
@@ -99,8 +98,14 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     return()=>ro.disconnect();
   },[idx,syncSize,containerRef]);
 
+  // Coordenadas del puntero relativas al canvas — usa SIEMPRE el rect
+  // capturado al INICIO del trazo (rectRef), nunca uno recién leído. Así,
+  // si la posición del canvas en pantalla se corre a mitad de un trazo
+  // por cualquier motivo externo, ese trazo entero queda consistente
+  // consigo mismo (todos sus puntos usan la misma referencia), en vez de
+  // saltar entre referencias distintas punto a punto.
   const getP=e=>{
-    const r=cvRef.current.getBoundingClientRect();
+    const r=rectRef.current;
     const p={x:e.clientX-r.left,y:e.clientY-r.top};
     setDebugInfo(d=>({...d,lastClientX:Math.round(e.clientX),lastClientY:Math.round(e.clientY),
       rectLeft:Math.round(r.left),rectTop:Math.round(r.top),
@@ -110,8 +115,9 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
 
   const startD=e=>{
     if(tool==='text'||!showAnnoBar)return;
-    syncSize(); // red de seguridad: corrige cualquier desfase justo antes de empezar a dibujar
+    syncSize(); // red de seguridad: corrige cualquier desfase de TAMAÑO antes de dibujar
     const cv=cvRef.current;
+    rectRef.current=cv.getBoundingClientRect(); // captura de POSICIÓN única para todo este trazo
     cv.setPointerCapture(e.pointerId);
     activePointerId.current=e.pointerId;
     const p=getP(e);
@@ -130,6 +136,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     if(cur.current&&cur.current.pts.length>1)strokes.current.push(cur.current);
     cur.current=null;
     activePointerId.current=null;
+    rectRef.current=null;
     try{cvRef.current?.releasePointerCapture(e.pointerId);}catch{}
     redraw();
     setDebugInfo(d=>({...d,strokeCount:strokes.current.length}));
