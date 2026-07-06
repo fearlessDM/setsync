@@ -309,45 +309,6 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .bpm-bar.mid{background:var(--gn);}
 .bpm-bar.slow{background:#6b6f77;}
 
-/* ── FADER VELOCIDAD AUTO SCROLL ── */
-input[type="range"].fader-velocidad{
-  -webkit-appearance:none;appearance:none;
-  height:6px;border-radius:var(--rad-full);
-  background:rgba(255,255,255,.12);
-  outline:none;cursor:pointer;
-  touch-action:none;
-}
-input[type="range"].fader-velocidad::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;
-  width:28px;height:28px;border-radius:50%;
-  background:var(--gn);
-  border:3px solid rgba(255,255,255,.9);
-  box-shadow:0 2px 8px rgba(0,0,0,.4);
-  cursor:grab;
-}
-input[type="range"].fader-velocidad::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.1);}
-input[type="range"].fader-velocidad::-moz-range-thumb{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--gn);
-  border:3px solid rgba(255,255,255,.9);
-  box-shadow:0 2px 8px rgba(0,0,0,.4);
-  cursor:grab;
-}
-input[type="range"].fader-velocidad::-moz-range-thumb:active{cursor:grabbing;transform:scale(1.1);}
-
-/* Variante vertical (popup de velocidad en móvil): writing-mode es el
-   método moderno estándar para range verticales; direction:rtl hace que
-   el mínimo quede abajo y el máximo arriba, como un fader físico real. */
-input[type="range"].fader-velocidad-v{
-  writing-mode:vertical-lr;
-  direction:rtl;
-  width:6px;
-  height:100%;
-  appearance:slider-vertical;
-  -webkit-appearance:slider-vertical;
-  touch-action:none;
-}
-
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:90px;left:50%;transform:translateX(-50%);

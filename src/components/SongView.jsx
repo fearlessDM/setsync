@@ -8,8 +8,6 @@ import { tpKey } from '../utils/music';
 import { Toast, CustomSelect } from './common';
 import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
 import { useMapaCancion } from './songview/useMapaCancion';
-import { useAnotaciones } from './songview/useAnotaciones';
-import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
 import { PanelEstructura } from './songview/PanelEstructura';
 import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
 
@@ -28,7 +26,6 @@ const PERMISOS_TOTAL={
   modoNashville:true,
   modoPractica:true,
   anotacionesPropias:true,
-  autoScroll:true,
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
@@ -41,11 +38,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const perm={...PERMISOS_TOTAL,...(permisos||{})};
   const [idx,setIdx]=useState(startIdx);
   const [tpOff,setTpOff]=useState(0);
-  const [tool,setTool]=useState('draw');
-  const [color,setColor]=useState('#ff3b30');
-  const [sz,setSz]=useState(4);
   const [showChords,setShowChords]=useState(true);
-  const [showAnnoBar,setShowAnnoBar]=useState(false);
   const [capo,setCapo]=useState(0);
   const [editMode,setEditMode]=useState(false);
   const [selectedChord,setSelectedChord]=useState(null);
@@ -131,12 +124,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const [isTablet,setIsTablet]=useState(()=>window.innerWidth>=768);
-  const [autoScroll,setAutoScroll]=useState(false);
-  const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
   const [viewMode,setViewMode]=useState('lineal'); // mantener para compatibilidad interna
   const [showModePopup,setShowModePopup]=useState(false);
   const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
-  const [showSpeedPopup,setShowSpeedPopup]=useState(false);
 
   const getSongContent=(song)=>{const k=song.name||song.n||'';return editedSongs[k]||contentDB[k]||null;};
 
@@ -256,7 +246,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
   const wrapRef=useRef(null);
-  const canvasContainerRef=useRef(null); // contenedor no-scrollable que envuelve canvas+wrapRef — única fuente de verdad de tamaño para el canvas de dibujo
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
@@ -271,26 +260,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [showCarpeta,setShowCarpeta]=useState(false);
   const carpetaActual=archivosDB[baseName]||{trackReferencia:null,secuencia:[]};
 
-  // ── Anotaciones (canvas de dibujo libre) — ver songview/useAnotaciones.js
-  const{cvRef,onPointerDown,onPointerMove,onPointerUp,onPointerCancel,undo,clear,debugInfo}=useAnotaciones({containerRef:canvasContainerRef,tool,color,sz,showAnnoBar,idx});
-  // ── Auto-scroll por BPM — ver songview/useAutoScroll.js
-  const{resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
-
-  useEffect(()=>{setTpOff(0);setShowAnnoBar(false);setCapo(0);setCapoOpen(false);setShowSpeedPopup(false);},[idx]);
-  useEffect(()=>{if(!autoScroll)setShowSpeedPopup(false);},[autoScroll]);
+  useEffect(()=>{setTpOff(0);setCapo(0);setCapoOpen(false);},[idx]);
   // Si el permiso de ver acordes está desactivado, forzamos showChords=false
   // de forma persistente — sin esto, un alumno podría quedar con acordes
   // visibles si showChords ya estaba en true antes de aplicar el permiso.
   useEffect(()=>{if(!perm.verAcordes)setShowChords(false);},[perm.verAcordes]);
-  // Mismo patrón defensivo para Nashville y Auto Scroll: si el permiso se
-  // revoca mientras el control ya estaba activo, lo apagamos. Hoy esto no
-  // puede ocurrir en la práctica (SongView reinicia su estado al desmontar),
-  // pero queda como protección barata ante una futura persistencia de estado.
+  // Mismo patrón defensivo para Nashville: si el permiso se revoca mientras
+  // el control ya estaba activo, lo apagamos. Hoy esto no puede ocurrir en
+  // la práctica (SongView reinicia su estado al desmontar), pero queda como
+  // protección barata ante una futura persistencia de estado.
   useEffect(()=>{if(!perm.modoNashville)setNotacion('americano');},[perm.modoNashville]);
-  useEffect(()=>{if(!perm.autoScroll)setAutoScroll(false);},[perm.autoScroll]);
 
   const doTp=steps=>{const nOff=tpOff+steps;setTpOff(nOff);setToast({text:`♩ ${tpKey(song.key,nOff)}`,sub:nOff===0?tx.original:`${nOff>0?'+':''}${nOff} st`});};
-  const COLS=['#ff3b30','#0a84ff','#30d158','#ffd60a','#bf5af2'];
   // ── Panel Tono + Capo ─────────────────────────────────────────────────────
   const PanelTono=()=>(
     <div style={{display:'flex',flexDirection:'column',alignItems:'center',borderRadius:14,border:`1px solid ${svBd}`,background:isLight?'rgba(240,234,222,.85)':'rgba(6,4,18,.82)',backdropFilter:'blur(40px)',width:64,overflow:'visible',position:'relative'}}>
@@ -337,68 +318,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     </div>
   );
 
-  // ── Fader de velocidad de Auto Scroll — contenido reusable ───────────────
-  // Mismo slider, usado inline (tablet/PC) o dentro de un popup (móvil).
-  // Thumb agrandado vía clase CSS .fader-velocidad (ver theme.css) — el
-  // slider siempre soportó drag nativo, pero el thumb por defecto del
-  // navegador es muy chico para agarrarlo con precisión en pantallas
-  // táctiles, lo cual se sentía como "solo responde al clic".
-  const FaderVelocidad=({vertical=false})=>vertical?(
-    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10,height:180}}>
-      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.fastLbl}</span>
-      <input
-        type="range"
-        className="fader-velocidad fader-velocidad-v"
-        min={RANGO_SCROLL.min}
-        max={RANGO_SCROLL.max}
-        value={scrollSpeed}
-        onChange={e=>setScrollSpeed(Number(e.target.value))}
-        style={{flex:1}}
-      />
-      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.slowLbl}</span>
-    </div>
-  ):(
-    <>
-      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.slowLbl}</span>
-      <input
-        type="range"
-        className="fader-velocidad"
-        min={RANGO_SCROLL.min}
-        max={RANGO_SCROLL.max}
-        value={scrollSpeed}
-        onChange={e=>setScrollSpeed(Number(e.target.value))}
-        style={{flex:1}}
-      />
-      <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700,flexShrink:0}}>{tx.fastLbl}</span>
-    </>
-  );
-
-  // ── Popup de velocidad — solo en móvil vertical, para no ocupar espacio
-  // fijo en la barra de controles cuando la pantalla es angosta. Fader
-  // vertical acá (a pedido de Danny, como experimento): un fader vertical
-  // no compite por el mismo eje de gesto que un swipe/scroll horizontal
-  // de la barra de herramientas, a diferencia del horizontal que se
-  // sentía "desaparecer" al tocarlo en algunos dispositivos. ──────────────
-  const PopupVelocidad=()=>(
-    <div onClick={()=>setShowSpeedPopup(false)} style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
-      <div onClick={e=>e.stopPropagation()} onTouchStart={e=>e.stopPropagation()} onTouchMove={e=>e.stopPropagation()}
-        style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'22px 20px',maxWidth:300,width:'85%',display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:16,alignSelf:'flex-start'}}>Velocidad de Auto Scroll</div>
-        <FaderVelocidad vertical/>
-        <button onClick={()=>setShowSpeedPopup(false)} style={{width:'100%',padding:'10px',marginTop:18,border:'1px solid var(--bd)',borderRadius:10,background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.readyLbl}</button>
-      </div>
-    </div>
-  );
-
   // ── AnnoBar ───────────────────────────────────────────────────────────────
   const AnnoBar=()=>(
     <div style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`,flexShrink:0}}>
       <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',overflowX:'auto',scrollbarWidth:'none'}}>
-        {perm.anotacionesPropias&&(
-          <button onClick={()=>setShowAnnoBar(v=>!v)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:8,border:showAnnoBar?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:showAnnoBar?'rgba(200,169,126,.1)':'var(--s1)',color:showAnnoBar?'var(--ac)':'var(--tx3)',cursor:'pointer',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </button>
-        )}
         <div style={{flex:1,flexShrink:0,minWidth:4}}/>
         {capo>0&&(
           <div style={{padding:'3px 8px',borderRadius:100,background:'rgba(94,206,160,.1)',border:'1px solid rgba(94,206,160,.25)',fontSize:10,fontWeight:700,color:'var(--gn)',flexShrink:0}}>
@@ -510,13 +433,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {showChords?tx.lyricsOnly:tx.withChords}
           </button>
         )}
-        {perm.autoScroll&&(
-          <button onClick={()=>{const next=!autoScroll;setAutoScroll(next);resetScroll();if(next&&!isTablet)setShowSpeedPopup(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:autoScroll?'1px solid rgba(94,206,160,.5)':'1px solid var(--bd)',background:autoScroll?'rgba(94,206,160,.15)':'var(--s1)',color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0,transition:'all .2s'}}>
-            {autoScroll?<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>:<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
-            {tx.autoScroll}
-          </button>
-        )}
-
         {isAdmin&&(
           <>
           <button onClick={()=>{if(editMode){setEditMode(false);setSelectedChord(null);}else setEditMode(true);}} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:editMode?'1px solid var(--ac)':'1px solid rgba(200,169,126,.28)',background:editMode?'rgba(200,169,126,.15)':'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
@@ -533,35 +449,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         )}
         
       </div>
-      {showAnnoBar&&(
-        <div style={{display:'flex',alignItems:'center',gap:3,padding:'0 10px 5px',overflowX:'auto',scrollbarWidth:'none'}}>
-          {[['draw',tx.pencilToolLbl],['erase',tx.eraseToolLbl]].map(([t,l])=>(
-            <button key={t} onClick={()=>setTool(t)} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:6,border:tool===t?'1px solid var(--bd)':'1px solid transparent',background:tool===t?'var(--s3)':'transparent',color:tool===t?'var(--tx)':'var(--tx3)',cursor:'pointer',fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>{l}</button>
-          ))}
-          <div style={{width:1,height:16,background:'var(--bd)',margin:'0 3px'}}/>
-          {COLS.map(c=>(<button key={c} onClick={()=>setColor(c)} style={{width:18,height:18,borderRadius:'50%',background:c,border:color===c?'2px solid #fff':'2px solid transparent',cursor:'pointer',flexShrink:0}}/>))}
-          <div style={{width:1,height:16,background:'var(--bd)',margin:'0 3px'}}/>
-          <button onClick={undo} style={{width:26,height:26,borderRadius:6,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-          </button>
-          <button onClick={clear} style={{width:26,height:26,borderRadius:6,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-          </button>
-        </div>
-      )}
-      {/* Fader de velocidad de Auto Scroll:
-          - Tablet/PC (isTablet): inline en la barra, hay espacio de sobra.
-          - Móvil vertical (!isTablet): como popup, para no competir con
-            los demás botones en una pantalla angosta. */}
-      {autoScroll&&(
-        <div style={{display:'flex',alignItems:'center',gap:8,padding:'0 10px 8px'}}>
-          <FaderVelocidad/>
-          <span style={{
-            fontSize:11,fontWeight:900,color:'var(--gn)',
-            fontFamily:"'Outfit',sans-serif",minWidth:28,textAlign:'right',flexShrink:0,
-          }}>{scrollSpeed}×</span>
-        </div>
-      )}
     </div>
   );
 
@@ -637,28 +524,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const ContentArea=()=>(
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
       <MapaMaestro/>
-      {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
-      <div ref={canvasContainerRef} style={{flex:1,position:'relative',overflow:'hidden'}}>
-        <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
-          onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
-        />
-        {/* ⚠️ PANEL DE DEBUG TEMPORAL — para diagnosticar el bug de dibujo con
-            Danny. Sacar este bloque completo (y `debugInfo` del hook) una vez
-            resuelto — no es parte del diseño final. */}
-        {showAnnoBar&&debugInfo&&(
-          <div style={{position:'absolute',top:6,left:6,zIndex:50,background:'rgba(0,0,0,.85)',
-            border:'1px solid #ff0',borderRadius:8,padding:'8px 10px',fontSize:10,color:'#0f0',
-            fontFamily:'monospace',lineHeight:1.6,pointerEvents:'none',whiteSpace:'pre'}}>
-{`contenedor: ${debugInfo.containerW}x${debugInfo.containerH}
-canvas:     ${debugInfo.canvasW}x${debugInfo.canvasH}
-rect (visual): ${debugInfo.rectW}x${debugInfo.rectH}
-rect pos: left=${debugInfo.rectLeft} top=${debugInfo.rectTop}
-último toque: clientX=${debugInfo.lastClientX} clientY=${debugInfo.lastClientY}
-punto canvas: x=${debugInfo.lastPointX} y=${debugInfo.lastPointY}
-trazos guardados: ${debugInfo.strokeCount ?? 0}
-último resize: ${debugInfo.lastResize ?? '—'}`}
-          </div>
-        )}
+      {/* Contenedor de letra */}
+      <div style={{flex:1,position:'relative',overflow:'hidden'}}>
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
             ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
