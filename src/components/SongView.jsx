@@ -272,7 +272,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const carpetaActual=archivosDB[baseName]||{trackReferencia:null,secuencia:[]};
 
   // ── Anotaciones (canvas de dibujo libre) — ver songview/useAnotaciones.js
-  const{cvRef,onPointerDown,onPointerMove,onPointerUp,onPointerCancel,undo,clear}=useAnotaciones({containerRef:canvasContainerRef,tool,color,sz,showAnnoBar,idx});
+  const{cvRef,onPointerDown,onPointerMove,onPointerUp,onPointerCancel,undo,clear,debugInfo}=useAnotaciones({containerRef:canvasContainerRef,tool,color,sz,showAnnoBar,idx});
   // ── Auto-scroll por BPM — ver songview/useAutoScroll.js
   const{resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
 
@@ -642,6 +642,23 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
         />
+        {/* ⚠️ PANEL DE DEBUG TEMPORAL — para diagnosticar el bug de dibujo con
+            Danny. Sacar este bloque completo (y `debugInfo` del hook) una vez
+            resuelto — no es parte del diseño final. */}
+        {showAnnoBar&&debugInfo&&(
+          <div style={{position:'absolute',top:6,left:6,zIndex:50,background:'rgba(0,0,0,.85)',
+            border:'1px solid #ff0',borderRadius:8,padding:'8px 10px',fontSize:10,color:'#0f0',
+            fontFamily:'monospace',lineHeight:1.6,pointerEvents:'none',whiteSpace:'pre'}}>
+{`contenedor: ${debugInfo.containerW}x${debugInfo.containerH}
+canvas:     ${debugInfo.canvasW}x${debugInfo.canvasH}
+rect (visual): ${debugInfo.rectW}x${debugInfo.rectH}
+rect pos: left=${debugInfo.rectLeft} top=${debugInfo.rectTop}
+último toque: clientX=${debugInfo.lastClientX} clientY=${debugInfo.lastClientY}
+punto canvas: x=${debugInfo.lastPointX} y=${debugInfo.lastPointY}
+trazos guardados: ${debugInfo.strokeCount ?? 0}
+último resize: ${debugInfo.lastResize ?? '—'}`}
+          </div>
+        )}
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
             ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>

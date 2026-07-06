@@ -1,4 +1,10 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
+
+// ⚠️ TEMPORAL: este hook expone `debugInfo` con los números reales de
+// tamaño del canvas/contenedor, para mostrarlos en pantalla mientras se
+// termina de diagnosticar el bug de dibujo con Danny. Sacar `debugInfo`
+// y el bloque que lo actualiza una vez resuelto — no es parte del
+// diseño final, es instrumentación de diagnóstico.
 
 // ── useAnotaciones — TERCERA REESCRITURA (autocorrección de tamaño) ─────
 // Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
@@ -39,6 +45,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const strokes=useRef([]);       // trazos ya terminados (datos vectoriales)
   const cur=useRef(null);         // trazo en progreso
   const activePointerId=useRef(null);
+  const [debugInfo,setDebugInfo]=useState(null); // ⚠️ TEMPORAL — ver nota arriba
 
   const redraw=useCallback(()=>{
     const cv=cvRef.current;if(!cv)return;
@@ -68,11 +75,18 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     const cv=cvRef.current, container=containerRef.current;
     if(!cv||!container)return false;
     const w=container.clientWidth, h=container.clientHeight;
+    const rect=cv.getBoundingClientRect();
+    setDebugInfo(d=>({...d,
+      containerW:w,containerH:h,
+      canvasW:cv.width,canvasH:cv.height,
+      rectW:Math.round(rect.width),rectH:Math.round(rect.height),
+    }));
     if(w===0||h===0)return false;
     if(cv.width===w&&cv.height===h)return false; // ya estaba sincronizado
     cv.width=w;
     cv.height=h;
     redraw();
+    setDebugInfo(d=>({...d,canvasW:w,canvasH:h,lastResize:new Date().toLocaleTimeString()}));
     return true;
   },[redraw,containerRef]);
 
@@ -87,7 +101,11 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
 
   const getP=e=>{
     const r=cvRef.current.getBoundingClientRect();
-    return{x:e.clientX-r.left,y:e.clientY-r.top};
+    const p={x:e.clientX-r.left,y:e.clientY-r.top};
+    setDebugInfo(d=>({...d,lastClientX:Math.round(e.clientX),lastClientY:Math.round(e.clientY),
+      rectLeft:Math.round(r.left),rectTop:Math.round(r.top),
+      lastPointX:Math.round(p.x),lastPointY:Math.round(p.y)}));
+    return p;
   };
 
   const startD=e=>{
@@ -114,6 +132,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     activePointerId.current=null;
     try{cvRef.current?.releasePointerCapture(e.pointerId);}catch{}
     redraw();
+    setDebugInfo(d=>({...d,strokeCount:strokes.current.length}));
   };
 
   const undo=()=>{strokes.current.pop();redraw();};
@@ -126,5 +145,6 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     onPointerUp:endD,
     onPointerCancel:endD,
     undo,clear,
+    debugInfo, // ⚠️ TEMPORAL — ver nota arriba
   };
 }
