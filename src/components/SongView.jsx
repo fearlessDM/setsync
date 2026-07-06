@@ -523,7 +523,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── ContentArea — layout correcto con MapaMaestro sticky ─────────────────
   const ContentArea=()=>(
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
-      <MapaMaestro/>
+      {MapaMaestro()}
       {/* Contenedor de letra */}
       <div style={{flex:1,position:'relative',overflow:'hidden'}}>
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
@@ -712,7 +712,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             opacity:a?1:.55,transition:'opacity .15s'}}/>
         </div>
       )},
-      {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>(<IconMonitor active={a}/>)},
+      {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>IconMonitor({active:a})},
       {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
     ];
     return(
@@ -2466,7 +2466,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   if(isTablet){
     return(
       <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
-        {showSavePopup&&<PopupGuardar/>}
+        {showSavePopup&&PopupGuardar()}
                 {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
         <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
           <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
@@ -2498,13 +2498,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
           </div>
         </div>
-        <AnnoBar/>
-        <ContentArea/>
-          <MonitorPanel/>
-        <ReferenciaPanel/>
-        <SecuenciaPanel/>
-        <CarpetaModal/>
-        <BottomTabBar/>
+        {AnnoBar()}
+        {ContentArea()}
+          {MonitorPanel()}
+        {ReferenciaPanel()}
+        {SecuenciaPanel()}
+        {CarpetaModal()}
+        {BottomTabBar()}
       </div>
     );
   }
@@ -2512,7 +2512,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // ── Layout mobile <768px ──────────────────────────────────────────────────
   return(
     <div className={`sv${sidebarVisible?' sv-with-sidebar':''}${sidebarCollapsed?' sv-sb-col':''}`} style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
-      {showSavePopup&&<PopupGuardar/>}
+      {showSavePopup&&PopupGuardar()}
             {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
@@ -2541,13 +2541,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
         </div>
       </div>
-      <AnnoBar/>
-      <ContentArea/>
-        <MonitorPanel/>
-        <ReferenciaPanel/>
-        <SecuenciaPanel/>
-        <CarpetaModal/>
-      <BottomTabBar/>
+      {AnnoBar()}
+      {ContentArea()}
+        {MonitorPanel()}
+        {ReferenciaPanel()}
+        {SecuenciaPanel()}
+        {CarpetaModal()}
+      {BottomTabBar()}
     </div>
   );
 }
