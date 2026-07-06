@@ -1,29 +1,32 @@
 import { useRef, useEffect, useCallback } from 'react';
 
-// ── useAnotaciones — SEGUNDA REESCRITURA (sin devicePixelRatio) ─────────
+// ── useAnotaciones — TERCERA REESCRITURA (autocorrección de tamaño) ─────
 // Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
 // en SongView. Trazos viven en memoria como datos vectoriales.
 //
-// HISTORIAL: la v1 medía mal el contenedor (wrapRef en vez del padre
-// real) — arreglado, pero el síntoma ("líneas gigantes y corridas un
-// gran espacio") siguió igual. Eso apunta a un problema más profundo que
-// solo el contenedor: probablemente el escalado por devicePixelRatio
-// (ctx.scale(dpr,dpr)) se estaba aplicando de más en algún punto — un
-// factor de escala aplicado dos veces hace que la distancia entre el
-// punto donde tocás y donde se dibuja CREZCA con la distancia al origen
-// (por eso "un gran espacio", no un offset fijo), y que las líneas se
-// vean más gruesas de lo esperado ("gigantes") — encaja exactamente con
-// lo reportado.
+// HISTORIAL: v1 medía mal el contenedor (wrapRef en vez del padre real)
+// — arreglado, síntoma igual. v2 sacó devicePixelRatio del todo — Danny
+// confirmó que el síntoma ("líneas gigantes y corridas un gran espacio")
+// sigue IGUAL, incluso con mouse en computador (no solo touch). Esto
+// descarta cualquier causa relacionada a touch o densidad de píxeles —
+// tiene que ser un error de ESCALA puro entre el tamaño con el que se
+// dimensiona el canvas (canvas.width/height) y su tamaño visual real.
 //
-// FIX DEFINITIVO: se elimina el devicePixelRatio del todo. El canvas se
-// dimensiona en píxeles CSS puros (canvas.width = ancho en CSS, sin
-// multiplicar por dpr) y NUNCA se llama ctx.scale(). Esto vuelve
-// imposible que exista un doble-escalado, al costo de que el trazo se
-// vea un poco menos nítido en pantallas de alta densidad — un costo
-// aceptable frente a una función que no funcionaba en absoluto. Con esto,
-// 1 unidad de canvas.width/height = 1 píxel CSS = 1 unidad que devuelve
-// getBoundingClientRect — una sola unidad de medida en todo el sistema,
-// sin ninguna conversión de por medio.
+// CAUSA MÁS PROBABLE: el contenedor se mide (container.clientWidth/
+// clientHeight) en un momento en que el layout todavía no terminó de
+// acomodarse del todo (ej. un hermano de arriba —MapaMaestro— puede
+// determinar su altura final después del primer render), dejando al
+// canvas con un tamaño interno DISTINTO a su tamaño visual real. Un
+// canvas.width que no coincide con su ancho visual hace que el navegador
+// estire/comprima el contenido ya dibujado — un error de escala que
+// crece con la distancia al origen (exactamente "corrida un gran
+// espacio") y que además deforma los trazos ("gigante").
+//
+// FIX: además de medir en el resize normal (mount + ResizeObserver), se
+// verifica en CADA trazo nuevo (startD) que canvas.width/height siga
+// coincidiendo con el tamaño real del contenedor en ESE momento — si no
+// coincide, se corrige antes de dibujar. Esto autocorrige el desfase
+// aunque el ResizeObserver no haya alcanzado a disparar a tiempo.
 //
 // Parámetros:
 //  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
@@ -40,7 +43,6 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const redraw=useCallback(()=>{
     const cv=cvRef.current;if(!cv)return;
     const ctx=cv.getContext('2d');
-    // Sin ctx.scale nunca — 1 unidad = 1 píxel CSS, siempre.
     ctx.clearRect(0,0,cv.width,cv.height);
     const paint=s=>{
       if(s.pts.length<2)return;
@@ -57,28 +59,32 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     ctx.globalCompositeOperation='source-over';
   },[]);
 
+  // Sincroniza canvas.width/height con el tamaño REAL actual del
+  // contenedor. Se llama en mount, en cada resize observado, y además
+  // se re-verifica al comienzo de cada trazo nuevo (ver startD) como
+  // red de seguridad — así nunca puede quedar desincronizado por mucho
+  // tiempo, sin importar cuándo terminó de acomodarse el layout.
+  const syncSize=useCallback(()=>{
+    const cv=cvRef.current, container=containerRef.current;
+    if(!cv||!container)return false;
+    const w=container.clientWidth, h=container.clientHeight;
+    if(w===0||h===0)return false;
+    if(cv.width===w&&cv.height===h)return false; // ya estaba sincronizado
+    cv.width=w;
+    cv.height=h;
+    redraw();
+    return true;
+  },[redraw,containerRef]);
+
   useEffect(()=>{
     const cv=cvRef.current, container=containerRef.current;
     if(!cv||!container)return;
-    const resize=()=>{
-      const w=container.clientWidth, h=container.clientHeight;
-      if(w===0||h===0)return;
-      // canvas.width/height en píxeles CSS puros — SIN multiplicar por
-      // devicePixelRatio. El canvas puede verse un poco menos nítido en
-      // pantallas retina, pero elimina cualquier posibilidad de
-      // doble-escalado, que es lo que rompía el dibujo antes.
-      cv.width=w;
-      cv.height=h;
-      redraw();
-    };
-    resize();
-    const ro=new ResizeObserver(resize);
+    syncSize();
+    const ro=new ResizeObserver(syncSize);
     ro.observe(container);
     return()=>ro.disconnect();
-  },[idx,redraw,containerRef]);
+  },[idx,syncSize,containerRef]);
 
-  // Coordenadas del puntero relativas al canvas, en píxeles CSS — sin
-  // ninguna conversión, porque el canvas trabaja 100% en esas unidades.
   const getP=e=>{
     const r=cvRef.current.getBoundingClientRect();
     return{x:e.clientX-r.left,y:e.clientY-r.top};
@@ -86,6 +92,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
 
   const startD=e=>{
     if(tool==='text'||!showAnnoBar)return;
+    syncSize(); // red de seguridad: corrige cualquier desfase justo antes de empezar a dibujar
     const cv=cvRef.current;
     cv.setPointerCapture(e.pointerId);
     activePointerId.current=e.pointerId;
