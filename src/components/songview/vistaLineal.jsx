@@ -82,6 +82,95 @@ function medirAnchoLinea(texto,fontSizePx,fontFamily){
   return ancho;
 }
 
+// ── Lógica compartida de bloques/líneas — FUENTE ÚNICA DE VERDAD ───────────
+// BUG CORREGIDO (reportado por Danny): mover un acorde de lugar (Editar)
+// arrastraba visualmente bien, pero al soltar el acorde volvía a su
+// posición original. Causa real: la lógica que ubica "a qué línea de texto
+// real corresponde el acorde número N que se está viendo en pantalla"
+// estaba escrita DOS VECES por separado — una vez acá (para dibujar), y
+// otra vez en handleDragChord (SongView.jsx, para mover el texto real al
+// soltar). Ambas reconstruían bloques/líneas con su propia copia del mismo
+// algoritmo (saltar encabezado, agrupar por ===, filtrar líneas vacías en
+// bordes, detectar pares BARRO) — cualquier diferencia mínima entre las
+// dos copias (y las había) hacía que handleDragChord ubicara la línea
+// equivocada o ninguna, fallando en silencio: el texto real nunca
+// cambiaba, así que al soltar (que siempre resetea la posición visual
+// temporal) el acorde "volvía a su lugar" porque en los hechos nunca se
+// había movido. Con estas 3 funciones, render y edición comparten
+// exactamente el mismo camino de código — ya no pueden desincronizarse.
+export function splitIntoBlocks(raw){
+  const lines=(raw||'').split('\n');
+  let start=0;
+  for(let i=0;i<Math.min(4,lines.length);i++){
+    const l=lines[i].trim();
+    if(!l||(!l.includes('[')&&!l.startsWith('===')))start=i+1;
+    else break;
+  }
+  const blocks=[]; // {label, lines:[{text,absIdx}]}
+  let curLabel=null,curLines=[];
+  lines.slice(start).forEach((line,relIdx)=>{
+    const absIdx=start+relIdx;
+    const t=line.trim();
+    if(t.startsWith('===')&&t.endsWith('===')){
+      if(curLines.length||curLabel!==null){blocks.push({label:curLabel,lines:curLines});curLines=[];}
+      curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();
+    } else {
+      curLines.push({text:line,absIdx});
+    }
+  });
+  if(curLines.length||curLabel!==null)blocks.push({label:curLabel,lines:curLines});
+  return blocks;
+}
+
+// Arma las "filas" a mostrar/procesar dentro de un bloque: pares BARRO
+// (línea de acordes + línea de letra siguiente) o líneas inline sueltas.
+// Filtra líneas vacías en los BORDES del bloque (igual que siempre) — las
+// interiores se preservan acá, se filtran más arriba en cada consumidor
+// según su propio criterio (el render las muestra como espacio en blanco;
+// resolveLineAbsIndex las salta sin contarlas — igual que antes).
+export function buildRows(blockLines){
+  const blines=(blockLines||[]).filter((l,i,a)=>!((!l.text.trim())&&(i===0||i===a.length-1)));
+  const rows=[];
+  let skipNext=false;
+  for(let li=0;li<blines.length;li++){
+    if(skipNext){skipNext=false;continue;}
+    const lineObj=blines[li];
+    if(isChordOnlyLine(lineObj.text)){
+      const nextObj=blines[li+1];
+      rows.push({type:'barro',chordLine:lineObj,lyricLine:nextObj||{text:'',absIdx:-1}});
+      skipNext=true;
+    } else {
+      rows.push({type:'inline',line:lineObj});
+    }
+  }
+  return rows;
+}
+
+// Dado el contenido crudo y un lineIdx (el contador secuencial que el
+// render le asigna a cada línea arrastrable), devuelve el índice de línea
+// ABSOLUTO dentro de raw.split('\n') — o -1 si no se encuentra. Usada por
+// handleDragChord (SongView.jsx) para ubicar exactamente qué línea de
+// texto real mover, con el mismo criterio exacto que ya usó el render
+// para numerar esa línea con ese lineIdx en primer lugar.
+export function resolveLineAbsIndex(raw,targetLineIdx){
+  const blocks=splitIntoBlocks(raw);
+  let lineCounter=0;
+  for(const block of blocks){
+    const rows=buildRows(block.lines);
+    for(const row of rows){
+      if(row.type==='barro'){
+        if(lineCounter===targetLineIdx)return row.chordLine.absIdx;
+        lineCounter++;
+      } else {
+        if(!row.line.text.trim())continue;
+        if(lineCounter===targetLineIdx)return row.line.absIdx;
+        lineCounter++;
+      }
+    }
+  }
+  return -1;
+}
+
 export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,notacion='americano',songKey='C'){
   if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
 
@@ -114,24 +203,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     return parts.map(c=>aplicarNotacion(c)).join('/');
   };
 
-  const lines=raw.split('\n');
-  let start=0;
-  for(let i=0;i<Math.min(4,lines.length);i++){
-    const l=lines[i].trim();
-    if(!l||(!l.includes('[')&&!l.startsWith('===')))start=i+1;
-    else break;
-  }
-
-  const blocks=[];
-  let curLabel=null,curLines=[];
-  lines.slice(start).forEach(line=>{
-    const t=line.trim();
-    if(t.startsWith('===')&&t.endsWith('===')){
-      if(curLines.length||curLabel!==null){blocks.push({label:curLabel,lines:curLines});curLines=[];}
-      curLabel=t.slice(3,-3).replace(/:$/,'').trim().toUpperCase();
-    } else { curLines.push(t); }
-  });
-  if(curLines.length||curLabel!==null)blocks.push({label:curLabel,lines:curLines});
+  const blocks=splitIntoBlocks(raw);
 
   // maxLW/labelPx eliminados: el título de bloque ya no reserva una columna
   // lateral fija en cada línea (ver el nuevo render de bloques más abajo,
@@ -151,8 +223,8 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   // usuario necesita leer completas sin recortes.
   const lineasDeLetra=[];
   blocks.forEach(b=>{
-    b.lines.forEach(line=>{
-      const t=line.trim();
+    b.lines.forEach(lineObj=>{
+      const t=lineObj.text.trim();
       if(!t)return;
       // Si la línea tiene acordes inline, la letra real es el texto sin
       // los tags [ACORDE]; si es una línea BARRO (solo acordes), no es
@@ -309,24 +381,8 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
         </div>
       )}
       {blocks.map((blk,bi)=>{
-        const blines=(blk.lines||[]).filter((l,i,a)=>!((!l.trim())&&(i===0||i===a.length-1)));
-        if(!blines.length&&!blk.label)return null;
-
-        // Pre-procesar líneas: detectar pares BARRO (chord-only → lyric)
-        const rows=[];
-        let skipNext=false;
-        for(let li=0;li<blines.length;li++){
-          if(skipNext){skipNext=false;continue;}
-          const line=blines[li];
-          const nextLine=blines[li+1]??'';
-          if(isChordOnlyLine(line)){
-            // Par BARRO: línea de acordes + siguiente línea de letra (o vacío)
-            rows.push({type:'barro',chordLine:line,lyricLine:nextLine,origLi:li});
-            skipNext=true;
-          } else {
-            rows.push({type:'inline',line,origLi:li});
-          }
-        }
+        const rows=buildRows(blk.lines);
+        if(!rows.length&&!blk.label)return null;
 
         const blkColor = blk.label ? getColorBloque(blk.label) : 'rgba(255,255,255,.06)';
         return(
@@ -356,16 +412,16 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
                 const thisLineIdx=lineCounter++;
                 return(
                   <div key={ri} style={{width:'100%'}}>
-                    {renderBarro(row.chordLine,row.lyricLine,`b${ri}_${bi}`)}
+                    {renderBarro(row.chordLine.text,row.lyricLine.text,`b${ri}_${bi}`)}
                   </div>
                 );
               } else {
-                const line=row.line;
-                if(!line.trim())return<div key={ri} style={{height:fs*0.2}}/>;
+                const lineText=row.line.text;
+                if(!lineText.trim())return<div key={ri} style={{height:fs*0.2}}/>;
                 const thisLineIdx=lineCounter++;
                 return(
                   <div key={ri} style={{width:'100%'}}>
-                    {renderLinea(line,thisLineIdx,'l'+ri+'_'+bi)}
+                    {renderLinea(lineText,thisLineIdx,'l'+ri+'_'+bi)}
                   </div>
                 );
               }

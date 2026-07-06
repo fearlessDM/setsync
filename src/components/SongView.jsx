@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { tpKey } from '../utils/music';
 import { Toast, CustomSelect } from './common';
-import { renderSongContent, CHORD_RE } from './songview/vistaLineal';
+import { renderSongContent, CHORD_RE, resolveLineAbsIndex } from './songview/vistaLineal';
 import { useMapaCancion } from './songview/useMapaCancion';
 import { PanelEstructura } from './songview/PanelEstructura';
 import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
@@ -147,63 +147,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const raw=getSongContent(song)||'';
     const allLines=raw.split('\n');
 
-    // Saltar encabezado (igual que renderSongContent)
-    let start=0;
-    for(let i=0;i<Math.min(4,allLines.length);i++){
-      const l=allLines[i].trim();
-      if(!l||(!l.includes('[')&&!l.startsWith('===')))start=i+1;
-      else break;
-    }
-
-    // Reconstruir bloques EXACTAMENTE igual que renderSongContent
-    const blockRanges=[]; // {startAbsIdx, lines:[{text,absIdx}]}
-    let curLines=[];
-    allLines.slice(start).forEach((line,relIdx)=>{
-      const absIdx=start+relIdx;
-      const t=line.trim();
-      if(t.startsWith('===')&&t.endsWith('===')){
-        if(curLines.length)blockRanges.push(curLines);
-        curLines=[];
-      } else {
-        curLines.push({text:line,absIdx});
-      }
-    });
-    if(curLines.length)blockRanges.push(curLines);
-
-    // Dentro de cada bloque, filtrar líneas vacías en bordes (igual que blines)
-    let lineCounter=0;
-    let targetAbsIdx=-1;
-
-    for(const blockLines of blockRanges){
-      const blines=blockLines.filter((l,i,a)=>!((!l.text.trim())&&(i===0||i===a.length-1)));
-      // Detectar pares BARRO igual que el render
-      let skipNext=false;
-      for(let li=0;li<blines.length;li++){
-        if(skipNext){skipNext=false;continue;}
-        const line=blines[li].text;
-        const isChordOnly=(()=>{
-          const txt=line.trim();
-          if(!txt)return false;
-          if(/\[/.test(txt))return false;
-          const tokens=txt.split(/\s+/);
-          const CHORD_PLAIN=/^[A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?$/;
-          return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN.test(t));
-        })();
-        if(isChordOnly){
-          // Línea BARRO — no es arrastrable (no tiene tags [X]), pero cuenta como línea
-          if(lineCounter===lineIdx){targetAbsIdx=blines[li].absIdx;}
-          lineCounter++;
-          skipNext=true;
-        } else {
-          if(!line.trim())continue; // líneas vacías intermedias no cuentan (mismo criterio visual)
-          if(lineCounter===lineIdx){targetAbsIdx=blines[li].absIdx;break;}
-          lineCounter++;
-        }
-      }
-      if(targetAbsIdx>=0)break;
-    }
-
+    // Ubicar la línea real usando EXACTAMENTE la misma lógica que ya usó
+    // el render para numerar esta línea con este lineIdx (ver
+    // songview/vistaLineal.jsx → resolveLineAbsIndex) — antes esta lógica
+    // estaba reimplementada acá por separado y podía desincronizarse del
+    // render, hacía que mover un acorde fallara en silencio y "volviera a
+    // su lugar" al soltar.
+    const targetAbsIdx=resolveLineAbsIndex(raw,lineIdx);
     if(targetAbsIdx<0)return;
+
     const line=allLines[targetAbsIdx];
     const chords=[];
     let m;
