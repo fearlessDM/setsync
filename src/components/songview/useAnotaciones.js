@@ -1,134 +1,121 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
-// ── useAnotaciones ───────────────────────────────────────────────────────
-// Encapsula el canvas de dibujo libre (lápiz/borrador) que se superpone
-// sobre la letra en SongView. Trazos viven en memoria (ref), no persisten
-// entre canciones ni recargas — comportamiento idéntico al original.
-// Extraído de SongView.jsx sin cambios de comportamiento (Tanda 1 — refactor).
+// ── useAnotaciones — REESCRITO DESDE CERO ───────────────────────────────
+// Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
+// en SongView. Trazos viven en memoria como datos vectoriales (no solo
+// píxeles), no persisten entre canciones ni recargas.
+//
+// Por qué se reescribió: la versión anterior media el tamaño del canvas
+// usando `wrapRef` (el contenedor de SCROLL de la letra), pero canvas y
+// wrapRef son elementos HERMANOS dentro de un mismo contenedor padre. Un
+// scroll con overflow puede reservar espacio para su propia scrollbar de
+// forma distinta según el dispositivo/navegador — eso desalinea el
+// tamaño real del canvas respecto al de wrapRef, produciendo justo el
+// síntoma reportado ("como con zoom", "corrida del lugar donde dibujo").
+// Fix real: medir el CONTENEDOR PADRE no-scrollable que envuelve a ambos
+// (containerRef), la única referencia de tamaño que ambos hermanos
+// comparten con garantía matemática.
+//
+// Segundo cambio: Pointer Events unificados (en vez de handlers
+// separados de mouse/touch con preventDefault manual) — un solo camino
+// de código para mouse, touch y stylus, con setPointerCapture para
+// seguir el trazo aunque el dedo se salga del canvas, y manejo explícito
+// de pointercancel (el navegador puede cancelar el gesto por conflicto
+// con otro reconocedor de gestos — sin esto, un trazo a medio hacer
+// podía quedar en un estado inconsistente).
 //
 // Parámetros:
-//  - wrapRef: ref del contenedor de scroll (compartido con auto-scroll,
-//    se usa aquí solo para medir tamaño del canvas vía ResizeObserver)
+//  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
+//    + el área de scroll de la letra (fuente única de verdad de tamaño)
 //  - tool, color, sz: herramienta activa (vienen del estado de AnnoBar)
 //  - showAnnoBar: si la barra de anotación está abierta (controla si se dibuja)
 //  - idx: índice de canción activa, para re-disparar el resize al cambiar
-export function useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx}){
+export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const cvRef=useRef(null);
-  const strokes=useRef([]);
-  const drawing=useRef(false);
-  const cur=useRef(null);
-  // Guarda el dpr usado al dimensionar el canvas, para que getP() pueda
-  // convertir coordenadas de pantalla a las unidades reales del contexto
-  // ya escalado (ver explicación completa más abajo).
+  const strokes=useRef([]);       // trazos ya terminados (datos vectoriales)
+  const cur=useRef(null);         // trazo en progreso
   const dprRef=useRef(1);
+  const activePointerId=useRef(null);
 
-  const redraw=()=>{
+  const redraw=useCallback(()=>{
     const cv=cvRef.current;if(!cv)return;
     const ctx=cv.getContext('2d');
-    // clearRect debe cubrir el canvas completo en sus unidades REALES
-    // (post-scale), no las dimensiones CSS — por eso se divide por dpr.
     const dpr=dprRef.current;
-    ctx.clearRect(0,0,cv.width/dpr,cv.height/dpr);
-    strokes.current.forEach(s=>{
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.scale(dpr,dpr);
+    const paint=s=>{
       if(s.pts.length<2)return;
-      ctx.beginPath();applyS(s);
+      ctx.beginPath();
+      if(s.type==='erase'){ctx.globalCompositeOperation='destination-out';ctx.lineWidth=s.sz*4;}
+      else{ctx.globalCompositeOperation='source-over';ctx.strokeStyle=s.color;ctx.lineWidth=s.sz;}
+      ctx.lineCap='round';ctx.lineJoin='round';
       ctx.moveTo(s.pts[0].x,s.pts[0].y);
-      s.pts.forEach(p=>ctx.lineTo(p.x,p.y));
+      for(let i=1;i<s.pts.length;i++)ctx.lineTo(s.pts[i].x,s.pts[i].y);
       ctx.stroke();
-    });
+    };
+    strokes.current.forEach(paint);
+    if(cur.current)paint(cur.current);
     ctx.globalCompositeOperation='source-over';
-  };
+  },[]);
 
-  // ── BUG CORREGIDO (reportado por Danny): al dibujar en tablet, la raya
-  // aparecía con un offset grande respecto a donde tocaba el dedo/lápiz, y
-  // se sentía "con zoom" o más grande de lo esperado. Causa real: el canvas
-  // se dimensionaba (cv.width/cv.height) directamente en píxeles CSS
-  // lógicos (clientWidth/clientHeight), ignorando devicePixelRatio. En
-  // tablets de alta densidad (dpr 2 o más, la mayoría hoy), esto desalinea
-  // el sistema de coordenadas interno del canvas respecto a los píxeles
-  // físicos reales de la pantalla — el mismo tipo de bug ya resuelto en
-  // Waveform.jsx (Tanda 3) para el dibujo de la forma de onda de audio.
-  // Solución: dimensionar el canvas en píxeles físicos reales
-  // (clientWidth*dpr), escalar el contexto con ctx.scale(dpr,dpr) una sola
-  // vez al redimensionar, y dejar que el resto del código (getP, dibujo de
-  // trazos) siga trabajando en unidades CSS normales — el scale del
-  // contexto se encarga de la conversión real a píxeles físicos de forma
-  // transparente, sin tocar ninguna otra parte de la lógica de dibujo.
   useEffect(()=>{
-    const cv=cvRef.current,w=wrapRef.current;
-    if(!cv||!w)return;
+    const cv=cvRef.current, container=containerRef.current;
+    if(!cv||!container)return;
     const resize=()=>{
       const dpr=window.devicePixelRatio||1;
+      const w=container.clientWidth, h=container.clientHeight;
+      if(w===0||h===0)return;
       dprRef.current=dpr;
-      cv.width=w.clientWidth*dpr;
-      cv.height=w.clientHeight*dpr;
-      const ctx=cv.getContext('2d');
-      ctx.setTransform(1,0,0,1,0,0); // resetea cualquier scale previo antes de aplicar el nuevo
-      ctx.scale(dpr,dpr);
+      cv.width=Math.round(w*dpr);
+      cv.height=Math.round(h*dpr);
       redraw();
     };
     resize();
     const ro=new ResizeObserver(resize);
-    ro.observe(w);
+    ro.observe(container);
     return()=>ro.disconnect();
-  },[idx]);
+  },[idx,redraw,containerRef]);
 
   const getP=e=>{
     const r=cvRef.current.getBoundingClientRect();
-    const s=e.touches?e.touches[0]:e;
-    // Coordenadas en unidades CSS (no físicas) — correctas porque el
-    // contexto ya está escalado con ctx.scale(dpr,dpr) en resize(), así que
-    // dibujar en estas unidades produce la posición física correcta sin
-    // necesidad de multiplicar por dpr aquí también (evita escalar dos
-    // veces, que sería el error opuesto al bug original).
-    return{x:s.clientX-r.left,y:s.clientY-r.top};
-  };
-
-  const applyS=s=>{
-    const ctx=cvRef.current.getContext('2d');
-    const t=s?.type||tool,c2=s?.color||color,sz2=s?.sz||sz;
-    if(t==='erase'){ctx.globalCompositeOperation='destination-out';ctx.lineWidth=sz2*4;}
-    else{ctx.globalCompositeOperation='source-over';ctx.strokeStyle=c2;ctx.lineWidth=sz2;}
-    ctx.lineCap='round';ctx.lineJoin='round';
+    return{x:e.clientX-r.left,y:e.clientY-r.top};
   };
 
   const startD=e=>{
     if(tool==='text'||!showAnnoBar)return;
-    drawing.current=true;
+    const cv=cvRef.current;
+    cv.setPointerCapture(e.pointerId);
+    activePointerId.current=e.pointerId;
     const p=getP(e);
     cur.current={type:tool,color,sz,pts:[p]};
-    const ctx=cvRef.current.getContext('2d');
-    ctx.beginPath();ctx.moveTo(p.x,p.y);applyS();
+    redraw();
   };
 
   const moveD=e=>{
-    if(!drawing.current||!cur.current)return;
-    const p=getP(e);
-    cur.current.pts.push(p);
-    const ctx=cvRef.current.getContext('2d');
-    ctx.lineTo(p.x,p.y);ctx.stroke();
+    if(activePointerId.current!==e.pointerId||!cur.current)return;
+    cur.current.pts.push(getP(e));
+    redraw();
   };
 
-  const endD=()=>{
-    if(!drawing.current)return;
-    drawing.current=false;
-    if(cur.current?.pts.length>1)strokes.current.push(cur.current);
+  const endD=e=>{
+    if(activePointerId.current===null)return;
+    if(cur.current&&cur.current.pts.length>1)strokes.current.push(cur.current);
     cur.current=null;
-    const ctx=cvRef.current.getContext('2d');
-    ctx.globalCompositeOperation='source-over';
+    activePointerId.current=null;
+    try{cvRef.current?.releasePointerCapture(e.pointerId);}catch{}
+    redraw();
   };
 
   const undo=()=>{strokes.current.pop();redraw();};
-  const clear=()=>{
-    strokes.current=[];
-    const cv=cvRef.current;
-    const ctx=cv?.getContext('2d');
-    // Mismo criterio que redraw(): el clearRect debe cubrir el área en
-    // unidades reales del contexto ya escalado, no las dimensiones físicas
-    // crudas del canvas — si no, "Limpiar" solo borraría una fracción del
-    // área visible en pantallas con devicePixelRatio>1.
-    if(ctx&&cv)ctx.clearRect(0,0,cv.width/dprRef.current,cv.height/dprRef.current);
-  };
+  const clear=()=>{strokes.current=[];cur.current=null;redraw();};
 
-  return{cvRef,startD,moveD,endD,undo,clear};
+  return{
+    cvRef,
+    onPointerDown:startD,
+    onPointerMove:moveD,
+    onPointerUp:endD,
+    onPointerCancel:endD,
+    undo,clear,
+  };
 }

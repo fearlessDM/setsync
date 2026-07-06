@@ -256,6 +256,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
   const wrapRef=useRef(null);
+  const canvasContainerRef=useRef(null); // contenedor no-scrollable que envuelve canvas+wrapRef — única fuente de verdad de tamaño para el canvas de dibujo
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
@@ -271,7 +272,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const carpetaActual=archivosDB[baseName]||{trackReferencia:null,secuencia:[]};
 
   // ── Anotaciones (canvas de dibujo libre) — ver songview/useAnotaciones.js
-  const{cvRef,startD,moveD,endD,undo,clear}=useAnotaciones({wrapRef,tool,color,sz,showAnnoBar,idx});
+  const{cvRef,onPointerDown,onPointerMove,onPointerUp,onPointerCancel,undo,clear}=useAnotaciones({containerRef:canvasContainerRef,tool,color,sz,showAnnoBar,idx});
   // ── Auto-scroll por BPM — ver songview/useAutoScroll.js
   const{resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
 
@@ -637,10 +638,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
       <MapaMaestro/>
       {/* Contenedor de letra — flex:1 relativo para canvas+scroll */}
-      <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+      <div ref={canvasContainerRef} style={{flex:1,position:'relative',overflow:'hidden'}}>
         <canvas ref={cvRef} style={{position:'absolute',inset:0,zIndex:2,touchAction:'none',width:'100%',height:'100%',pointerEvents:showAnnoBar&&tool!=='text'?'all':'none',cursor:tool==='erase'?'cell':'crosshair'}}
-          onMouseDown={startD} onMouseMove={moveD} onMouseUp={endD} onMouseLeave={endD}
-          onTouchStart={e=>{e.preventDefault();startD(e);}} onTouchMove={e=>{e.preventDefault();moveD(e);}} onTouchEnd={e=>{e.preventDefault();endD();}}
+          onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}
         />
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
