@@ -222,6 +222,23 @@ export default function App(){
   // punto de mutación, se sincroniza el mapa completo cada vez que cambia.
   // Los "skip" refs evitan el eco: cuando el cambio viene DE Firestore, no
   // hay que volver a subirlo de inmediato.
+  // contentDB: letra/acordes por canción. Antes era una const derivada
+  // directo de SONG_CONTENT_BANDA/SONG_CONTENT_IGLESIA (objeto estático
+  // mutado in-place por handleSaveChords) — nunca llegaba a Firestore, así
+  // que cualquier canción cargada por un usuario real se perdía al recargar.
+  // Ahora es estado real, sembrado una vez con el contenido de fábrica
+  // correspondiente al modo, y sincronizado con Firestore con el mismo
+  // patrón que estructurasDB/archivosDB/variacionesDB.
+  // DECLARADO ACÁ (antes del bloque de useEffects de sync) y no más abajo:
+  // el useEffect de suscripción a Firestore lee contentDB en su callback,
+  // y aunque ese callback corre después del render, la declaración debe
+  // preceder textualmente su uso — si no, "Cannot access before
+  // initialization" (temporal dead zone) revienta el mount completo y deja
+  // pantalla en blanco/negra sin ningún error visible en la UI (bug real
+  // encontrado y corregido en esta sesión, reproducido ejecutando el
+  // bundle de producción real fuera del navegador).
+  const [contentDB,setContentDB]=useState(()=>({...(appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA)}));
+
   const skipVarSaveRef = useRef(false);
   const skipArchSaveRef = useRef(false);
   const skipEstrSaveRef = useRef(false);
@@ -304,14 +321,6 @@ export default function App(){
   // misma forma antes de navegar, así Mi Setlist siempre muestra lo real.
   const [fechaAbierta,setFechaAbierta]=useState(null);
   const abrirFecha=(fecha)=>{ setFechaAbierta(fecha); setView('misetlist'); };
-  // contentDB: letra/acordes por canción. Antes era una const derivada
-  // directo de SONG_CONTENT_BANDA/SONG_CONTENT_IGLESIA (objeto estático
-  // mutado in-place por handleSaveChords) — nunca llegaba a Firestore, así
-  // que cualquier canción cargada por un usuario real se perdía al recargar.
-  // Ahora es estado real, sembrado una vez con el contenido de fábrica
-  // correspondiente al modo, y sincronizado con Firestore con el mismo
-  // patrón que estructurasDB/archivosDB/variacionesDB (ver useEffects abajo).
-  const [contentDB,setContentDB]=useState(()=>({...(appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA)}));
 
   // Demo: contenido propio para las variaciones de letra "Bajo" y "Piano"
   // de YESHUA. Antes mutaba contentDB directo (objeto estático); ahora
