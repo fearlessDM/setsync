@@ -168,7 +168,14 @@ export default function App(){
   // (semilla de Iglesia/Banda), se sube esa semilla en vez de borrarla. ──
   const seedHechoRef = useRef(false);
   useEffect(()=>{
-    if(!firebaseListo || appMode===null || !online) return;
+    // currentUser===undefined significa "Firebase Auth todavía no confirmó
+    // la sesión" (ver declaración arriba). Sin esta espera, accountId cae
+    // al ID de localStorage durante ese instante inicial, que nunca
+    // coincide con request.auth.uid en las reglas de seguridad — resultado:
+    // "FirebaseError: Missing or insufficient permissions" en cada
+    // suscripción, apenas carga la página logueado (bug real encontrado
+    // reproduciendo la consola del navegador en producción).
+    if(!firebaseListo || appMode===null || !online || currentUser===undefined) return;
     seedHechoRef.current = false;
     const unsubEv = subscribeEventos(accountId, data=>{
       if(data.length===0 && !seedHechoRef.current && eventos.length>0){
@@ -208,7 +215,7 @@ export default function App(){
     });
     return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appMode, online]);
+  }, [appMode, online, currentUser]);
 
   const persistirPersona = (persona) => { if(firebaseListo && online) guardarPersona(accountId, persona); };
   const persistirEvento = (evento) => { if(firebaseListo && online) guardarEvento(accountId, evento); };
@@ -244,7 +251,11 @@ export default function App(){
   const skipEstrSaveRef = useRef(false);
   const skipContentSaveRef = useRef(false);
   useEffect(()=>{
-    if(!firebaseListo || appMode===null || !online) return;
+    // Misma espera que el efecto de eventos/personas/equipos más arriba:
+    // sin currentUser confirmado, accountId puede no coincidir todavía
+    // con request.auth.uid y las 4 suscripciones fallan con
+    // "Missing or insufficient permissions".
+    if(!firebaseListo || appMode===null || !online || currentUser===undefined) return;
     const unsubVar = subscribeVariacionesDB(accountId, data=>{
       if(data===null){
         guardarVariacionesDB(accountId, variacionesDB);
@@ -282,7 +293,7 @@ export default function App(){
     });
     return ()=>{ unsubVar(); unsubArch(); unsubEstr(); unsubContent(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appMode, online]);
+  }, [appMode, online, currentUser]);
   useEffect(()=>{
     if(!firebaseListo || !online) return;
     if(skipVarSaveRef.current){ skipVarSaveRef.current=false; return; }
