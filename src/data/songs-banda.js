@@ -7,35 +7,54 @@ NOCHE SIN FIN
 Los Viajeros del Viento
 
 ===INTRO===
-[Am][F][C][G]
+{Am:0}{F:0}{C:0}{G:0}
+
 
 ===VERSO 1===
-[Am]Salí a buscar[F] lo que dejé atrás
-[C]En una ciudad[G] que no perdona
-[Am]Las calles gritan[F] pero no hay verdad
-[C]Solo el viento[G] que me abandona
+{Am:0}{F:13}
+Salí a buscar lo que dejé atrás
+{C:0}{G:13}
+En una ciudad que no perdona
+{Am:0}{F:17}
+Las calles gritan pero no hay verdad
+{C:0}{G:14}
+Solo el viento que me abandona
 
 ===PRECORO===
-[F]Y aunque el cielo[Am] se oscurezca
-[G]Yo sigo caminando
+{F:0}{Am:17}
+Y aunque el cielo se oscurezca
+{G:0}
+Yo sigo caminando
 
 ===CORO===
-[C]En esta noche sin fin[G]
-[Am]Busco una señal[F]
-[C]Algo que me diga[G]
-[Am]Que vale la pena[F] seguir
+{C:0}{G:21}
+En esta noche sin fin
+{Am:0}{F:15}
+Busco una señal
+{C:0}{G:16}
+Algo que me diga
+{Am:0}{F:16}
+Que vale la pena seguir
 
 ===VERSO 2===
-[Am]Encontré tus ojos[F] en el andén
-[C]Un destello rojo[G] entre la niebla
-[Am]Me dijiste algo[F] que no entendí bien
-[C]Pero me quedé[G] y la luna ya era vieja
+{Am:0}{F:17}
+Encontré tus ojos en el andén
+{C:0}{G:16}
+Un destello rojo entre la niebla
+{Am:0}{F:15}
+Me dijiste algo que no entendí bien
+{C:0}{G:13}
+Pero me quedé y la luna ya era vieja
 
 ===PUENTE===
-[F]No me importa la hora
-[Am]No me importa el lugar
-[G]Si estás aquí conmigo
-[F]El tiempo puede esperar
+{F:0}
+No me importa la hora
+{Am:0}
+No me importa el lugar
+{G:0}
+Si estás aquí conmigo
+{F:0}
+El tiempo puede esperar
 `,
 
   'FUEGO CRUZADO': `
@@ -43,32 +62,50 @@ FUEGO CRUZADO
 Tormenta Eléctrica
 
 ===INTRO===
-[Em][D][G][A]
+{Em:0}{D:0}{G:0}{A:0}
+
 
 ===VERSO 1===
-[Em]Encendí el motor[D] a las tres de la tarde
-[G]El camino era largo[A] y el sol quemaba fuerte
-[Em]Radio en volumen[D] diez, ventana abajo
-[G]Buscando ese sonido[A] que me salva del fracaso
+{Em:0}{D:16}
+Encendí el motor a las tres de la tarde
+{G:0}{A:19}
+El camino era largo y el sol quemaba fuerte
+{Em:0}{D:16}
+Radio en volumen diez, ventana abajo
+{G:0}{A:19}
+Buscando ese sonido que me salva del fracaso
 
 ===CORO===
-[G]Fuego cruzado[D]
-[Em]Entre dos mundos[C]
-[G]Sin saber a cuál[D] pertenezco
-[Em]Pero suena bien[C]
-[G]Y eso es suficiente[D]
+{G:0}{D:13}
+Fuego cruzado
+{Em:0}{C:16}
+Entre dos mundos
+{G:0}{D:16}
+Sin saber a cuál pertenezco
+{Em:0}{C:15}
+Pero suena bien
+{G:0}{D:19}
+Y eso es suficiente
 
 ===VERSO 2===
-[Em]Llegué a ese bar[D] donde tocan los martes
-[G]Me senté al fondo[A] a esperar que algo pase
-[Em]Una guitarra rota[D] colgada en la pared
-[G]Me recordó que hay cosas[A] que no tienen red
+{Em:0}{D:16}
+Llegué a ese bar donde tocan los martes
+{G:0}{A:17}
+Me senté al fondo a esperar que algo pase
+{Em:0}{D:17}
+Una guitarra rota colgada en la pared
+{G:0}{A:24}
+Me recordó que hay cosas que no tienen red
 
 ===PUENTE===
-[C]Quema quema quema
-[G]Todo lo que sobra
-[D]Queda solo lo que duele
-[Em]Y duele menos
+{C:0}
+Quema quema quema
+{G:0}
+Todo lo que sobra
+{D:0}
+Queda solo lo que duele
+{Em:0}
+Y duele menos
 `,
 
   'MAR ADENTRO': `
@@ -76,29 +113,46 @@ MAR ADENTRO
 Coral y Sal
 
 ===VERSO 1===
-[D]Crecí entre redes[A] y olor a mar
-[Bm]Mi abuelo me enseñó[G] a no temblar
-[D]Cuando la tormenta[A] llega sin aviso
-[Bm]El barco aguanta más[G] de lo que yo pensé preciso
+{D:0}{A:17}
+Crecí entre redes y olor a mar
+{Bm:0}{G:19}
+Mi abuelo me enseñó a no temblar
+{D:0}{A:18}
+Cuando la tormenta llega sin aviso
+{Bm:0}{G:20}
+El barco aguanta más de lo que yo pensé preciso
 
 ===CORO===
-[G]Mar adentro[D]
-[A]Donde no llega el ruido
-[Bm]Mar adentro[G]
-[D]Estoy vivo[A]
+{G:0}{D:11}
+Mar adentro
+{A:0}
+Donde no llega el ruido
+{Bm:0}{G:11}
+Mar adentro
+{D:0}{A:10}
+Estoy vivo
 
 ===VERSO 2===
-[D]Las olas rompen[A] contra el acantilado
-[Bm]Y yo me pregunto[G] qué habrá del otro lado
-[D]Mi madre decía[A] que el mar no miente nunca
-[Bm]Que guarda los secretos[G] que la tierra no trunca
+{D:0}{A:15}
+Las olas rompen contra el acantilado
+{Bm:0}{G:16}
+Y yo me pregunto qué habrá del otro lado
+{D:0}{A:14}
+Mi madre decía que el mar no miente nunca
+{Bm:0}{G:23}
+Que guarda los secretos que la tierra no trunca
 
 ===PUENTE===
-[G]Sal en los labios
-[A]Arena en los pies
-[Bm]No necesito más
-[G]Para saber quién soy
-[A]Una vez más
+{G:0}
+Sal en los labios
+{A:0}
+Arena en los pies
+{Bm:0}
+No necesito más
+{G:0}
+Para saber quién soy
+{A:0}
+Una vez más
 `,
 
   'CIUDAD DE VIDRIO': `
@@ -106,33 +160,52 @@ CIUDAD DE VIDRIO
 Proyecto Espejo
 
 ===INTRO===
-[Dm][Bb][F][C]
+{Dm:0}{Bb:0}{F:0}{C:0}
+
 
 ===VERSO 1===
-[Dm]Todo aquí brilla[Bb] pero no calienta
-[F]Las ventanas altas[C] reflejan mi silueta
-[Dm]Subí al piso cuarenta[Bb] a ver si desde arriba
-[F]Esta ciudad de vidrio[C] se ve menos vacía
+{Dm:0}{Bb:16}
+Todo aquí brilla pero no calienta
+{F:0}{C:18}
+Las ventanas altas reflejan mi silueta
+{Dm:0}{Bb:21}
+Subí al piso cuarenta a ver si desde arriba
+{F:0}{C:21}
+Esta ciudad de vidrio se ve menos vacía
 
 ===CORO===
-[Bb]Ciudad de vidrio[F]
-[C]Transparente y fría
-[Dm]Se rompe si la tocas[Bb]
-[F]Con demasiada energía
-[C]Ciudad de vidrio[Bb]
-[F]Yo también fui así[C]
+{Bb:0}{F:16}
+Ciudad de vidrio
+{C:0}
+Transparente y fría
+{Dm:0}{Bb:20}
+Se rompe si la tocas
+{F:0}
+Con demasiada energía
+{C:0}{Bb:16}
+Ciudad de vidrio
+{F:0}{C:18}
+Yo también fui así
 
 ===VERSO 2===
-[Dm]Me crucé contigo[Bb] en el pasillo doce
-[F]Ibas mirando el suelo[C] yo intentaba que me notes
-[Dm]Sonreíste un poco[Bb] seguiste caminando
-[F]Y el vidrio entre los dos[C] siguió resonando
+{Dm:0}{Bb:16}
+Me crucé contigo en el pasillo doce
+{F:0}{C:21}
+Ibas mirando el suelo yo intentaba que me notes
+{Dm:0}{Bb:17}
+Sonreíste un poco seguiste caminando
+{F:0}{C:25}
+Y el vidrio entre los dos siguió resonando
 
 ===PUENTE===
-[Bb]No todo lo que brilla
-[F]Está partido
-[C]A veces el reflejo
-[Dm]Es lo que no has vivido
+{Bb:0}
+No todo lo que brilla
+{F:0}
+Está partido
+{C:0}
+A veces el reflejo
+{Dm:0}
+Es lo que no has vivido
 `,
 
   'TIERRA ROJA': `
@@ -140,36 +213,58 @@ TIERRA ROJA
 Los Hijos del Norte
 
 ===INTRO===
-[G][D][Em][C]
+{G:0}{D:0}{Em:0}{C:0}
+
 
 ===VERSO 1===
-[G]Vengo del norte[D] donde el polvo es rojo
-[Em]Donde los hombres[C] trabajan sin reloj
-[G]Mi padre no habló[D] mucho en su vida
-[Em]Pero cada silencio[C] era una despedida
+{G:0}{D:15}
+Vengo del norte donde el polvo es rojo
+{Em:0}{C:17}
+Donde los hombres trabajan sin reloj
+{G:0}{D:17}
+Mi padre no habló mucho en su vida
+{Em:0}{C:18}
+Pero cada silencio era una despedida
 
 ===CORO===
-[C]Tierra roja[G]
-[D]Que me vio nacer
-[Em]Tierra roja[C]
-[G]A la que vuelvo[D] otra vez
-[C]No hay ciudad[G] que valga más
-[D]Que ese camino de polvo[Em]
-[C]Que me lleva atrás[G]
+{C:0}{G:11}
+Tierra roja
+{D:0}
+Que me vio nacer
+{Em:0}{C:11}
+Tierra roja
+{G:0}{D:15}
+A la que vuelvo otra vez
+{C:0}{G:13}
+No hay ciudad que valga más
+{D:0}{Em:23}
+Que ese camino de polvo
+{C:0}{G:18}
+Que me lleva atrás
 
 ===VERSO 2===
-[G]Planté un árbol[D] antes de irme al sur
-[Em]Para tener excusa[C] de volver
-[G]Dicen que creció[D] hasta tocar las nubes
-[Em]Y que da sombra a todos[C] los que quieren volver
+{G:0}{D:15}
+Planté un árbol antes de irme al sur
+{Em:0}{C:17}
+Para tener excusa de volver
+{G:0}{D:16}
+Dicen que creció hasta tocar las nubes
+{Em:0}{C:23}
+Y que da sombra a todos los que quieren volver
 
 ===PUENTE===
-[Em]Norte mío
-[C]Siempre fuiste fiel
-[G]Cuando el sur me dio
-[D]Lo que el norte no pudo
-[Em]Igual te extrañé
-[C]Igual volví
+{Em:0}
+Norte mío
+{C:0}
+Siempre fuiste fiel
+{G:0}
+Cuando el sur me dio
+{D:0}
+Lo que el norte no pudo
+{Em:0}
+Igual te extrañé
+{C:0}
+Igual volví
 `,
 
 };

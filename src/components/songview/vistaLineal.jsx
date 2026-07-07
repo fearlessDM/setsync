@@ -24,6 +24,27 @@ const isChordOnlyLine=(txt)=>{
   return tokens.length>=1&&tokens.every(t=>CHORD_PLAIN_RE.test(t));
 };
 
+// ── Formato SETSYNC stacked: "{G:0}{Em:8}" — notas con posición de carácter
+// explícita, generadas por el Editor de acordes (songview/EditorAcordes.jsx).
+// A diferencia de BARRO (gap visual entre acordes, sin posición real) y de
+// YESHUA (inline, corchete dentro del texto), acá la posición horizontal de
+// cada acorde queda guardada como dato — no como aproximación visual — lo
+// que permite el drag de reposicionamiento preciso y facilita que un futuro
+// conversor con IA calcule posiciones sin ambigüedad.
+const STACKED_LINE_RE=/^(\{[^:}]+:\d+\})+$/;
+const STACKED_TOKEN_RE=/\{([^:}]+):(\d+)\}/g;
+const isStackedLine=(txt)=>{
+  if(!txt||!txt.trim())return false;
+  return STACKED_LINE_RE.test(txt.trim());
+};
+const parseStackedTokens=(txt)=>{
+  const out=[];
+  STACKED_TOKEN_RE.lastIndex=0;
+  let m;
+  while((m=STACKED_TOKEN_RE.exec(txt||''))!==null)out.push({chord:m[1],pos:parseInt(m[2],10)});
+  return out.sort((a,b)=>a.pos-b.pos);
+};
+
 // ── Medición real de ancho de carácter para el drag de acordes ─────────────
 // BUG CORREGIDO (reportado por Danny): al arrastrar un acorde, este "rebota"
 // a una posición distinta de donde se soltó. Causa real: steps=Math.round(dx/5)
@@ -135,7 +156,11 @@ export function buildRows(blockLines){
   for(let li=0;li<blines.length;li++){
     if(skipNext){skipNext=false;continue;}
     const lineObj=blines[li];
-    if(isChordOnlyLine(lineObj.text)){
+    if(isStackedLine(lineObj.text)){
+      const nextObj=blines[li+1];
+      rows.push({type:'stacked',chordLine:lineObj,lyricLine:nextObj||{text:'',absIdx:-1}});
+      skipNext=true;
+    } else if(isChordOnlyLine(lineObj.text)){
       const nextObj=blines[li+1];
       rows.push({type:'barro',chordLine:lineObj,lyricLine:nextObj||{text:'',absIdx:-1}});
       skipNext=true;
@@ -158,7 +183,10 @@ export function resolveLineAbsIndex(raw,targetLineIdx){
   for(const block of blocks){
     const rows=buildRows(block.lines);
     for(const row of rows){
-      if(row.type==='barro'){
+      if(row.type==='stacked'){
+        if(lineCounter===targetLineIdx)return row.chordLine.absIdx;
+        lineCounter++;
+      } else if(row.type==='barro'){
         if(lineCounter===targetLineIdx)return row.chordLine.absIdx;
         lineCounter++;
       } else {
@@ -227,9 +255,9 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
       const t=lineObj.text.trim();
       if(!t)return;
       // Si la línea tiene acordes inline, la letra real es el texto sin
-      // los tags [ACORDE]; si es una línea BARRO (solo acordes), no es
-      // letra, se descarta para este cálculo.
-      if(isChordOnlyLine(t))return;
+      // los tags [ACORDE]; si es una línea BARRO o STACKED (solo acordes),
+      // no es letra, se descarta para este cálculo.
+      if(isChordOnlyLine(t)||isStackedLine(t))return;
       CHORD_RE.lastIndex=0;
       const limpio=t.replace(CHORD_RE,'');
       if(limpio.trim())lineasDeLetra.push(limpio);
@@ -258,6 +286,50 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   // no un límite de diseño.
   const fs=Math.min(36,Math.max(11,fsCalculado));
   const cFs=Math.max(10,fs-2);
+
+  // Renderiza una línea en formato SETSYNC stacked: cada acorde en su
+  // posición real de carácter, con la sílaba correspondiente (máx. 2
+  // caracteres) teñida del mismo morado que usa el Editor de acordes —
+  // misma convención visual en edición y en vista, para que el vínculo
+  // acorde↔sílaba se reconozca de un vistazo en ambos lugares.
+  const renderStacked=(chordLineText,lyricLineText,key)=>{
+    const chords=parseStackedTokens(chordLineText).map(c=>({...c,chord:trC(c.chord)}));
+    const lyric=lyricLineText||'';
+    if(!showChords){
+      return lyric.trim()?(<div key={key} style={{fontSize:fs,fontWeight:700,color:'var(--tx)',fontFamily:FONT,lineHeight:1.35,marginBottom:'0.1em',textTransform:'uppercase'}}>{lyric}</div>):null;
+    }
+    const chordFs=Math.max(9,fs*0.72);
+    const anchoCar=medirAnchoCaracter(fs,FONT);
+    const tintPositions=new Set();
+    chords.forEach(c=>{tintPositions.add(c.pos);if(c.pos+1<lyric.length)tintPositions.add(c.pos+1);});
+    const lyricSegs=[];
+    let i=0;
+    while(i<lyric.length){
+      const tinted=tintPositions.has(i);
+      let j=i;
+      if(tinted){while(j<lyric.length&&tintPositions.has(j)&&j-i<2)j++;}
+      else{while(j<lyric.length&&!tintPositions.has(j))j++;}
+      lyricSegs.push({text:lyric.slice(i,j),tinted});
+      i=j;
+    }
+    return(
+      <div key={key} style={{marginBottom:'0.35em',lineHeight:1}}>
+        <div style={{position:'relative',height:chordFs*1.3,marginBottom:2}}>
+          {chords.map((c,ci)=>(
+            <span key={ci} style={{position:'absolute',left:c.pos*anchoCar,top:0,fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap'}}>{c.chord}</span>
+          ))}
+        </div>
+        {lyric.trim()&&(
+          <div style={{fontSize:fs,fontWeight:700,fontFamily:FONT,lineHeight:1.3,textTransform:'uppercase'}}>
+            {lyricSegs.map((seg,si)=>seg.tinted
+              ?<span key={si} style={{background:'rgba(127,119,221,.16)',color:'#cecbf6',borderRadius:3}}>{seg.text}</span>
+              :<span key={si} style={{color:'var(--tx)'}}>{seg.text}</span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Renderiza una línea de acordes-sobre-letra en formato BARRO
   const renderBarro=(chordLine,lyricLine,key)=>{
@@ -408,7 +480,14 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
               </div>
             )}
             {rows.map((row,ri)=>{
-              if(row.type==='barro'){
+              if(row.type==='stacked'){
+                const thisLineIdx=lineCounter++;
+                return(
+                  <div key={ri} style={{width:'100%'}}>
+                    {renderStacked(row.chordLine.text,row.lyricLine.text,`s${ri}_${bi}`)}
+                  </div>
+                );
+              } else if(row.type==='barro'){
                 const thisLineIdx=lineCounter++;
                 return(
                   <div key={ri} style={{width:'100%'}}>

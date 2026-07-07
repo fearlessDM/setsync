@@ -202,3 +202,22 @@ export async function guardarEstructurasDB(accountId, db_){
   if(!firebaseListo) return;
   await setDoc(doc(db, 'accounts', accountId, 'data', 'estructurasDB'), {db: db_});
 }
+
+// ── contentDB — letra y acordes de cada canción (base name → texto crudo,
+// formato SETSYNC con bloques ===LABEL=== y notas {ACORDE:pos}). Antes vivía
+// solo en memoria (objeto JS mutado directo, contentDB[name]=content) y se
+// perdía al recargar la página — cualquier canción cargada por un usuario
+// real (más allá de las de fábrica sembradas en songs-banda.js/songs-iglesia.js)
+// desaparecía sin aviso. Mismo patrón que estructurasDB: un solo documento
+// con el diccionario completo, sincronizado entero cada vez que cambia.
+export function subscribeContentDB(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'contentDB');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().db||{}) : null);
+  });
+}
+export async function guardarContentDB(accountId, db_){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'contentDB'), {db: db_});
+}

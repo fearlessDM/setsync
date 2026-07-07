@@ -6,9 +6,10 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 import { CustomSelect } from './common';
-import { BLOQUES_CHIPS, getColorBloque, abrevBloque } from './songview/estructura';
+import { BLOQUES_CHIPS, getColorBloque, abrevBloque, parseBloques } from './songview/estructura';
+import { EditorAcordes, convertStackedToInline } from './songview/EditorAcordes';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},songParaEditar=null,onSongParaEditarConsumido=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -17,6 +18,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});
+  const [editandoAcordesDe,setEditandoAcordesDe]=useState(null); // id del bloque abierto en el editor de acordes, o null
   // Contador simple para ids únicos de bloques dentro de esta sesión de carga
   const bloqueIdRef=useRef(0);
   // Tap tempo — para identificar BPM tocando el ritmo con el dedo/mouse
@@ -44,6 +46,43 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
   const [crearModo,setCrearModo]=useState(null);
+
+  // ── Precarga del editor manual cuando se llega desde "Editar" en SongView ──
+  // Antes, el botón "Editar" de SongView solo activaba un modo de arrastre
+  // interno (drag-to-reposition, poco confiable). Ahora navega hasta acá con
+  // el nombre de la canción, y este efecto reconstruye nueva.bloques a partir
+  // del texto real guardado en contentDB — usando el mismo parser (parseBloques)
+  // que ya usa el resto de la app, así la reconstrucción usa exactamente el
+  // mismo criterio de "qué es un bloque" que el guardado y el render.
+  useEffect(()=>{
+    if(!songParaEditar)return;
+    const raw=contentDB[songParaEditar]||'';
+    const bloquesParsed=parseBloques(raw);
+    const bloquesUI=bloquesParsed.map(b=>{
+      const id=++bloqueIdRef.current;
+      return{id,label:b.label,color:getColorBloque(b.label),contenido:(b.lines||[]).join('\n').trim()};
+    });
+    // Primeras 2 líneas no-bloque del raw son nombre/autor por convención de guardar()
+    const lineasCabecera=raw.split('\n\n')[0]?.split('\n')||[];
+    const nombrePrevio=lineasCabecera[0]||songParaEditar;
+    const autorPrevio=lineasCabecera[1]||'';
+    // El mapa/estructura en vivo (con repeticiones, ej. INT V2 V3 INST P INT V2)
+    // vive aparte en estructurasDB, no en el orden de los bloques de letra —
+    // esa es la fuente real que arma el usuario a mano en "Estructura en vivo".
+    // Si existe, se usa tal cual (preservando repeticiones); si no, se cae al
+    // fallback de un chip por bloque en el orden en que aparece la letra.
+    const guiasGuardadas=estructurasDB[songParaEditar]?.guias;
+    const estructuraPrevia=(guiasGuardadas&&guiasGuardadas.length>0)
+      ?guiasGuardadas.map((g,gi)=>({id:`e${bloqueIdRef.current}_${gi}`,label:g.label,abrev:g.abrev||abrevBloque(g.label),color:g.color||getColorBloque(g.label)}))
+      :bloquesUI.map(b=>({id:`e${b.id}`,label:b.label,abrev:abrevBloque(b.label),color:b.color}));
+    setNueva({
+      nombre:nombrePrevio,autor:autorPrevio,key:'G',bpm:estructurasDB[songParaEditar]?.click?.bpm?String(estructurasDB[songParaEditar].click.bpm):'',
+      bloques:bloquesUI,
+      estructura:estructuraPrevia,
+    });
+    setShowCrear(true);setCrearModo('manual');
+    onSongParaEditarConsumido();
+  },[songParaEditar]);
   // colecciones ahora es prop (levantado a App.jsx para poder sincronizar
   // con Firestore, v44-ampliación — antes vivía solo acá, se perdía al
   // recargar y no se compartía entre dispositivos)
@@ -416,6 +455,12 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                         style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',
                           color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                      <button onClick={()=>setEditandoAcordesDe(bloque.id)}
+                        title="Editar acordes"
+                        style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',
+                          color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                       </button>
                     </div>
                     <textarea value={bloque.contenido}
@@ -1163,6 +1208,26 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           </div>
         </div>
       )}
+
+      {/* ── Editor de acordes stacked (formato SETSYNC) ── */}
+      {editandoAcordesDe!==null&&(()=>{
+        const bloque=nueva.bloques.find(b=>b.id===editandoAcordesDe);
+        if(!bloque)return null;
+        return(
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',zIndex:200,
+            display:'flex',alignItems:'flex-start',justifyContent:'center',overflowY:'auto',padding:'24px 12px'}}>
+            <EditorAcordes
+              label={bloque.label}
+              contenido={bloque.contenido}
+              onCancel={()=>setEditandoAcordesDe(null)}
+              onSave={(nuevoContenido)=>{
+                setNueva(v=>({...v,bloques:v.bloques.map(b=>b.id===editandoAcordesDe?{...b,contenido:nuevoContenido}:b)}));
+                setEditandoAcordesDe(null);
+              }}
+            />
+          </div>
+        );
+      })()}
     </div>
   );
 }

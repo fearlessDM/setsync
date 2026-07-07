@@ -25,7 +25,7 @@ import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } fr
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -225,6 +225,7 @@ export default function App(){
   const skipVarSaveRef = useRef(false);
   const skipArchSaveRef = useRef(false);
   const skipEstrSaveRef = useRef(false);
+  const skipContentSaveRef = useRef(false);
   useEffect(()=>{
     if(!firebaseListo || appMode===null || !online) return;
     const unsubVar = subscribeVariacionesDB(accountId, data=>{
@@ -251,7 +252,18 @@ export default function App(){
         setEstructurasDB(data);
       }
     });
-    return ()=>{ unsubVar(); unsubArch(); unsubEstr(); };
+    const unsubContent = subscribeContentDB(accountId, data=>{
+      if(data===null){
+        // Primera vez que esta cuenta se conecta: siembra Firestore con el
+        // contentDB local actual (fábrica + lo que ya se haya cargado antes
+        // de tener conexión), igual que el resto de las colecciones.
+        guardarContentDB(accountId, contentDB);
+      } else {
+        skipContentSaveRef.current = true;
+        setContentDB(data);
+      }
+    });
+    return ()=>{ unsubVar(); unsubArch(); unsubEstr(); unsubContent(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online]);
   useEffect(()=>{
@@ -272,9 +284,16 @@ export default function App(){
     guardarEstructurasDB(accountId, estructurasDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[estructurasDB]);
+  useEffect(()=>{
+    if(!firebaseListo || !online) return;
+    if(skipContentSaveRef.current){ skipContentSaveRef.current=false; return; }
+    guardarContentDB(accountId, contentDB);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[contentDB]);
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
+  const [songParaEditar,setSongParaEditar]=useState(null); // nombre de canción a precargar en Cancionero al volver desde "Editar" en SongView
   const [mesNav,setMesNav]=useState(6); // Julio (mes 6, 0-indexed) donde están los datos demo
   const [activeSunday,setActiveSunday]=useState(()=>Object.keys(SETLISTS).filter(d=>SETLISTS[d]!==null).map(Number).sort((a,b)=>a-b)[0]||Object.keys(SETLISTS).map(Number)[0]||1);
   // ── Fecha abierta en "Mi Setlist" (v39-ampliación) ──────────────────────
@@ -285,69 +304,99 @@ export default function App(){
   // misma forma antes de navegar, así Mi Setlist siempre muestra lo real.
   const [fechaAbierta,setFechaAbierta]=useState(null);
   const abrirFecha=(fecha)=>{ setFechaAbierta(fecha); setView('misetlist'); };
-  const contentDB = appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
+  // contentDB: letra/acordes por canción. Antes era una const derivada
+  // directo de SONG_CONTENT_BANDA/SONG_CONTENT_IGLESIA (objeto estático
+  // mutado in-place por handleSaveChords) — nunca llegaba a Firestore, así
+  // que cualquier canción cargada por un usuario real se perdía al recargar.
+  // Ahora es estado real, sembrado una vez con el contenido de fábrica
+  // correspondiente al modo, y sincronizado con Firestore con el mismo
+  // patrón que estructurasDB/archivosDB/variacionesDB (ver useEffects abajo).
+  const [contentDB,setContentDB]=useState(()=>({...(appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA)}));
 
   // Demo: contenido propio para las variaciones de letra "Bajo" y "Piano"
-  // de YESHUA (mismo mecanismo de mutación directa que usa handleSaveChords
-  // más abajo — contentDB es el objeto estático importado, no state).
+  // de YESHUA. Antes mutaba contentDB directo (objeto estático); ahora
+  // contentDB es estado real sincronizado con Firestore, así que se siembra
+  // con setContentDB — funcional, para no pisar lo que ya haya llegado de
+  // Firestore en el mismo instante en que corre este efecto.
   // Clave = displayName que arma abrirSongDesdeRepertorio ("Canción · Label").
   useEffect(()=>{
-    if(!contentDB['YESHUA · Bajo']){
-      contentDB['YESHUA · Bajo']=`
+    setContentDB(prev=>{
+      const next={...prev};
+      if(!next['YESHUA · Bajo']){
+        next['YESHUA · Bajo']=`
 YESHUA — VERSIÓN BAJO
 Marcos Brunet
 Notas raíz para línea de bajo
 
 ===VERSO 1===
-[A]Mi orgullo me sacó del jardín
-[B]Su humildad colocó el jardín en mí
-[A]Y si vendiera todo lo que tengo
-[B]A cambio de su amor, yo fallaría
-[A]Porque su amor no se compra Ni se merece
-[B]Su amor es un regalo De gracia se recibe
+{A:0}Mi orgullo me sacó del jardín
+{B:0}Su humildad colocó el jardín en mí
+{A:0}Y si vendiera todo lo que tengo
+{B:0}A cambio de su amor, yo fallaría
+{A:0}Porque su amor no se compra Ni se merece
+{B:0}Su amor es un regalo De gracia se recibe
 ===CORO===
-[A]Quiero conocer a Jesús
-[B]Quiero conocer a Jesús
-[A]Quiero conocer a Jesús
-[B]Quiero conocer a Jesús
-[A]Y ser hallado en él
-[B]Y ser hallado en él
-[B]Y ser hallado en él
+{A:0}Quiero conocer a Jesús
+{B:0}Quiero conocer a Jesús
+{A:0}Quiero conocer a Jesús
+{B:0}Quiero conocer a Jesús
+{A:0}Y ser hallado en él
+{B:0}Y ser hallado en él
+{B:0}Y ser hallado en él
 ===PUENTE===
-[A]Mi amado es el más bello entre millares
-[E]de millares
-[A]Tuyo es el reino, Tuyo es el poder
-[B]Tuya es la gloria, Por siempre amén.
+{A:0}Mi amado es el más bello entre millares
+{E:2}de millares
+{A:0}Tuyo es el reino, Tuyo es el poder
+{B:0}Tuya es la gloria, Por siempre amén.
 `;
-    }
-    if(!contentDB['YESHUA · Piano']){
-      contentDB['YESHUA · Piano']=`
+      }
+      if(!next['YESHUA · Piano']){
+        next['YESHUA · Piano']=`
 YESHUA — VERSIÓN PIANO
 Marcos Brunet
 Voicings extendidos para teclado
 
 ===VERSO 1===
-[Amaj7]Mi[Bsus4] orgullo me sacó del jardín
-[C#m7]Su h[Bsus4]umildad colocó el jardín en mí
-[Amaj7]Y [Bsus4]si vendiera todo lo que tengo
-[C#m7]A ca[Bsus4]mbio de su amor, yo fallaría
-[Amaj7]Po[Bsus4]rque su amor no se compra Ni se merece
-[C#m7]Su a[Bsus4]mor es un regalo De gracia se recibe
+{Amaj7:0}{Bsus4:2}
+Mi orgullo me sacó del jardín
+{C#m7:0}{Bsus4:5}
+Su humildad colocó el jardín en mí
+{Amaj7:0}{Bsus4:2}
+Y si vendiera todo lo que tengo
+{C#m7:0}{Bsus4:5}
+A cambio de su amor, yo fallaría
+{Amaj7:0}{Bsus4:2}
+Porque su amor no se compra Ni se merece
+{C#m7:0}{Bsus4:5}
+Su amor es un regalo De gracia se recibe
 ===CORO===
-[Amaj7]Qu[Bsus4]iero conocer a Jesús
-[C#m7]Quie[Bsus4]ro conocer a Jesús
-[Amaj7]Qu[Bsus4]iero conocer a Jesús
-[C#m7]Quie[Bsus4]ro conocer a Jesús
-[Amaj7]Y ser hallado en él
-[Bsus4]Y ser hallado en él
-[C#m7]Y ser hallado en él
+{Amaj7:0}{Bsus4:2}
+Quiero conocer a Jesús
+{C#m7:0}{Bsus4:4}
+Quiero conocer a Jesús
+{Amaj7:0}{Bsus4:2}
+Quiero conocer a Jesús
+{C#m7:0}{Bsus4:4}
+Quiero conocer a Jesús
+{Amaj7:0}
+Y ser hallado en él
+{Bsus4:0}
+Y ser hallado en él
+{C#m7:0}
+Y ser hallado en él
 ===PUENTE===
-[Amaj7]Mi[C#m7] amado es el más bello entre millares
-[E9]de[Bsus4] millares
-[Amaj7]Tu[Bsus4]yo es el reino, Tuyo es el poder
-[C#m7]Tuya[Bsus4] es la gloria, Por siempre amén.
+{Amaj7:0}{C#m7:2}
+Mi amado es el más bello entre millares
+{E9:0}{Bsus4:2}
+de millares
+{Amaj7:0}{Bsus4:2}
+Tuyo es el reino, Tuyo es el poder
+{C#m7:0}{Bsus4:4}
+Tuya es la gloria, Por siempre amén.
 `;
-    }
+      }
+      return next;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
@@ -417,7 +466,7 @@ Voicings extendidos para teclado
     });
     setSongViewSongs(songs);setSongView(idx);
   };
-  const handleSaveChords=(name,content)=>{contentDB[name]=content;showToast('✓ Acordes guardados');};
+  const handleSaveChords=(name,content)=>{setContentDB(prev=>({...prev,[name]:content}));showToast('✓ Acordes guardados');};
 
   // ── Guardar setlist en un evento (persiste en Firestore si está disponible) ──
   const guardarSetlistEnEvento=(eventoId, nuevoSetlist)=>{
@@ -705,7 +754,7 @@ Voicings extendidos para teclado
             onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             userRole={userRole} onToast={showToast} lang={lang}
             equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
@@ -737,7 +786,12 @@ Voicings extendidos para teclado
           <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
-            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}/>
+            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}
+            onEditInCancionero={(nombreCancion)=>{
+              setSongView(null);setSongViewSongs(null);
+              setSongParaEditar(nombreCancion);
+              setView('repertorio');
+            }}/>
           {(tieneClick||tieneMultitracks)&&(
             <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
               {mostrarMultitracks&&tieneMultitracks&&(
