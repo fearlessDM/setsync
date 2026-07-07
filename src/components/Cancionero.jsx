@@ -943,3 +943,44 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     </div>
   );
 }
+// ✏️ AGREGAR IMPORTS
+import { useMarcarPartes } from '../hooks/useMarcarPartes';
+import { PasoMarcarPartes } from './cancionero/PasoMarcarPartes';
+import { PasoEstructura } from './cancionero/PasoEstructura';
+
+// ✏️ AGREGAR ESTADO PARA RASTREAR PASO ACTUAL
+const [pasoActual, setPasoActual] = useState(1); // 1, 2, 3
+
+// ✏️ USAR EL HOOK EN EL COMPONENTE
+const marcarPartes = useMarcarPartes(nueva.letra); // pasar letra del paso 1
+
+// ✏️ REEMPLAZAR LA SECCIÓN "crearModo === 'manual'" CON:
+{crearModo === 'manual' && (
+  pasoActual === 1 ? (
+    /* UI actual de Paso 1 — sin cambios */
+  ) : pasoActual === 2 ? (
+    <PasoMarcarPartes 
+      texto={marcarPartes.texto}
+      tramos={marcarPartes.tramos}
+      // ... (pasar todos los handlers)
+      onContinuar={() => setPasoActual(3)}
+      onVolver={() => setPasoActual(1)}
+    />
+  ) : (
+    <PasoEstructura
+      bloquesPaso3={marcarPartes.getBloquesPaso3()}
+      onEstructuraCompleta={(mapa) => {
+        // Reconstruir letra con ===LABEL===
+        const textoFinal = marcarPartes.reconstruirConLabels();
+        // Guardar en Firebase
+        onSaveChords(nueva.nombre, textoFinal);
+        // Guardar mapa en localStorage
+        localStorage.setItem(`ss_seq_${nueva.nombre}`, JSON.stringify(mapa));
+        // Confirmar
+        onToast(`✓ ${nueva.nombre} guardada`);
+        setShowCrear(false);
+      }}
+      onVolver={() => setPasoActual(2)}
+    />
+  )
+)}
