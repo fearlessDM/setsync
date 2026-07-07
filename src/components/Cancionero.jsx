@@ -6,11 +6,9 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 import { CustomSelect } from './common';
-import { useMarcarPartes } from '../hooks/useMarcarPartes';
-import { PasoMarcarPartes } from './cancionero/PasoMarcarPartes';
-import { PasoEstructura } from './cancionero/PasoEstructura';
+import { BLOQUES_CHIPS, getColorBloque } from './songview/estructura';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -18,7 +16,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [bv,setBv]=useState(false); // false=lista, true=BPM
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
-  const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',letra:''});
+  const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});
+  // Contador simple para ids únicos de bloques dentro de esta sesión de carga
+  const bloqueIdRef=useRef(0);
   // Tap tempo — para identificar BPM tocando el ritmo con el dedo/mouse
   // en vez de adivinar el número. tapsRef guarda timestamps (no re-renderea
   // en cada tap); tapCount solo se usa para el feedback visual del punto.
@@ -52,8 +52,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [coleccionSel,setColeccionSel]=useState(null);
   const [songParaVariar,setSongParaVariar]=useState(null); // nombre de canción con selector de versión abierto
   const [nuevaVariacion,setNuevaVariacion]=useState(null); // {tipo:'letra'|'partitura', label, contenido, archivo}
-  const [pasoActual,setPasoActual]=useState(1); // 1=formulario, 2=marcar partes, 3=estructura
-  const marcarPartes=useMarcarPartes(nueva.letra); // hook para paso 2
 
   // Abre una canción: SIEMPRE muestra el selector de la carpeta primero
   // (letra/acordes original + variaciones/partituras si existen) — nunca
@@ -267,148 +265,247 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         </div>
       )}
 
-      {/* Modo manual — flujo 3 pasos: formulario + marcar partes + estructura */}
-      {crearModo==='manual'&&(
-        <div>
-          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,
-            cursor:'pointer'}} onClick={()=>{setCrearModo(null);setPasoActual(1);}}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
-              stroke="var(--tx3)" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            <span style={{fontSize:12,color:'var(--tx3)',
-              fontFamily:"'Lexend Giga',sans-serif"}}>Subir canción</span>
-          </div>
+      {/* Modo manual — editor por bloques con chips */}
+      {crearModo==='manual'&&(()=>{
+        const agregarBloque=(label)=>{
+          const id=++bloqueIdRef.current;
+          const color=getColorBloque(label.toUpperCase());
+          setNueva(v=>({...v,
+            bloques:[...v.bloques,{id,label,color,contenido:''}],
+            estructura:[...v.estructura,{id:`e${id}`,label,compases:4,color}],
+          }));
+        };
+        const eliminarBloque=(id)=>setNueva(v=>({...v,
+          bloques:v.bloques.filter(b=>b.id!==id),
+          estructura:v.estructura.filter(s=>s.id!==`e${id}`),
+        }));
+        const moverBloque=(idx,dir)=>setNueva(v=>{
+          const arr=[...v.bloques];const to=idx+dir;
+          if(to<0||to>=arr.length)return v;
+          [arr[idx],arr[to]]=[arr[to],arr[idx]];return{...v,bloques:arr};
+        });
+        const moverEstructura=(idx,dir)=>setNueva(v=>{
+          const arr=[...v.estructura];const to=idx+dir;
+          if(to<0||to>=arr.length)return v;
+          [arr[idx],arr[to]]=[arr[to],arr[idx]];return{...v,estructura:arr};
+        });
+        const guardar=()=>{
+          const nombre=nueva.nombre.trim().toUpperCase();
+          if(!nombre||nueva.bloques.length===0)return;
+          const texto=[
+            `${nombre}\n${nueva.autor.trim()}\n`,
+            ...nueva.bloques.filter(b=>b.contenido.trim())
+              .map(b=>`=== ${b.label.toUpperCase()} ===\n${b.contenido.trim()}`)
+          ].join('\n\n');
+          CANCIONES.push({n:nombre,key:nueva.key,bpm:Number(nueva.bpm)||90,autor:nueva.autor.trim()});
+          onSaveChords(nombre,texto);
+          if(nueva.estructura.length>0)
+            setEstructurasDB(prev=>({...prev,[nombre]:{
+              guias:nueva.estructura.map(s=>({label:s.label,compases:s.compases,color:s.color})),
+              click:{bpm:Number(nueva.bpm)||90,compas:'4/4'},
+            }}));
+          onToast(`✓ ${nueva.nombre.trim()} agregada`);
+          setShowCrear(false);setCrearModo(null);
+          setNueva({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});
+          tapsRef.current=[];setTapCount(0);
+        };
+        const otroLabel=nueva.__otroLabel??false;
+        return(
+          <div>
+            {/* Volver */}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,cursor:'pointer'}}
+              onClick={()=>setCrearModo(null)}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              <span style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Nueva canción</span>
+            </div>
 
-          {/* PASO 1 — Formulario: nombre, autor, key, BPM, letra */}
-          {pasoActual===1&&(
-            <div>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
-                fontSize:20,color:'var(--tx)',marginBottom:16}}>
-                Letra y acordes
-              </div>
-              <div className="card" style={{padding:14,marginBottom:12}}>
-                <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',
-                  textTransform:'uppercase',letterSpacing:'1px',marginBottom:10}}>
-                  Información
-                </div>
-                <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
-                  placeholder="Nombre de la canción"
-                  style={{width:'100%',padding:'9px 12px',borderRadius:8,
-                    border:'1px solid var(--bd)',background:'var(--s2)',
-                    color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
-                <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
-                  placeholder="Autor o compositor"
-                  style={{width:'100%',padding:'9px 12px',borderRadius:8,
-                    border:'1px solid var(--bd)',background:'var(--s2)',
-                    color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
-                <div style={{display:'flex',gap:8}}>
-                  <CustomSelect value={nueva.key} onChange={v=>setNueva(vv=>({...vv,key:v}))}
-                    style={{flex:1,padding:'9px 12px',fontSize:13}}
-                    options={['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>({value:k,label:k}))}/>
-                  <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
-                    placeholder="BPM" type="number"
-                    style={{flex:1,padding:'9px 12px',borderRadius:8,
-                      border:'1px solid var(--bd)',background:'var(--s2)',
-                      color:'var(--tx)',fontSize:13}}/>
-                  <button type="button" onClick={handleTap}
-                    title="Tocá el ritmo de la canción — calculamos el BPM por vos"
-                    style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-                      gap:2,width:58,padding:'6px 4px',borderRadius:8,flexShrink:0,
-                      border:'1px solid var(--bd)',
-                      background:tapCount>0?'rgba(48,192,183,.12)':'var(--s2)',
-                      color:tapCount>0?'var(--gn)':'var(--tx2)',
-                      cursor:'pointer',fontSize:9,fontWeight:900,
-                      fontFamily:"'Lexend Giga',sans-serif",
-                      transition:'background .15s,color .15s'}}>
-                    <span style={{width:6,height:6,borderRadius:'50%',
-                      background:tapCount>0?'var(--gn)':'var(--tx3)'}}/>
-                    TAP
-                  </button>
-                </div>
-              </div>
-              <div className="card" style={{padding:14,marginBottom:16}}>
-                <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',
-                  textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>
-                  Pegá la letra completa
-                </div>
-                <div style={{fontSize:11,color:'var(--tx3)',marginBottom:10,lineHeight:1.5}}>
-                  Sin marcadores, sin estructuras. Solo la letra con los acordes antes de la sílaba.
-                </div>
-                <textarea value={nueva.letra}
-                  onChange={e=>setNueva(v=>({...v,letra:e.target.value}))}
-                  rows={10} placeholder={`[G]Tu fidelidad es [Em]grande
-[C]Grande es tu [D]amor
-
-Te alabaré, te alabaré
-con todo mi corazón
-
-Verso dos texto aquí`}
-                  style={{width:'100%',padding:'10px',borderRadius:8,
-                    border:'1px solid var(--bd)',background:'var(--s2)',
-                    color:'var(--tx)',fontSize:12,fontFamily:"'Outfit',sans-serif",
-                    resize:'vertical',boxSizing:'border-box',lineHeight:1.6}}/>
-              </div>
+            {/* Info */}
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:12}}>Información</div>
+            <div className="card" style={{padding:14,marginBottom:20}}>
+              <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
+                placeholder="Nombre de la canción"
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
+              <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
+                placeholder="Artista o compositor"
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
               <div style={{display:'flex',gap:8}}>
-                <button style={{flex:1,padding:'10px',borderRadius:10,
-                  border:'1px solid var(--bd)',background:'transparent',
-                  color:'var(--tx3)',cursor:'pointer',fontSize:13,fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif"}}
-                  onClick={()=>{setCrearModo(null);setPasoActual(1);}}>Cancelar</button>
-                <button className="btn-p" disabled={!nueva.nombre.trim()||!nueva.letra.trim()}
-                  onClick={()=>{
-                    marcarPartes.handleTextoChange(nueva.letra);
-                    setPasoActual(2);
-                  }}
-                  style={{flex:2,padding:'10px',borderRadius:10,fontSize:13,fontWeight:700,
-                    fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',
-                    justifyContent:'center',gap:6}}>
-                  Continuar →
+                <CustomSelect value={nueva.key} onChange={v=>setNueva(vv=>({...vv,key:v}))}
+                  style={{flex:1,fontSize:13}}
+                  options={['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>({value:k,label:k}))}/>
+                <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
+                  placeholder="BPM" type="number"
+                  style={{flex:1,padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:13}}/>
+                <button type="button" onClick={handleTap}
+                  style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+                    gap:2,width:56,padding:'6px 4px',borderRadius:8,flexShrink:0,border:'1px solid var(--bd)',
+                    background:tapCount>0?'rgba(48,192,183,.12)'  :'var(--s2)',color:tapCount>0?'var(--gn)'  :'var(--tx2)',
+                    cursor:'pointer',fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",transition:'background .15s,color .15s'}}>
+                  <span style={{width:6,height:6,borderRadius:'50%',background:tapCount>0?'var(--gn)'  :'var(--tx3)'}}/>TAP
                 </button>
               </div>
             </div>
-          )}
 
-          {/* PASO 2 — Marcar partes */}
-          {pasoActual===2&&(
-            <PasoMarcarPartes
-              texto={marcarPartes.texto}
-              tramos={marcarPartes.tramos}
-              seleccionActual={marcarPartes.seleccionActual}
-              sugerenciaRepetido={marcarPartes.sugerenciaRepetido}
-              onTextSelection={marcarPartes.handleTextSelection}
-              onTextoChange={marcarPartes.handleTextoChange}
-              etiquetarSeleccion={marcarPartes.etiquetarSeleccion}
-              eliminarTramo={marcarPartes.eliminarTramo}
-              onContinuar={()=>setPasoActual(3)}
-              onVolver={()=>setPasoActual(1)}
-            />
-          )}
+            {/* Secciones — chips */}
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:6}}>Secciones</div>
+            <div style={{fontSize:11,color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
+              Toca un chip para agregar una sección. Escribe o pega la letra de cada parte.
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
+              {BLOQUES_CHIPS.map(chip=>(
+                <button key={chip.label} onClick={()=>agregarBloque(chip.label)}
+                  style={{padding:'6px 14px',borderRadius:100,border:`1.5px solid ${chip.color}`,
+                    background:`${chip.color}18`,color:chip.color,
+                    fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer'}}>
+                  + {chip.label}
+                </button>
+              ))}
+              {otroLabel===false?(
+                <button onClick={()=>setNueva(p=>({...p,__otroLabel:''}))}
+                  style={{padding:'6px 14px',borderRadius:100,border:'1.5px dashed var(--bd)',background:'transparent',
+                    color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,cursor:'pointer'}}>
+                  + Otro
+                </button>
+              ):(
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <input autoFocus value={otroLabel}
+                    onChange={e=>setNueva(p=>({...p,__otroLabel:e.target.value}))}
+                    onKeyDown={e=>{
+                      if(e.key==='Enter'&&otroLabel.trim()){agregarBloque(otroLabel.trim());setNueva(p=>({...p,__otroLabel:false}));}
+                      if(e.key==='Escape')setNueva(p=>({...p,__otroLabel:false}));
+                    }}
+                    placeholder="Nombre de la sección"
+                    style={{padding:'5px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:12,width:160}}/>
+                  <button onClick={()=>{if(otroLabel.trim())agregarBloque(otroLabel.trim());setNueva(p=>({...p,__otroLabel:false}));}}
+                    style={{padding:'5px 10px',borderRadius:8,background:'var(--gn)',color:'#000',border:'none',cursor:'pointer',fontSize:12,fontWeight:700}}>+</button>
+                </div>
+              )}
+            </div>
 
-          {/* PASO 3 — Estructura/mapa */}
-          {pasoActual===3&&(
-            <PasoEstructura
-              bloquesPaso3={marcarPartes.getBloquesPaso3()}
-              onEstructuraCompleta={(mapa)=>{
-                const textoFinal=marcarPartes.reconstruirConLabels();
-                const songName=nueva.nombre.trim().toUpperCase();
-                CANCIONES.push({n:songName,key:nueva.key,bpm:Number(nueva.bpm)||90,autor:nueva.autor.trim()});
-                const encabezado=`${songName}\n${nueva.autor.trim()}\n\n`;
-                onSaveChords(songName, encabezado+textoFinal);
-                try{localStorage.setItem(`ss_seq_${songName}`,JSON.stringify(mapa));}catch(e){console.warn('localStorage no disponible');}
-                onToast(`✓ ${songName} guardada`);
-                setShowCrear(false);
-                setCrearModo(null);
-                setPasoActual(1);
-                setNueva({nombre:'',autor:'',key:'G',bpm:'',letra:''});
-                tapsRef.current=[];
-                setTapCount(0);
-              }}
-              onVolver={()=>setPasoActual(2)}
-            />
-          )}
-        </div>
-      )}
+            {/* Bloques creados */}
+            {nueva.bloques.length===0?(
+              <div style={{textAlign:'center',padding:'24px 0',color:'var(--tx3)',fontSize:12,
+                fontFamily:"'Lexend Giga',sans-serif",border:'1px dashed var(--bd)',borderRadius:12,marginBottom:20}}>
+                Toca un chip para empezar
+              </div>
+            ):(
+              <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+                {nueva.bloques.map((bloque,bi)=>(
+                  <div key={bloque.id} style={{borderRadius:12,overflow:'hidden',border:`1.5px solid ${bloque.color}40`}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
+                      background:`${bloque.color}20`,borderBottom:`1px solid ${bloque.color}30`}}>
+                      <div style={{width:10,height:10,borderRadius:'50%',background:bloque.color,flexShrink:0}}/>
+                      <span style={{flex:1,fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,
+                        color:bloque.color,textTransform:'uppercase',letterSpacing:'.5px'}}>{bloque.label}</span>
+                      <button onClick={()=>moverBloque(bi,-1)} disabled={bi===0}
+                        style={{width:22,height:22,borderRadius:5,border:'none',
+                          background:bi===0?'transparent':'var(--s3)',color:bi===0?'var(--bd)':'var(--tx2)',
+                          cursor:bi===0?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                      </button>
+                      <button onClick={()=>moverBloque(bi,1)} disabled={bi===nueva.bloques.length-1}
+                        style={{width:22,height:22,borderRadius:5,border:'none',
+                          background:bi===nueva.bloques.length-1?'transparent':'var(--s3)',
+                          color:bi===nueva.bloques.length-1?'var(--bd)':'var(--tx2)',
+                          cursor:bi===nueva.bloques.length-1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                      <button onClick={()=>eliminarBloque(bloque.id)}
+                        style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',
+                          color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <textarea value={bloque.contenido}
+                      onChange={e=>{const val=e.target.value;setNueva(v=>({...v,bloques:v.bloques.map(b=>b.id===bloque.id?{...b,contenido:val}:b)}));}}
+                      rows={5}
+                      placeholder={`Escribe o pega la letra del ${bloque.label}...\n\nPara acordes: [G]Tu fidelidad es [Em]grande`}
+                      style={{width:'100%',padding:'12px',background:'var(--s1)',border:'none',color:'var(--tx)',
+                        fontSize:13,fontFamily:"'Outfit',sans-serif",resize:'vertical',boxSizing:'border-box',lineHeight:1.6,outline:'none'}}/>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Estructura de interpretación */}
+            {nueva.bloques.length>0&&(
+              <div style={{marginBottom:20}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:6}}>Estructura en vivo</div>
+                <div style={{fontSize:11,color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
+                  El orden real de interpretación — cuántas veces y en qué secuencia se toca cada parte.
+                </div>
+                {nueva.estructura.length>0&&(
+                  <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+                    {nueva.estructura.map((sec,si)=>(
+                      <div key={sec.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
+                        borderRadius:10,background:`${sec.color}12`,border:`1px solid ${sec.color}30`}}>
+                        <div style={{width:8,height:8,borderRadius:'50%',background:sec.color,flexShrink:0}}/>
+                        <span style={{flex:1,fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,color:sec.color}}>{sec.label}</span>
+                        <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>compases</span>
+                        <input type="number" min="1" max="64" value={sec.compases}
+                          onChange={e=>{const val=Math.max(1,Math.min(64,Number(e.target.value)||4));
+                            setNueva(v=>({...v,estructura:v.estructura.map((s,i)=>i===si?{...s,compases:val}:s)}));}}
+                          style={{width:46,padding:'3px 6px',borderRadius:6,border:'1px solid var(--bd)',
+                            background:'var(--s2)',color:'var(--tx)',fontSize:13,textAlign:'center'}}/>
+                        <button onClick={()=>moverEstructura(si,-1)} disabled={si===0}
+                          style={{width:22,height:22,borderRadius:5,border:'none',background:si===0?'transparent':'var(--s3)',
+                            color:si===0?'var(--bd)':'var(--tx2)',cursor:si===0?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                        </button>
+                        <button onClick={()=>moverEstructura(si,1)} disabled={si===nueva.estructura.length-1}
+                          style={{width:22,height:22,borderRadius:5,border:'none',
+                            background:si===nueva.estructura.length-1?'transparent':'var(--s3)',
+                            color:si===nueva.estructura.length-1?'var(--bd)':'var(--tx2)',
+                            cursor:si===nueva.estructura.length-1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <button onClick={()=>setNueva(v=>({...v,estructura:v.estructura.filter((_,i)=>i!==si)}))}
+                          style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',color:'var(--tx3)',
+                            cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{fontSize:10,color:'var(--tx3)',marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>Agregar repetición:</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {nueva.bloques.map(b=>(
+                    <button key={b.id}
+                      onClick={()=>{const id=`e${++bloqueIdRef.current}`;
+                        setNueva(v=>({...v,estructura:[...v.estructura,{id,label:b.label,compases:4,color:b.color}]}));}}
+                      style={{padding:'4px 12px',borderRadius:100,border:`1.5px solid ${b.color}60`,
+                        background:`${b.color}12`,color:b.color,fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,cursor:'pointer'}}>
+                      + {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botones finales */}
+            <div style={{display:'flex',gap:8}}>
+              <button style={{flex:1,padding:'11px',borderRadius:10,border:'1px solid var(--bd)',
+                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:13,fontWeight:700,
+                fontFamily:"'Lexend Giga',sans-serif"}}
+                onClick={()=>{setCrearModo(null);setNueva({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});tapsRef.current=[];setTapCount(0);}}>
+                Cancelar
+              </button>
+              <button className="btn-p"
+                disabled={!nueva.nombre.trim()||nueva.bloques.length===0}
+                onClick={guardar}
+                style={{flex:2,padding:'11px',borderRadius:10,fontSize:13,fontWeight:700,
+                  fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Guardar canción
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Modo partitura */}
       {crearModo==='partitura'&&(

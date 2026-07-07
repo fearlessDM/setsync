@@ -14,6 +14,17 @@ export const getColorBloque=(label)=>{
   return k?BLOQUE_COLORS[k]:'rgba(200,169,126,.7)';
 };
 
+// ── Chips para la carga manual (Cancionero) y el configurador de
+// estructura de interpretación — mismo set fijo que pidió Danny, más la
+// opción personalizada. El color de cada uno sale de getColorBloque, así
+// que quedan automáticamente iguales a los del mapa y los bloques de
+// letra en SongView — una sola fuente de verdad de colores para toda la
+// app, no 3 paletas separadas que mantener sincronizadas a mano.
+export const BLOQUES_CHIPS=[
+  'Intro','Verso 1','Verso 2','Verso 3','Coro','Coro x2',
+  'Instrumental','Puente','Puente x2','Final',
+].map(label=>({label, color:getColorBloque(label.toUpperCase())}));
+
 // Parsea el texto crudo de una canción (formato con marcadores ===BLOQUE===)
 // en un array de {label, lines}. No depende de React ni de estado externo.
 export const parseBloques=(raw)=>{

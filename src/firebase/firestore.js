@@ -186,3 +186,19 @@ export async function guardarArchivosDB(accountId, db_){
   if(!firebaseListo) return;
   await setDoc(doc(db, 'accounts', accountId, 'data', 'archivosDB'), {db: db_});
 }
+// ── estructurasDB — arreglo por canción (base name) con la ESTRUCTURA DE
+// INTERPRETACIÓN (orden de ejecución en vivo: Intro→Verso1→Coro→Verso1...),
+// separada del texto de la letra en sí. Mismo patrón que archivosDB/
+// variacionesDB (un solo documento con el mapa completo, sincronizado
+// entero cada vez que cambia).
+export function subscribeEstructurasDB(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'estructurasDB');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().db||{}) : null);
+  });
+}
+export async function guardarEstructurasDB(accountId, db_){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'estructurasDB'), {db: db_});
+}

@@ -29,7 +29,7 @@ const PERMISOS_TOTAL={
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={}}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={}}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -786,7 +786,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       ],
     },
   };
-  const seqData = SECUENCIA_DATA[song?.name] || null;
+  // seqData: primero busca en estructurasDB (configurado desde el editor de
+  // carga manual de Cancionero — datos reales del usuario), y hace fallback
+  // a SECUENCIA_DATA solo para las canciones de demo que todavía no tienen
+  // datos guardados. Esto conecta el editor de carga con MapaMaestro.
+  const seqData = estructurasDB[song?.name] || SECUENCIA_DATA[song?.name] || null;
   const [clickActivo, setClickActivo] = useState(false);
   const [padActivo, setPadActivo] = useState(null);
   const audioCtxRef = useRef(null);

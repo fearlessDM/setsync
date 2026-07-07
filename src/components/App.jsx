@@ -25,7 +25,7 @@ import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } fr
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -155,6 +155,11 @@ export default function App(){
   // lista abierta de tracks. Compartido entre Cancionero y SongView para
   // que la carpeta sea la misma se mire desde donde se mire.
   const [archivosDB,setArchivosDB]=useState({});
+  // estructurasDB: por canción (base name) — el ORDEN DE INTERPRETACIÓN en
+  // vivo (Intro→Verso1→Coro→Verso1→...), independiente del texto de la
+  // letra. Ver Cancionero.jsx (se configura al cargar la canción) y
+  // SongView.jsx (MapaMaestro la lee en vez de datos de ejemplo).
+  const [estructurasDB,setEstructurasDB]=useState({});
 
   // ── Sync con Firestore (CAPA 1 — sesión compartida). Si Firebase no
   // está configurado (firebaseListo=false) o el usuario está offline,
@@ -219,6 +224,7 @@ export default function App(){
   // hay que volver a subirlo de inmediato.
   const skipVarSaveRef = useRef(false);
   const skipArchSaveRef = useRef(false);
+  const skipEstrSaveRef = useRef(false);
   useEffect(()=>{
     if(!firebaseListo || appMode===null || !online) return;
     const unsubVar = subscribeVariacionesDB(accountId, data=>{
@@ -237,7 +243,15 @@ export default function App(){
         setArchivosDB(data);
       }
     });
-    return ()=>{ unsubVar(); unsubArch(); };
+    const unsubEstr = subscribeEstructurasDB(accountId, data=>{
+      if(data===null){
+        guardarEstructurasDB(accountId, estructurasDB);
+      } else {
+        skipEstrSaveRef.current = true;
+        setEstructurasDB(data);
+      }
+    });
+    return ()=>{ unsubVar(); unsubArch(); unsubEstr(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online]);
   useEffect(()=>{
@@ -252,6 +266,12 @@ export default function App(){
     guardarArchivosDB(accountId, archivosDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[archivosDB]);
+  useEffect(()=>{
+    if(!firebaseListo || !online) return;
+    if(skipEstrSaveRef.current){ skipEstrSaveRef.current=false; return; }
+    guardarEstructurasDB(accountId, estructurasDB);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[estructurasDB]);
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
@@ -685,7 +705,7 @@ Voicings extendidos para teclado
             onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             userRole={userRole} onToast={showToast} lang={lang}
             equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
@@ -717,7 +737,7 @@ Voicings extendidos para teclado
           <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
-            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB}/>
+            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}/>
           {(tieneClick||tieneMultitracks)&&(
             <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
               {mostrarMultitracks&&tieneMultitracks&&(
