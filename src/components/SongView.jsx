@@ -965,7 +965,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(bottomTab==='secuencia') return null;
     const guias = seqData?.guias;
     if(!guias||!guias.length) return null;
-    const totalComp = guias.reduce((s,g)=>s+(g.compases||4),0);
+    // Si las guías tienen compases, úsalos para el ancho proporcional.
+    // Si no (datos del nuevo editor sin compases), distribuir en partes iguales.
+    const tieneCompases=guias.some(g=>g.compases&&g.compases>1);
+    const totalComp = tieneCompases
+      ? guias.reduce((s,g)=>s+(g.compases||4),0)
+      : guias.length * 4; // ficticio — todos iguales
     // Abreviar etiquetas
     const abrev=lbl=>{
       const m={
@@ -986,6 +991,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {guias.map((g,i)=>{
           const pct=(g.compases||4)/totalComp*100;
           const isActive=mapaSectionIdx===i;
+          const label=g.abrev||(isTablet?g.label:abrev(g.label));
           return(
             <button key={i}
               onClick={()=>{
@@ -1009,7 +1015,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 color:isActive?g.color:`${g.color}cc`,
                 fontFamily:"'Lexend Giga',sans-serif",
                 textTransform:'uppercase',lineHeight:1,
-              }}>{isTablet?g.label:abrev(g.label)}</span>
+              }}>{label}</span>
             </button>
           );
         })}

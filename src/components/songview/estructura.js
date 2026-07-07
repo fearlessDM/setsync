@@ -20,10 +20,24 @@ export const getColorBloque=(label)=>{
 // que quedan automáticamente iguales a los del mapa y los bloques de
 // letra en SongView — una sola fuente de verdad de colores para toda la
 // app, no 3 paletas separadas que mantener sincronizadas a mano.
+// ── Abreviaciones para el mapa y chips de estructura ─────────────────────
+// Se muestran en el configurador de estructura en vivo (Cancionero) y en
+// el MapaMaestro en SongView — mismo token, mismos colores, misma fuente
+// de verdad en todos los contextos.
+export const ABREV={
+  'INTRO':'INT','VERSO 1':'V1','VERSO 2':'V2','VERSO 3':'V3',
+  'CORO':'C','CORO X2':'Cx2','INSTRUMENTAL':'INST',
+  'PUENTE':'P','PUENTE X2':'Px2','FINAL':'FIN',
+};
+export const abrevBloque=(label)=>{
+  const k=Object.keys(ABREV).find(k=>label.toUpperCase()===k||label.toUpperCase().startsWith(k));
+  return k?ABREV[k]:label.slice(0,3).toUpperCase();
+};
+
 export const BLOQUES_CHIPS=[
   'Intro','Verso 1','Verso 2','Verso 3','Coro','Coro x2',
   'Instrumental','Puente','Puente x2','Final',
-].map(label=>({label, color:getColorBloque(label.toUpperCase())}));
+].map(label=>({label, abrev:abrevBloque(label), color:getColorBloque(label.toUpperCase())}));
 
 // Parsea el texto crudo de una canción (formato con marcadores ===BLOQUE===)
 // en un array de {label, lines}. No depende de React ni de estado externo.

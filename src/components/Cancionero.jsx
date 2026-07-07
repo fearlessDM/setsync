@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 import { CustomSelect } from './common';
-import { BLOQUES_CHIPS, getColorBloque } from './songview/estructura';
+import { BLOQUES_CHIPS, getColorBloque, abrevBloque } from './songview/estructura';
 
 export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{}}){
   const tx=getT(lang);
@@ -270,9 +270,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         const agregarBloque=(label)=>{
           const id=++bloqueIdRef.current;
           const color=getColorBloque(label.toUpperCase());
+          const abrev=abrevBloque(label);
           setNueva(v=>({...v,
             bloques:[...v.bloques,{id,label,color,contenido:''}],
-            estructura:[...v.estructura,{id:`e${id}`,label,compases:4,color}],
+            estructura:[...v.estructura,{id:`e${id}`,label,abrev,color}],
           }));
         };
         const eliminarBloque=(id)=>setNueva(v=>({...v,
@@ -301,7 +302,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           onSaveChords(nombre,texto);
           if(nueva.estructura.length>0)
             setEstructurasDB(prev=>({...prev,[nombre]:{
-              guias:nueva.estructura.map(s=>({label:s.label,compases:s.compases,color:s.color})),
+              guias:nueva.estructura.map(s=>({label:s.label,abrev:s.abrev||abrevBloque(s.label),color:s.color})),
               click:{bpm:Number(nueva.bpm)||90,compas:'4/4'},
             }}));
           onToast(`✓ ${nueva.nombre.trim()} agregada`);
@@ -431,55 +432,146 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             {/* Estructura de interpretación */}
             {nueva.bloques.length>0&&(
               <div style={{marginBottom:20}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:6}}>Estructura en vivo</div>
-                <div style={{fontSize:11,color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
-                  El orden real de interpretación — cuántas veces y en qué secuencia se toca cada parte.
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,
+                  color:'var(--tx)',marginBottom:4}}>
+                  Estructura en vivo
                 </div>
+                <div style={{fontSize:11,color:'var(--tx3)',marginBottom:14,lineHeight:1.5}}>
+                  El orden real de interpretación. Toca un chip para agregarlo — así
+                  se verá en el mapa de SetSync.
+                </div>
+
+                {/* Preview del mapa — igual visual que MapaMaestro en SongView */}
                 {nueva.estructura.length>0&&(
-                  <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:12}}>
+                  <div style={{
+                    display:'flex',alignItems:'stretch',height:32,
+                    borderRadius:8,overflow:'hidden',
+                    border:'1px solid var(--bd)',marginBottom:12,
+                  }}>
+                    {nueva.estructura.map((sec,si)=>{
+                      const pct=100/nueva.estructura.length;
+                      return(
+                        <div key={sec.id} style={{
+                          flex:`0 0 ${pct}%`,
+                          background:`${sec.color}30`,
+                          borderRight:si<nueva.estructura.length-1?`1px solid ${sec.color}50`:'none',
+                          display:'flex',alignItems:'center',justifyContent:'center',
+                          fontFamily:"'Lexend Giga',sans-serif",fontSize:9,fontWeight:900,
+                          color:sec.color,overflow:'hidden',whiteSpace:'nowrap',
+                          letterSpacing:'.5px',
+                        }}>
+                          {sec.abrev||abrevBloque(sec.label)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Lista de chips de estructura — desplazables y duplicables */}
+                {nueva.estructura.length>0&&(
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
                     {nueva.estructura.map((sec,si)=>(
-                      <div key={sec.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
-                        borderRadius:10,background:`${sec.color}12`,border:`1px solid ${sec.color}30`}}>
-                        <div style={{width:8,height:8,borderRadius:'50%',background:sec.color,flexShrink:0}}/>
-                        <span style={{flex:1,fontFamily:"'Lexend Giga',sans-serif",fontSize:11,fontWeight:700,color:sec.color}}>{sec.label}</span>
-                        <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>compases</span>
-                        <input type="number" min="1" max="64" value={sec.compases}
-                          onChange={e=>{const val=Math.max(1,Math.min(64,Number(e.target.value)||4));
-                            setNueva(v=>({...v,estructura:v.estructura.map((s,i)=>i===si?{...s,compases:val}:s)}));}}
-                          style={{width:46,padding:'3px 6px',borderRadius:6,border:'1px solid var(--bd)',
-                            background:'var(--s2)',color:'var(--tx)',fontSize:13,textAlign:'center'}}/>
-                        <button onClick={()=>moverEstructura(si,-1)} disabled={si===0}
-                          style={{width:22,height:22,borderRadius:5,border:'none',background:si===0?'transparent':'var(--s3)',
-                            color:si===0?'var(--bd)':'var(--tx2)',cursor:si===0?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-                        </button>
-                        <button onClick={()=>moverEstructura(si,1)} disabled={si===nueva.estructura.length-1}
-                          style={{width:22,height:22,borderRadius:5,border:'none',
-                            background:si===nueva.estructura.length-1?'transparent':'var(--s3)',
-                            color:si===nueva.estructura.length-1?'var(--bd)':'var(--tx2)',
-                            cursor:si===nueva.estructura.length-1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <button onClick={()=>setNueva(v=>({...v,estructura:v.estructura.filter((_,i)=>i!==si)}))}
-                          style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',color:'var(--tx3)',
+                      <div key={sec.id} style={{
+                        display:'flex',alignItems:'center',gap:0,
+                        borderRadius:100,overflow:'hidden',
+                        border:`1.5px solid ${sec.color}`,
+                      }}>
+                        {/* Chip principal con abreviación */}
+                        <div style={{
+                          padding:'5px 10px',
+                          background:`${sec.color}20`,
+                          fontFamily:"'Lexend Giga',sans-serif",
+                          fontSize:11,fontWeight:900,color:sec.color,
+                          letterSpacing:'.5px',minWidth:28,textAlign:'center',
+                        }}>
+                          {sec.abrev||abrevBloque(sec.label)}
+                        </div>
+                        {/* Acciones: mover izq, duplicar, mover der, eliminar */}
+                        {si>0&&(
+                          <button onClick={()=>moverEstructura(si,-1)}
+                            title="Mover izquierda"
+                            style={{width:22,height:'100%',border:'none',
+                              borderLeft:`1px solid ${sec.color}40`,
+                              background:`${sec.color}10`,color:sec.color,
+                              cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
+                              stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                          </button>
+                        )}
+                        <button onClick={()=>{
+                          const id=`e${++bloqueIdRef.current}`;
+                          setNueva(v=>{
+                            const arr=[...v.estructura];
+                            arr.splice(si+1,0,{id,label:sec.label,abrev:sec.abrev,color:sec.color});
+                            return{...v,estructura:arr};
+                          });
+                        }} title="Duplicar"
+                          style={{width:22,height:'100%',border:'none',
+                            borderLeft:`1px solid ${sec.color}40`,
+                            background:`${sec.color}10`,color:sec.color,
                             cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
+                            stroke="currentColor" strokeWidth="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          </svg>
+                        </button>
+                        {si<nueva.estructura.length-1&&(
+                          <button onClick={()=>moverEstructura(si,1)}
+                            title="Mover derecha"
+                            style={{width:22,height:'100%',border:'none',
+                              borderLeft:`1px solid ${sec.color}40`,
+                              background:`${sec.color}10`,color:sec.color,
+                              cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
+                              stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                          </button>
+                        )}
+                        <button onClick={()=>setNueva(v=>({...v,
+                          estructura:v.estructura.filter((_,i)=>i!==si)}))}
+                          title="Quitar"
+                          style={{width:22,height:'100%',border:'none',
+                            borderLeft:`1px solid ${sec.color}40`,
+                            background:`${sec.color}10`,color:sec.color,
+                            cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
+                            stroke="currentColor" strokeWidth="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
-                <div style={{fontSize:10,color:'var(--tx3)',marginBottom:8,fontFamily:"'Lexend Giga',sans-serif"}}>Agregar repetición:</div>
+
+                {/* Chips para agregar a la estructura */}
+                <div style={{fontSize:10,color:'var(--tx3)',marginBottom:8,
+                  fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Tocar para agregar:
+                </div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {nueva.bloques.map(b=>(
-                    <button key={b.id}
-                      onClick={()=>{const id=`e${++bloqueIdRef.current}`;
-                        setNueva(v=>({...v,estructura:[...v.estructura,{id,label:b.label,compases:4,color:b.color}]}));}}
-                      style={{padding:'4px 12px',borderRadius:100,border:`1.5px solid ${b.color}60`,
-                        background:`${b.color}12`,color:b.color,fontFamily:"'Lexend Giga',sans-serif",fontSize:10,fontWeight:700,cursor:'pointer'}}>
-                      + {b.label}
-                    </button>
-                  ))}
+                  {nueva.bloques.map(b=>{
+                    const abrev=b.abrev||abrevBloque(b.label);
+                    return(
+                      <button key={b.id}
+                        onClick={()=>{
+                          const id=`e${++bloqueIdRef.current}`;
+                          setNueva(v=>({...v,estructura:[...v.estructura,
+                            {id,label:b.label,abrev,color:b.color}]}));
+                        }}
+                        style={{padding:'5px 12px',borderRadius:100,
+                          border:`1.5px solid ${b.color}`,background:`${b.color}18`,
+                          color:b.color,fontFamily:"'Lexend Giga',sans-serif",
+                          fontSize:11,fontWeight:900,cursor:'pointer',letterSpacing:'.5px'}}>
+                        {abrev}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
