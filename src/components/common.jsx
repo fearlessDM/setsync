@@ -99,7 +99,7 @@ export function Toast({msg,onDone}){
       <div className="t-ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div>
         <div style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{msg.text}</div>
-        {msg.sub&&<div style={{fontSize:10,color:'var(--tx3)',marginTop:1}}>{msg.sub}</div>}
+        {msg.sub&&<div style={{fontSize:12.5,color:'var(--tx2)',marginTop:1}}>{msg.sub}</div>}
       </div>
     </div>
   );

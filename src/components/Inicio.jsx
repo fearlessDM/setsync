@@ -311,7 +311,7 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
       <div style={{padding:'14px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
         {notas.length===0?(
           <div style={{gridColumn:'span 3',textAlign:'center',padding:'40px 0',
-            fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)'}}>
+            fontFamily:"'Lexend Giga',sans-serif",fontSize:12.5,color:'var(--tx2)'}}>
             {tx.noNotesYet}
           </div>
         ):notas.map((n,i)=>(
@@ -490,7 +490,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
               {proximoEvento.nombre}
             </div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:11,color:'var(--tx3)',fontWeight:300}}>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12.5,color:'var(--tx2)',fontWeight:300}}>
               {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
               {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
             </div>
@@ -501,7 +501,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               </div>
             )}
           </>) : (
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12,color:'var(--tx3)',fontWeight:300}}>
+            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12.5,color:'var(--tx2)',fontWeight:300}}>
               {tx.noUpcomingDates}{' '}
               <span style={{color:'var(--ac)',cursor:'pointer'}}
                 onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>{tx.createOne}</span>
@@ -539,7 +539,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>{tx.songsCardLbl}</Lbl>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:32,
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:10,color:'var(--tx3)',
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:12.5,color:'var(--tx2)',
             fontWeight:300,marginTop:4}}>{tx.songs}</div>
           {feat.cancioneroUniversal&&(
             <div style={{fontSize:9,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",

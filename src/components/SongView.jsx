@@ -421,7 +421,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
       <div style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:8}}>{tx.saveChangesLbl}</div>
-        <div style={{fontSize:12,color:'var(--tx3)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
+        <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'none',background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.saveAndExitLbl}</button>
           <button onClick={()=>{setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.exitWithoutSavingLbl}</button>
@@ -1187,7 +1187,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               + Subir track de secuencia
             </label>
           ):((carpetaActual.secuencia||[]).length===0&&(
-            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
           ))}
 
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>{tx.referenceTrackLbl}</div>
@@ -1199,7 +1199,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <span style={{fontSize:11,color:'var(--gn)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{carpetaActual.trackReferencia.nombre}</span>
             </button>
           ):(
-            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
           )}
 
           {/* ── Nota tipo post-it ── */}
@@ -1731,7 +1731,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 <div style={{textAlign:'center'}}>
                   <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>{tx.uploadReferenceAudioLbl}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+                  <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
                 </div>
               </div>
             ):(()=>{
@@ -1757,7 +1757,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
                 {/* Nombre del archivo + botón para cambiarlo */}
                 <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                  <span style={{flex:1,fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
+                  <span style={{flex:1,fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
                   <button onClick={()=>refInputRef.current?.click()}
                     style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                     {tx.changeBtn}
@@ -1944,7 +1944,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     ):isRecording&&recordSlot===i?(
                       <div style={{fontSize:10,fontWeight:700,color:'var(--rd)',fontFamily:"'Lexend Giga',sans-serif"}}>● Grabando · {fmtDur(recordElapsed)}</div>
                     ):(
-                      <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.emptySlotLbl}</div>
+                      <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.emptySlotLbl}</div>
                     )}
                   </div>
                   {slot&&(<audio src={slot.url} controls style={{height:26,maxWidth:90}}/>)}
@@ -2405,7 +2405,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           ):(
             <div style={{padding:'16px',borderRadius:12,border:'1px dashed var(--bd)',textAlign:'center'}}>
-              <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.noTracksForSongLbl}</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.noTracksForSongLbl}</div>
             </div>
           )}
         </div>
@@ -2468,7 +2468,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
           </div>
           <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-            <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
           </div>
         </div>
         {AnnoBar()}
@@ -2511,7 +2511,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </span>
         </button>
         <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-          <div style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+          <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
         </div>
       </div>
       {AnnoBar()}

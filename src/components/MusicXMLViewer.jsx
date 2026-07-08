@@ -98,7 +98,7 @@ export function MusicXMLViewer({url,lang='es'}){
     <div style={{color:'var(--rd)',fontSize:13,textAlign:'center',padding:20}}>{error}</div>
   );
   if(!content)return(
-    <div style={{color:'var(--tx3)',fontSize:13,textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
+    <div style={{color:'var(--tx2)',fontSize:13,textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
   );
   return(
     <div style={{width:'100%',maxWidth:700,fontFamily:"'Lexend Giga',sans-serif"}}>

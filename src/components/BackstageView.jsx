@@ -102,7 +102,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>{tx.createDateSub}</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:16}}>{tx.createDateSub}</div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
@@ -143,7 +143,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>{tx.selectSongsLbl}</div>
-        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
+        <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
           También puedes asignar diferentes variaciones de la canción a cada persona
         </div>
         {evSetlist.length>0&&(
@@ -231,7 +231,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 style={{accentColor:eq.color,width:13,height:13}}/>
               <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
               <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
-              <span style={{fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
+              <span style={{fontSize:12.5,color:'var(--tx2)'}}>{(eq.miembros||[]).length}p</span>
             </label>
             );
           })}
@@ -363,7 +363,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
         <div className="card" style={{padding:14,marginBottom:12}}>
           <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.setlistNameLbl}</div>
           <input className="inp" placeholder="Ej: Setlist 6 de julio · Noche de adoración..." value={slNombre} onChange={e=>setSlNombre(e.target.value)}/>
@@ -371,11 +371,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div className="card" style={{padding:14,marginBottom:12}}>
           <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
             Asignar a evento
-            <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx3)',fontSize:10,marginLeft:6}}>· opcional, puedes hacerlo después</span>
+            <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:12.5,marginLeft:6}}>· opcional, puedes hacerlo después</span>
           </div>
           {eventos.length===0?(
             <div style={{padding:'12px',borderRadius:10,background:'var(--s1)',border:'1px dashed var(--bd)',textAlign:'center'}}>
-              <div style={{fontSize:12,color:'var(--tx3)',marginBottom:6}}>{tx.noEventsYetLbl}</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',marginBottom:6}}>{tx.noEventsYetLbl}</div>
               <button onClick={()=>setBsView('evento')} style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                 + Crear un evento primero →
               </button>
@@ -399,7 +399,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               <span style={{fontSize:11,fontWeight:700,color:'var(--ac)'}}>{slCanciones.length}</span>
             )}
           </div>
-          <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
+          <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,marginBottom:10}}>
             También puedes asignar diferentes variaciones de la canción a cada persona
           </div>
           {slCanciones.length>0&&(
@@ -493,7 +493,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               </div>
             ))}
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).length===0&&(
-              <div style={{padding:'12px',textAlign:'center',fontSize:12,color:'var(--tx3)',width:'100%'}}>{tx.noMatchesLbl}</div>
+              <div style={{padding:'12px',textAlign:'center',fontSize:12.5,color:'var(--tx2)',width:'100%'}}>{tx.noMatchesLbl}</div>
             )}
           </div>
         </div>
@@ -506,13 +506,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               <div key={sl.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--s1)'}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:700,fontSize:13,color:'var(--tx)'}}>{sl.nombre}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
+                  <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2}}>
                     {sl.canciones.length} canciones · {sl.fecha}
                     {sl.eventoId&&<span style={{color:'var(--gn)',marginLeft:6}}>· Asignado ✓</span>}
                   </div>
                 </div>
                 <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlNombre(sl.nombre);setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:tx.editingSetlistLbl,sub:sl.nombre});}}
-                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+                  style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                   Editar
                 </button>
                 <button onClick={()=>setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id))}
@@ -543,7 +543,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
         </div>
-        <div style={{fontSize:11,color:'var(--tx3)',marginBottom:20,lineHeight:1.6}}>
+        <div style={{fontSize:12.5,color:'var(--tx2)',marginBottom:20,lineHeight:1.6}}>
           Organiza tu gente en equipos de trabajo. Agrega miembros, asigna roles y gestiona la convocatoria de cada fecha.
         </div>
 
@@ -625,12 +625,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 }
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12,fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:tx.noEmailRegistered}</div>
+                  <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:tx.noEmailRegistered}</div>
                 </div>
               </div>
             ))}
             {personas.length===0&&(
-              <div style={{fontSize:11,color:'var(--tx3)',fontStyle:'italic',padding:'12px'}}>Agrega tu primer miembro →</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',fontStyle:'italic',padding:'12px'}}>Agrega tu primer miembro →</div>
             )}
           </div>
         )}
@@ -816,7 +816,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
       </div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.6,marginBottom:20}}>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.6,marginBottom:20}}>
         Asigna líderes para que gestionen su área sin necesitar tu aprobación.
       </div>
 
@@ -833,7 +833,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontWeight:700,fontSize:13,color:'var(--tx)'}}>{l.name}</div>
-                  <div style={{fontSize:10,color:'var(--tx3)',marginBottom:6,marginTop:1}}>{l.rol}</div>
+                  <div style={{fontSize:12.5,color:'var(--tx2)',marginBottom:6,marginTop:1}}>{l.rol}</div>
                   <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
                     {l.permisos.map(p=>(
                       <span key={p} style={{fontSize:9,padding:'2px 8px',borderRadius:100,border:'1px solid rgba(48,192,183,.3)',background:'rgba(48,192,183,.08)',color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{p}</span>
@@ -971,7 +971,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{tx.navPersonalizationLbl}</div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx3)',lineHeight:1.5,marginBottom:16}}>{tx.personalizationSubLbl}</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:16}}>{tx.personalizationSubLbl}</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.myOrgLbl}</div>
         <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}} defaultValue="Iglesia"/>
@@ -988,7 +988,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
           <div>
             <div style={{fontSize:12,color:'var(--tx2)',lineHeight:1.6}}>PNG o SVG · 512×512px recomendado</div>
-            <button style={{marginTop:6,padding:'4px 10px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.selectFileBtn}</button>
+            <button style={{marginTop:6,padding:'4px 10px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.selectFileBtn}</button>
           </div>
         </div>
       </div>
@@ -1092,7 +1092,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             </div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:13,fontWeight:700,color:'var(--tx)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.displayName||tx.noNameLbl}</div>
-              <div style={{fontSize:11,color:'var(--tx3)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.email}</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.email}</div>
             </div>
           </div>
           <button onClick={onCerrarSesion}
@@ -1130,7 +1130,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Palabra del <span style={{color:'var(--ac)'}}>{tx.pastorScreenTitleLbl}</span>
       </div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>{tx.pastorSubLbl}</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:20}}>{tx.pastorSubLbl}</div>
       <div className="card" style={{padding:14,marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
           <div style={{width:24,height:24,borderRadius:7,background:'rgba(200,169,126,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1176,7 +1176,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </svg>
           <div>
             <div style={{fontSize:12,fontWeight:700,color:'#FD8083'}}>{tx.uploadFilesLbl}</div>
-            <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>PPT · PDF · Imágenes</div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2}}>PPT · PDF · Imágenes</div>
           </div>
         </label>
       </div>
@@ -1256,12 +1256,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           {tx.plansAndPricesTitle}
         </div>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:22}}>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:22}}>
           {tx.plansIntro}
         </div>
 
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.personalAccountLbl}</div>
-        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+        <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
           {tx.personalAccountDesc}
         </div>
         <div style={{marginBottom:28}}>
@@ -1271,7 +1271,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
 
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.teamAccountLbl}</div>
-        <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+        <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
           {tx.teamAccountDesc}
         </div>
         <BloquePlanes planes={PLANES_EQUIPO}
@@ -1299,7 +1299,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>
       </div>
-      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:20}}>{tx.rehearsalSubLbl}</div>
+      <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:20}}>{tx.rehearsalSubLbl}</div>
 
       <div className="card" style={{padding:14,marginBottom:14}}>
         <div style={{fontSize:10,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.assignToLbl}</div>
@@ -1316,7 +1316,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           {ensayosDelEvento.map(en=>(
             <div key={en.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0'}}>
               <span style={{flex:1,fontSize:12,color:'var(--tx)'}}>{en.nombre||tx.rehearsalLbl}</span>
-              <button onClick={()=>duplicarEnsayo(en)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.duplicateBtn}</button>
+              <button onClick={()=>duplicarEnsayo(en)} style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.duplicateBtn}</button>
             </div>
           ))}
         </div>
@@ -1340,7 +1340,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   border:activo?`1px solid ${eq.color}80`:'1px solid var(--bd)',background:activo?`${eq.color}12`:'var(--s1)'}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
                 <span style={{fontSize:11,fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
-                <span style={{fontSize:10,color:'var(--tx3)'}}>{(eq.miembros||[]).length}p</span>
+                <span style={{fontSize:12.5,color:'var(--tx2)'}}>{(eq.miembros||[]).length}p</span>
               </button>
             );
           })}
@@ -1369,7 +1369,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div>
               <div style={{fontSize:12,fontWeight:700,color:'var(--ac)'}}>{tx.uploadFileLbl}</div>
-              <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>PDF, Word o audio para el equipo</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2}}>PDF, Word o audio para el equipo</div>
             </div>
           </label>
         )}
@@ -1416,10 +1416,10 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>{tx.backstage}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:21,color:'var(--tx)',lineHeight:1.05}}>{tx.backstage}</div>
           <span style={{padding:'2px 9px',borderRadius:100,fontSize:9,fontWeight:700,border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,alignSelf:'center'}}>{isAdmin?tx.superAdminLbl:tx.leaderLbl}</span>
         </div>
-        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12,color:'var(--tx3)',lineHeight:1.5,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
+        <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:12.5,color:'var(--tx2)',lineHeight:1.5,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
@@ -1455,7 +1455,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{fontSize:12,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>
               Daniel Miranda
             </div>
-            <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
+            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
               dmiranda@fearless.cl · Super Admin
             </div>
           </div>

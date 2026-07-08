@@ -319,7 +319,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       }}>
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
-            fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
+            fontSize:21,color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
           <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,
             color:'var(--tx2)',lineHeight:1.5}}>
             {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : tx.navMonthsHint}
@@ -566,7 +566,7 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
         ))}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
-        <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{tx.leadTimeLbl}</span>
+        <span style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>{tx.leadTimeLbl}</span>
         <CustomSelect value={diasAntes} onChange={v=>{const n=Number(v);if(avisoActivo===1)setDias1(n);else setDias2(n);}}
           style={{width:'auto',padding:'4px 8px',fontSize:12}}
           options={[1,2,3,4,5,6,7].map(d=>({value:d,label:`${d} día${d>1?'s':''} antes`}))}/>
@@ -578,9 +578,9 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       </div>)}
       {custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:12,lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,diasAntes));}} style={{fontSize:11,color:'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
+        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,diasAntes));}} style={{fontSize:12.5,color:'var(--tx2)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>← Regenerar automático</button>
       </div>)}
-      <div style={{fontSize:10,color:'var(--tx3)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
+      <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
         Se envía por correo y notificación dentro de la app.
       </div>
@@ -634,7 +634,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       <div style={{marginBottom:'var(--sp-md)'}}>
         <div style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:21,color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
               {f.nombre}
             </div>
             <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.5}}>
@@ -685,7 +685,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               <span style={{fontSize:13,fontWeight:900,color:'var(--tx3)',minWidth:16,textAlign:'right'}}>{i+1}</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:11,color:'var(--tx)'}}>{r.nombre}</div>
-                <div style={{fontSize:10,color:'var(--tx3)',marginTop:2}}>
+                <div style={{fontSize:12.5,color:'var(--tx2)',marginTop:2}}>
                   {r.key?`${r.key} · ${r.bpm} BPM`:''}
                   {r.asignaciones.length>0&&r.asignaciones.map((a,ai)=>(
                     <span key={ai} style={{color:'var(--ac)',marginLeft:r.key?6:0,background:'rgba(200,169,126,.12)',padding:'1px 6px',borderRadius:100,marginRight:4}}>
@@ -712,7 +712,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <div key={en.id} style={{padding:'11px var(--sp-md)',borderBottom:i<ensayosDelEvento.length-1?'1px solid var(--s1)':'none',display:'flex',alignItems:'center',gap:8}}>
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
               <span style={{fontSize:12,color:'var(--tx)',flex:1}}>{en.nombre||tx.rehearsalLbl}{en.setlistNombre?` · ${en.setlistNombre}`:''}</span>
-              <span style={{fontSize:10,color:'var(--tx3)'}}>{(en.equipos||[]).length} equipo{(en.equipos||[]).length!==1?'s':''}</span>
+              <span style={{fontSize:12.5,color:'var(--tx2)'}}>{(en.equipos||[]).length} equipo{(en.equipos||[]).length!==1?'s':''}</span>
             </div>
           ))}
         </div>
@@ -730,7 +730,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               <div style={{padding:'8px var(--sp-md)',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
                 <span style={{fontWeight:900,fontSize:12,color:'var(--tx)',flex:1}}>{eq.name}</span>
-                <span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
+                <span style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
               </div>
               <div style={{padding:'0 var(--sp-md) var(--sp-xs)',display:'flex',flexWrap:'wrap',gap:5}}>
                 {(eq.miembros||[]).map(m=>(
@@ -778,5 +778,5 @@ export function PremiereView({onToast,lang='es'}){
   const [sel,setSel]=useState(null);
   const top=PREMIERES[0];
   if(sel){const p=PREMIERES.find(x=>x.id===sel);return(<div style={{padding:'0 0 90px'}}><div style={{padding:'var(--sp-md)',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setSel(null)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg><span style={{fontSize:13,fontWeight:700,color:'var(--tx2)'}}>{tx.premiereLbl}</span></div><div style={{margin:'0 var(--pw-x,16px)',padding:'var(--sp-lg)',borderRadius:'var(--rad-md)',background:'linear-gradient(135deg,rgba(200,169,126,.15),rgba(100,80,180,.1))',border:'1px solid rgba(200,169,126,.3)',marginBottom:'var(--sp-md)'}}><div style={{fontSize:10,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{p.oficial?tx.officialChordsLbl:tx.comingSoonLbl}</div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx)',marginBottom:4}}>{p.name}</div><div style={{fontSize:13,color:'var(--tx2)',marginBottom:'var(--sp-sm)'}}>{p.album&&`${p.album} · `}{p.sello}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'var(--sp-md)'}}><span style={{fontSize:11,fontWeight:700,color:'var(--ac)',background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.25)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.key}</span><span style={{fontSize:11,fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.bpm} BPM</span>{p.dias&&<span style={{fontSize:11,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.1)',border:'1px solid rgba(255,82,82,.28)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>⚡ En {p.dias} días</span>}</div><div style={{fontSize:13,color:'var(--tx2)',lineHeight:1.7}}>{p.desc}</div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}><button className="btn btn-p" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.addToSetlistBtn,sub:p.name})}><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>{tx.addToSetlistBtn}</button><button className="btn btn-g" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.willNotifyToast,sub:tx.atPremiereOfLbl(p.name)})}><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>{tx.notifyMeBtn}</button></div></div>);}
-  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',border:'1px solid rgba(200,169,126,.25)',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:14}}>★</span><span style={{fontSize:9,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.nextPremiereLbl}</span></div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:12,color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:12,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',border:'1px solid rgba(255,82,82,.3)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:11,color:'var(--tx3)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:11,color:'var(--tx3)'}}>{p.album||p.sello}</div><div style={{fontSize:10,color:'var(--tx3)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:11,fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:10,color:'var(--tx3)',fontWeight:700}}>{tx.shortComingSoonLbl}</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:11,color:'var(--tx3)',textAlign:'center',lineHeight:1.7}}>{tx.representLabelQuestion}<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:tx.comingSoonLbl,sub:tx.labelContactLbl})}>{tx.publishHereLbl}</span></div></div></div>);
+  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',border:'1px solid rgba(200,169,126,.25)',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:14}}>★</span><span style={{fontSize:9,fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.nextPremiereLbl}</span></div><div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:12,color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:12,fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',border:'1px solid rgba(255,82,82,.3)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15,color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:12.5,color:'var(--tx2)'}}>{p.album||p.sello}</div><div style={{fontSize:12.5,color:'var(--tx2)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:11,fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{tx.shortComingSoonLbl}</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:12.5,color:'var(--tx2)',textAlign:'center',lineHeight:1.7}}>{tx.representLabelQuestion}<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:tx.comingSoonLbl,sub:tx.labelContactLbl})}>{tx.publishHereLbl}</span></div></div></div>);
 }

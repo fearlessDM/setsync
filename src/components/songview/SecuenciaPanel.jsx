@@ -362,7 +362,7 @@ export function SecuenciaPanel({
           </div>
         ):(
           <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
-            <div style={{fontSize:11,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
           </div>
         )}
       </div>

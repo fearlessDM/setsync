@@ -55,7 +55,7 @@ export function ReferenciaPanel({
             </div>
             <div style={{textAlign:'center'}}>
               <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
-              <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+              <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
             </div>
           </div>
         ):(

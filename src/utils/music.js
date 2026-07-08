@@ -24,6 +24,72 @@ export function transposeChord(chord, offset) {
 
 export const initials = n => n.trim().split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
 
+// ── Detección heurística de tonalidad ────────────────────────────────────
+// Dada la lista de acordes usados en una canción, sugiere la tónica más
+// probable. No usa IA — es una heurística de teoría musical: para cada una
+// de las 12 tónicas posibles, evalúa qué tan bien encajan los acordes
+// únicos de la canción en su escala mayor diatónica (I ii iii IV V vi vii°),
+// dando más peso a los grados I y V (tónica y dominante) porque son los que
+// de verdad anclan el oído a una tonalidad — un acorde IV o vi puede
+// aparecer en varias tonalidades relacionadas sin decir mucho por sí solo.
+// Un acorde que no encaja en absoluto en la escala de una tónica candidata
+// penaliza esa tónica, en vez de simplemente no sumar. Se cuenta por acorde
+// ÚNICO usado (no por repetición en el texto), así una canción que repite
+// mucho el mismo acorde no le da un peso artificial.
+//
+// Validada contra progresiones típicas de iglesia/banda (incluyendo casos
+// donde la canción no arranca en su propia tónica, ej. "Am F C G" → C).
+const GRADOS_MAYOR = [0, 2, 4, 5, 7, 9, 11]; // semitonos de la escala mayor natural, en orden I ii iii IV V vi vii
+const ES_MENOR_EN_GRADO = { 2: true, 4: true, 9: true }; // ii, iii, vi son menores en una tonalidad mayor
+const PESO_POR_GRADO = [3, 0.5, 0.5, 1, 2.5, 0.5, 0.3]; // I y V pesan mucho más que el resto
+
+export function detectarTonalidad(acordes) {
+  if (!acordes || acordes.length === 0) return null;
+  const parsed = acordes
+    .map((raw) => {
+      const m = String(raw).trim().match(/^([A-G][b#]?)(.*)$/);
+      if (!m) return null;
+      const base = ENHAR[m[1]] || m[1];
+      const idx = CHROMATIC.indexOf(base);
+      if (idx < 0) return null;
+      const suf = m[2] || '';
+      const esMenor = suf.startsWith('m') && !suf.startsWith('maj');
+      return { idx, esMenor };
+    })
+    .filter(Boolean);
+  if (parsed.length === 0) return null;
+
+  // Reducir a acordes únicos con su frecuencia — evita que repetir el mismo
+  // acorde muchas veces en el texto le dé un peso desproporcionado.
+  const conteo = new Map();
+  parsed.forEach((p) => {
+    const k = `${p.idx}_${p.esMenor}`;
+    conteo.set(k, (conteo.get(k) || 0) + 1);
+  });
+  const unicos = [...conteo.entries()].map(([k, freq]) => {
+    const [idx, esMenor] = k.split('_');
+    return { idx: Number(idx), esMenor: esMenor === 'true', freq };
+  });
+
+  let mejorTonica = null;
+  let mejorPuntaje = -Infinity;
+  for (let tonica = 0; tonica < 12; tonica++) {
+    let puntaje = 0;
+    unicos.forEach(({ idx, esMenor, freq }) => {
+      const gradoIdx = GRADOS_MAYOR.indexOf((idx - tonica + 12) % 12);
+      if (gradoIdx === -1) { puntaje -= 2; return; } // acorde fuera de la escala natural de esta tónica candidata
+      const esperaMenor = !!ES_MENOR_EN_GRADO[gradoIdx];
+      const peso = PESO_POR_GRADO[gradoIdx];
+      puntaje += (esperaMenor === esMenor ? peso : peso * 0.3) * freq;
+    });
+    if (puntaje > mejorPuntaje) {
+      mejorPuntaje = puntaje;
+      mejorTonica = tonica;
+    }
+  }
+  return CHROMATIC[mejorTonica];
+}
+
 // ── Sistemas de notación de acordes ──────────────────────────────────────
 // Tres formas de nombrar un acorde, todas representando lo mismo (pedido
 // explícito de Danny — quiere las 3 disponibles como opciones del usuario,

@@ -821,7 +821,7 @@ Tuya es la gloria, Por siempre amén.
               {tieneMultitracks&&(
                 <button onClick={()=>setMostrarMultitracks(v=>!v)}
                   style={{padding:'7px 10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
-                    color:'var(--tx3)',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                    color:'var(--tx2)',fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                   {mostrarMultitracks?tx.hideTracks:tx.showTracks}
                 </button>
               )}

@@ -277,7 +277,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
     <div style={{ background: 'var(--s1)', padding: '10px 12px' }}>
       {pairs.map((pair, pairIdx) => {
         const chords = parseStackedLine(pair.notas);
-        const fontSizePx = 14;
+        const fontSizePx = 15; // debe coincidir con el fontSize real del input de letra (mismo valor usado abajo), para que la posición horizontal de cada chip caiga justo sobre el carácter correspondiente
         return (
           <div key={pairIdx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden' }}>
             {/* Franja NOTAS */}
@@ -303,10 +303,10 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                           defaultValue={c.chord}
                           onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
                           onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
-                          style={{ width: 34, fontSize: 11, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
+                          style={{ width: 38, fontSize: 13, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
                         />
                       ) : (
-                        <span style={{ fontSize: 11, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
+                        <span style={{ fontSize: 13, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
                           onClick={() => setEditingChip({ pairIdx, chordIdx })}>{c.chord || '?'}</span>
                       )}
                       <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
@@ -329,7 +329,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
                 placeholder={pairIdx === 0 ? placeholderLetra : ''}
-                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
+                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 15, fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none' }}
               />
             </div>
           </div>
@@ -341,7 +341,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
           {acordesRecientes.map((ch) => (
             <span key={ch}
               onClick={() => addChordFromRecent(pairs.length - 1, ch)}
-              style={{ background: 'rgba(127,119,221,.1)', border: '1px solid rgba(127,119,221,.4)', color: '#b8b2f0', fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
+              style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.15)', color: 'var(--tx3)', fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
             >{ch}</span>
           ))}
         </div>

@@ -77,7 +77,7 @@ export const renderBloqueLines=(lines,tpOff,showChords,fs=14,notacion='americano
 // cuyo tamaño dependa del vecino.
 export function VistaBloques({secuencia,tpOff,showChords,notacion,curKey}){
   const seq=secuencia||[];
-  if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx3)',fontSize:14,fontFamily:"'Outfit',sans-serif"}}>Sin contenido disponible</div>);
+  if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx2)',fontSize:14,fontFamily:"'Outfit',sans-serif"}}>Sin contenido disponible</div>);
   const w=typeof window!=='undefined'?window.innerWidth:390;
   const h=typeof window!=='undefined'?window.innerHeight:700;
   const cols=w>=1024?3:w>=768?2:1;

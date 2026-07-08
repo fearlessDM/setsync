@@ -200,7 +200,7 @@ export function resolveLineAbsIndex(raw,targetLineIdx){
 }
 
 export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,notacion='americano',songKey='C'){
-  if(!raw)return(<div style={{color:'var(--tx3)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
+  if(!raw)return(<div style={{color:'var(--tx2)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
 
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
   const FONT="'Outfit',sans-serif";
