@@ -150,6 +150,7 @@ function pairsToRaw(pairs) {
 export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
   const [pairs, setPairs] = useState(() => buildPairs(contenido));
   const [editingChip, setEditingChip] = useState(null);
+  const [dragVisual, setDragVisual] = useState(null); // {pairIdx, chordIdx, dxPx} — offset visual mientras se arrastra, antes de confirmar la nueva posición
   const dragState = useRef(null);
   const lastEmitted = useRef(contenido);
 
@@ -204,32 +205,73 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
     if (chords[chordIdx]) chords[chordIdx] = { ...chords[chordIdx], chord: newName };
     updatePairNotas(pairIdx, chords);
   };
-  const moveChordByChars = (pairIdx, chordIdx, deltaChars) => {
+  const setChordPos = (pairIdx, chordIdx, nuevaPos) => {
     const chords = parseStackedLine(pairs[pairIdx].notas);
     if (!chords[chordIdx]) return;
     const maxPos = pairs[pairIdx].letra.length;
-    const nuevaPos = Math.max(0, Math.min(maxPos, chords[chordIdx].pos + deltaChars));
-    chords[chordIdx] = { ...chords[chordIdx], pos: nuevaPos };
+    chords[chordIdx] = { ...chords[chordIdx], pos: Math.max(0, Math.min(maxPos, nuevaPos)) };
     updatePairNotas(pairIdx, chords);
   };
-  const startDrag = (pairIdx, chordIdx, clientX, fontSizePx) => {
-    dragState.current = { pairIdx, chordIdx, x0: clientX, fontSizePx };
+  const moveChordByChars = (pairIdx, chordIdx, deltaChars) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    if (!chords[chordIdx]) return;
+    setChordPos(pairIdx, chordIdx, chords[chordIdx].pos + deltaChars);
   };
-  const onDragMove = (clientX) => {
-    if (!dragState.current) return;
-    const { fontSizePx } = dragState.current;
-    dragState.current.dx = clientX - dragState.current.x0;
-    dragState.current.anchoCar = fontSizePx * 0.58;
+
+  // ── Drag real, mouse + touch, con feedback visual en vivo ────────────────
+  // dragVisual guarda el desplazamiento en píxeles mientras el dedo/mouse se
+  // mueve, así el chip sigue el gesto de inmediato (antes: el chip solo
+  // "saltaba" a la posición final al soltar, lo cual no se sentía como
+  // arrastre real). Al soltar, el offset en píxeles se convierte a un
+  // delta de caracteres y se confirma con setChordPos.
+  const beginDrag = (pairIdx, chordIdx, clientX, fontSizePx) => {
+    dragState.current = { pairIdx, chordIdx, x0: clientX, fontSizePx, origPos: parseStackedLine(pairs[pairIdx].notas)[chordIdx]?.pos ?? 0 };
+    setDragVisual({ pairIdx, chordIdx, dxPx: 0 });
   };
-  const endDrag = () => {
+  const moveDrag = (clientX) => {
     if (!dragState.current) return;
-    const { pairIdx, chordIdx, dx, anchoCar } = dragState.current;
-    if (dx && anchoCar) {
-      const steps = Math.round(dx / anchoCar);
-      if (steps !== 0) moveChordByChars(pairIdx, chordIdx, steps);
-    }
+    const dxPx = clientX - dragState.current.x0;
+    dragState.current.dxPx = dxPx;
+    setDragVisual({ pairIdx: dragState.current.pairIdx, chordIdx: dragState.current.chordIdx, dxPx });
+  };
+  const finishDrag = () => {
+    if (!dragState.current) return;
+    const { pairIdx, chordIdx, dxPx, fontSizePx, origPos } = dragState.current;
+    const anchoCar = fontSizePx * 0.58;
+    const deltaChars = Math.round((dxPx || 0) / anchoCar);
+    if (deltaChars !== 0) setChordPos(pairIdx, chordIdx, origPos + deltaChars);
     dragState.current = null;
+    setDragVisual(null);
   };
+  const attachDragHandlers = (pairIdx, chordIdx, fontSizePx) => ({
+    onMouseDown: (e) => {
+      e.preventDefault();
+      beginDrag(pairIdx, chordIdx, e.clientX, fontSizePx);
+      const onMove = (ev) => moveDrag(ev.clientX);
+      const onUp = () => {
+        finishDrag();
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    },
+    onTouchStart: (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      beginDrag(pairIdx, chordIdx, touch.clientX, fontSizePx);
+      const onMove = (ev) => { if (ev.touches[0]) moveDrag(ev.touches[0].clientX); };
+      const onEnd = () => {
+        finishDrag();
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+        document.removeEventListener('touchcancel', onEnd);
+      };
+      document.addEventListener('touchmove', onMove, { passive: true });
+      document.addEventListener('touchend', onEnd);
+      document.addEventListener('touchcancel', onEnd);
+    },
+  });
 
   return (
     <div style={{ background: 'var(--s1)', padding: '10px 12px' }}>
@@ -237,50 +279,42 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
         const chords = parseStackedLine(pair.notas);
         const fontSizePx = 14;
         return (
-          <div key={pairIdx} style={{ marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'stretch' }}>
-              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', writingMode: 'vertical-rl', textOrientation: 'mixed', padding: '4px 2px', background: 'rgba(255,255,255,.02)', borderRadius: '6px 0 0 0', flexShrink: 0, userSelect: 'none' }}>NOTAS</span>
-              <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: '0 6px 0 0', padding: '4px 6px', position: 'relative', height: 22, flex: 1 }}>
+          <div key={pairIdx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden' }}>
+            {/* Franja NOTAS */}
+            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.04)', height: 24 }}>
+              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', padding: '0 6px', flexShrink: 0, userSelect: 'none', borderRight: '1px solid rgba(255,255,255,.06)' }}>NOTAS</span>
+              <div style={{ position: 'relative', height: '100%', flex: 1 }}>
                 {chords.map((c, chordIdx) => {
-                const leftPx = c.pos * (fontSizePx * 0.58);
-                const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
-                return (
-                  <div
-                    key={chordIdx}
-                    style={{ position: 'absolute', left: leftPx, top: 2, display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(127,119,221,.16)', border: '1px solid #7f77dd', borderRadius: 5, padding: '1px 3px', cursor: 'grab' }}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      startDrag(pairIdx, chordIdx, e.clientX, fontSizePx);
-                      const onMove = (ev) => onDragMove(ev.clientX);
-                      const onUp = () => {
-                        endDrag();
-                        document.removeEventListener('mousemove', onMove);
-                        document.removeEventListener('mouseup', onUp);
-                      };
-                      document.addEventListener('mousemove', onMove);
-                      document.addEventListener('mouseup', onUp);
-                    }}
-                  >
-                    <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
-                      onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, -1); }}>‹</span>
-                    {isEditing ? (
-                      <input
-                        autoFocus
-                        defaultValue={c.chord}
-                        onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
-                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
-                        style={{ width: 34, fontSize: 11, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
-                        onClick={() => setEditingChip({ pairIdx, chordIdx })}>{c.chord || '?'}</span>
-                    )}
-                    <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
-                      onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, 1); }}>›</span>
-                    <span style={{ fontSize: 8, color: '#665', cursor: 'pointer', paddingLeft: 2 }}
-                      onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}>✕</span>
-                  </div>
-                );
+                  const isDraggingThis = dragVisual && dragVisual.pairIdx === pairIdx && dragVisual.chordIdx === chordIdx;
+                  const leftPx = c.pos * (fontSizePx * 0.58) + (isDraggingThis ? dragVisual.dxPx : 0);
+                  const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
+                  const dragHandlers = attachDragHandlers(pairIdx, chordIdx, fontSizePx);
+                  return (
+                    <div
+                      key={chordIdx}
+                      style={{ position: 'absolute', left: leftPx, top: 2, display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(127,119,221,.16)', border: '1px solid #7f77dd', borderRadius: 5, padding: '1px 3px', cursor: 'grab', touchAction: 'none', zIndex: isDraggingThis ? 5 : 1 }}
+                      {...dragHandlers}
+                    >
+                      <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                        onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, -1); }}>‹</span>
+                      {isEditing ? (
+                        <input
+                          autoFocus
+                          defaultValue={c.chord}
+                          onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                          style={{ width: 34, fontSize: 11, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: 11, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
+                          onClick={() => setEditingChip({ pairIdx, chordIdx })}>{c.chord || '?'}</span>
+                      )}
+                      <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                        onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, 1); }}>›</span>
+                      <span style={{ fontSize: 8, color: '#665', cursor: 'pointer', paddingLeft: 2 }}
+                        onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}>✕</span>
+                    </div>
+                  );
                 })}
                 <button
                   onClick={() => addChord(pairIdx)}
@@ -288,13 +322,14 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 >+</button>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'stretch' }}>
-              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', writingMode: 'vertical-rl', textOrientation: 'mixed', padding: '4px 2px', background: 'rgba(255,255,255,.02)', borderRadius: '0 0 0 6px', flexShrink: 0, userSelect: 'none' }}>LETRA</span>
+            {/* Franja LETRA — pegada a NOTAS, sin gap entre ambas */}
+            <div style={{ display: 'flex', alignItems: 'stretch', background: 'var(--s2)' }}>
+              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', padding: '0 6px', flexShrink: 0, userSelect: 'none', display: 'flex', alignItems: 'center', borderRight: '1px solid rgba(255,255,255,.06)' }}>LETRA</span>
               <input
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
                 placeholder={pairIdx === 0 ? placeholderLetra : ''}
-                style={{ width: '100%', padding: '5px 6px', background: 'var(--s2)', border: 'none', borderRadius: '0 0 6px 0', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
+                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
               />
             </div>
           </div>
