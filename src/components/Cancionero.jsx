@@ -381,23 +381,25 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         const otroLabel=nueva.__otroLabel??false;
         return(
           <div>
-            {/* Volver */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,cursor:'pointer'}}
+            {/* Volver — ahora un ícono discreto, sin texto "Nueva canción" repitiendo el título */}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,cursor:'pointer'}}
               onClick={()=>setCrearModo(null)}>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              <span style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Nueva canción</span>
+              <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:21,color:'var(--tx)'}}>Editor de canciones</span>
+            </div>
+            <div style={{fontSize:12.5,color:'var(--tx2)',marginBottom:16,lineHeight:1.6}}>
+              En SetSync hacemos que tus letras sean lo más claras posibles y tenemos un formato por secciones. Carga una sección y llénala con letra y posiciona las notas.
             </div>
 
             {/* Info */}
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:12}}>Información</div>
             <div className="card" style={{padding:14,marginBottom:20}}>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
-                placeholder="Nombre de la canción"
+                placeholder="Título canción"
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
               <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
-                placeholder="Artista o compositor"
+                placeholder="Compositor / detalles"
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:13,marginBottom:8,boxSizing:'border-box'}}/>
               <div style={{display:'flex',gap:8}}>
                 <CustomSelect value={nueva.key} onChange={v=>{keyTocadaManualRef.current=true;setNueva(vv=>({...vv,key:v}));}}
@@ -416,11 +418,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
             </div>
 
-            {/* Secciones — chips */}
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:6}}>Secciones</div>
-            <div style={{fontSize:12.5,color:'var(--tx2)',marginBottom:16,lineHeight:1.6}}>
-              Toca un chip para agregar una sección. Cada una tiene una franja de <span style={{color:'var(--tx2)'}}>notas</span> arriba y una de <span style={{color:'var(--tx2)'}}>letra</span> abajo: escribe la letra, toca <span style={{color:'var(--tx2)'}}>+</span> para agregar una nota, y arrástrala sobre la sílaba exacta donde se toca.
-            </div>
+            {/* Secciones — chips (sin encabezado "Secciones", el subtítulo de arriba ya lo explica) */}
             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
               {BLOQUES_CHIPS.map(chip=>(
                 <button key={chip.label} onClick={()=>agregarBloque(chip.label)}

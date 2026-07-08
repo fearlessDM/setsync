@@ -280,10 +280,12 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
         const fontSizePx = 15; // debe coincidir con el fontSize real del input de letra (mismo valor usado abajo), para que la posición horizontal de cada chip caiga justo sobre el carácter correspondiente
         return (
           <div key={pairIdx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden' }}>
-            {/* Franja NOTAS */}
+            {/* Franja NOTAS — el label es placeholder: solo se ve si la franja está vacía, no resta ancho al contenido */}
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.04)', height: 24 }}>
-              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', padding: '0 6px', flexShrink: 0, userSelect: 'none', borderRight: '1px solid rgba(255,255,255,.06)' }}>NOTAS</span>
               <div style={{ position: 'relative', height: '100%', flex: 1 }}>
+                {chords.length === 0 && (
+                  <span style={{ position: 'absolute', left: 6, top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize: 10, color: 'var(--tx3)', letterSpacing: '.3px', userSelect: 'none', pointerEvents: 'none' }}>Notas...</span>
+                )}
                 {chords.map((c, chordIdx) => {
                   const isDraggingThis = dragVisual && dragVisual.pairIdx === pairIdx && dragVisual.chordIdx === chordIdx;
                   const leftPx = c.pos * (fontSizePx * 0.58) + (isDraggingThis ? dragVisual.dxPx : 0);
@@ -322,13 +324,12 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 >+</button>
               </div>
             </div>
-            {/* Franja LETRA — pegada a NOTAS, sin gap entre ambas */}
+            {/* Franja LETRA — pegada a NOTAS, sin gap entre ambas. Label también como placeholder nativo del input */}
             <div style={{ display: 'flex', alignItems: 'stretch', background: 'var(--s2)' }}>
-              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', padding: '0 6px', flexShrink: 0, userSelect: 'none', display: 'flex', alignItems: 'center', borderRight: '1px solid rgba(255,255,255,.06)' }}>LETRA</span>
               <input
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
-                placeholder={pairIdx === 0 ? placeholderLetra : ''}
+                placeholder={pairIdx === 0 ? placeholderLetra : 'Letra...'}
                 style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 15, fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none' }}
               />
             </div>
