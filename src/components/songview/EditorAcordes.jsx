@@ -12,7 +12,13 @@ import { useState, useRef, useMemo } from 'react';
 // hasta que se corra la migración completa.
 
 const CHORD_RE_INLINE = /\[([A-G][b#]?(?:m(?:aj7|aj)?|7|9|11|13|6|2|4|sus[24]?|add9|dim|aug)?(?:\/[A-G][b#]?)?)\]/g;
-const STACKED_RE = /\{([^:}]+):(\d+)\}/g;
+// El grupo del nombre acepta CERO o más caracteres ([^:}]*, no +): un chord
+// recién creado por addChord() nace con chord:'' antes de que el usuario
+// escriba algo — si el regex exigiera al menos un carácter, ese token
+// "{:0}" no volvería a matchear en el siguiente parseStackedLine() y el
+// chip se autodestruiría apenas React re-renderizara (bug real encontrado:
+// el botón "+" sí creaba el chord, pero desaparecía al instante).
+const STACKED_RE = /\{([^:}]*):(\d+)\}/g;
 
 // ── Detecta si una línea es una línea de notas en formato stacked ──────────
 export function isStackedChordLine(line) {
@@ -232,8 +238,10 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
         const fontSizePx = 14;
         return (
           <div key={pairIdx} style={{ marginBottom: 8 }}>
-            <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: '6px 6px 0 0', padding: '4px 6px', position: 'relative', height: 22 }}>
-              {chords.map((c, chordIdx) => {
+            <div style={{ display: 'flex', alignItems: 'stretch' }}>
+              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', writingMode: 'vertical-rl', textOrientation: 'mixed', padding: '4px 2px', background: 'rgba(255,255,255,.02)', borderRadius: '6px 0 0 0', flexShrink: 0, userSelect: 'none' }}>NOTAS</span>
+              <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: '0 6px 0 0', padding: '4px 6px', position: 'relative', height: 22, flex: 1 }}>
+                {chords.map((c, chordIdx) => {
                 const leftPx = c.pos * (fontSizePx * 0.58);
                 const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
                 return (
@@ -273,18 +281,22 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                       onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}>✕</span>
                   </div>
                 );
-              })}
-              <button
-                onClick={() => addChord(pairIdx)}
-                style={{ position: 'absolute', right: 3, top: 2, width: 18, height: 18, background: 'transparent', border: '1px dashed #444', borderRadius: 4, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer', fontSize: 11, lineHeight: 1 }}
-              >+</button>
+                })}
+                <button
+                  onClick={() => addChord(pairIdx)}
+                  style={{ position: 'absolute', right: 3, top: 2, width: 18, height: 18, background: 'transparent', border: '1px dashed #444', borderRadius: 4, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer', fontSize: 11, lineHeight: 1 }}
+                >+</button>
+              </div>
             </div>
-            <input
-              value={pair.letra}
-              onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
-              placeholder={pairIdx === 0 ? placeholderLetra : ''}
-              style={{ width: '100%', padding: '5px 6px', background: 'var(--s2)', border: 'none', borderRadius: '0 0 6px 6px', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
-            />
+            <div style={{ display: 'flex', alignItems: 'stretch' }}>
+              <span style={{ fontSize: 8, color: 'var(--tx3)', letterSpacing: '.5px', writingMode: 'vertical-rl', textOrientation: 'mixed', padding: '4px 2px', background: 'rgba(255,255,255,.02)', borderRadius: '0 0 0 6px', flexShrink: 0, userSelect: 'none' }}>LETRA</span>
+              <input
+                value={pair.letra}
+                onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
+                placeholder={pairIdx === 0 ? placeholderLetra : ''}
+                style={{ width: '100%', padding: '5px 6px', background: 'var(--s2)', border: 'none', borderRadius: '0 0 6px 0', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
           </div>
         );
       })}
