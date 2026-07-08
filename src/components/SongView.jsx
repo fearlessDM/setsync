@@ -515,6 +515,89 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [trackVols,setTrackVols]=useState(()=>Array(20).fill(80));
   const [trackMutes,setTrackMutes]=useState(()=>Array(20).fill(false));
   // seqLayer eliminado — con tope de 6 pistas ya no hace falta selector de capas A/B
+
+  // ── Motor de reproducción de multitracks (Secuencia) ──────────────────────
+  // Hasta ahora los faders de multitracks (trackVols/trackMutes) eran solo
+  // UI: no había ningún archivo de audio real detrás, así que mover el
+  // fader o mutear no cambiaba ningún sonido. Esto conecta cada pista a un
+  // elemento <audio> real, cargado localmente por el usuario (sin Firebase
+  // Storage todavía — decisión explícita: esta sesión resuelve la
+  // reproducción funcional, la persistencia entre sesiones queda para
+  // cuando se conecte Storage). Tope de 8 pistas, no 6: cubre el caso
+  // típico de banda/iglesia (click, guía, batería, bajo, 2-4 pads/coros)
+  // sin la carga de un multitrack completo de 12+ pistas.
+  const MAX_MULTITRACKS=8;
+  const [multitracksLocal,setMultitracksLocal]=useState(null); // [{label,color,url,file}] | null — null = usar demo (seqData?.multitracks) sin audio real
+  const multitrackAudioRefs=useRef([]); // array de elementos <audio> reales, uno por pista
+  const [multitrackPlaying,setMultitrackPlaying]=useState(false);
+  const multitrackInputRef=useRef(null);
+
+  // Reemplaza (o inicializa) los multitracks reales de esta canción a partir
+  // de los archivos elegidos en el input de carga. El nombre de archivo sin
+  // extensión se usa como label del canal — Danny pidió que el nombre del
+  // fader respete el nombre real del canal, no un genérico "Pista 1".
+  const cargarMultitracksLocal=(files)=>{
+    const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
+    const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
+    const nuevos=arr.map((file,i)=>({
+      label:file.name.replace(/\.[^/.]+$/,''), // nombre de archivo sin extensión = nombre del canal
+      color:colores[i%colores.length],
+      url:URL.createObjectURL(file),
+      file,
+    }));
+    // Revoca URLs viejas para no acumular memoria si se recarga la selección
+    (multitracksLocal||[]).forEach(t=>{ if(t.url) URL.revokeObjectURL(t.url); });
+    setMultitracksLocal(nuevos);
+    setTrackVols(Array(20).fill(80));
+    setTrackMutes(Array(20).fill(false));
+    multitrackAudioRefs.current=[];
+    setToast(`✓ ${nuevos.length} pista${nuevos.length===1?'':'s'} cargada${nuevos.length===1?'':'s'} — se pierden al recargar la página hasta conectar almacenamiento en la nube`);
+  };
+
+  // Play/pause de TODAS las pistas al mismo tiempo — el corazón de "deben
+  // reproducirse al mismo tiempo": un solo transporte, N elementos <audio>
+  // arrancados en el mismo tick, cada uno con su propio volumen/mute real
+  // aplicado vía audio.volume, no solo visual.
+  const toggleMultitrackPlay=()=>{
+    const tracks=multitrackAudioRefs.current.filter(Boolean);
+    if(!tracks.length)return;
+    if(multitrackPlaying){
+      tracks.forEach(a=>a.pause());
+      setMultitrackPlaying(false);
+    } else {
+      // Sincroniza todas al mismo tiempo antes de arrancar, por si una quedó
+      // desfasada de una pausa/seek anterior.
+      const t=tracks[0]?.currentTime||0;
+      tracks.forEach(a=>{ a.currentTime=t; });
+      Promise.all(tracks.map(a=>a.play().catch(()=>{}))).then(()=>setMultitrackPlaying(true));
+    }
+  };
+  const seekMultitracks=(time)=>{
+    multitrackAudioRefs.current.filter(Boolean).forEach(a=>{ a.currentTime=time; });
+  };
+  // Aplica volumen/mute real a cada <audio> cuando cambian los faders —
+  // antes trackVols/trackMutes solo movían el knob visual.
+  useEffect(()=>{
+    multitrackAudioRefs.current.forEach((a,i)=>{
+      if(!a)return;
+      a.volume=trackMutes[i]?0:(trackVols[i]??80)/100;
+    });
+  },[trackVols,trackMutes]);
+  // Avanza el playhead visual (seqPos, 0–1) mientras las pistas reproducen,
+  // leyendo currentTime/duration de la primera pista como referencia de
+  // tiempo — antes seqPos solo cambiaba con un seek manual, el waveform no
+  // avanzaba solo durante la reproducción real.
+  useEffect(()=>{
+    if(!multitrackPlaying)return;
+    const iv=setInterval(()=>{
+      const primeraPista=multitrackAudioRefs.current.find(Boolean);
+      if(primeraPista&&primeraPista.duration){
+        setSeqPos(primeraPista.currentTime/primeraPista.duration);
+      }
+    },100);
+    return ()=>clearInterval(iv);
+  },[multitrackPlaying]);
+
   const [seqPos,setSeqPos]=useState(0);          // posición de playback 0-1
   const [seqHighlight,setSeqHighlight]=useState(null); // {from:0-1, to:0-1} bloque activo
   // ── Referencia (audio player) ───────────────────────────────────────────
@@ -2046,6 +2129,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         const r=el.getBoundingClientRect();
         const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
         setSeqPos(p);
+        // Si hay multitracks reales cargados, mover el playhead también
+        // mueve la posición real de reproducción de todas las pistas —
+        // antes el waveform era puramente decorativo, sin audio detrás.
+        const primeraPista=multitrackAudioRefs.current.find(Boolean);
+        if(primeraPista&&primeraPista.duration){
+          seekMultitracks(p*primeraPista.duration);
+        }
         // Highlight del bloque correspondiente
         if(guias&&totalComp){
           let acc=0,found=false;
@@ -2322,15 +2412,39 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>{/* fin área scrollable */}
         {/* ── Multitracks FUERA del scroll para touch libre ── */}
         <div style={{flexShrink:0,padding:'0 12px 10px',borderTop:'1px solid var(--s3)'}}>
-        {/* ── Multitracks con faders — tope de 6 pistas, 2 por fila (50%/50%) ── */}
+        {/* ── Multitracks con faders — tope de MAX_MULTITRACKS pistas, reproducción real sincronizada ── */}
         <div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.multitracksTitleLbl}</div>
-            <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{tx.multitracksSubLbl}</div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.multitracksTitleLbl}</div>
+              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{multitracksLocal?`${multitracksLocal.length} pista${multitracksLocal.length===1?'':'s'} cargada${multitracksLocal.length===1?'':'s'} — sin guardar aún`:tx.multitracksSubLbl}</div>
+            </div>
+            {multitracksLocal&&multitracksLocal.length>0&&(
+              <button onClick={toggleMultitrackPlay}
+                style={{width:38,height:38,borderRadius:'50%',border:'none',flexShrink:0,
+                  background:multitrackPlaying?'var(--gn)':'var(--ac)',color:'#000',cursor:'pointer',
+                  display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {multitrackPlaying
+                  ?<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  :<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                }
+              </button>
+            )}
+            <button onClick={()=>multitrackInputRef.current?.click()}
+              style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+              {multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`}
+            </button>
+            <input ref={multitrackInputRef} type="file" accept="audio/*" multiple style={{display:'none'}}
+              onChange={e=>{ if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
           </div>
-          {seqData?.multitracks?(
+          {/* Elementos <audio> reales, uno por pista — ocultos, controlados por el transporte de arriba */}
+          {multitracksLocal?.map((tr,i)=>(
+            <audio key={tr.url} ref={el=>{multitrackAudioRefs.current[i]=el;}} src={tr.url} preload="auto"
+              onEnded={()=>setMultitrackPlaying(false)} style={{display:'none'}}/>
+          ))}
+          {(multitracksLocal||seqData?.multitracks)?(
             <div style={{display:'grid',gridTemplateColumns:isTablet?'repeat(3,1fr)':'repeat(2,1fr)',gap:8}}>
-              {seqData.multitracks.slice(0,6).map((tr,i)=>{
+              {(multitracksLocal||seqData.multitracks).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 return(
