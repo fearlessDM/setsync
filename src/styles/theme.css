@@ -44,7 +44,7 @@
    desproporcionado. Ahora es un tamaño en px con clamp: crece un poco
    con la pantalla para seguir siendo bien visible, pero con techo bajo
    para que nunca se vuelva gigante. */
---sz-icon-interfaz:clamp(38px, 34px + 1.2vw, 52px);
+--sz-icon-interfaz:clamp(43px, 39px + 1.2vw, 58px);
 
 /* ── Sistema de espaciado — tokens globales ── */
 --sp-xs:8px;
