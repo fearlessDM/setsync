@@ -421,7 +421,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
       <div style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
         <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,fontWeight:400,color:'var(--tx)',marginBottom:8}}>{tx.saveChangesLbl}</div>
-        <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
+        <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'none',background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.saveAndExitLbl}</button>
           <button onClick={()=>{setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:13}}>{tx.exitWithoutSavingLbl}</button>
@@ -1187,7 +1187,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               + Subir track de secuencia
             </label>
           ):((carpetaActual.secuencia||[]).length===0&&(
-            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
           ))}
 
           <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:8}}>{tx.referenceTrackLbl}</div>
@@ -1199,7 +1199,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <span style={{fontSize:11,color:'var(--gn)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{carpetaActual.trackReferencia.nombre}</span>
             </button>
           ):(
-            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
           )}
 
           {/* ── Nota tipo post-it ── */}
@@ -1244,13 +1244,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Título del bloque */}
         <div style={{padding:'10px 14px 6px',flexShrink:0}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.monitorTabLbl}</div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
-            <div style={{flex:'0 0 80%',minWidth:0}}>
-              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.wifiHintLbl}</div>
-              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.audioInterfaceHintLbl}</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+            <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>{tx.monitorTabLbl}</span>
+            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.wifiHintLbl}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
+            <div style={{flex:'0 0 70%',minWidth:0}}>
+              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
             </div>
-            <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+            <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
               <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
             </div>
           </div>
@@ -1679,22 +1681,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         }}>
           {/* Header */}
           <div style={{padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <div style={{width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                <img src="/logo referencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain'}}/>
-              </div>
-              <span style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>
+            <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+              <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>
                 {tx.referenceTabLbl}
               </span>
-              <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
-                onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
+              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.referenceSubLbl}</span>
             </div>
+            <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
+              onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
             <div style={{marginTop:4,display:'flex',alignItems:'center',gap:10}}>
-              <div style={{flex:'0 0 80%',minWidth:0}}>
-                <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.referenceSubLbl}</div>
-                <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.micInterfaceHintLbl}</div>
+              <div style={{flex:'0 0 70%',minWidth:0}}>
+                <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.micInterfaceHintLbl}</div>
               </div>
-              <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+              <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
                 <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
               </div>
             </div>
@@ -1731,7 +1730,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 <div style={{textAlign:'center'}}>
                   <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>{tx.uploadReferenceAudioLbl}</div>
-                  <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+                  <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
                 </div>
               </div>
             ):(()=>{
@@ -1757,7 +1756,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
                 {/* Nombre del archivo + botón para cambiarlo */}
                 <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                  <span style={{flex:1,fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
+                  <span style={{flex:1,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
                   <button onClick={()=>refInputRef.current?.click()}
                     style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
                     {tx.changeBtn}
@@ -1944,7 +1943,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     ):isRecording&&recordSlot===i?(
                       <div style={{fontSize:10,fontWeight:700,color:'var(--rd)',fontFamily:"'Lexend Giga',sans-serif"}}>● Grabando · {fmtDur(recordElapsed)}</div>
                     ):(
-                      <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.emptySlotLbl}</div>
+                      <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.emptySlotLbl}</div>
                     )}
                   </div>
                   {slot&&(<audio src={slot.url} controls style={{height:26,maxWidth:90}}/>)}
@@ -2114,13 +2113,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* Área scrollable: mapa + waveform + controles + BPM */}
         <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
         <div style={{padding:'10px 14px 0'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)'}}>{tx.sequenceTabLbl}</div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:2}}>
-            <div style={{flex:'0 0 80%',minWidth:0}}>
-              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>{tx.sequenceSubLbl}</div>
-              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3,marginTop:3}}>{tx.audioInterfaceHintLbl}</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+            <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>{tx.sequenceTabLbl}</span>
+            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.sequenceSubLbl}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
+            <div style={{flex:'0 0 70%',minWidth:0}}>
+              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
             </div>
-            <div style={{flex:'0 0 20%',display:'flex',justifyContent:'center'}}>
+            <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
               <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
             </div>
           </div>
@@ -2405,7 +2406,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           ):(
             <div style={{padding:'16px',borderRadius:12,border:'1px dashed var(--bd)',textAlign:'center'}}>
-              <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.noTracksForSongLbl}</div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.noTracksForSongLbl}</div>
             </div>
           )}
         </div>
@@ -2441,37 +2442,40 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div className="sv" style={{background:svBg,position:'fixed',inset:0,zIndex:100}}>
         {showSavePopup&&PopupGuardar()}
                 {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
-        <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
-          <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
-            <div style={{fontSize:8,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
-              {song.autor||song.artista||'—'}
-              {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
-              {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
+        <div style={{display:'flex',flexDirection:isTablet?'row':'column',alignItems:isTablet?'center':'stretch'}}>
+          <div className="sv-hdr" style={{background:svHdrBg,borderBottom:isTablet?'none':`1px solid ${svBd}`,flex:isTablet?'0 1 auto':undefined,minWidth:0}}>
+            <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-title2)',color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+              <div style={{fontSize:8,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
+                {song.autor||song.artista||'—'}
+                {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
+                {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
+              </div>
+            </div>
+            <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
+              style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+                background:'none',border:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
+              <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+                background:'rgba(200,169,126,.12)'}}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <span style={{fontSize:8,fontWeight:700,color:'var(--ac)'}}>
+                {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
+              </span>
+            </button>
+            <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
+              {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
             </div>
           </div>
-          <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
-            style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
-              background:'none',border:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
-            <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
-              background:'rgba(200,169,126,.12)'}}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <span style={{fontSize:8,fontWeight:700,color:'var(--ac)'}}>
-              {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
-            </span>
-          </button>
-          <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
-            {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-            <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
-          </div>
+          {/* AnnoBar (tono, notación, Solo letra, Editar) — en tablet comparte fila con el título en vez de quedar debajo */}
+          <div style={{flex:isTablet?'1 1 auto':undefined,minWidth:0,borderBottom:isTablet?`1px solid ${svBd}`:'none'}}>{AnnoBar()}</div>
         </div>
-        {AnnoBar()}
         {ContentArea()}
           {MonitorPanel()}
         {ReferenciaPanel()}
@@ -2490,7 +2494,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       <div className="sv-hdr" style={{background:svHdrBg,borderBottom:`1px solid ${svBd}`}}>
         <div className="sv-back" onClick={()=>{if(editMode&&editedSongs[song?.name]){setShowSavePopup(true);}else onClose();}}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-title2)',color:svTx,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{song.name}</div>
           <div style={{fontSize:8,color:svAc,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px'}}>
             {song.autor||song.artista||'—'}
             {capo>0&&<span style={{color:'var(--gn)',marginLeft:6}}>· Cap.{capo}→{sonaKey}</span>}
@@ -2511,7 +2515,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </span>
         </button>
         <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-          <div style={{fontSize:12.5,color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
         </div>
       </div>
       {AnnoBar()}

@@ -9,15 +9,28 @@
 --ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.68);--tx3:#7a7e88;
 --gn:#30C0B7;--rd:#FD8083;--btn-c:#080809;
 
-/* ── ESCALA TIPOGRÁFICA — aprobada v47 Parte B ── */
+/* ── ESCALA TIPOGRÁFICA — aprobada v47 Parte B ──
+   fs-title1/title2 usan clamp() para crecer proporcionalmente entre
+   móvil (375px) y desktop grande (1440px+) en vez de saltar de golpe en
+   cada @media — así un iPad en vertical (~810px) y el mismo iPad en
+   horizontal (~1080px) muestran tamaños distintos y coherentes con el
+   ancho real, no solo dos valores fijos según crucen o no los 768/1024px.
+   El resto de la escala (title3, body, ui, label, caption) se mantiene
+   fija: son textos de UI compacta donde crecer no aporta legibilidad y
+   sí puede romper layouts ajustados (chips, badges, tabs). */
 --fs-display:28px;--fw-display:200;
---fs-title1:20px;--fw-title1:400;
---fs-title2:16px;--fw-title2:400;
+--fs-title1:clamp(21px, 19px + 0.6vw, 27px);--fw-title1:400;
+--fs-title2:clamp(16px, 15px + 0.35vw, 19px);--fw-title2:400;
 --fs-title3:13px;--fw-title3:400;
 --fs-body:11px;--fw-body:300;
 --fs-ui:11px;--fw-ui:700;
 --fs-label:9px;--fw-label:900;
 --fs-caption:8px;--fw-caption:700;
+
+/* ── Subtítulo estándar (debajo de fs-title1/title2) ──
+   Mismo criterio: crece proporcionalmente, nunca por debajo del tamaño
+   base de 12.5px acordado para subtítulos en toda la app. */
+--fs-subtitle:clamp(12.5px, 12px + 0.2vw, 14px);--fw-subtitle:300;
 
 /* ── Sistema de espaciado — tokens globales ── */
 --sp-xs:8px;
@@ -92,6 +105,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .fs-title1{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title1);font-weight:var(--fw-title1);color:var(--tx);}
 .fs-title2{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title2);font-weight:var(--fw-title2);color:var(--tx);}
 .fs-title3{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-title3);font-weight:var(--fw-title3);color:var(--tx);}
+.fs-subtitle{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-subtitle);font-weight:var(--fw-subtitle);color:var(--tx2);}
 .fs-body{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-body);font-weight:var(--fw-body);color:var(--tx2);}
 .fs-ui{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-ui);font-weight:var(--fw-ui);color:var(--tx);}
 .fs-label{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-label);font-weight:var(--fw-label);color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;}
