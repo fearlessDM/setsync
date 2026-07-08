@@ -7,7 +7,7 @@ import { CANCIONES } from '../data/constants';
 import { playMusicXML, MusicXMLViewer } from './MusicXMLViewer';
 import { CustomSelect } from './common';
 import { BLOQUES_CHIPS, getColorBloque, abrevBloque, parseBloques } from './songview/estructura';
-import { EditorAcordes, convertStackedToInline } from './songview/EditorAcordes';
+import { BloqueFranjas } from './songview/EditorAcordes';
 
 export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},songParaEditar=null,onSongParaEditarConsumido=()=>{}}){
   const tx=getT(lang);
@@ -18,7 +18,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});
-  const [editandoAcordesDe,setEditandoAcordesDe]=useState(null); // id del bloque abierto en el editor de acordes, o null
   // Contador simple para ids únicos de bloques dentro de esta sesión de carga
   const bloqueIdRef=useRef(0);
   // Tap tempo — para identificar BPM tocando el ritmo con el dedo/mouse
@@ -389,8 +388,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
             {/* Secciones — chips */}
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:'var(--tx)',marginBottom:6}}>Secciones</div>
-            <div style={{fontSize:11,color:'var(--tx3)',marginBottom:12,lineHeight:1.5}}>
-              Toca un chip para agregar una sección. Escribe o pega la letra de cada parte.
+            <div style={{fontSize:11,color:'var(--tx3)',marginBottom:10,lineHeight:1.5}}>
+              Toca un chip para agregar una sección. Cada sección tiene una franja de <span style={{color:'var(--tx2)'}}>notas</span> arriba y una de <span style={{color:'var(--tx2)'}}>letra</span> abajo.
+            </div>
+            <div style={{background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.25)',borderRadius:10,padding:'10px 12px',marginBottom:16,display:'flex',gap:8,alignItems:'flex-start'}}>
+              <span style={{fontSize:14,color:'#5dcaa5',marginTop:1}}>↔</span>
+              <p style={{fontSize:11,color:'#9fe1cb',margin:0,lineHeight:1.5,fontWeight:500}}>
+                Arrastra el acorde a la izquierda o derecha para ajustar la posición fina sobre la letra.
+              </p>
             </div>
             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
               {BLOQUES_CHIPS.map(chip=>(
@@ -456,19 +461,12 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                           color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
-                      <button onClick={()=>setEditandoAcordesDe(bloque.id)}
-                        title="Editar acordes"
-                        style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',
-                          color:'var(--tx2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                      </button>
                     </div>
-                    <textarea value={bloque.contenido}
-                      onChange={e=>{const val=e.target.value;setNueva(v=>({...v,bloques:v.bloques.map(b=>b.id===bloque.id?{...b,contenido:val}:b)}));}}
-                      rows={5}
-                      placeholder={`Escribe o pega la letra del ${bloque.label}...\n\nPara acordes: [G]Tu fidelidad es [Em]grande`}
-                      style={{width:'100%',padding:'12px',background:'var(--s1)',border:'none',color:'var(--tx)',
-                        fontSize:13,fontFamily:"'Outfit',sans-serif",resize:'vertical',boxSizing:'border-box',lineHeight:1.6,outline:'none'}}/>
+                    <BloqueFranjas
+                      contenido={bloque.contenido}
+                      onChange={(val)=>setNueva(v=>({...v,bloques:v.bloques.map(b=>b.id===bloque.id?{...b,contenido:val}:b)}))}
+                      placeholderLetra={`Escribe o pega la letra del ${bloque.label}...`}
+                    />
                   </div>
                 ))}
               </div>
@@ -1208,26 +1206,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           </div>
         </div>
       )}
-
-      {/* ── Editor de acordes stacked (formato SETSYNC) ── */}
-      {editandoAcordesDe!==null&&(()=>{
-        const bloque=nueva.bloques.find(b=>b.id===editandoAcordesDe);
-        if(!bloque)return null;
-        return(
-          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',zIndex:200,
-            display:'flex',alignItems:'flex-start',justifyContent:'center',overflowY:'auto',padding:'24px 12px'}}>
-            <EditorAcordes
-              label={bloque.label}
-              contenido={bloque.contenido}
-              onCancel={()=>setEditandoAcordesDe(null)}
-              onSave={(nuevoContenido)=>{
-                setNueva(v=>({...v,bloques:v.bloques.map(b=>b.id===editandoAcordesDe?{...b,contenido:nuevoContenido}:b)}));
-                setEditandoAcordesDe(null);
-              }}
-            />
-          </div>
-        );
-      })()}
     </div>
   );
 }

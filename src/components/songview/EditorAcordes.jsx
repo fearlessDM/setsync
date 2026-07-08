@@ -134,7 +134,181 @@ function pairsToRaw(pairs) {
   return lines.join('\n');
 }
 
-// ── Componente principal ────────────────────────────────────────────────────
+// ── BloqueFranjas — versión embebida, sin modal ────────────────────────────
+// Vive directo dentro de cada bloque de Cancionero (reemplaza al textarea
+// simple). Mismo motor de datos que EditorAcordes de más abajo, pero sin
+// header propio, sin Cancelar/Guardar — el bloque entero se guarda junto
+// con el resto del formulario. contenido/onChange siguen el mismo contrato
+// que un textarea controlado: value=contenido (string raw, stacked o
+// inline-viejo), onChange(nuevoContenidoRaw).
+export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
+  const [pairs, setPairs] = useState(() => buildPairs(contenido));
+  const [editingChip, setEditingChip] = useState(null);
+  const dragState = useRef(null);
+  const lastEmitted = useRef(contenido);
+
+  // Si el contenido cambia desde afuera (ej. al precargar una canción para
+  // editar) y no es un eco de nuestro propio onChange, re-sincroniza pairs.
+  if (contenido !== lastEmitted.current) {
+    lastEmitted.current = contenido;
+  }
+
+  const acordesRecientes = useMemo(() => {
+    const set = [];
+    pairs.forEach((p) => {
+      parseStackedLine(p.notas).forEach((c) => {
+        if (!set.includes(c.chord)) set.push(c.chord);
+      });
+    });
+    return set.slice(0, 8);
+  }, [pairs]);
+
+  const emit = (nextPairs) => {
+    setPairs(nextPairs);
+    const raw = pairsToRaw(nextPairs);
+    lastEmitted.current = raw;
+    onChange(raw);
+  };
+
+  const updatePairNotas = (pairIdx, chords) => {
+    emit(pairs.map((p, i) => (i === pairIdx ? { ...p, notas: serializeStackedLine(chords) } : p)));
+  };
+  const updatePairLetra = (pairIdx, letra) => {
+    emit(pairs.map((p, i) => (i === pairIdx ? { ...p, letra } : p)));
+  };
+  const addChord = (pairIdx) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    const pos = pairs[pairIdx].letra.length;
+    const nuevos = [...chords, { chord: '', pos }];
+    updatePairNotas(pairIdx, nuevos);
+    setEditingChip({ pairIdx, chordIdx: nuevos.length - 1 });
+  };
+  const addChordFromRecent = (pairIdx, chord) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    const pos = pairs[pairIdx].letra.length;
+    updatePairNotas(pairIdx, [...chords, { chord, pos }]);
+  };
+  const removeChord = (pairIdx, chordIdx) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    chords.splice(chordIdx, 1);
+    updatePairNotas(pairIdx, chords);
+  };
+  const renameChord = (pairIdx, chordIdx, newName) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    if (chords[chordIdx]) chords[chordIdx] = { ...chords[chordIdx], chord: newName };
+    updatePairNotas(pairIdx, chords);
+  };
+  const moveChordByChars = (pairIdx, chordIdx, deltaChars) => {
+    const chords = parseStackedLine(pairs[pairIdx].notas);
+    if (!chords[chordIdx]) return;
+    const maxPos = pairs[pairIdx].letra.length;
+    const nuevaPos = Math.max(0, Math.min(maxPos, chords[chordIdx].pos + deltaChars));
+    chords[chordIdx] = { ...chords[chordIdx], pos: nuevaPos };
+    updatePairNotas(pairIdx, chords);
+  };
+  const startDrag = (pairIdx, chordIdx, clientX, fontSizePx) => {
+    dragState.current = { pairIdx, chordIdx, x0: clientX, fontSizePx };
+  };
+  const onDragMove = (clientX) => {
+    if (!dragState.current) return;
+    const { fontSizePx } = dragState.current;
+    dragState.current.dx = clientX - dragState.current.x0;
+    dragState.current.anchoCar = fontSizePx * 0.58;
+  };
+  const endDrag = () => {
+    if (!dragState.current) return;
+    const { pairIdx, chordIdx, dx, anchoCar } = dragState.current;
+    if (dx && anchoCar) {
+      const steps = Math.round(dx / anchoCar);
+      if (steps !== 0) moveChordByChars(pairIdx, chordIdx, steps);
+    }
+    dragState.current = null;
+  };
+
+  return (
+    <div style={{ background: 'var(--s1)', padding: '10px 12px' }}>
+      {pairs.map((pair, pairIdx) => {
+        const chords = parseStackedLine(pair.notas);
+        const fontSizePx = 14;
+        return (
+          <div key={pairIdx} style={{ marginBottom: 8 }}>
+            <div style={{ background: 'rgba(255,255,255,.04)', borderRadius: '6px 6px 0 0', padding: '4px 6px', position: 'relative', height: 22 }}>
+              {chords.map((c, chordIdx) => {
+                const leftPx = c.pos * (fontSizePx * 0.58);
+                const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
+                return (
+                  <div
+                    key={chordIdx}
+                    style={{ position: 'absolute', left: leftPx, top: 2, display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(127,119,221,.16)', border: '1px solid #7f77dd', borderRadius: 5, padding: '1px 3px', cursor: 'grab' }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      startDrag(pairIdx, chordIdx, e.clientX, fontSizePx);
+                      const onMove = (ev) => onDragMove(ev.clientX);
+                      const onUp = () => {
+                        endDrag();
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onUp);
+                      };
+                      document.addEventListener('mousemove', onMove);
+                      document.addEventListener('mouseup', onUp);
+                    }}
+                  >
+                    <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                      onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, -1); }}>‹</span>
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        defaultValue={c.chord}
+                        onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                        style={{ width: 34, fontSize: 11, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
+                        onClick={() => setEditingChip({ pairIdx, chordIdx })}>{c.chord || '?'}</span>
+                    )}
+                    <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                      onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, 1); }}>›</span>
+                    <span style={{ fontSize: 8, color: '#665', cursor: 'pointer', paddingLeft: 2 }}
+                      onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}>✕</span>
+                  </div>
+                );
+              })}
+              <button
+                onClick={() => addChord(pairIdx)}
+                style={{ position: 'absolute', right: 3, top: 2, width: 18, height: 18, background: 'transparent', border: '1px dashed #444', borderRadius: 4, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer', fontSize: 11, lineHeight: 1 }}
+              >+</button>
+            </div>
+            <input
+              value={pair.letra}
+              onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
+              placeholder={pairIdx === 0 ? placeholderLetra : ''}
+              style={{ width: '100%', padding: '5px 6px', background: 'var(--s2)', border: 'none', borderRadius: '0 0 6px 6px', color: 'var(--tx)', fontSize: 13, fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }}
+            />
+          </div>
+        );
+      })}
+
+      {acordesRecientes.length > 0 && (
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 }}>
+          {acordesRecientes.map((ch) => (
+            <span key={ch}
+              onClick={() => addChordFromRecent(pairs.length - 1, ch)}
+              style={{ background: 'rgba(127,119,221,.1)', border: '1px solid rgba(127,119,221,.4)', color: '#b8b2f0', fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
+            >{ch}</span>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => emit([...pairs, { notas: '', letra: '' }])}
+        style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px dashed var(--bd)', borderRadius: 6, color: 'var(--tx3)', fontSize: 11, cursor: 'pointer' }}
+      >+ línea</button>
+    </div>
+  );
+}
+
+// ── Componente principal (modal completo) ───────────────────────────────────
 export function EditorAcordes({ label, contenido, onCancel, onSave }) {
   const [pairs, setPairs] = useState(() => buildPairs(contenido));
   const [editingChip, setEditingChip] = useState(null); // {pairIdx, chordIdx} | 'new:{pairIdx}' | null
