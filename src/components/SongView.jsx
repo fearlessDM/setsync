@@ -1244,16 +1244,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
         {/* Título del bloque */}
         <div style={{padding:'10px 14px 6px',flexShrink:0}}>
-          <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:10,width:'100%'}}>
             <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>{tx.monitorTabLbl}</span>
-            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.wifiHintLbl}</span>
+            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,lineHeight:1.3}}>{tx.wifiHintLbl}</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
-            <div style={{flex:'0 0 70%',minWidth:0}}>
-              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
+            <div style={{flex:'1 1 auto',minWidth:0}}>
+              <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
             </div>
-            <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
-              <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
+            <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
+              <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
             </div>
           </div>
         </div>
@@ -1315,7 +1315,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {MARCAS_MESA.find(m=>m.id===mesaMarca)?.modelos}
             </div>
             {MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente&&(
-              <div style={{fontSize:9,color:'#e0a458',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,
+              <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5,
                 padding:'7px 9px',borderRadius:8,background:'rgba(224,164,88,.08)',border:'1px solid rgba(224,164,88,.2)'}}>
                 Esta mesa necesita un puente corriendo en un notebook de la misma red (no se conecta directo). Ingresa la IP de ESE notebook, no la de la mesa.
               </div>
@@ -1681,20 +1681,20 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         }}>
           {/* Header */}
           <div style={{padding:'10px 14px 8px',flexShrink:0,borderBottom:'1px solid var(--s3)'}}>
-            <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:10,width:'100%'}}>
               <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>
                 {tx.referenceTabLbl}
               </span>
-              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.referenceSubLbl}</span>
+              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,lineHeight:1.3}}>{tx.referenceSubLbl}</span>
             </div>
             <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
               onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
             <div style={{marginTop:4,display:'flex',alignItems:'center',gap:10}}>
-              <div style={{flex:'0 0 70%',minWidth:0}}>
-                <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.micInterfaceHintLbl}</div>
+              <div style={{flex:'1 1 auto',minWidth:0}}>
+                <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.micInterfaceHintLbl}</div>
               </div>
-              <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
-                <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
+              <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
+                <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
               </div>
             </div>
           </div>
@@ -2113,16 +2113,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {/* Área scrollable: mapa + waveform + controles + BPM */}
         <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',minHeight:0}}>
         <div style={{padding:'10px 14px 0'}}>
-          <div style={{display:'flex',alignItems:'baseline',gap:10,width:'100%'}}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:10,width:'100%'}}>
             <span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx)',flexShrink:0}}>{tx.sequenceTabLbl}</span>
-            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tx.sequenceSubLbl}</span>
+            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",flex:1,minWidth:0,lineHeight:1.3}}>{tx.sequenceSubLbl}</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
-            <div style={{flex:'0 0 70%',minWidth:0}}>
-              <div style={{fontSize:9,color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
+            <div style={{flex:'1 1 auto',minWidth:0}}>
+              <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
             </div>
-            <div style={{flex:'0 0 30%',display:'flex',justifyContent:'center'}}>
-              <img src="/icono interfaz.svg" alt="" style={{width:'100%',height:'auto'}}/>
+            <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
+              <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
             </div>
           </div>
         </div>

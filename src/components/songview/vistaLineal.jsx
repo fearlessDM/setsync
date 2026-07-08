@@ -288,10 +288,11 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   const cFs=Math.max(10,fs-2);
 
   // Renderiza una línea en formato SETSYNC stacked: cada acorde en su
-  // posición real de carácter, con la sílaba correspondiente (máx. 2
-  // caracteres) teñida del mismo morado que usa el Editor de acordes —
-  // misma convención visual en edición y en vista, para que el vínculo
-  // acorde↔sílaba se reconozca de un vistazo en ambos lugares.
+  // posición real de carácter, arriba de la letra. El tintado de sílaba
+  // por color (que sí tiene sentido en el editor, donde ayuda a ubicar
+  // dónde cae cada acorde mientras se posiciona) se quita acá: en la
+  // vista de lectura en vivo no aporta y compite visualmente con la
+  // letra — pedido explícito de Danny.
   const renderStacked=(chordLineText,lyricLineText,key)=>{
     const chords=parseStackedTokens(chordLineText).map(c=>({...c,chord:trC(c.chord)}));
     const lyric=lyricLineText||'';
@@ -300,31 +301,16 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
     }
     const chordFs=Math.max(9,fs*0.72);
     const anchoCar=medirAnchoCaracter(fs,FONT);
-    const tintPositions=new Set();
-    chords.forEach(c=>{tintPositions.add(c.pos);if(c.pos+1<lyric.length)tintPositions.add(c.pos+1);});
-    const lyricSegs=[];
-    let i=0;
-    while(i<lyric.length){
-      const tinted=tintPositions.has(i);
-      let j=i;
-      if(tinted){while(j<lyric.length&&tintPositions.has(j)&&j-i<2)j++;}
-      else{while(j<lyric.length&&!tintPositions.has(j))j++;}
-      lyricSegs.push({text:lyric.slice(i,j),tinted});
-      i=j;
-    }
     return(
       <div key={key} style={{marginBottom:'0.35em',lineHeight:1}}>
-        <div style={{position:'relative',height:chordFs*1.3,marginBottom:2}}>
+        <div style={{position:'relative',height:chordFs*1.15}}>
           {chords.map((c,ci)=>(
             <span key={ci} style={{position:'absolute',left:c.pos*anchoCar,top:0,fontFamily:"'Outfit',sans-serif",fontSize:chordFs,fontWeight:700,color:'var(--ac)',lineHeight:1.1,whiteSpace:'nowrap'}}>{c.chord}</span>
           ))}
         </div>
         {lyric.trim()&&(
-          <div style={{fontSize:fs,fontWeight:700,fontFamily:FONT,lineHeight:1.3,textTransform:'uppercase'}}>
-            {lyricSegs.map((seg,si)=>seg.tinted
-              ?<span key={si} style={{background:'rgba(127,119,221,.16)',color:'#cecbf6',borderRadius:3}}>{seg.text}</span>
-              :<span key={si} style={{color:'var(--tx)'}}>{seg.text}</span>
-            )}
+          <div style={{fontSize:fs,fontWeight:700,fontFamily:FONT,lineHeight:1.3,textTransform:'uppercase',color:'var(--tx)'}}>
+            {lyric}
           </div>
         )}
       </div>

@@ -30,7 +30,21 @@
 /* ── Subtítulo estándar (debajo de fs-title1/title2) ──
    Mismo criterio: crece proporcionalmente, nunca por debajo del tamaño
    base de 12.5px acordado para subtítulos en toda la app. */
---fs-subtitle:clamp(12.5px, 12px + 0.2vw, 14px);--fw-subtitle:300;
+--fs-subtitle:clamp(11.5px, 11px + 0.2vw, 13px);--fw-subtitle:300;
+
+/* ── Texto de aviso/hint (ej. texto amarillo de interfaz de audio) ──
+   Mismo criterio de crecimiento proporcional que fs-subtitle, en una
+   escala más chica porque es texto secundario de advertencia, no un
+   subtítulo — no debe competir visualmente con él. */
+--fs-hint:clamp(9px, 8.6px + 0.15vw, 10px);--fw-hint:400;
+
+/* ── Ícono de interfaz de audio (icono interfaz.svg) ──
+   Antes usaba width:100% de un contenedor flex al 30%, lo que lo hacía
+   crecer sin control en pantallas anchas (tablet/desktop) hasta verse
+   desproporcionado. Ahora es un tamaño en px con clamp: crece un poco
+   con la pantalla para seguir siendo bien visible, pero con techo bajo
+   para que nunca se vuelva gigante. */
+--sz-icon-interfaz:clamp(38px, 34px + 1.2vw, 52px);
 
 /* ── Sistema de espaciado — tokens globales ── */
 --sp-xs:8px;
