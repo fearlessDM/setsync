@@ -31,6 +31,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 import { getMessaging, isSupported as messagingIsSupported } from 'firebase/messaging';
 
 const cfg = {
@@ -44,12 +45,13 @@ const cfg = {
 
 export const firebaseListo = !!(cfg.apiKey && cfg.projectId);
 
-let app = null, db = null, auth = null, messaging = null;
+let app = null, db = null, auth = null, storage = null, messaging = null;
 
 if (firebaseListo) {
   app = initializeApp(cfg);
   db = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
   // Messaging solo en navegadores compatibles (no todos soportan FCM web)
   messagingIsSupported().then(soportado => {
     if (soportado) messaging = getMessaging(app);
@@ -58,5 +60,5 @@ if (firebaseListo) {
   console.warn('[Firebase] Sin configurar — la app funciona en modo local, sin sync en tiempo real. Ver src/firebase/config.js para instrucciones.');
 }
 
-export { app, db, auth, messaging };
+export { app, db, auth, storage, messaging };
 export const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;

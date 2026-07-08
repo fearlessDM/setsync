@@ -10,6 +10,9 @@ import { renderSongContent, CHORD_RE, resolveLineAbsIndex } from './songview/vis
 import { useMapaCancion } from './songview/useMapaCancion';
 import { PanelEstructura } from './songview/PanelEstructura';
 import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
+import { subirAudiosMultiples, subirAudio, borrarAudio } from '../firebase/storage';
+import { getAccountId } from '../firebase/firestore';
+import { firebaseListo as firebaseListoGlobal } from '../firebase/config';
 
 
 // renderSongContent re-exportado para no romper imports externos existentes
@@ -532,27 +535,66 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [multitrackPlaying,setMultitrackPlaying]=useState(false);
   const multitrackInputRef=useRef(null);
 
-  // Reemplaza (o inicializa) los multitracks reales de esta canción a partir
-  // de los archivos elegidos en el input de carga. El nombre de archivo sin
+  const [subiendoMultitracks,setSubiendoMultitracks]=useState(null); // {pct} | null — progreso de subida a Storage
+
+  // Reemplaza (o inicializa) los multitracks de esta canción a partir de
+  // los archivos elegidos en el input de carga. El nombre de archivo sin
   // extensión se usa como label del canal — Danny pidió que el nombre del
   // fader respete el nombre real del canal, no un genérico "Pista 1".
-  const cargarMultitracksLocal=(files)=>{
+  //
+  // Ahora sube de verdad a Firebase Storage (antes solo generaba URLs
+  // blob: locales que se perdían al recargar) y persiste las URLs reales
+  // en archivosDB — mismo mecanismo que ya usa el track de Referencia.
+  const cargarMultitracksLocal=async(files)=>{
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
+    if(!arr.length)return;
     const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
-    const nuevos=arr.map((file,i)=>({
-      label:file.name.replace(/\.[^/.]+$/,''), // nombre de archivo sin extensión = nombre del canal
-      color:colores[i%colores.length],
-      url:URL.createObjectURL(file),
-      file,
-    }));
-    // Revoca URLs viejas para no acumular memoria si se recarga la selección
-    (multitracksLocal||[]).forEach(t=>{ if(t.url) URL.revokeObjectURL(t.url); });
-    setMultitracksLocal(nuevos);
-    setTrackVols(Array(20).fill(80));
-    setTrackMutes(Array(20).fill(false));
-    multitrackAudioRefs.current=[];
-    setToast(`✓ ${nuevos.length} pista${nuevos.length===1?'':'s'} cargada${nuevos.length===1?'':'s'} — se pierden al recargar la página hasta conectar almacenamiento en la nube`);
+
+    if(!firebaseListoGlobal){
+      // Sin Firebase configurado: se sigue permitiendo trabajar en memoria
+      // (útil en desarrollo local), pero se avisa que no va a persistir.
+      const nuevos=arr.map((file,i)=>({label:file.name.replace(/\.[^/.]+$/,''),color:colores[i%colores.length],url:URL.createObjectURL(file),file}));
+      (multitracksLocal||[]).forEach(t=>{ if(t.url&&t.url.startsWith('blob:')) URL.revokeObjectURL(t.url); });
+      setMultitracksLocal(nuevos);
+      setTrackVols(Array(20).fill(80));setTrackMutes(Array(20).fill(false));
+      multitrackAudioRefs.current=[];
+      setToast('⚠ Firebase no configurado — las pistas no van a persistir al recargar');
+      return;
+    }
+
+    setSubiendoMultitracks({pct:0});
+    try{
+      const accountId=getAccountId();
+      const subidos=await subirAudiosMultiples(accountId,baseName,'multitracks',arr,(pct)=>setSubiendoMultitracks({pct}));
+      // Borra del bucket las pistas anteriores de esta canción, si había —
+      // evita acumular archivos huérfanos cada vez que se reemplaza el set.
+      const anteriores=archivosDB[baseName]?.multitracks||[];
+      anteriores.forEach(t=>{ if(t.path) borrarAudio(t.path).catch(()=>{}); });
+
+      const nuevos=subidos.map((s,i)=>({label:s.nombre.replace(/\.[^/.]+$/,''),color:colores[i%colores.length],url:s.url,path:s.path}));
+      setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),multitracks:nuevos}}));
+      setMultitracksLocal(nuevos);
+      setTrackVols(Array(20).fill(80));setTrackMutes(Array(20).fill(false));
+      multitrackAudioRefs.current=[];
+      setToast(`✓ ${nuevos.length} pista${nuevos.length===1?'':'s'} guardada${nuevos.length===1?'':'s'} en la nube`);
+    }catch(err){
+      setToast(`✕ ${err.message||'Error al subir el audio'}`);
+    }finally{
+      setSubiendoMultitracks(null);
+    }
   };
+
+  // Al abrir la canción, si ya hay multitracks guardados en archivosDB
+  // (subidos en una sesión previa), se cargan automáticamente — mismo
+  // criterio que ya usa el track de Referencia más abajo.
+  useEffect(()=>{
+    const guardados=archivosDB[baseName]?.multitracks;
+    if(guardados&&guardados.length&&!multitracksLocal){
+      setMultitracksLocal(guardados);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[baseName]);
+
 
   // Play/pause de TODAS las pistas al mismo tiempo — el corazón de "deben
   // reproducirse al mismo tiempo": un solo transporte, N elementos <audio>
@@ -1606,22 +1648,46 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // pero nunca definidos: loadFile/seekTo/clearLoop/markIn/markOut/SPEEDS/audio) ──
   const SPEEDS=[0.5,0.75,1,1.25,1.5];
 
-  const loadFile=(file)=>{
-    if(refUrl) URL.revokeObjectURL(refUrl);
-    const url=URL.createObjectURL(file);
+  const [subiendoReferencia,setSubiendoReferencia]=useState(null); // {pct} | null
+
+  const loadFile=async(file)=>{
+    if(refUrl&&refUrl.startsWith('blob:')) URL.revokeObjectURL(refUrl);
+    // Muestra el audio de inmediato con blob local (feedback instantáneo,
+    // no hace esperar la subida para poder escuchar), y en paralelo sube
+    // a Storage para que persista — al terminar, reemplaza la URL blob
+    // por la URL real y persistente.
+    const blobUrl=URL.createObjectURL(file);
     setRefAudio(file);
-    setRefUrl(url);
+    setRefUrl(blobUrl);
     setRefPlaying(false);
     setRefTime(0);
     setRefDuration(0);
     setRefLoopIn(null);
     setRefLoopOut(null);
     setRefLooping(false);
-    // Persiste en la carpeta de la canción — 1 solo slot, reemplazable (Capa 1, v35)
-    setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
-      trackReferencia:{url,nombre:file.name,fecha:new Date(),origen:'subido'}}}));
     const esMp3=file.type.includes('mpeg')||file.name.toLowerCase().endsWith('.mp3');
-    setToast(esMp3?'✓ MP3 cargado (se convertirá a AAC 96kbps al sincronizar)':'✓ Track cargado');
+    setToast(esMp3?'Cargando... (MP3 se recomienda convertir a Opus/AAC para menor peso)':'Cargando...');
+
+    if(!firebaseListoGlobal){
+      setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
+        trackReferencia:{url:blobUrl,nombre:file.name,fecha:new Date(),origen:'subido'}}}));
+      setToast('⚠ Firebase no configurado — el track no va a persistir al recargar');
+      return;
+    }
+    setSubiendoReferencia({pct:0});
+    try{
+      const accountId=getAccountId();
+      const anterior=archivosDB[baseName]?.trackReferencia;
+      const {url,path}=await subirAudio(accountId,baseName,'referencia',file,(pct)=>setSubiendoReferencia({pct}));
+      if(anterior?.path) borrarAudio(anterior.path).catch(()=>{});
+      setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
+        trackReferencia:{url,path,nombre:file.name,fecha:new Date(),origen:'subido'}}}));
+      setToast('✓ Track guardado en la nube');
+    }catch(err){
+      setToast(`✕ ${err.message||'Error al subir el audio'}`);
+    }finally{
+      setSubiendoReferencia(null);
+    }
   };
 
   const seekTo=(e,el)=>{
@@ -2430,9 +2496,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 }
               </button>
             )}
-            <button onClick={()=>multitrackInputRef.current?.click()}
-              style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
-              {multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`}
+            <button onClick={()=>multitrackInputRef.current?.click()} disabled={!!subiendoMultitracks}
+              style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:subiendoMultitracks?'default':'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,opacity:subiendoMultitracks?.6:1}}>
+              {subiendoMultitracks?`Subiendo ${subiendoMultitracks.pct}%`:(multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`)}
             </button>
             <input ref={multitrackInputRef} type="file" accept="audio/*" multiple style={{display:'none'}}
               onChange={e=>{ if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
