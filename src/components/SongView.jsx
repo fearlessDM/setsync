@@ -13,6 +13,7 @@ import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
 import { subirAudiosMultiples, subirAudio, borrarAudio } from '../firebase/storage';
 import { getAccountId } from '../firebase/firestore';
 import { firebaseListo as firebaseListoGlobal } from '../firebase/config';
+import { estimarConversion, convertirAMp3, convertirAOpus } from '../utils/audioConvert';
 
 
 // renderSongContent re-exportado para no romper imports externos existentes
@@ -32,7 +33,7 @@ const PERMISOS_TOTAL={
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null,accountId=null}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -735,8 +736,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     }
     setSubiendoMultitracks({pct:0});
     try{
-      const accountId=getAccountId();
-      const {url,path}=await subirAudio(accountId,baseName,'multitracks',file,(pct)=>setSubiendoMultitracks({pct}));
+      const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
+      const {url,path}=await subirAudio(accId,baseName,'multitracks',file,(pct)=>setSubiendoMultitracks({pct}));
       const anterior=multitracksLocal?.[idx];
       if(anterior?.path)borrarAudio(anterior.path).catch(()=>{});
       setMultitracksLocal(prev=>{
@@ -770,25 +771,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     setToast('✓ Canal eliminado');
   };
 
-  const cargarMultitracksLocal=async(files)=>{
+  const [modalConversion,setModalConversion]=useState(null); // {archivos, estimaciones} | null — abierto tras elegir archivos, antes de subir
+  const [convirtiendo,setConvirtiendo]=useState(null); // {formato, pct, archivoActual, totalArchivos} | null
+
+  // Paso 1: el usuario elige archivos → se calculan estimaciones de tamaño/
+  // tiempo para MP3 y Opus (sin convertir nada todavía) y se abre el modal
+  // para que elija formato con esa información a la vista.
+  const elegirMultitracksLocal=async(files)=>{
     console.log('[SetSync] cargarMultitracksLocal disparada, archivos:',files?.length);
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
     if(!arr.length)return;
-    // Diagnóstico: tamaño de cada archivo, en MB — el límite de Storage es
-    // 25MB por archivo; un WAV sin comprimir de pocos minutos ya lo supera.
     arr.forEach(f=>console.log(`[SetSync] archivo "${f.name}": ${(f.size/1024/1024).toFixed(1)}MB`));
+    const estimaciones=await Promise.all(arr.map(f=>estimarConversion(f)));
+    setModalConversion({archivos:arr,estimaciones});
+  };
+
+  // Paso 2: con el formato elegido (o "original" para subir el WAV tal
+  // cual, sin convertir), convierte si corresponde y sube — misma lógica
+  // de siempre, ahora parametrizada por formato.
+  const procesarYSubirMultitracks=async(arrOriginal,formato)=>{
+    setModalConversion(null);
     const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
+    let arr=arrOriginal;
 
-    // Waveform real: se calcula del primer archivo elegido, en paralelo con
-    // el resto del flujo (no bloquea la carga/subida — es puramente visual).
-    calcularWaveformReal(arr[0]);
-
-    // BPM: si alguno de los archivos trae BPM en su metadata ID3 (TBPM),
-    // se usa ese como control maestro — "el BPM debe enlazar con el
-    // archivo" (pedido de Danny). Se prueba cada archivo hasta encontrar
-    // uno con el tag; si ninguno lo trae, el BPM actual (poné por TAP)
-    // queda como está — no se fuerza nada.
-    for(const f of arr){
+    // BPM: si alguno de los archivos originales trae BPM en su metadata
+    // ID3 (TBPM), se usa ese como control maestro — se lee del original,
+    // antes de convertir, porque la conversión a Opus/MP3 no preserva
+    // tags ID3.
+    for(const f of arrOriginal){
       const bpmDetectado=await leerBpmDeID3(f);
       if(bpmDetectado){
         setSeqBpm(bpmDetectado);
@@ -797,6 +807,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         break;
       }
     }
+
+    // Waveform real: del primer archivo, ya convertido si corresponde (o
+    // el original si formato==='original').
+    if(formato!=='original'){
+      setConvirtiendo({formato,pct:0,archivoActual:1,totalArchivos:arrOriginal.length});
+      try{
+        const convertir=formato==='mp3'?convertirAMp3:convertirAOpus;
+        const convertidos=[];
+        for(let i=0;i<arrOriginal.length;i++){
+          setConvirtiendo({formato,pct:0,archivoActual:i+1,totalArchivos:arrOriginal.length});
+          const out=await convertir(arrOriginal[i],(pct)=>setConvirtiendo({formato,pct,archivoActual:i+1,totalArchivos:arrOriginal.length}));
+          convertidos.push(out);
+        }
+        arr=convertidos;
+        setToast(`✓ Convertido${arr.length===1?'':'s'} a ${formato.toUpperCase()}`);
+      }catch(err){
+        setToast(`✕ Error al convertir a ${formato.toUpperCase()}: ${err.message||'desconocido'} — subiendo el archivo original`);
+        arr=arrOriginal;
+      }finally{
+        setConvirtiendo(null);
+      }
+    }
+
+    calcularWaveformReal(arr[0]);
 
     if(!firebaseListoGlobal){
       // Sin Firebase configurado: se sigue permitiendo trabajar en memoria
@@ -812,8 +846,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
     setSubiendoMultitracks({pct:0});
     try{
-      const accountId=getAccountId();
-      const subidos=await subirAudiosMultiples(accountId,baseName,'multitracks',arr,(pct)=>setSubiendoMultitracks({pct}));
+      const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
+      const subidos=await subirAudiosMultiples(accId,baseName,'multitracks',arr,(pct)=>setSubiendoMultitracks({pct}));
       // Borra del bucket las pistas anteriores de esta canción, si había —
       // evita acumular archivos huérfanos cada vez que se reemplaza el set.
       const anteriores=archivosDB[baseName]?.multitracks||[];
@@ -1945,9 +1979,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     }
     setSubiendoReferencia({pct:0});
     try{
-      const accountId=getAccountId();
+      const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
       const anterior=archivosDB[baseName]?.trackReferencia;
-      const {url,path}=await subirAudio(accountId,baseName,'referencia',file,(pct)=>setSubiendoReferencia({pct}));
+      const {url,path}=await subirAudio(accId,baseName,'referencia',file,(pct)=>setSubiendoReferencia({pct}));
       if(anterior?.path) borrarAudio(anterior.path).catch(()=>{});
       setArchivosDB(prev=>({...prev,[baseName]:{...(prev[baseName]||{secuencia:[]}),
         trackReferencia:{url,path,nombre:file.name,fecha:new Date(),origen:'subido'}}}));
@@ -2710,7 +2744,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {subiendoMultitracks?`Subiendo ${subiendoMultitracks.pct}%`:(multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`)}
             </button>
             <input ref={multitrackInputRef} type="file" accept="audio/*" multiple style={{display:'none'}}
-              onChange={e=>{ console.log('[SetSync] input onChange, files:',e.target.files?.length); if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
+              onChange={e=>{ console.log('[SetSync] input onChange, files:',e.target.files?.length); if(e.target.files?.length) elegirMultitracksLocal(e.target.files); }}/>
           </div>
           {/* Elementos <audio> reales viven a nivel de SongView, no acá —
               ver comentario junto a su declaración: deben estar montados
@@ -2891,6 +2925,81 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             onEnded={()=>setMultitrackPlaying(false)} style={{display:'none'}}/>
         ))}
         {CarpetaModal()}
+        {/* ── Modal de elección de formato al cargar multitracks ──────────
+            Se abre apenas el usuario elige archivos, antes de subir nada.
+            Muestra el tamaño real de cada archivo y una estimación de a
+            cuánto quedaría en MP3 vs Opus, más el tiempo aproximado que
+            tarda cada conversión — MP3 es prácticamente instantáneo
+            (codificación offline), Opus tarda lo que dura el audio (el
+            navegador solo expone su encoder Opus vía grabación en tiempo
+            real, no hay atajo). "Original" sube el WAV tal cual, sin
+            convertir — más pesado y lento de subir, pero sin ningún
+            procesamiento de por medio. */}
+        {modalConversion&&(()=>{
+          const totalOriginalMB=modalConversion.estimaciones.reduce((s,e)=>s+e.pesoOriginalMB,0);
+          const totalMp3MB=modalConversion.estimaciones.reduce((s,e)=>s+e.pesoEstimadoMB,0);
+          const duracionMaxSeg=Math.max(...modalConversion.estimaciones.map(e=>e.duracionSeg));
+          const fmtSeg=(s)=>s<60?`~${Math.round(s)}s`:`~${Math.round(s/60)} min`;
+          return(
+            <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',zIndex:998,
+              display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
+              onClick={()=>setModalConversion(null)}>
+              <div onClick={e=>e.stopPropagation()} style={{background:svBg,border:`1px solid ${svBd}`,borderRadius:18,
+                padding:20,maxWidth:380,width:'100%',maxHeight:'85vh',overflowY:'auto'}}>
+                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:16,color:svTx,marginBottom:4}}>
+                  {modalConversion.archivos.length} pista{modalConversion.archivos.length===1?'':'s'} elegida{modalConversion.archivos.length===1?'':'s'}
+                </div>
+                <div style={{fontSize:11,color:'var(--tx3)',marginBottom:16,lineHeight:1.5}}>
+                  Elegí en qué formato subirlas. {modalConversion.archivos.length>1?'La conversión aplica a todas.':''}
+                </div>
+
+                {/* Original */}
+                <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'original')}
+                  style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:8,cursor:'pointer',
+                    border:'1px solid var(--bd)',background:'var(--s1)',color:svTx}}>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:3}}>Original (sin convertir)</div>
+                  <div style={{fontSize:11,color:'var(--tx3)'}}>{totalOriginalMB.toFixed(1)} MB total · sube tal cual, sin espera de conversión</div>
+                </button>
+
+                {/* MP3 */}
+                <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'mp3')}
+                  style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:8,cursor:'pointer',
+                    border:'1px solid var(--gn)',background:'rgba(48,192,183,.08)',color:svTx}}>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:3,color:'var(--gn)'}}>MP3 — recomendado</div>
+                  <div style={{fontSize:11,color:'var(--tx3)'}}>~{totalMp3MB.toFixed(1)} MB total ({Math.round((1-totalMp3MB/totalOriginalMB)*100)}% más liviano) · conversión casi instantánea</div>
+                </button>
+
+                {/* Opus */}
+                <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'opus')}
+                  style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:14,cursor:'pointer',
+                    border:'1px solid var(--bd)',background:'var(--s1)',color:svTx}}>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:3}}>Opus — mejor calidad</div>
+                  <div style={{fontSize:11,color:'var(--tx3)'}}>~{totalMp3MB.toFixed(1)} MB total, algo mejor calidad que MP3 al mismo peso · conversión tarda {fmtSeg(duracionMaxSeg)} (dura lo mismo que el audio)</div>
+                </button>
+
+                <button onClick={()=>setModalConversion(null)}
+                  style={{width:'100%',padding:11,borderRadius:10,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:12}}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+        {/* Overlay de progreso mientras convierte */}
+        {convirtiendo&&(
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:999,
+            display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+            <div style={{background:svBg,border:`1px solid ${svBd}`,borderRadius:18,padding:24,maxWidth:300,width:'100%',textAlign:'center'}}>
+              <div style={{fontSize:13,color:svTx,marginBottom:10}}>
+                Convirtiendo a {convirtiendo.formato.toUpperCase()}… ({convirtiendo.archivoActual}/{convirtiendo.totalArchivos})
+              </div>
+              <div style={{width:'100%',height:6,borderRadius:3,background:'var(--s1)',overflow:'hidden'}}>
+                <div style={{width:`${convirtiendo.pct}%`,height:'100%',background:'var(--gn)',transition:'width .2s'}}/>
+              </div>
+              <div style={{fontSize:11,color:'var(--tx3)',marginTop:8}}>{convirtiendo.pct}%</div>
+            </div>
+          </div>
+        )}
         {BottomTabBar()}
       </div>
     );

@@ -11,6 +11,7 @@
     "deploy": "npm run build && echo Build listo en dist/ - sube ese contenido a GitHub Pages o conecta con Netlify"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "firebase": "^11.0.0",
     "osc-js": "^2.4.1",
     "react": "^19.2.6",
