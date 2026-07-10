@@ -44,25 +44,41 @@ function sanitizeFileName(name) {
  * @returns {Promise<{url:string, path:string, size:number, nombre:string}>}
  */
 export async function subirAudio(accountId, baseName, carpeta, file, onProgress) {
+  console.log(`[SetSync/storage] subirAudio iniciado: "${file.name}" (${(file.size/1024/1024).toFixed(1)}MB)`);
   if (!firebaseListo || !storage) {
     throw new Error('Firebase no está configurado — no se puede subir el archivo. Ver src/firebase/config.js');
   }
   if (file.size > MAX_SIZE_BYTES) {
-    throw new Error(`El archivo pesa ${(file.size / 1024 / 1024).toFixed(1)}MB — el máximo es 25MB. Preferí formato Opus o AAC en vez de WAV para bajar el peso.`);
+    throw new Error(`"${file.name}" pesa ${(file.size / 1024 / 1024).toFixed(1)}MB — el máximo es 25MB. Preferí formato Opus o AAC en vez de WAV para bajar el peso.`);
   }
   const path = `accounts/${accountId}/songs/${encodeURIComponent(baseName)}/${carpeta}/${Date.now()}-${sanitizeFileName(file.name)}`;
   const storageRef = ref(storage, path);
   const task = uploadBytesResumable(storageRef, file);
 
-  await new Promise((resolve, reject) => {
-    task.on('state_changed',
-      (snap) => { if (onProgress) onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)); },
-      (err) => reject(err),
-      () => resolve(),
-    );
-  });
+  // Timeout de seguridad: si la subida no termina en 90s (razonable incluso
+  // para conexiones lentas con archivos de varios MB), se corta con un
+  // error explícito en vez de dejar la función colgada para siempre sin
+  // ninguna señal — el bug real que se estaba diagnosticando: la app se
+  // quedaba "pensando" sin toast de éxito ni de error, minutos enteros.
+  await Promise.race([
+    new Promise((resolve, reject) => {
+      task.on('state_changed',
+        (snap) => {
+          console.log(`[SetSync/storage] progreso "${file.name}": ${snap.bytesTransferred}/${snap.totalBytes}`);
+          if (onProgress) onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100));
+        },
+        (err) => { console.error(`[SetSync/storage] ERROR subiendo "${file.name}":`, err); reject(err); },
+        () => { console.log(`[SetSync/storage] completado "${file.name}"`); resolve(); },
+      );
+    }),
+    new Promise((_, reject) => setTimeout(() => {
+      task.cancel();
+      reject(new Error(`Subida de "${file.name}" cancelada por timeout (90s) — revisá tu conexión o el tamaño del archivo.`));
+    }, 90000)),
+  ]);
 
   const url = await getDownloadURL(storageRef);
+  console.log(`[SetSync/storage] URL obtenida para "${file.name}":`, url);
   return { url, path, size: file.size, nombre: file.name };
 }
 

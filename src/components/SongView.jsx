@@ -774,6 +774,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     console.log('[SetSync] cargarMultitracksLocal disparada, archivos:',files?.length);
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
     if(!arr.length)return;
+    // Diagnóstico: tamaño de cada archivo, en MB — el límite de Storage es
+    // 25MB por archivo; un WAV sin comprimir de pocos minutos ya lo supera.
+    arr.forEach(f=>console.log(`[SetSync] archivo "${f.name}": ${(f.size/1024/1024).toFixed(1)}MB`));
     const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
 
     // Waveform real: se calcula del primer archivo elegido, en paralelo con
