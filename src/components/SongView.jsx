@@ -359,6 +359,15 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     transition:'background .08s,box-shadow .08s'}}/>
                   <span style={{fontSize:11,fontWeight:700,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif"}}>TAP TEMPO</span>
                 </button>
+                {/* Cifra — movida acá desde Secuencia, junto con BPM/TAP */}
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:8,color:'var(--tx3)',fontWeight:700,marginBottom:5,textAlign:'center'}}>CIFRA</div>
+                  <CustomSelect value={seqCifra}
+                    onChange={c=>{setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
+                    options={CIFRAS.map(c=>({value:c,label:c}))}
+                    style={{width:'100%',padding:'8px',fontSize:14,fontWeight:700,color:'var(--ac)',textAlign:'center',
+                      fontFamily:"'Special Gothic Expanded One',sans-serif"}}/>
+                </div>
                 <button onClick={toggleTransporteMaestro}
                   style={{width:'100%',padding:'10px',borderRadius:10,border:'none',
                     background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
@@ -2621,28 +2630,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </div>
 
-        {/* ── BARRA: Cifra + Controles ──
-            Se quitaron el selector de BPM y el TAP de Secuencia (pedido
-            final de Danny): ninguno de los dos debe tener presencia ni
-            influencia acá. El BPM/TAP del metrónomo viven únicamente en
-            la barra superior (AnnoBar), como control independiente del
+        {/* ── BARRA: Controles de transporte ──
+            Se quitaron BPM, TAP y Cifra de Secuencia (pedido final de
+            Danny): ninguno debe tener presencia ni influencia acá. Los
+            tres viven únicamente en el dropdown del metrónomo, en la
+            barra superior (AnnoBar), como control independiente del
             tempo real de las pistas grabadas. */}
-        <div style={{display:'flex',alignItems:'center',gap:0,
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:12,
           margin:'8px 14px',padding:'8px 12px',
           background:'var(--s1)',borderRadius:12,
           border:'1px solid var(--s3)',flexShrink:0}}>
-
-          {/* Cifra — sin label */}
-          <div style={{position:'relative',flexShrink:0,minWidth:60}}>
-            <CustomSelect value={seqCifra}
-              onChange={c=>{setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
-              options={CIFRAS.map(c=>({value:c,label:c}))}
-              style={{padding:'5px 8px',fontSize:14,fontWeight:700,color:'var(--ac)',
-                fontFamily:"'Special Gothic Expanded One',sans-serif"}}/>
-          </div>
-
-          {/* Divisor */}
-          <div style={{width:1,height:26,background:'var(--bd)',margin:'0 10px',flexShrink:0}}/>
 
           {/* Controles: ⏮ Play ⏭ */}
           {/* Sección anterior */}
