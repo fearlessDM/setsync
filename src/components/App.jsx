@@ -294,30 +294,40 @@ export default function App(){
     return ()=>{ unsubVar(); unsubArch(); unsubEstr(); unsubContent(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online, currentUser]);
+  // Los 4 efectos de guardado automático que siguen comparten el mismo bug
+  // de raíz que ya encontramos y corregimos en los efectos de SUSCRIPCIÓN
+  // más arriba: sin esperar a que currentUser esté confirmado, accountId
+  // puede caer al ID de respaldo de localStorage en el instante inicial,
+  // que nunca coincide con request.auth.uid en las reglas de seguridad —
+  // el guardado falla en silencio (promesa rechazada sin manejar) y el
+  // dato nunca llega a Firestore, aunque en pantalla parezca "guardado".
+  // Este es el bug real detrás de "los multitracks no persisten al
+  // recargar" — guardarArchivosDB se llamaba, pero con un accountId que
+  // las reglas rechazaban.
   useEffect(()=>{
-    if(!firebaseListo || !online) return;
+    if(!firebaseListo || !online || currentUser===undefined) return;
     if(skipVarSaveRef.current){ skipVarSaveRef.current=false; return; }
     guardarVariacionesDB(accountId, variacionesDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[variacionesDB]);
+  },[variacionesDB, currentUser]);
   useEffect(()=>{
-    if(!firebaseListo || !online) return;
+    if(!firebaseListo || !online || currentUser===undefined) return;
     if(skipArchSaveRef.current){ skipArchSaveRef.current=false; return; }
     guardarArchivosDB(accountId, archivosDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[archivosDB]);
+  },[archivosDB, currentUser]);
   useEffect(()=>{
-    if(!firebaseListo || !online) return;
+    if(!firebaseListo || !online || currentUser===undefined) return;
     if(skipEstrSaveRef.current){ skipEstrSaveRef.current=false; return; }
     guardarEstructurasDB(accountId, estructurasDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[estructurasDB]);
+  },[estructurasDB, currentUser]);
   useEffect(()=>{
-    if(!firebaseListo || !online) return;
+    if(!firebaseListo || !online || currentUser===undefined) return;
     if(skipContentSaveRef.current){ skipContentSaveRef.current=false; return; }
     guardarContentDB(accountId, contentDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[contentDB]);
+  },[contentDB, currentUser]);
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
@@ -821,7 +831,7 @@ Tuya es la gloria, Por siempre amén.
               {tieneMultitracks&&(
                 <button onClick={()=>setMostrarMultitracks(v=>!v)}
                   style={{padding:'7px 10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
-                    color:'var(--tx2)',fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                    color:'var(--tx2)',fontSize:'var(--fs-subtitle)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                   {mostrarMultitracks?tx.hideTracks:tx.showTracks}
                 </button>
               )}
