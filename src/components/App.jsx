@@ -817,6 +817,7 @@ Tuya es la gloria, Por siempre amén.
             theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
             sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
             archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}
+            accountId={accountId} authListo={currentUser!==undefined}
             onEditInCancionero={(nombreCancion)=>{
               setSongView(null);setSongViewSongs(null);
               setSongParaEditar(nombreCancion);

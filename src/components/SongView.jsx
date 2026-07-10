@@ -33,7 +33,7 @@ const PERMISOS_TOTAL={
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null,accountId=null}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null,accountId=null,authListo=true}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -719,6 +719,27 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // cargar (reemplaza solo esa pista) y borrar (la saca del set, corriendo
   // el resto hacia arriba) — misma lógica de subida/Storage que
   // cargarMultitracksLocal, aplicada a un índice puntual.
+  // ── Espera a que la sesión de Firebase Auth esté confirmada ────────────
+  // accountId puede llegar calculado con el ID de respaldo de localStorage
+  // (formato "acc_...") si App.jsx todavía no confirmó currentUser en el
+  // instante en que se abrió esta canción — ese ID nunca coincide con
+  // request.auth.uid en las reglas de seguridad, y la subida a Storage
+  // falla con "storage/unauthorized" (bug real reportado y reproducido:
+  // el accountId de las URLs de error tenía el prefijo "acc_", propio del
+  // fallback, no un uid real). En vez de solo pasar la prop tal cual,
+  // esto bloquea la subida hasta que authListo sea true — el usuario ve
+  // un toast breve en vez de un error de permisos silencioso.
+  const esperarAuthListo=async()=>{
+    if(authListo)return true;
+    setToast('Confirmando tu sesión…');
+    for(let i=0;i<20;i++){ // hasta ~5s de espera, en pasos cortos
+      await new Promise(r=>setTimeout(r,250));
+      if(authListo)return true;
+    }
+    setToast('✕ No se pudo confirmar tu sesión — recargá la página e intentá de nuevo');
+    return false;
+  };
+
   const cargarUnCanal=async(idx,file)=>{
     const colorPrevio=multitracksLocal?.[idx]?.color||'#EE227D';
     if(!firebaseListoGlobal){
@@ -734,6 +755,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       setToast('⚠ Firebase no configurado — este canal no va a persistir al recargar');
       return;
     }
+    if(!(await esperarAuthListo()))return;
     setSubiendoMultitracks({pct:0});
     try{
       const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
@@ -864,6 +886,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       return;
     }
 
+    if(!(await esperarAuthListo()))return;
     setSubiendoMultitracks({pct:0});
     try{
       const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
@@ -1997,6 +2020,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       setToast('⚠ Firebase no configurado — el track no va a persistir al recargar');
       return;
     }
+    if(!(await esperarAuthListo()))return;
     setSubiendoReferencia({pct:0});
     try{
       const accId=accountId||getAccountId(); // prop real (App.jsx: currentUser?.uid||getAccountId()) con fallback solo si no llegó
