@@ -814,18 +814,35 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     // Waveform real: del primer archivo, ya convertido si corresponde (o
     // el original si formato==='original').
     if(formato!=='original'){
+      console.log(`[SetSync] iniciando conversión a ${formato} de ${arrOriginal.length} archivo(s)`);
       setConvirtiendo({formato,pct:0,archivoActual:1,totalArchivos:arrOriginal.length});
       try{
         const convertir=formato==='mp3'?convertirAMp3:convertirAOpus;
         const convertidos=[];
         for(let i=0;i<arrOriginal.length;i++){
+          console.log(`[SetSync] convirtiendo archivo ${i+1}/${arrOriginal.length}: "${arrOriginal[i].name}"`);
           setConvirtiendo({formato,pct:0,archivoActual:i+1,totalArchivos:arrOriginal.length});
-          const out=await convertir(arrOriginal[i],(pct)=>setConvirtiendo({formato,pct,archivoActual:i+1,totalArchivos:arrOriginal.length}));
+          // Timeout de seguridad: 3 minutos por archivo. Un WAV de varios
+          // minutos a 59MB puede tardar bastante en decodificar+codificar
+          // sin Web Worker, pero si algo se traba de verdad (memoria,
+          // AudioContext que no responde), esto evita que la conversión
+          // quede colgada para siempre sin nunca llegar al catch — que es
+          // lo que probablemente pasó: "el mensaje desapareció y no
+          // convirtió nada" sugiere que se cortó de un lado (ej. el
+          // navegador mató la pestaña por considerarla no-responsiva)
+          // antes de que el finally/catch de React llegara a ejecutarse.
+          const out=await Promise.race([
+            convertir(arrOriginal[i],(pct)=>setConvirtiendo({formato,pct,archivoActual:i+1,totalArchivos:arrOriginal.length})),
+            new Promise((_,reject)=>setTimeout(()=>reject(new Error(`"${arrOriginal[i].name}" tardó demasiado en convertir (más de 3 min)`)),180000)),
+          ]);
+          console.log(`[SetSync] archivo ${i+1}/${arrOriginal.length} convertido OK`);
           convertidos.push(out);
         }
         arr=convertidos;
+        console.log(`[SetSync] conversión completa, ${arr.length} archivo(s) listos`);
         setToast(`✓ Convertido${arr.length===1?'':'s'} a ${formato.toUpperCase()}`);
       }catch(err){
+        console.error('[SetSync] ERROR durante la conversión:',err);
         setToast(`✕ Error al convertir a ${formato.toUpperCase()}: ${err.message||'desconocido'} — subiendo el archivo original`);
         arr=arrOriginal;
       }finally{

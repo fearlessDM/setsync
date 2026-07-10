@@ -53,11 +53,14 @@ export async function estimarConversion(file) {
 
 // ── Conversión a MP3 (rápida) ──────────────────────────────────────────────
 export async function convertirAMp3(file, onProgress) {
+  console.log(`[SetSync/audioConvert] convertirAMp3 iniciado: "${file.name}" (${(file.size/1024/1024).toFixed(1)}MB)`);
   const lamejs = await import('@breezystack/lamejs');
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   const ctx = new AudioCtx();
   const buf = await file.arrayBuffer();
+  console.log(`[SetSync/audioConvert] decodificando audio de "${file.name}"...`);
   const audioBuf = await ctx.decodeAudioData(buf);
+  console.log(`[SetSync/audioConvert] decodificado: ${audioBuf.duration.toFixed(1)}s, ${audioBuf.sampleRate}Hz, ${audioBuf.numberOfChannels} canal(es)`);
   const sampleRate = audioBuf.sampleRate;
   const numChannels = Math.min(audioBuf.numberOfChannels, 2); // lamejs solo soporta mono/estéreo
 
@@ -79,12 +82,28 @@ export async function convertirAMp3(file, onProgress) {
   const rightI16 = numChannels > 1 ? toInt16(right) : null;
 
   const totalBlocks = Math.ceil(leftI16.length / blockSize);
+  console.log(`[SetSync/audioConvert] codificando ${totalBlocks} bloques...`);
+  // Sin Web Worker: la codificación es síncrona y de un archivo grande
+  // (varios millones de samples) puede tardar varios segundos de CPU real.
+  // Sin ceder el control, el hilo principal queda bloqueado todo ese
+  // tiempo — la barra de progreso no se pinta, y en el celular el sistema
+  // puede llegar a matar la pestaña por considerarla "colgada" (esto era
+  // el bug real reportado: "el mensaje de convirtiendo desapareció y no
+  // convirtió nada"). Cada YIELD_EVERY bloques, se hace un pequeño await
+  // (setTimeout 0) para devolverle el control al navegador un instante —
+  // suficiente para repintar la UI y no disparar el watchdog de pestaña
+  // colgada, sin agregar demora perceptible al tiempo total.
+  const YIELD_EVERY = 200;
   for (let i = 0; i < leftI16.length; i += blockSize) {
     const l = leftI16.subarray(i, i + blockSize);
     const r = rightI16 ? rightI16.subarray(i, i + blockSize) : undefined;
     const mp3buf = numChannels > 1 ? encoder.encodeBuffer(l, r) : encoder.encodeBuffer(l);
     if (mp3buf.length > 0) chunks.push(mp3buf);
-    if (onProgress) onProgress(Math.round(((i / blockSize) / totalBlocks) * 100));
+    const bloqueActual = Math.round(i / blockSize);
+    if (onProgress) onProgress(Math.round((bloqueActual / totalBlocks) * 100));
+    if (bloqueActual % YIELD_EVERY === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
   }
   const end = encoder.flush();
   if (end.length > 0) chunks.push(end);
@@ -92,6 +111,7 @@ export async function convertirAMp3(file, onProgress) {
   ctx.close();
   const blob = new Blob(chunks, { type: 'audio/mpeg' });
   const nombreNuevo = file.name.replace(/\.[^/.]+$/, '') + '.mp3';
+  console.log(`[SetSync/audioConvert] MP3 listo: "${nombreNuevo}" (${(blob.size/1024/1024).toFixed(1)}MB)`);
   return new File([blob], nombreNuevo, { type: 'audio/mpeg' });
 }
 
