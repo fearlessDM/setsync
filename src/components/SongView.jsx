@@ -2938,7 +2938,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             real, no hay atajo). "Original" sube el WAV tal cual, sin
             convertir — más pesado y lento de subir, pero sin ningún
             procesamiento de por medio. */}
-        {modalConversion&&(()=>{
+        {modalConversion&&createPortal((()=>{
           const totalOriginalMB=modalConversion.estimaciones.reduce((s,e)=>s+e.pesoOriginalMB,0);
           const totalMp3MB=modalConversion.estimaciones.reduce((s,e)=>s+e.pesoEstimadoMB,0);
           const duracionMaxSeg=Math.max(...modalConversion.estimaciones.map(e=>e.duracionSeg));
@@ -2987,9 +2987,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               </div>
             </div>
           );
-        })()}
-        {/* Overlay de progreso mientras convierte */}
-        {convirtiendo&&(
+        })(), document.body)}
+        {/* Overlay de progreso mientras convierte — también con portal, por
+            el mismo motivo: sin esto quedaba atrapado detrás del panel de
+            Secuencia (overflow:hidden + z-index bajo), invisible aunque el
+            código sí lo montara. */}
+        {convirtiendo&&createPortal(
           <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:999,
             display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
             <div style={{background:svBg,border:`1px solid ${svBd}`,borderRadius:18,padding:24,maxWidth:300,width:'100%',textAlign:'center'}}>
@@ -3001,7 +3004,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               </div>
               <div style={{fontSize:11,color:'var(--tx3)',marginTop:8}}>{convirtiendo.pct}%</div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
         {BottomTabBar()}
       </div>
