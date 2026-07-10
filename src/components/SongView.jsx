@@ -2742,14 +2742,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </svg>
           </button>
 
-          {/* Play / Stop — control maestro: arranca click + multitracks juntos. Cuadrado redondeado, no circular (pedido de Danny) */}
-          <button onClick={toggleTransporteMaestro}
+          {/* Play / Stop — controla SOLO las pistas de Secuencia. El
+              metrónomo (botón de arriba, en la barra principal) es un
+              control aparte, con su propio botón — antes este mismo botón
+              disparaba ambos juntos, y sonaban superpuestos sin que el
+              usuario lo pidiera. Cuadrado redondeado, no circular. */}
+          <button onClick={()=>{ if(multitrackAudioRefs.current.some(Boolean)) toggleMultitrackPlay(); }}
             style={{width:52,height:44,borderRadius:14,border:'none',flexShrink:0,
               marginLeft:6,
-              background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
+              background:multitrackPlaying?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
               display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
-              boxShadow:clickActivo?'0 0 16px rgba(253,128,131,.5)':'0 0 16px rgba(48,192,183,.3)'}}>
-            {clickActivo
+              boxShadow:multitrackPlaying?'0 0 16px rgba(253,128,131,.5)':'0 0 16px rgba(48,192,183,.3)'}}>
+            {multitrackPlaying
               ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
               :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
           </button>
@@ -2842,7 +2846,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       {muted?'MUTE':'M'}
                     </button>
                     {/* Fader vertical — misma clase .fader-track/.fader-knob que ya usa MonitorPanel */}
-                    <div className="fader-track" style={{flexShrink:0}}>
+                    <div className="fader-track" style={{flexShrink:0,height:90}}>
                       <div className="fader-knob"
                         style={{bottom:`calc(${vol}% - 11px)`}}
                         onPointerDown={e=>{
