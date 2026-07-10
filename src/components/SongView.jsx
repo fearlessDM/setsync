@@ -2799,56 +2799,31 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               siempre, sin importar la pestaña activa, para que el
               transporte maestro funcione desde cualquier pantalla. */}
           {(multitracksLocal||seqData?.multitracks)?(
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4}}>
               {(multitracksLocal||seqData.multitracks).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 const esReal=!!multitracksLocal;
                 return(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,
-                    padding:'8px 10px',borderRadius:12,
-                    background:muted?'rgba(253,128,131,.08)':'var(--s1)',
-                    border:`1px solid ${muted?'rgba(253,128,131,.3)':'var(--s3)'}`}}>
-                    {/* Dot + Label + acciones — columna izquierda */}
-                    <div style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:5}}>
-                      <div style={{display:'flex',alignItems:'center',gap:7}}>
-                        <div style={{width:7,height:7,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                        <div style={{fontSize:11,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
-                          fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
-                          textOverflow:'ellipsis',flex:1}}>{tr.label}</div>
-                      </div>
-                      {esReal&&(
-                        <div style={{display:'flex',gap:4}}>
-                          <input type="file" accept="audio/*" style={{display:'none'}} id={`canal-file-${i}`}
-                            onChange={e=>{ if(e.target.files?.[0])cargarUnCanal(i,e.target.files[0]); e.target.value=''; }}/>
-                          <label htmlFor={`canal-file-${i}`}
-                            style={{fontSize:8,fontWeight:700,padding:'3px 7px',borderRadius:5,
-                              border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.05)',
-                              color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-                            Cargar
-                          </label>
-                          <button onClick={()=>borrarUnCanal(i)}
-                            style={{fontSize:8,fontWeight:700,padding:'3px 7px',borderRadius:5,
-                              border:'1px solid rgba(253,128,131,.25)',background:'rgba(253,128,131,.08)',
-                              color:'var(--rd)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
-                            Borrar
-                          </button>
-                        </div>
-                      )}
+                  <div key={i} style={{
+                    flex:'0 0 76px',display:'flex',flexDirection:'column',alignItems:'center',
+                    gap:5,padding:'8px 4px',borderRadius:10,
+                    background:muted?'rgba(253,128,131,.06)':'var(--s1)',
+                    border:`1px solid ${muted?'rgba(253,128,131,.25)':'var(--s3)'}`}}>
+                    {/* Dot + nombre — arriba, como en Monitor */}
+                    <div style={{display:'flex',alignItems:'center',gap:4,width:'100%',justifyContent:'center'}}>
+                      <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                      <div style={{fontSize:9,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
+                        fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
+                        textOverflow:'ellipsis',maxWidth:56,textAlign:'center'}}>{tr.label}</div>
                     </div>
-                    {/* Mute */}
-                    <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                      style={{fontSize:8,fontWeight:900,
-                        padding:'4px 7px',borderRadius:5,border:'none',flexShrink:0,
-                        cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
-                        background:muted?'var(--rd)':'var(--s3)',
-                        color:muted?'#fff':'var(--tx3)'}}>
-                      {muted?'MUTE':'M'}
-                    </button>
-                    {/* Fader vertical — misma clase .fader-track/.fader-knob que ya usa MonitorPanel */}
-                    <div className="fader-track" style={{flexShrink:0,height:90}}>
+                    {/* Fader vertical — mismo patrón de drag ya probado en
+                        dispositivo real (ver ZONA BLINDADA en MonitorPanel):
+                        rect capturado una sola vez al iniciar, movimiento
+                        directo en el DOM sin setState hasta soltar. */}
+                    <div className="fader-track" style={{flexShrink:0,height:110}}>
                       <div className="fader-knob"
-                        style={{bottom:`calc(${vol}% - 11px)`}}
+                        style={{bottom:`calc(${vol}% - 15px)`}}
                         onPointerDown={e=>{
                           e.preventDefault();
                           e.stopPropagation();
@@ -2860,11 +2835,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           const trackBottom=r.bottom;
                           const calcPct=ev=>Math.round(Math.max(0,Math.min(1,(trackBottom-ev.clientY)/trackH))*100);
                           let curVol=calcPct(e);
-                          knob.style.bottom=`calc(${curVol}% - 11px)`;
+                          knob.style.bottom=`calc(${curVol}% - 15px)`;
                           const move=ev=>{
                             ev.preventDefault();
                             curVol=calcPct(ev);
-                            knob.style.bottom=`calc(${curVol}% - 11px)`;
+                            knob.style.bottom=`calc(${curVol}% - 15px)`;
                           };
                           const up=ev=>{
                             knob.releasePointerCapture(ev.pointerId);
@@ -2880,6 +2855,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         onTouchStart={e=>e.stopPropagation()}
                       >{/* knob */}</div>
                     </div>
+                    {/* Mute */}
+                    <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
+                      style={{width:'100%',fontSize:8,fontWeight:900,
+                        padding:'4px 0',borderRadius:5,border:'none',flexShrink:0,
+                        cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
+                        background:muted?'var(--rd)':'var(--s3)',
+                        color:muted?'#fff':'var(--tx3)'}}>
+                      {muted?'MUTE':'M'}
+                    </button>
+                    {/* Cargar/Borrar — apiladas, angostas para caber en la columna */}
+                    {esReal&&(
+                      <div style={{display:'flex',flexDirection:'column',gap:3,width:'100%'}}>
+                        <input type="file" accept="audio/*" style={{display:'none'}} id={`canal-file-${i}`}
+                          onChange={e=>{ if(e.target.files?.[0])cargarUnCanal(i,e.target.files[0]); e.target.value=''; }}/>
+                        <label htmlFor={`canal-file-${i}`}
+                          style={{fontSize:7,fontWeight:700,padding:'3px 0',borderRadius:5,textAlign:'center',
+                            border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.05)',
+                            color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                          Cargar
+                        </label>
+                        <button onClick={()=>borrarUnCanal(i)}
+                          style={{fontSize:7,fontWeight:700,padding:'3px 0',borderRadius:5,
+                            border:'1px solid rgba(253,128,131,.25)',background:'rgba(253,128,131,.08)',
+                            color:'var(--rd)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                          Borrar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
