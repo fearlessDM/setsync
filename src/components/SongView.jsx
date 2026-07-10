@@ -771,6 +771,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const cargarMultitracksLocal=async(files)=>{
+    console.log('[SetSync] cargarMultitracksLocal disparada, archivos:',files?.length);
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
     if(!arr.length)return;
     const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
@@ -2660,9 +2661,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </svg>
           </button>
 
-          {/* Play / Stop — control maestro: arranca click + multitracks juntos */}
+          {/* Play / Stop — control maestro: arranca click + multitracks juntos. Cuadrado redondeado, no circular (pedido de Danny) */}
           <button onClick={toggleTransporteMaestro}
-            style={{width:44,height:44,borderRadius:'50%',border:'none',flexShrink:0,
+            style={{width:52,height:44,borderRadius:14,border:'none',flexShrink:0,
               marginLeft:6,
               background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
               display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
@@ -2706,7 +2707,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {subiendoMultitracks?`Subiendo ${subiendoMultitracks.pct}%`:(multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`)}
             </button>
             <input ref={multitrackInputRef} type="file" accept="audio/*" multiple style={{display:'none'}}
-              onChange={e=>{ if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
+              onChange={e=>{ console.log('[SetSync] input onChange, files:',e.target.files?.length); if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
           </div>
           {/* Elementos <audio> reales viven a nivel de SongView, no acá —
               ver comentario junto a su declaración: deben estar montados
