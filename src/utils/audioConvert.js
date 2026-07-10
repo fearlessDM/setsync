@@ -25,13 +25,22 @@ const BITRATE_KBPS = 128;
 // <audio> temporal) y el bitrate objetivo, así el usuario ve la comparación
 // sin esperar a que termine ninguna conversión real.
 export async function estimarConversion(file) {
-  const duracionSeg = await new Promise((resolve) => {
-    const audio = new Audio();
-    audio.preload = 'metadata';
-    audio.onloadedmetadata = () => { resolve(audio.duration || 0); URL.revokeObjectURL(audio.src); };
-    audio.onerror = () => resolve(0);
-    audio.src = URL.createObjectURL(file);
-  });
+  const duracionSeg = await Promise.race([
+    new Promise((resolve) => {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      audio.onloadedmetadata = () => { resolve(audio.duration || 0); URL.revokeObjectURL(audio.src); };
+      audio.onerror = () => resolve(0);
+      audio.src = URL.createObjectURL(file);
+    }),
+    // Timeout de seguridad: algunos WAV con headers no estándar nunca
+    // disparan onloadedmetadata en ciertos navegadores — sin este límite,
+    // la promesa quedaba colgada para siempre y, al usarse en Promise.all
+    // sobre varios archivos, UN solo archivo problemático bloqueaba el
+    // modal completo de elección de formato (nunca llegaba a mostrarse,
+    // sin ningún error visible — el bug real reportado por Danny).
+    new Promise((resolve) => setTimeout(() => resolve(0), 5000)),
+  ]);
   const pesoEstimadoMB = (duracionSeg * BITRATE_KBPS) / 8 / 1024;
   return {
     pesoOriginalMB: file.size / 1024 / 1024,

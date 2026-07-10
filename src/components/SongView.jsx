@@ -782,8 +782,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
     if(!arr.length)return;
     arr.forEach(f=>console.log(`[SetSync] archivo "${f.name}": ${(f.size/1024/1024).toFixed(1)}MB`));
+    console.log('[SetSync] calculando estimaciones de conversión para', arr.length, 'archivos...');
     const estimaciones=await Promise.all(arr.map(f=>estimarConversion(f)));
+    console.log('[SetSync] estimaciones listas, abriendo modal:',estimaciones);
     setModalConversion({archivos:arr,estimaciones});
+    console.log('[SetSync] setModalConversion llamado');
   };
 
   // Paso 2: con el formato elegido (o "original" para subir el WAV tal
