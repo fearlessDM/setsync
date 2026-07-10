@@ -51,6 +51,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [tonoOpen,setTonoOpen]=useState(false);
   const tonoBtnRef=useRef(null);
   const [tonoPos,setTonoPos]=useState(null);
+  const [metroOpen,setMetroOpen]=useState(false);
+  const metroBtnRef=useRef(null);
+  const [metroPos,setMetroPos]=useState(null);
   const [notacionOpen,setNotacionOpen]=useState(false);
   const [notacionPos,setNotacionPos]=useState(null);
   const notacionBtnRef=useRef(null);
@@ -305,16 +308,68 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             siempre, sin depender de estar en el panel de Secuencia. Usa el
             mismo motor startClick/stopClick y el mismo BPM (seqBpm) que ya
             existía, solo cambia dónde vive el botón. */}
-        <button onClick={toggleTransporteMaestro}
-          title="Metrónomo"
-          style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
-            border:clickActivo?'1px solid var(--gn)':'1px solid var(--bd)',
-            background:clickActivo?'rgba(48,192,183,.15)':'var(--s1)',
-            color:clickActivo?'var(--gn)':'var(--tx3)',cursor:'pointer',
-            fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif"}}>
-          <span style={{width:6,height:6,borderRadius:'50%',background:clickActivo?'var(--gn)':'var(--tx3)',flexShrink:0}}/>
-          {seqBpm}
-        </button>
+        <div style={{position:'relative',flexShrink:0}}>
+          <button ref={metroBtnRef} onClick={()=>{
+            if(!metroOpen){
+              const r=metroBtnRef.current.getBoundingClientRect();
+              const panelW=Math.min(200,window.innerWidth-24);
+              const leftIdeal=r.left+(r.width/2)-(panelW/2);
+              const left=Math.max(12,Math.min(leftIdeal,window.innerWidth-panelW-12));
+              setMetroPos({top:r.bottom+6,left,width:panelW});
+            }
+            setMetroOpen(o=>!o);
+          }}
+            title="Metrónomo"
+            style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
+              border:clickActivo?'1px solid var(--gn)':'1px solid var(--bd)',
+              background:clickActivo?'rgba(48,192,183,.15)':'var(--s1)',
+              color:clickActivo?'var(--gn)':'var(--tx3)',cursor:'pointer',
+              fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif"}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:clickActivo?'var(--gn)':'var(--tx3)',flexShrink:0}}/>
+            {seqBpm}
+          </button>
+          {metroOpen&&metroPos&&createPortal(
+            <>
+              <div onClick={()=>setMetroOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+              <div style={{position:'fixed',top:metroPos.top,left:metroPos.left,
+                width:metroPos.width,
+                background:isLight?'rgba(240,234,222,.97)':'rgba(10,10,20,.97)',
+                border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
+                boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
+                <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Metrónomo</div>
+                {/* BPM +/- , solo afecta al click sintetizado — sin influencia sobre multitracks */}
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+                  <button onClick={()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v,seqCifra);}}}
+                    style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
+                  <div style={{flex:1,textAlign:'center'}}>
+                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:26,color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
+                    <div style={{fontSize:8,color:'var(--tx3)',fontWeight:700,marginTop:2}}>BPM</div>
+                  </div>
+                  <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v,seqCifra);}}}
+                    style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
+                </div>
+                {/* TAP tempo — mismo cálculo que ya existía, solo que ahora
+                    vive únicamente acá y no influye sobre Secuencia */}
+                <button onClick={handleTapSeq}
+                  style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+                    padding:'10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',marginBottom:10}}>
+                  <div style={{width:9,height:9,borderRadius:'50%',
+                    background:tapSeqLit?'var(--gn)':'var(--bd2)',
+                    boxShadow:tapSeqLit?'0 0 8px rgba(48,192,183,.9)':'none',
+                    transition:'background .08s,box-shadow .08s'}}/>
+                  <span style={{fontSize:11,fontWeight:700,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif"}}>TAP TEMPO</span>
+                </button>
+                <button onClick={toggleTransporteMaestro}
+                  style={{width:'100%',padding:'10px',borderRadius:10,border:'none',
+                    background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
+                    fontSize:11,fontWeight:900,fontFamily:"'Outfit',sans-serif"}}>
+                  {clickActivo?'DETENER':'REPRODUCIR'}
+                </button>
+              </div>
+            </>,
+            document.body
+          )}
+        </div>
         {/* Botón de Tono/Capo desplegable */}
         <div style={{position:'relative',flexShrink:0}}>
           <button ref={tonoBtnRef} onClick={()=>{
@@ -644,6 +699,66 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     }catch(e){
       return null; // cualquier error de parseo: se trata igual que "no tiene BPM"
     }
+  };
+
+  // ── Carga/borrado de UN canal individual ──────────────────────────────
+  // Antes solo existía "Cambiar", que reemplazaba el set completo de 8
+  // pistas de una — si el músico quería corregir un solo canal (ej. subió
+  // el bajo con el nombre mal, o quiere reemplazar solo el click), tenía
+  // que volver a subir todo. Ahora cada canal tiene su propio botón de
+  // cargar (reemplaza solo esa pista) y borrar (la saca del set, corriendo
+  // el resto hacia arriba) — misma lógica de subida/Storage que
+  // cargarMultitracksLocal, aplicada a un índice puntual.
+  const cargarUnCanal=async(idx,file)=>{
+    const colorPrevio=multitracksLocal?.[idx]?.color||'#EE227D';
+    if(!firebaseListoGlobal){
+      const url=URL.createObjectURL(file);
+      const prevUrl=multitracksLocal?.[idx]?.url;
+      if(prevUrl&&prevUrl.startsWith('blob:'))URL.revokeObjectURL(prevUrl);
+      setMultitracksLocal(prev=>{
+        const next=[...(prev||[])];
+        next[idx]={label:file.name.replace(/\.[^/.]+$/,''),color:colorPrevio,url,file};
+        return next;
+      });
+      multitrackAudioRefs.current[idx]=null; // fuerza remonte del <audio> con la nueva key/url
+      setToast('⚠ Firebase no configurado — este canal no va a persistir al recargar');
+      return;
+    }
+    setSubiendoMultitracks({pct:0});
+    try{
+      const accountId=getAccountId();
+      const {url,path}=await subirAudio(accountId,baseName,'multitracks',file,(pct)=>setSubiendoMultitracks({pct}));
+      const anterior=multitracksLocal?.[idx];
+      if(anterior?.path)borrarAudio(anterior.path).catch(()=>{});
+      setMultitracksLocal(prev=>{
+        const next=[...(prev||[])];
+        next[idx]={label:file.name.replace(/\.[^/.]+$/,''),color:colorPrevio,url,path};
+        setArchivosDB(prevDB=>({...prevDB,[baseName]:{...(prevDB[baseName]||{secuencia:[]}),multitracks:next}}));
+        return next;
+      });
+      multitrackAudioRefs.current[idx]=null;
+      setToast(`✓ Canal reemplazado y guardado en la nube`);
+    }catch(err){
+      setToast(`✕ ${err.message||'Error al subir el audio'}`);
+    }finally{
+      setSubiendoMultitracks(null);
+    }
+  };
+  const borrarUnCanal=(idx)=>{
+    const canal=multitracksLocal?.[idx];
+    if(!canal)return;
+    if(canal.path)borrarAudio(canal.path).catch(()=>{});
+    else if(canal.url&&canal.url.startsWith('blob:'))URL.revokeObjectURL(canal.url);
+    setMultitracksLocal(prev=>{
+      const next=(prev||[]).filter((_,i)=>i!==idx);
+      setArchivosDB(prevDB=>({...prevDB,[baseName]:{...(prevDB[baseName]||{secuencia:[]}),multitracks:next}}));
+      return next.length?next:null;
+    });
+    // Corrimiento de vols/mutes para que sigan alineados con los índices tras el borrado
+    setTrackVols(v=>{const n=[...v];n.splice(idx,1);n.push(80);return n;});
+    setTrackMutes(m=>{const n=[...m];n.splice(idx,1);n.push(false);return n;});
+    multitrackAudioRefs.current.splice(idx,1);
+    setToast('✓ Canal eliminado');
   };
 
   const cargarMultitracksLocal=async(files)=>{
@@ -2506,57 +2621,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         </div>
 
-        {/* ── BARRA ÚNICA: BPM + Cifra + Controles ── */}
+        {/* ── BARRA: Cifra + Controles ──
+            Se quitaron el selector de BPM y el TAP de Secuencia (pedido
+            final de Danny): ninguno de los dos debe tener presencia ni
+            influencia acá. El BPM/TAP del metrónomo viven únicamente en
+            la barra superior (AnnoBar), como control independiente del
+            tempo real de las pistas grabadas. */}
         <div style={{display:'flex',alignItems:'center',gap:0,
           margin:'8px 14px',padding:'8px 12px',
           background:'var(--s1)',borderRadius:12,
           border:'1px solid var(--s3)',flexShrink:0}}>
-
-          {/* Rueda de selección de BPM — scroll nativo, sin bugs de touch */}
-          <div style={{position:'relative',width:52,height:78,flexShrink:0}}>
-            <div ref={wheelRef} onScroll={handleWheelScroll} className="bpm-wheel"
-              style={{height:'100%',overflowY:'scroll',scrollSnapType:'y mandatory',
-                scrollbarWidth:'none',WebkitOverflowScrolling:'touch'}}>
-              <div style={{height:WHEEL_ITEM_H}}/>
-              {Array.from({length:BPM_MAX-BPM_MIN+1},(_,i)=>BPM_MIN+i).map(n=>(
-                <div key={n} style={{height:WHEEL_ITEM_H,scrollSnapAlign:'center',
-                  display:'flex',alignItems:'center',justifyContent:'center',
-                  fontFamily:"'Special Gothic Expanded One',sans-serif",
-                  fontSize:n===seqBpm?19:12,
-                  color:n===seqBpm?(clickActivo?'var(--gn)':'var(--ac)'):'var(--tx3)',
-                  transition:'font-size .1s,color .1s'}}>{n}</div>
-              ))}
-              <div style={{height:WHEEL_ITEM_H}}/>
-            </div>
-            {/* Marco central — indica la selección, no intercepta touch */}
-            <div style={{position:'absolute',top:WHEEL_ITEM_H,left:0,right:0,height:WHEEL_ITEM_H,
-              borderTop:'1px solid var(--bd2)',borderBottom:'1px solid var(--bd2)',
-              pointerEvents:'none'}}/>
-            {/* Fades arriba/abajo para que se sienta como rueda, no lista cortada */}
-            <div style={{position:'absolute',top:0,left:0,right:0,height:18,
-              background:'linear-gradient(180deg,var(--bg),transparent)',pointerEvents:'none'}}/>
-            <div style={{position:'absolute',bottom:0,left:0,right:0,height:18,
-              background:'linear-gradient(0deg,var(--bg),transparent)',pointerEvents:'none'}}/>
-            <div style={{position:'absolute',bottom:-11,left:0,right:0,textAlign:'center',
-              fontSize:7,color:'var(--tx3)',fontWeight:700,letterSpacing:1,pointerEvents:'none'}}>BPM</div>
-          </div>
-
-          {/* Tap tempo con LED */}
-          <button onClick={handleTapSeq}
-            style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-              gap:5,width:40,height:56,borderRadius:10,marginLeft:8,flexShrink:0,
-              border:'1px solid var(--bd)',background:'var(--s3)',
-              cursor:'pointer'}}>
-            <div style={{width:9,height:9,borderRadius:'50%',
-              background:tapSeqLit?'var(--gn)':'var(--bd2)',
-              boxShadow:tapSeqLit?'0 0 8px rgba(48,192,183,.9)':'none',
-              transition:'background .08s,box-shadow .08s'}}/>
-            <span style={{fontSize:7,fontWeight:900,color:'var(--tx3)',
-              fontFamily:"'Lexend Giga',sans-serif",letterSpacing:.5}}>TAP</span>
-          </button>
-
-          {/* Divisor */}
-          <div style={{width:1,height:26,background:'var(--bd)',margin:'0 10px',flexShrink:0}}/>
 
           {/* Cifra — sin label */}
           <div style={{position:'relative',flexShrink:0,minWidth:60}}>
@@ -2637,82 +2711,91 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <input ref={multitrackInputRef} type="file" accept="audio/*" multiple style={{display:'none'}}
               onChange={e=>{ if(e.target.files?.length) cargarMultitracksLocal(e.target.files); }}/>
           </div>
-          {/* Elementos <audio> reales, uno por pista — ocultos, controlados por el transporte de arriba */}
-          {multitracksLocal?.map((tr,i)=>(
-            <audio key={tr.url} ref={el=>{multitrackAudioRefs.current[i]=el;}} src={tr.url} preload="auto"
-              onEnded={()=>setMultitrackPlaying(false)} style={{display:'none'}}/>
-          ))}
+          {/* Elementos <audio> reales viven a nivel de SongView, no acá —
+              ver comentario junto a su declaración: deben estar montados
+              siempre, sin importar la pestaña activa, para que el
+              transporte maestro funcione desde cualquier pantalla. */}
           {(multitracksLocal||seqData?.multitracks)?(
-            <div style={{display:'grid',gridTemplateColumns:isTablet?'repeat(3,1fr)':'repeat(2,1fr)',gap:8}}>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {(multitracksLocal||seqData.multitracks).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
+                const esReal=!!multitracksLocal;
                 return(
-                  <div key={i} style={{position:'relative',display:'flex',flexDirection:'column',gap:5,
-                    padding:'6px 10px 5px',borderRadius:12,overflow:'visible',
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,
+                    padding:'8px 10px',borderRadius:12,
                     background:muted?'rgba(253,128,131,.08)':'var(--s1)',
                     border:`1px solid ${muted?'rgba(253,128,131,.3)':'var(--s3)'}`}}>
-                    {/* Mute — arriba a la derecha */}
+                    {/* Dot + Label + acciones — columna izquierda */}
+                    <div style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:5}}>
+                      <div style={{display:'flex',alignItems:'center',gap:7}}>
+                        <div style={{width:7,height:7,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                        <div style={{fontSize:11,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
+                          fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
+                          textOverflow:'ellipsis',flex:1}}>{tr.label}</div>
+                      </div>
+                      {esReal&&(
+                        <div style={{display:'flex',gap:4}}>
+                          <input type="file" accept="audio/*" style={{display:'none'}} id={`canal-file-${i}`}
+                            onChange={e=>{ if(e.target.files?.[0])cargarUnCanal(i,e.target.files[0]); e.target.value=''; }}/>
+                          <label htmlFor={`canal-file-${i}`}
+                            style={{fontSize:8,fontWeight:700,padding:'3px 7px',borderRadius:5,
+                              border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.05)',
+                              color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                            Cargar
+                          </label>
+                          <button onClick={()=>borrarUnCanal(i)}
+                            style={{fontSize:8,fontWeight:700,padding:'3px 7px',borderRadius:5,
+                              border:'1px solid rgba(253,128,131,.25)',background:'rgba(253,128,131,.08)',
+                              color:'var(--rd)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                            Borrar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Mute */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                      style={{position:'absolute',top:5,right:5,fontSize:8,fontWeight:900,
-                        padding:'2px 6px',borderRadius:5,border:'none',
+                      style={{fontSize:8,fontWeight:900,
+                        padding:'4px 7px',borderRadius:5,border:'none',flexShrink:0,
                         cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
                         background:muted?'var(--rd)':'var(--s3)',
                         color:muted?'#fff':'var(--tx3)'}}>
                       {muted?'MUTE':'M'}
                     </button>
-                    {/* Dot + Label */}
-                    <div style={{display:'flex',alignItems:'center',gap:7,paddingRight:26}}>
-                      <div style={{width:7,height:7,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                      <div style={{fontSize:11,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
-                        fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
-                        textOverflow:'ellipsis',flex:1}}>{tr.label}</div>
-                    </div>
-                    {/* Fader Secuencia — horizontal */}
-                    <div style={{width:'100%',padding:'1px 0',overflow:'visible'}}>
-                      <div className="fader-track-h">
-                        <div className="fader-knob-h"
-                          style={{left:`calc(${vol}% - 11px)`}}
-                          onPointerDown={e=>{
-                            /* ⚠️ Mismo patrón crítico que .fader-knob (ZONA
-                             * BLINDADA), solo con eje X en vez de Y.
-                             * NO recalcular rect en move. NO usar setState
-                             * en move. knob.style.left se mueve directo en
-                             * DOM; setState solo en pointerup. */
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const knob=e.currentTarget;
-                            const track=knob.parentElement;
-                            knob.setPointerCapture(e.pointerId);
-                            const r=track.getBoundingClientRect();
-                            const trackW=r.width;
-                            const trackLeft=r.left;
-                            const calcPct=ev=>Math.round(Math.max(0,Math.min(1,(ev.clientX-trackLeft)/trackW))*100);
-                            let curVol=calcPct(e);
-                            knob.style.left=`calc(${curVol}% - 11px)`;
-                            const move=ev=>{
-                              ev.preventDefault();
-                              curVol=calcPct(ev);
-                              knob.style.left=`calc(${curVol}% - 11px)`;
-                            };
-                            const up=ev=>{
-                              knob.releasePointerCapture(ev.pointerId);
-                              knob.removeEventListener('pointermove',move);
-                              knob.removeEventListener('pointerup',up);
-                              knob.removeEventListener('pointercancel',up);
-                              setTrackVols(v=>{const n=[...v];n[i]=curVol;return n;});
-                            };
-                            knob.addEventListener('pointermove',move,{passive:false});
-                            knob.addEventListener('pointerup',up,{once:true});
-                            // Mismo fix que en el fader de Monitoreo: sin esto, un
-                            // pointercancel del navegador deja el estado sin
-                            // actualizar y el knob salta de vuelta a la posición
-                            // anterior en el próximo render.
-                            knob.addEventListener('pointercancel',up,{once:true});
-                          }}
-                          onTouchStart={e=>e.stopPropagation()}
-                        >{/* knob */}</div>
-                      </div>
+                    {/* Fader vertical — misma clase .fader-track/.fader-knob que ya usa MonitorPanel */}
+                    <div className="fader-track" style={{flexShrink:0}}>
+                      <div className="fader-knob"
+                        style={{bottom:`calc(${vol}% - 11px)`}}
+                        onPointerDown={e=>{
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const knob=e.currentTarget;
+                          const track=knob.parentElement;
+                          knob.setPointerCapture(e.pointerId);
+                          const r=track.getBoundingClientRect();
+                          const trackH=r.height;
+                          const trackBottom=r.bottom;
+                          const calcPct=ev=>Math.round(Math.max(0,Math.min(1,(trackBottom-ev.clientY)/trackH))*100);
+                          let curVol=calcPct(e);
+                          knob.style.bottom=`calc(${curVol}% - 11px)`;
+                          const move=ev=>{
+                            ev.preventDefault();
+                            curVol=calcPct(ev);
+                            knob.style.bottom=`calc(${curVol}% - 11px)`;
+                          };
+                          const up=ev=>{
+                            knob.releasePointerCapture(ev.pointerId);
+                            knob.removeEventListener('pointermove',move);
+                            knob.removeEventListener('pointerup',up);
+                            knob.removeEventListener('pointercancel',up);
+                            setTrackVols(v=>{const n=[...v];n[i]=curVol;return n;});
+                          };
+                          knob.addEventListener('pointermove',move,{passive:false});
+                          knob.addEventListener('pointerup',up,{once:true});
+                          knob.addEventListener('pointercancel',up,{once:true});
+                        }}
+                        onTouchStart={e=>e.stopPropagation()}
+                      >{/* knob */}</div>
                     </div>
                   </div>
                 );
@@ -2794,6 +2877,18 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           {MonitorPanel()}
         {ReferenciaPanel()}
         {SecuenciaPanel()}
+        {/* Elementos <audio> reales de multitracks — siempre montados, sin
+            importar qué pestaña esté activa (letra, Referencia, Monitor,
+            Secuencia). Bug real corregido: antes vivían dentro de
+            SecuenciaPanel, que solo se monta cuando bottomTab==='secuencia'
+            — así que tocar play desde cualquier otra pantalla no encontraba
+            ningún <audio> real (multitrackAudioRefs.current vacío) y el
+            transporte maestro caía silenciosamente al comportamiento de
+            "solo click", sin reproducir las pistas. */}
+        {multitracksLocal?.map((tr,i)=>(
+          <audio key={tr.url} ref={el=>{multitrackAudioRefs.current[i]=el;}} src={tr.url} preload="auto"
+            onEnded={()=>setMultitrackPlaying(false)} style={{display:'none'}}/>
+        ))}
         {CarpetaModal()}
         {BottomTabBar()}
       </div>
