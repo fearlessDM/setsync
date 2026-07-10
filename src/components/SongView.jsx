@@ -1696,8 +1696,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const MonitorPanel=() => {
-    const h=window.innerHeight;
-    const trackH=Math.max(100, h*0.32)-8;
+    const trackH=95; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos, a pedido de Danny
 
     const panel = (
       <div
@@ -1756,17 +1755,19 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               options={[1,2,3,4].map(b=>({value:b,label:String(b)}))}
               style={{height:26,padding:'0 6px',fontSize:9,fontWeight:900,color:'var(--gn)'}}/>
           </div>
-          <div style={{display:'inline-flex',height:26,borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
-            {['A','B'].map(l=>(
-              <button key={l} onClick={()=>setMonitorLayer(l)}
-                style={{padding:'0 10px',height:'100%',border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",boxSizing:'border-box',
-                  background:monitorLayer===l?'rgba(48,192,183,.25)':'transparent',
-                  color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
-                {l}
-              </button>
-            ))}
-          </div>
+          {!isTablet&&(
+            <div style={{display:'inline-flex',height:26,borderRadius:10,border:'1px solid var(--bd)',overflow:'hidden'}}>
+              {['A','B'].map(l=>(
+                <button key={l} onClick={()=>setMonitorLayer(l)}
+                  style={{padding:'0 10px',height:'100%',border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
+                    fontFamily:"'Lexend Giga',sans-serif",boxSizing:'border-box',
+                    background:monitorLayer===l?'rgba(48,192,183,.25)':'transparent',
+                    color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          )}
           <button onClick={()=>setShowMonitor(false)}
             style={{width:26,height:26,borderRadius:6,border:'1px solid var(--bd)',
               background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:14,
@@ -1818,10 +1819,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </div>
         )}
 
-        {/* Grid de 8 faders */}
+        {/* Grid de faders — 8 canales (con selector de capa A/B) en móvil,
+            los 16 juntos cuando hay espacio horizontal real (tablet
+            horizontal / PC) — pedido explícito de Danny: "cuando está en
+            horizontal, los 16 canales tienen que estar en la pantalla". */}
         <div style={{flex:1,display:'flex',gap:2,padding:'6px 8px 8px',overflow:'hidden',minHeight:0}}>
-          {Array.from({length:8},(_,li)=>{
-            const ci=monitorLayer==='A'?li:li+8;
+          {Array.from({length:isTablet?16:8},(_,li)=>{
+            const ci=isTablet?li:(monitorLayer==='A'?li:li+8);
             const vol=faderVols[ci];
             const muted=faderMutes[ci];
             const dbStr=volToDB(muted?0:vol);
@@ -2533,6 +2537,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   const SecuenciaPanel=() => {
+      const trackH=95; // fijo, mismo valor que MonitorPanel — mismo alto en ambos, a pedido de Danny
       // Calcular total de compases para proporciones del mapa
       const guias=seqData?.guias;
       const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
@@ -2799,31 +2804,44 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               siempre, sin importar la pestaña activa, para que el
               transporte maestro funcione desde cualquier pantalla. */}
           {(multitracksLocal||seqData?.multitracks)?(
-            <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:4}}>
+            <div style={{display:'flex',gap:2,overflowX:'auto',paddingBottom:4}}>
               {(multitracksLocal||seqData.multitracks).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 const esReal=!!multitracksLocal;
                 return(
                   <div key={i} style={{
-                    flex:'0 0 76px',display:'flex',flexDirection:'column',alignItems:'center',
-                    gap:5,padding:'8px 4px',borderRadius:10,
+                    flex:'0 0 60px',display:'flex',flexDirection:'column',alignItems:'center',
+                    gap:2,padding:'4px 2px',borderRadius:6,
                     background:muted?'rgba(253,128,131,.06)':'var(--s1)',
-                    border:`1px solid ${muted?'rgba(253,128,131,.25)':'var(--s3)'}`}}>
-                    {/* Dot + nombre — arriba, como en Monitor */}
-                    <div style={{display:'flex',alignItems:'center',gap:4,width:'100%',justifyContent:'center'}}>
-                      <div style={{width:6,height:6,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
-                      <div style={{fontSize:9,fontWeight:400,color:muted?'var(--tx3)':'var(--tx2)',
-                        fontFamily:"'Lexend Giga',sans-serif",overflow:'hidden',whiteSpace:'nowrap',
-                        textOverflow:'ellipsis',maxWidth:56,textAlign:'center'}}>{tr.label}</div>
+                    border:`1px solid ${muted?'rgba(253,128,131,.2)':'var(--s3)'}`,
+                    overflow:'visible'}}>
+                    {/* Dot + nombre — mismo tamaño de texto que "CH N" en Monitoreo */}
+                    <div style={{display:'flex',alignItems:'center',gap:3,width:'100%',justifyContent:'center',flexShrink:0}}>
+                      <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                      <div style={{fontSize:7,fontWeight:700,color:muted?'var(--rd)':'var(--tx)',
+                        fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.3px',overflow:'hidden',whiteSpace:'nowrap',
+                        textOverflow:'ellipsis',maxWidth:44,textAlign:'center'}}>{tr.label}</div>
                     </div>
-                    {/* Fader vertical — mismo patrón de drag ya probado en
+                    {/* Track + Knob — mismo trackH que Monitoreo (calculado
+                        dinámicamente arriba del componente), mismo ancho de
+                        riel (48px) y mismo patrón de drag ya probado en
                         dispositivo real (ver ZONA BLINDADA en MonitorPanel):
                         rect capturado una sola vez al iniciar, movimiento
                         directo en el DOM sin setState hasta soltar. */}
-                    <div className="fader-track" style={{flexShrink:0,height:110}}>
-                      <div className="fader-knob"
-                        style={{bottom:`calc(${vol}% - 15px)`}}
+                    <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'visible',flex:1}}>
+                      <div style={{position:'relative',width:48,height:trackH,borderRadius:2,touchAction:'none',overflow:'visible',cursor:'ns-resize'}}>
+                        <div style={{position:'absolute',top:0,bottom:0,left:'50%',transform:'translateX(-50%)',width:5,
+                          background:'var(--bd)',borderRadius:3,pointerEvents:'none'}}/>
+                        <div style={{
+                          position:'absolute',left:'50%',transform:'translateX(-50%)',
+                          width:44,height:30,borderRadius:6,zIndex:2,
+                          bottom:`calc(${vol}% - 15px)`,
+                          background:'linear-gradient(180deg,#e0e0e0 0%,#cecece 15%,#b5b5b5 45%,#c2c2c2 55%,#d5d5d5 85%,#dfdfdf 100%)',
+                          boxShadow:'0 5px 15px rgba(0,0,0,.9),0 2px 0 rgba(255,255,255,.5) inset,0 -2px 0 rgba(0,0,0,.4) inset',
+                          border:'1px solid rgba(0,0,0,.5)',cursor:'grab',
+                          touchAction:'none',userSelect:'none',WebkitUserSelect:'none',
+                        }}
                         onPointerDown={e=>{
                           e.preventDefault();
                           e.stopPropagation();
@@ -2831,9 +2849,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           const track=knob.parentElement;
                           knob.setPointerCapture(e.pointerId);
                           const r=track.getBoundingClientRect();
-                          const trackH=r.height;
-                          const trackBottom=r.bottom;
-                          const calcPct=ev=>Math.round(Math.max(0,Math.min(1,(trackBottom-ev.clientY)/trackH))*100);
+                          const trackHloc=r.height;
+                          const trackTop=r.top;
+                          const calcPct=ev=>Math.round((1-Math.max(0,Math.min(1,(ev.clientY-trackTop)/trackHloc)))*100);
                           let curVol=calcPct(e);
                           knob.style.bottom=`calc(${curVol}% - 15px)`;
                           const move=ev=>{
@@ -2853,30 +2871,34 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           knob.addEventListener('pointercancel',up,{once:true});
                         }}
                         onTouchStart={e=>e.stopPropagation()}
-                      >{/* knob */}</div>
+                        >
+                          <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',
+                            width:'60%',height:2,background:'rgba(0,0,0,.4)',borderRadius:1,
+                            boxShadow:'0 -5px 0 rgba(0,0,0,.3),0 5px 0 rgba(0,0,0,.3),0 -10px 0 rgba(0,0,0,.15),0 10px 0 rgba(0,0,0,.15)'}}/>
+                        </div>
+                      </div>
                     </div>
-                    {/* Mute */}
+                    {/* Mute — mismo tamaño que el de Monitoreo */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                      style={{width:'100%',fontSize:8,fontWeight:900,
-                        padding:'4px 0',borderRadius:5,border:'none',flexShrink:0,
-                        cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",
-                        background:muted?'var(--rd)':'var(--s3)',
-                        color:muted?'#fff':'var(--tx3)'}}>
+                      style={{width:'100%',padding:'3px 0',borderRadius:4,border:'none',cursor:'pointer',flexShrink:0,
+                        background:muted?'#8B0000':'var(--s3)',
+                        color:muted?'#fff':'var(--tx3)',fontSize:7,fontWeight:900,
+                        fontFamily:"'Lexend Giga',sans-serif"}}>
                       {muted?'MUTE':'M'}
                     </button>
-                    {/* Cargar/Borrar — apiladas, angostas para caber en la columna */}
+                    {/* Cargar/Borrar — angostas, apiladas debajo del Mute */}
                     {esReal&&(
-                      <div style={{display:'flex',flexDirection:'column',gap:3,width:'100%'}}>
+                      <div style={{display:'flex',flexDirection:'column',gap:2,width:'100%',flexShrink:0}}>
                         <input type="file" accept="audio/*" style={{display:'none'}} id={`canal-file-${i}`}
                           onChange={e=>{ if(e.target.files?.[0])cargarUnCanal(i,e.target.files[0]); e.target.value=''; }}/>
                         <label htmlFor={`canal-file-${i}`}
-                          style={{fontSize:7,fontWeight:700,padding:'3px 0',borderRadius:5,textAlign:'center',
+                          style={{fontSize:6,fontWeight:700,padding:'2px 0',borderRadius:4,textAlign:'center',
                             border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.05)',
                             color:'var(--tx3)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                           Cargar
                         </label>
                         <button onClick={()=>borrarUnCanal(i)}
-                          style={{fontSize:7,fontWeight:700,padding:'3px 0',borderRadius:5,
+                          style={{fontSize:6,fontWeight:700,padding:'2px 0',borderRadius:4,
                             border:'1px solid rgba(253,128,131,.25)',background:'rgba(253,128,131,.08)',
                             color:'var(--rd)',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
                           Borrar
