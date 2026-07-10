@@ -1,0 +1,26 @@
+# Dependencias — nunca se suben, se instalan con npm install
+node_modules/
+
+# Build de producción — se genera con npm run build, no se versiona
+dist/
+
+# Archivos de entorno con datos sensibles
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
