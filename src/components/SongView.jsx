@@ -296,6 +296,25 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             dropdown directamente en document.body, fuera del árbol DOM
             del contenedor con overflow, posicionado con coordenadas fijas
             calculadas desde getBoundingClientRect() del botón real. */}
+        {/* ── Metrónomo ────────────────────────────────────────────────────
+            Antes el click con sonido vivía solo dentro del panel de
+            Secuencia. Ahora que Secuencia tiene sus propios multitracks
+            reales (incluyendo, típicamente, una pista de Click grabada),
+            el metrónomo generado por Web Audio ya no pinta ahí — esa pega
+            la hace el track real. Se sube a la barra principal, disponible
+            siempre, sin depender de estar en el panel de Secuencia. Usa el
+            mismo motor startClick/stopClick y el mismo BPM (seqBpm) que ya
+            existía, solo cambia dónde vive el botón. */}
+        <button onClick={toggleTransporteMaestro}
+          title="Metrónomo"
+          style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
+            border:clickActivo?'1px solid var(--gn)':'1px solid var(--bd)',
+            background:clickActivo?'rgba(48,192,183,.15)':'var(--s1)',
+            color:clickActivo?'var(--gn)':'var(--tx3)',cursor:'pointer',
+            fontSize:11,fontWeight:700,fontFamily:"'Outfit',sans-serif"}}>
+          <span style={{width:6,height:6,borderRadius:'50%',background:clickActivo?'var(--gn)':'var(--tx3)',flexShrink:0}}/>
+          {seqBpm}
+        </button>
         {/* Botón de Tono/Capo desplegable */}
         <div style={{position:'relative',flexShrink:0}}>
           <button ref={tonoBtnRef} onClick={()=>{
@@ -536,6 +555,45 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const multitrackInputRef=useRef(null);
 
   const [subiendoMultitracks,setSubiendoMultitracks]=useState(null); // {pct} | null — progreso de subida a Storage
+  const [waveformReal,setWaveformReal]=useState(null); // [0-1,...] | null — picos de amplitud reales del primer track, null = usar el patrón decorativo (WAVE_DATA)
+
+  // Decodifica el audio real de un track y extrae picos de amplitud —
+  // reemplaza el waveform decorativo (Math.sin) por la forma real de la
+  // canción. Acepta un File local (recién elegido en el input) o una URL
+  // remota (pista ya guardada en Storage, al reabrir la canción). Se
+  // calcula una sola vez por archivo, no en cada render: es trabajo de
+  // CPU real (decodeAudioData de un archivo de varios MB).
+  const calcularWaveformReal=async(fileOrUrl)=>{
+    try{
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      const ctx=new AudioCtx();
+      const buf=typeof fileOrUrl==='string'
+        ?await(await fetch(fileOrUrl)).arrayBuffer()
+        :await fileOrUrl.arrayBuffer();
+      const audioBuf=await ctx.decodeAudioData(buf);
+      const canal=audioBuf.getChannelData(0); // canal izquierdo/mono alcanza para la forma visual
+      const NUM_BARRAS=80;
+      const tamBloque=Math.floor(canal.length/NUM_BARRAS);
+      const picos=[];
+      for(let i=0;i<NUM_BARRAS;i++){
+        let max=0;
+        const inicio=i*tamBloque;
+        for(let j=inicio;j<inicio+tamBloque&&j<canal.length;j++){
+          const v=Math.abs(canal[j]);
+          if(v>max)max=v;
+        }
+        picos.push(max);
+      }
+      // Normaliza para que el pico más alto llegue a 1 — evita que una
+      // pista grabada bajo de volumen se vea como una línea plana.
+      const maxGlobal=Math.max(...picos,0.01);
+      setWaveformReal(picos.map(p=>p/maxGlobal));
+      ctx.close();
+    }catch(e){
+      console.warn('No se pudo generar el waveform real, se usa el patrón decorativo:',e);
+      setWaveformReal(null);
+    }
+  };
 
   // Reemplaza (o inicializa) los multitracks de esta canción a partir de
   // los archivos elegidos en el input de carga. El nombre de archivo sin
@@ -545,10 +603,72 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // Ahora sube de verdad a Firebase Storage (antes solo generaba URLs
   // blob: locales que se perdían al recargar) y persiste las URLs reales
   // en archivosDB — mismo mecanismo que ya usa el track de Referencia.
+  // ── Lectura de BPM desde metadata ID3 (frame TBPM) ────────────────────────
+  // La mayoría de archivos de audio NO traen el BPM guardado — solo lo
+  // tienen si se puso a mano en el DAW al exportar (Ableton, Logic, etc.),
+  // usando tags ID3v2 (formato típico de MP3; WAV/Opus/AAC casi nunca lo
+  // llevan). Parser mínimo escrito a mano en vez de agregar una librería
+  // externa — solo necesitamos leer un frame (TBPM), no el tag completo.
+  // Devuelve null si no hay tag ID3v2, no hay frame TBPM, o el valor no es
+  // un número válido — en cualquiera de esos casos el caller debe caer a
+  // TAP manual, como ya existía.
+  const leerBpmDeID3=async(file)=>{
+    try{
+      // Alcanza con los primeros ~256KB: el header ID3v2 declara su propio
+      // tamaño, pero los frames de texto (como TBPM) están casi siempre al
+      // principio; si no aparece ahí, asumimos que no está.
+      const head=await file.slice(0,262144).arrayBuffer();
+      const bytes=new Uint8Array(head);
+      // Header ID3v2: 'ID3' + versión (2 bytes) + flags (1 byte) + tamaño sincsafe (4 bytes)
+      if(bytes[0]!==0x49||bytes[1]!==0x44||bytes[2]!==0x33)return null; // no es "ID3"
+      const tagSize=((bytes[6]&0x7f)<<21)|((bytes[7]&0x7f)<<14)|((bytes[8]&0x7f)<<7)|(bytes[9]&0x7f);
+      let pos=10;
+      const fin=Math.min(10+tagSize,bytes.length);
+      while(pos<fin-10){
+        const frameId=String.fromCharCode(bytes[pos],bytes[pos+1],bytes[pos+2],bytes[pos+3]);
+        const frameSize=(bytes[pos+4]<<24)|(bytes[pos+5]<<16)|(bytes[pos+6]<<8)|bytes[pos+7];
+        if(frameSize<=0||frameSize>fin-pos)break; // frame corrupto o tamaño inválido, cortar lectura
+        if(frameId==='TBPM'){
+          // Frame de texto: primer byte = encoding, resto = texto del BPM
+          const encoding=bytes[pos+10];
+          const textBytes=bytes.slice(pos+11,pos+10+frameSize);
+          const texto=encoding===1||encoding===2
+            ?new TextDecoder('utf-16').decode(textBytes)
+            :new TextDecoder('latin1').decode(textBytes);
+          const bpm=parseInt(texto.replace(/\D/g,''),10);
+          return(bpm>=40&&bpm<=300)?bpm:null; // rango razonable, descarta basura
+        }
+        pos+=10+frameSize;
+      }
+      return null;
+    }catch(e){
+      return null; // cualquier error de parseo: se trata igual que "no tiene BPM"
+    }
+  };
+
   const cargarMultitracksLocal=async(files)=>{
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
     if(!arr.length)return;
     const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
+
+    // Waveform real: se calcula del primer archivo elegido, en paralelo con
+    // el resto del flujo (no bloquea la carga/subida — es puramente visual).
+    calcularWaveformReal(arr[0]);
+
+    // BPM: si alguno de los archivos trae BPM en su metadata ID3 (TBPM),
+    // se usa ese como control maestro — "el BPM debe enlazar con el
+    // archivo" (pedido de Danny). Se prueba cada archivo hasta encontrar
+    // uno con el tag; si ninguno lo trae, el BPM actual (poné por TAP)
+    // queda como está — no se fuerza nada.
+    for(const f of arr){
+      const bpmDetectado=await leerBpmDeID3(f);
+      if(bpmDetectado){
+        setSeqBpm(bpmDetectado);
+        if(clickActivo){stopClick();startClick(bpmDetectado,seqCifra);}
+        setToast(`♩ BPM ${bpmDetectado} detectado en "${f.name}"`);
+        break;
+      }
+    }
 
     if(!firebaseListoGlobal){
       // Sin Firebase configurado: se sigue permitiendo trabajar en memoria
@@ -591,6 +711,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const guardados=archivosDB[baseName]?.multitracks;
     if(guardados&&guardados.length&&!multitracksLocal){
       setMultitracksLocal(guardados);
+      calcularWaveformReal(guardados[0].url);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[baseName]);
@@ -616,6 +737,26 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
   const seekMultitracks=(time)=>{
     multitrackAudioRefs.current.filter(Boolean).forEach(a=>{ a.currentTime=time; });
+  };
+  // ── Control maestro de transporte ──────────────────────────────────────
+  // Antes había hasta 4 botones de play/click independientes (3 copias del
+  // botón de click en distintos paneles, más el play de multitracks) — cada
+  // uno arrancaba su propio motor sin enterarse del otro. Danny pidió que
+  // el click y el play sean LOS controles maestros: un solo transporte que
+  // arranca (o para) el metrónomo Y los multitracks juntos, en el mismo
+  // instante. Si no hay multitracks cargados, se comporta como el
+  // metrónomo solo (comportamiento de siempre, sin romper nada).
+  const toggleTransporteMaestro=()=>{
+    const hayMultitracks=multitrackAudioRefs.current.some(Boolean);
+    const next=!clickActivo;
+    setClickActivo(next);
+    if(next){
+      startClick(seqBpm,seqCifra);
+      if(hayMultitracks)toggleMultitrackPlay();
+    } else {
+      stopClick();
+      if(hayMultitracks&&multitrackPlaying)toggleMultitrackPlay();
+    }
   };
   // Aplica volumen/mute real a cada <audio> cuando cambian los faders —
   // antes trackVols/trackMutes solo movían el knob visual.
@@ -1185,8 +1326,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
               style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
           </div>
-          {/* Play/Stop */}
-          <button onClick={()=>{const next=!clickActivo;setClickActivo(next);if(next)startClick(seqBpm);else stopClick();}}
+          {/* Play/Stop — control maestro, mismo transporte que Secuencia */}
+          <button onClick={toggleTransporteMaestro}
             style={{width:52,height:52,borderRadius:'50%',border:'none',flexShrink:0,
               background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
               display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
@@ -2321,10 +2462,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               el.addEventListener('pointermove',mv,{passive:false});
               el.addEventListener('pointerup',up,{once:true});
             }}>
-            {/* Barras waveform */}
+            {/* Barras waveform — real (decodificado del audio) si ya se calculó, si no el patrón decorativo mientras carga */}
             <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',gap:1,padding:'4px 0'}}>
-              {WAVE_DATA.map((h,i)=>{
-                const pr=i/WAVE_DATA.length;
+              {(waveformReal||WAVE_DATA).map((h,i)=>{
+                const total=(waveformReal||WAVE_DATA).length;
+                const pr=i/total;
                 const played=pr<seqPos;
                 // Highlight del bloque seleccionado
                 const inHL=seqHighlight&&pr>=seqHighlight.from&&pr<=seqHighlight.to;
@@ -2350,7 +2492,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 );
               })}
             </div>
-            {/* Playhead */}
+            {/* Playhead — línea de avance en tiempo real, ya existente;
+                se mueve con seqPos, que ahora también sigue el tiempo real
+                de reproducción de los multitracks (antes solo cambiaba con
+                un seek manual, ver useEffect de sincronización más arriba). */}
             <div style={{position:'absolute',top:0,bottom:0,left:`${seqPos*100}%`,
               width:2,background:'#fff',zIndex:3,boxShadow:'0 0 5px rgba(255,255,255,.8)'}}/>
           </div>
@@ -2444,8 +2589,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </svg>
           </button>
 
-          {/* Play / Stop click */}
-          <button onClick={()=>{const next=!clickActivo;setClickActivo(next);if(next)startClick(seqBpm);else stopClick();}}
+          {/* Play / Stop — control maestro: arranca click + multitracks juntos */}
+          <button onClick={toggleTransporteMaestro}
             style={{width:44,height:44,borderRadius:'50%',border:'none',flexShrink:0,
               marginLeft:6,
               background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
@@ -2483,19 +2628,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.multitracksTitleLbl}</div>
-              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{multitracksLocal?`${multitracksLocal.length} pista${multitracksLocal.length===1?'':'s'} cargada${multitracksLocal.length===1?'':'s'} — sin guardar aún`:tx.multitracksSubLbl}</div>
+              <div style={{fontSize:9,color:'var(--tx3)',fontWeight:300,fontFamily:"'Lexend Giga',sans-serif",marginTop:2,opacity:.7}}>{multitracksLocal?`${multitracksLocal.length} pista${multitracksLocal.length===1?'':'s'} cargada${multitracksLocal.length===1?'':'s'} — el ▶ de arriba las reproduce junto al click`:tx.multitracksSubLbl}</div>
             </div>
-            {multitracksLocal&&multitracksLocal.length>0&&(
-              <button onClick={toggleMultitrackPlay}
-                style={{width:38,height:38,borderRadius:'50%',border:'none',flexShrink:0,
-                  background:multitrackPlaying?'var(--gn)':'var(--ac)',color:'#000',cursor:'pointer',
-                  display:'flex',alignItems:'center',justifyContent:'center'}}>
-                {multitrackPlaying
-                  ?<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  :<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                }
-              </button>
-            )}
             <button onClick={()=>multitrackInputRef.current?.click()} disabled={!!subiendoMultitracks}
               style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:subiendoMultitracks?'default':'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,opacity:subiendoMultitracks?.6:1}}>
               {subiendoMultitracks?`Subiendo ${subiendoMultitracks.pct}%`:(multitracksLocal?'Cambiar':`Cargar (máx. ${MAX_MULTITRACKS})`)}
