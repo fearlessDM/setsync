@@ -816,7 +816,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // de siempre, ahora parametrizada por formato.
   const procesarYSubirMultitracks=async(arrOriginal,formato)=>{
     setModalConversion(null);
-    const colores=['#EE227D','var(--rd)','var(--gn)','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
+    const colores=['#EE227D','#FD8083','#30C0B7','#f59e0b','#a78bfa','#52555c','#5dcaa5','#e0a458'];
     let arr=arrOriginal;
 
     // BPM: si alguno de los archivos originales trae BPM en su metadata
