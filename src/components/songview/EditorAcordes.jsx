@@ -294,7 +294,14 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                   return (
                     <div
                       key={chordIdx}
-                      style={{ position: 'absolute', left: leftPx, top: 2, display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(127,119,221,.16)', border: '1px solid #7f77dd', borderRadius: 5, padding: '1px 3px', cursor: 'grab', touchAction: 'none', zIndex: isDraggingThis ? 5 : 1 }}
+                      style={{ position: 'absolute', left: leftPx, top: 2, display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(127,119,221,.16)', border: '1px solid #7f77dd', borderRadius: 5, padding: '1px 3px', cursor: isDraggingThis ? 'grabbing' : 'grab', touchAction: 'none', zIndex: isDraggingThis ? 5 : 1,
+                        transform: isDraggingThis ? 'scale(1.08)' : 'scale(1)',
+                        boxShadow: isDraggingThis ? '0 4px 12px rgba(127,119,221,.5)' : 'none',
+                        // Sin transition mientras se arrastra (el chip debe seguir el dedo/mouse 1:1,
+                        // sin lag); al soltar, un rebote elástico corto — más físico que el
+                        // cubic-bezier(.4,0,.2,1) de navegación, porque acá el gesto es táctil.
+                        transition: isDraggingThis ? 'none' : 'transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease',
+                      }}
                       {...dragHandlers}
                     >
                       <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}

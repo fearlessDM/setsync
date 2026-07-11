@@ -43,7 +43,7 @@ export function Login({onToast, lang='es'}){
   return(
     <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',flexDirection:'column',
       alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:360}}>
+      <div className="login-form-in" style={{width:'100%',maxWidth:360}}>
         <div style={{textAlign:'center',marginBottom:32}}>
           <img src="/FAVICON SS.png" alt="SetSync" style={{width:64,height:64,objectFit:'contain',marginBottom:12}}/>
           <div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
@@ -55,6 +55,7 @@ export function Login({onToast, lang='es'}){
           <button onClick={()=>{setModo('entrar');setError(null);}}
             style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+              transition:'background .15s,color .15s',
               background:modo==='entrar'?'var(--bd)':'transparent',
               color:modo==='entrar'?'var(--tx)':'var(--tx3)'}}>
             {tx.signIn}
@@ -62,6 +63,7 @@ export function Login({onToast, lang='es'}){
           <button onClick={()=>{setModo('crear');setError(null);}}
             style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
               fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+              transition:'background .15s,color .15s',
               background:modo==='crear'?'var(--bd)':'transparent',
               color:modo==='crear'?'var(--tx)':'var(--tx3)'}}>
             {tx.createAccount}
@@ -88,10 +90,9 @@ export function Login({onToast, lang='es'}){
             </div>
           )}
 
-          <button type="submit" disabled={cargando}
-            style={{padding:'13px 0',borderRadius:10,border:'none',cursor:cargando?'not-allowed':'pointer',
-              background:'var(--ac)',color:'#000',fontSize:11,fontWeight:700,
-              fontFamily:"'Lexend Giga',sans-serif",opacity:cargando?.6:1,marginTop:4}}>
+          <button type="submit" disabled={cargando} className="btn btn-ac"
+            style={{padding:'13px 0',borderRadius:10,border:'none',
+              fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",marginTop:4}}>
             {cargando?tx.oneMoment:modo==='entrar'?tx.signIn:tx.createAccount}
           </button>
         </form>
@@ -102,11 +103,10 @@ export function Login({onToast, lang='es'}){
           <div style={{flex:1,height:1,background:'var(--s3)'}}/>
         </div>
 
-        <button onClick={conGoogle} disabled={cargando}
+        <button onClick={conGoogle} disabled={cargando} className="btn btn-g"
           style={{width:'100%',padding:'12px 0',borderRadius:10,border:'1px solid var(--bd2)',
-            cursor:cargando?'not-allowed':'pointer',background:'var(--s1)',color:'var(--tx)',
-            fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
-            display:'flex',alignItems:'center',justifyContent:'center',gap:10,opacity:cargando?.6:1}}>
+            color:'var(--tx)',fontSize:11,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+            display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

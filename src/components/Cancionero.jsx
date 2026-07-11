@@ -1166,7 +1166,13 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       {tab==='mi'&&(
         CANCIONES.length===0?(
           <div style={{textAlign:'center',padding:'60px 20px',color:'var(--tx3)'}}>
-            <div style={{fontSize:32,marginBottom:10,opacity:.5}}>♪</div>
+            <div style={{marginBottom:10,opacity:.5,display:'flex',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18V5l12-2v13"/>
+                <circle cx="6" cy="18" r="3"/>
+                <circle cx="18" cy="16" r="3"/>
+              </svg>
+            </div>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:16,color:'var(--tx2)',marginBottom:6}}>
               Tu cancionero está vacío
             </div>

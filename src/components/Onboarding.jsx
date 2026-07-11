@@ -32,7 +32,7 @@ export function Onboarding({onFinish}){
             </div>
             <div className="ob-ft">
               <div className="ob-dots"><div className="ob-dot on"/><div className="ob-dot"/><div className="ob-dot"/></div>
-              <button onClick={()=>setStep(2)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid var(--div)',background:'var(--s3)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
+              <button className="icon-btn-circle" onClick={()=>setStep(2)}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
             </div>
@@ -63,7 +63,7 @@ export function Onboarding({onFinish}){
               <div className="ob-dots"><div className="ob-dot done"/><div className="ob-dot on"/><div className="ob-dot"/></div>
               <div style={{display:'flex',gap:7}}>
                 <button className="btn btn-g btn-sm" onClick={()=>setStep(1)}>{lang==='en'?'Back':'Atrás'}</button>
-                <button onClick={()=>setStep(3)} style={{width:44,height:44,borderRadius:'50%',border:'1px solid var(--div)',background:'var(--s3)',color:'var(--tx)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',transition:'all .2s'}}>
+                <button className="icon-btn-circle" onClick={()=>setStep(3)}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
               </div>

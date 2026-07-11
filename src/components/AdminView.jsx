@@ -456,7 +456,14 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
         <div style={{padding:'var(--sp-xl) var(--pw-x,16px)'}}>
           <div style={{padding:'40px 24px',borderRadius:'var(--rad-lg)',background:'var(--s1)',
             border:'1px solid var(--bd)',textAlign:'center'}}>
-            <div style={{fontSize:36,marginBottom:'var(--sp-sm)'}}>📭</div>
+            <div style={{marginBottom:'var(--sp-sm)',opacity:.5,display:'flex',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <line x1="8" y1="3" x2="8" y2="7"/>
+                <line x1="16" y1="3" x2="16" y2="7"/>
+              </svg>
+            </div>
             <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
               fontSize:17,color:'var(--tx)',marginBottom:8}}>
               {tx.noEvents||tx.noEventsThisMonth}
@@ -540,7 +547,10 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
     <div style={{marginBottom:'var(--sp-md)'}}>
       <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
         <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{tx.teamReminderLbl}</div>
-        <button onClick={()=>setOpen(true)} style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
+        <button onClick={()=>setOpen(true)}
+          onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.12)'}
+          onMouseLeave={e=>e.currentTarget.style.background='rgba(200,169,126,.07)'}
+          style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"'Lexend Giga',sans-serif",transition:'all .15s'}}>
           <div style={{width:38,height:38,borderRadius:'var(--rad-sm)',background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>

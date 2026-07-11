@@ -166,6 +166,9 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .btn-g:hover{background:var(--s3);color:var(--tx);}
 .btn-s{background:rgba(255,255,255,.08);color:var(--tx);border:1px solid var(--bd);}
 .btn-s:hover{background:rgba(255,255,255,.13);}
+.btn-ac{background:var(--ac);color:#000;}
+.btn-ac:hover{opacity:.88;}
+.btn-ac:disabled,.btn-g:disabled{cursor:not-allowed;opacity:.6;}
 .btn-live{
   background:rgba(48,192,183,.15);color:var(--gn);
   border:1px solid rgba(48,192,183,.35);
@@ -175,6 +178,9 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 }
 .btn-live:hover{background:rgba(48,192,183,.25);}
 .btn-sm{padding:6px 14px;font-size:11px;}
+.icon-btn-circle{width:44px;height:44px;border-radius:50%;border:1px solid var(--div);background:var(--s3);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background .2s,transform .15s;}
+.icon-btn-circle:hover{background:var(--s1);}
+.icon-btn-circle:active{transform:scale(.94);}
 .btn-xs{padding:4px 10px;font-size:10px;}
 .btn:disabled{opacity:.25;pointer-events:none;}
 .ib{
@@ -577,4 +583,12 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 @keyframes spin {
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
+}
+/* Entrada suave del formulario de Login (mount único, sin JS/estado) */
+@keyframes login-in {
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.login-form-in {
+  animation: login-in .3s cubic-bezier(.4,0,.2,1);
 }
