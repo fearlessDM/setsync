@@ -14,7 +14,7 @@ import { getColorBloque } from './estructura';
 //  - editable: si es false (Academia, alumno sin permiso de editar estructura),
 //    el panel queda de solo lectura — sin drag, sin duplicar/eliminar/reset.
 //    Default true para no afectar a Iglesia/Banda, que no pasan este prop.
-export function PanelEstructura({seq,isLight,onReordenar,onDuplicar,onEliminar,onReset,editable=true}){
+export function PanelEstructura({seq,isLight=false,onReordenar,onDuplicar,onEliminar,onReset,editable=true}){
   const dragIdx=useRef(null);
   if(!seq||!seq.length)return null;
   const panelBg=isLight?'rgba(240,234,222,.92)':'rgba(6,4,18,.92)';

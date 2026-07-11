@@ -16,7 +16,7 @@ export function Onboarding({onFinish}){
           <div className="ob-step">
             <div className="ob-lgo">
               <div className="logo-mk"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)'}}>Setlist</div>
+              <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)'}}>Setlist</div>
             </div>
             <div className="ob-lbl">Paso 1 de 3 · Step 1 of 3</div>
             <div className="ob-ttl">Elige tu idioma <span style={{color:'var(--ac)'}}>/ Choose</span></div>
@@ -24,7 +24,7 @@ export function Onboarding({onFinish}){
               {[['es','Español','Spanish'],['en','English','Inglés']].map(([l,n,s])=>(
                 <div key={l} className={`ob-lang${lang===l?' on':''}`} onClick={()=>setLang(l)}>
                   <div>
-                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{n}</div>
+                    <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{n}</div>
                     <div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',marginTop:2}}>{s}</div>
                   </div>
                 </div>
@@ -52,7 +52,7 @@ export function Onboarding({onFinish}){
                   </div>
                   <div>
                     <div style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>{v.sub}</div>
-                    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{v.label}</div>
+                    <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{v.label}</div>
                     <div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',lineHeight:1.4,marginTop:2}}>{v.events}</div>
                   </div>
                 </div>
@@ -77,7 +77,7 @@ export function Onboarding({onFinish}){
             <div className="ob-sub">{lang==='en'?'Config saved. Change it in Settings.':'Configuración guardada. Cámbiala en Ajustes.'}</div>
             <div className="ob-sum">
               {[[lang==='en'?'Language':'Idioma',lang==='en'?'English':'Español'],[lang==='en'?'Mode':'Modo',SUM[mode]?.[lang]],[lang==='en'?'Events':'Eventos',EVSM[mode]?.[lang]]].map(([l,v])=>(
-                <div key={l} className="ob-sr"><span style={{fontSize:'var(--fs-xs)',color:"var(--tx3)",fontWeight:900,textTransform:'uppercase',letterSpacing:'1.5px'}}>{l}</span><span style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-lg)',fontWeight:400,color:'var(--tx)'}}>{v}</span></div>
+                <div key={l} className="ob-sr"><span style={{fontSize:'var(--fs-xs)',color:"var(--tx3)",fontWeight:900,textTransform:'uppercase',letterSpacing:'1.5px'}}>{l}</span><span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-lg)',fontWeight:400,color:'var(--tx)'}}>{v}</span></div>
               ))}
             </div>
             <div className="ob-ft">

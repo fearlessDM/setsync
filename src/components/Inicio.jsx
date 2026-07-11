@@ -245,27 +245,27 @@ function TutorialPage({ tut, onClose }) {
         <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
           background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)'}}>
+        <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)'}}>
           {tut.titulo}
         </div>
       </div>
       <div style={{padding:'20px 16px',maxWidth:600,margin:'0 auto'}}>
         {lines.map((line,i) => {
           if(line.startsWith('# ')) return (
-            <div key={i} style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+            <div key={i} style={{fontFamily:"var(--font-display)",
               fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--ac)',marginBottom:16,marginTop:i?24:0,lineHeight:1.2}}>
               {line.slice(2)}
             </div>
           );
           if(line.startsWith('## ')) return (
-            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",
+            <div key={i} style={{fontFamily:"var(--font-body)",
               fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',marginBottom:8,marginTop:20,
               textTransform:'uppercase',letterSpacing:'1px'}}>
               {line.slice(3)}
             </div>
           );
           if(line.startsWith('**')&&line.endsWith('**')) return (
-            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-md)',fontWeight:700,
+            <div key={i} style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-md)',fontWeight:700,
               color:'var(--tx)',marginBottom:4,marginTop:10}}>
               {line.slice(2,-2)}
             </div>
@@ -273,14 +273,14 @@ function TutorialPage({ tut, onClose }) {
           if(line.startsWith('- ')) return (
             <div key={i} style={{display:'flex',gap:8,marginBottom:4}}>
               <span style={{color:'var(--ac)',flexShrink:0,marginTop:2}}>·</span>
-              <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:300,
+              <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
                 color:'var(--tx2)',lineHeight:1.7}}>{line.slice(2)}</span>
             </div>
           );
           if(line.startsWith('```')||line==='\`\`\`') return null;
           if(line.trim()==='') return <div key={i} style={{height:6}}/>;
           return (
-            <div key={i} style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:300,
+            <div key={i} style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx2)',lineHeight:1.8,marginBottom:4}}>{line}</div>
           );
         })}
@@ -300,30 +300,30 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
         <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
           background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{flex:1,fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',fontWeight:400}}>
+        <div style={{flex:1,fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400}}>
           {tx.ideasNotesLbl}
         </div>
         <button onClick={onCreate}
           style={{padding:'6px 14px',borderRadius:8,border:'none',background:'var(--ac)',
             color:'#000',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
-            fontFamily:"'Lexend Giga',sans-serif"}}>{tx.newNoteBtn}</button>
+            fontFamily:"var(--font-body)"}}>{tx.newNoteBtn}</button>
       </div>
       <div style={{padding:'14px',display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
         {notas.length===0?(
           <div style={{gridColumn:'span 3',textAlign:'center',padding:'40px 0',
-            fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>
+            fontFamily:"var(--font-body)",fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>
             {tx.noNotesYet}
           </div>
         ):notas.map((n,i)=>(
           <div key={i} style={{padding:'12px 10px',borderRadius:12,
             background:'var(--s1)',border:'1px solid var(--s3)',
             cursor:'pointer',position:'relative'}}>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-sm)',fontWeight:700,
+            <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
               color:'var(--tx)',marginBottom:4,lineHeight:1.3,
               overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
               {n.texto.slice(0,40)||(n.texto.trim().split(/\n/)[0])||tx.noTitleNote}
             </div>
-            <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>
+            <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>
               {n.fecha}
             </div>
             <button onClick={e=>{e.stopPropagation();onDelete(i);}}
@@ -364,14 +364,14 @@ function NotasBlock({lang='es'}) {
             {notas.length>0&&(
               <button onClick={()=>setVerTodas(true)}
                 style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',background:'none',
-                  border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  border:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>
                 {tx.seeAllLbl(notas.length)}
               </button>
             )}
             <button onClick={()=>editando?guardar():setEditando(true)}
               style={{fontSize:'var(--fs-xs)',fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',
                 background:'none',border:'none',cursor:'pointer',
-                fontFamily:"'Lexend Giga',sans-serif"}}>
+                fontFamily:"var(--font-body)"}}>
               {editando?tx.saveNoteBtn:tx.newNoteBtn}
             </button>
           </div>
@@ -382,22 +382,22 @@ function NotasBlock({lang='es'}) {
             placeholder={tx.writeNotePlaceholder}
             style={{width:'100%',minHeight:72,background:'var(--s1)',
               border:'1px solid var(--bd)',borderRadius:8,
-              color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',
+              color:'var(--tx)',fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',
               fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'none',outline:'none',
               boxSizing:'border-box'}}/>
         ) : ultima ? (
           <div onClick={()=>setEditando(true)} style={{cursor:'pointer'}}>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:300,
+            <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>
               {ultima.texto.length>120?ultima.texto.slice(0,120)+'…':ultima.texto}
             </div>
-            <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:5}}>
+            <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:5}}>
               {ultima.fecha}
             </div>
           </div>
         ) : (
           <div onClick={()=>setEditando(true)}
-            style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:300,
+            style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx3)',lineHeight:1.7,cursor:'pointer',minHeight:36,
               display:'flex',alignItems:'center'}}>
             {tx.tapToAddNote}
@@ -410,7 +410,7 @@ function NotasBlock({lang='es'}) {
 
 // Helper Lbl para NotasBlock (no usa la prop color)
 const Lbl2 = ({children}) => (
-  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+  <div style={{fontFamily:"var(--font-display)",fontWeight:400,
     fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{children}</div>
 );
 
@@ -472,7 +472,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   );
 
   const Lbl = ({children}) => (
-    <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+    <div style={{fontFamily:"var(--font-display)",fontWeight:400,
       fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>{children}</div>
   );
 
@@ -486,22 +486,22 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
           <Lbl>{mode==='iglesia'?tx.nextDateCard:tx.nextShowCard}</Lbl>
           {proximoEvento ? (<>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-xl)',
+            <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',
               color:'var(--tx)',marginBottom:4,lineHeight:1.1,fontWeight:400}}>
               {proximoEvento.nombre}
             </div>
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300}}>
+            <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300}}>
               {new Date(proximoEvento.fecha).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})}
               {(proximoEvento.setlist||[]).length>0&&` · ${proximoEvento.setlist.length} canciones`}
             </div>
             {ensayos.some(en=>en.ref===`evento:${proximoEvento.id}`)&&(
               <div style={{display:'flex',alignItems:'center',gap:4,marginTop:5}}>
                 <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.rehearsalAssigned}</span>
+                <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--gn)',fontFamily:"var(--font-body)"}}>{tx.rehearsalAssigned}</span>
               </div>
             )}
           </>) : (
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300}}>
+            <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300}}>
               {tx.noUpcomingDates}{' '}
               <span style={{color:'var(--ac)',cursor:'pointer'}}
                 onClick={e=>{e.stopPropagation();onNavigate('backstage');}}>{tx.createOne}</span>
@@ -523,9 +523,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
                   background:'var(--s1)',cursor:'pointer',
                   border:'1px solid var(--s3)'}}>
-                <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",
+                <div style={{fontFamily:"var(--font-display)",
                   fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}>{val}</div>
-                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-xs)',
+                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',
                   color:'var(--tx3)',fontWeight:700,marginTop:4,textTransform:'uppercase',
                   letterSpacing:'1px'}}>{label}</div>
               </div>
@@ -537,12 +537,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'cancionero': return (
         <Card onClick={()=>onNavigate('repertorio')} key="cancionero">
           <Lbl>{tx.songsCardLbl}</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-3xl)',
+          <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',
+          <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',
             fontWeight:300,marginTop:4}}>{tx.songs}</div>
           {feat.cancioneroUniversal&&(
-            <div style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
+            <div style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontFamily:"var(--font-body)",
               fontWeight:700,marginTop:6}}>{tx.universalCheck}</div>
           )}
         </Card>
@@ -551,10 +551,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'plan': return (
         <Card onClick={()=>onNavigate('backstage')} key="plan">
           <Lbl>{tx.myPlanLbl}</Lbl>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-3xl)',
+          <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{planLabel}</div>
           {planId==='lite'&&(
-            <div style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",
+            <div style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontFamily:"var(--font-body)",
               fontWeight:700,marginTop:8}}>{tx.upgradeLbl}</div>
           )}
         </Card>
@@ -567,10 +567,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <path d="M4 4h13l3 3v13H4z"/><path d="M17 4v6h6"/>
             </svg>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-              letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.lastNotifications}</span>
+              letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>{tx.lastNotifications}</span>
           </div>
           {NOTIFICACIONES_DEMO.length===0?(
-            <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:300,
+            <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
               {tx.noNotificationsYet}
             </div>
@@ -584,9 +584,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     <span style={{fontSize:'var(--fs-md)'}}>{n.icon}</span>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:700,
+                    <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
                       color:'var(--tx)',lineHeight:1.4}}>{n.texto}</div>
-                    <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
+                    <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:2}}>
                       {n.tiempo}
                     </div>
                   </div>
@@ -619,12 +619,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
                 onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
                 <div style={{fontSize:'var(--fs-xl)'}}>{tut.icon}</div>
-                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',fontWeight:700,
+                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
                   color:'var(--tx)',lineHeight:1.3}}>{tut.titulo}</div>
-                <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-sm)',fontWeight:300,
+                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
                   color:'var(--tx3)',lineHeight:1.5}}>{tut.resumen}</div>
                 <div style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>{tx.seeMoreLbl}</div>
+                  fontFamily:"var(--font-body)",marginTop:2}}>{tx.seeMoreLbl}</div>
               </div>
             ))}
           </div>
@@ -641,7 +641,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   style={{width:'100%',background:'none',border:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
                     justifyContent:'space-between',gap:8}}>
-                  <span style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-md)',fontWeight:700,
+                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-md)',fontWeight:700,
                     color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
                     strokeWidth="2" style={{flexShrink:0,transform:faqsOpen[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
@@ -649,7 +649,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   </svg>
                 </button>
                 {faqsOpen[i]&&(
-                  <div style={{fontFamily:"'Lexend Giga',sans-serif",fontSize:'var(--fs-base)',color:'var(--tx2)',
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',color:'var(--tx2)',
                     fontWeight:300,lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>
                 )}
               </div>
@@ -663,7 +663,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>{tx.plansSetSyncLbl}</Lbl>
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.personalPlansLbl}</div>
+            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.personalPlansLbl}</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
               const isCurrent = !cuentaEquipo?.activa && planId===p.id;
@@ -673,8 +673,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   border:isCurrent?'1px solid rgba(var(--gn-rgb),.35)':'1px solid var(--s3)'}}>
                   <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:isCurrent?'var(--gn)':'var(--tx3)',
                     textTransform:'uppercase',letterSpacing:'.5px',marginBottom:5,
-                    fontFamily:"'Lexend Giga',sans-serif"}}>{p.label}</div>
-                  <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-emph)',
+                    fontFamily:"var(--font-body)"}}>{p.label}</div>
+                  <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-emph)',
                     color:'var(--tx)',fontWeight:400}}>
                     {p.precioMensual===0?tx.freeLbl:`$${p.precioMensual}`}
                   </div>
@@ -686,7 +686,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
+            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
             {TRAMOS_EQUIPO.map(t=>{
               const isCurrentTramo = cuentaEquipo?.activa && cuentaEquipo.tramoId===t.id;
@@ -699,11 +699,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   background:isCurrentTramo?'rgba(var(--gn-rgb),.1)':'var(--s1)',
                   border:isCurrentTramo?'1px solid rgba(var(--gn-rgb),.35)':'1px solid var(--s3)'}}>
                   <div>
-                    <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:400}}>{t.label}</span>
-                    {t.marcaBlanca&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{tx.whiteLabelIncluded}</div>}
-                    {isCurrentTramo&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",marginTop:1}}>{tx.yourPlanLbl}</div>}
+                    <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:400}}>{t.label}</span>
+                    {t.marcaBlanca&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontFamily:"var(--font-body)",marginTop:1}}>{tx.whiteLabelIncluded}</div>}
+                    {isCurrentTramo&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:1}}>{tx.yourPlanLbl}</div>}
                   </div>
-                  <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,flexShrink:0}}>{precio}</span>
+                  <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',fontFamily:"var(--font-body)",fontWeight:700,flexShrink:0}}>{precio}</span>
                 </div>
               );
             })}
@@ -711,7 +711,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
           <div style={{marginTop:12,textAlign:'center'}}>
             <span style={{fontSize:'var(--fs-sm)',color:'var(--gn)',fontWeight:700,cursor:'pointer',
-              fontFamily:"'Lexend Giga',sans-serif"}} onClick={()=>onNavigate('backstage')}>
+              fontFamily:"var(--font-body)"}} onClick={()=>onNavigate('backstage')}>
               {tx.viewFullPlansLbl}
             </span>
           </div>
@@ -738,11 +738,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           background:'linear-gradient(180deg,transparent 20%,var(--bg) 100%)'}}/>
         <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',
           display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,
+          <div style={{fontFamily:"var(--font-display)",fontWeight:200,
             fontSize:'var(--fs-display)',color:'#fff',lineHeight:1.1}}>
             Hola <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:'var(--fs-base)',
+          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
             color:'rgba(255,255,255,.45)',marginTop:4}}>
             SetSync · {mode==='iglesia'?tx.footerTaglineIglesia:tx.footerTaglineBanda}
           </div>
@@ -758,7 +758,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
             <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
           </svg>
-          <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+          <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:300}}>
             Mantén presionado y arrastra para reordenar
           </span>
         </div>
@@ -785,9 +785,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         {/* ── Bloque marketero — fijo al final, fuera del reordenamiento ── */}
         <div style={{marginTop:4,padding:'var(--sp-md)',borderRadius:'var(--rad-lg)',
           background:'var(--s1)',border:'1px solid rgba(var(--gn-rgb),.15)'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,
             fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>Por qué SetSync es el mejor</div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:'var(--fs-base)',
+          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
             color:'var(--tx2)',marginBottom:12,lineHeight:1.5}}>
             La única pantalla que un músico necesita en el escenario.
           </div>
@@ -803,9 +803,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 </div>
                 <div style={{flex:1,paddingTop:2}}>
                   <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',
-                    fontFamily:"'Lexend Giga',sans-serif",marginBottom:1}}>{f.title}</div>
+                    fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
                   <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.4}}>{f.desc}</div>
+                    fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
                 </div>
               </div>
             ))}

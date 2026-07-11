@@ -47,11 +47,11 @@ export function MonitorPanel({
           <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
         </svg>
         <div style={{flex:1,fontSize:'var(--fs-xs)',fontWeight:700,color:mesaConectada?'var(--gn)':'var(--tx3)',
-          fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',letterSpacing:'1px'}}>
+          fontFamily:"var(--font-body)",textTransform:'uppercase',letterSpacing:'1px'}}>
           {mesaConectada?`Conectado · ${mesaNombre}`:'Monitor · Sin conexión'}
         </div>
         <div style={{display:'flex',alignItems:'center',gap:3}}>
-          <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>Bus</span>
+          <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>Bus</span>
           {[1,2,3,4].map(b=>(
             <button key={b} onClick={()=>setMonitorBus(b)}
               style={{width:20,height:20,borderRadius:5,border:'none',cursor:'pointer',
@@ -65,7 +65,7 @@ export function MonitorPanel({
           {['A','B'].map(l=>(
             <button key={l} onClick={()=>setMonitorLayer(l)}
               style={{padding:'2px 8px',border:'none',cursor:'pointer',fontSize:'var(--fs-2xs)',fontWeight:700,
-                fontFamily:"'Lexend Giga',sans-serif",
+                fontFamily:"var(--font-body)",
                 background:monitorLayer===l?'rgba(var(--gn-rgb),.25)':'transparent',
                 color:monitorLayer===l?'var(--gn)':'var(--tx3)'}}>
               {l}
@@ -96,7 +96,7 @@ export function MonitorPanel({
             }}>
               <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,
                 color:muted?'var(--rd)':vol>90?'var(--rd)':vol>75?'#f59e0b':'var(--tx)',
-                fontFamily:"'Lexend Giga',sans-serif",letterSpacing:'.3px',
+                fontFamily:"var(--font-body)",letterSpacing:'.3px',
                 flexShrink:0,textAlign:'center'}}>
                 {dbStr}
               </div>
@@ -108,7 +108,7 @@ export function MonitorPanel({
                     <div key={db} style={{
                       position:'absolute',right:0,bottom:`${pct}%`,
                       fontSize:'var(--fs-3xs)',color:'rgba(255,255,255,.3)',
-                      fontFamily:"'Lexend Giga',sans-serif",
+                      fontFamily:"var(--font-body)",
                       lineHeight:1,transform:'translateY(50%)',textAlign:'right',
                     }}>{db>0?'+'+db:db}</div>
                   ))}
@@ -174,7 +174,7 @@ export function MonitorPanel({
                   </div>
                 </div>
               </div>
-              <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",
+              <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
                 fontWeight:700,flexShrink:0,letterSpacing:'.5px'}}>CH {ci+1}</div>
               <button onClick={e=>{
                 e.stopPropagation();
@@ -184,7 +184,7 @@ export function MonitorPanel({
                 flexShrink:0,
                 background:muted?'#8B0000':'rgba(255,255,255,.06)',
                 color:muted?'#ff4444':'var(--tx3)',
-                fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
+                fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
                 letterSpacing:'.5px',
                 boxShadow:muted?'0 0 8px rgba(255,68,68,.4)':'none',
               }}>MUTE</button>

@@ -96,7 +96,7 @@ export function SecuenciaPanel({
                   display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
                   transition:'all .15s'}}>
                 <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:isActive?g.color:`${g.color}66`,
-                  fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',lineHeight:1}}>{g.label}</span>
+                  fontFamily:"var(--font-body)",textTransform:'uppercase',lineHeight:1}}>{g.label}</span>
                 <span style={{fontSize:'var(--fs-3xs)',color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
               </button>
             );
@@ -181,7 +181,7 @@ export function SecuenciaPanel({
           onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
 
         <div style={{textAlign:'center',padding:'0 6px'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',
+          <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',
             color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
           <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontWeight:700,letterSpacing:1}}>BPM</div>
         </div>
@@ -211,7 +211,7 @@ export function SecuenciaPanel({
               border:'1px solid rgba(255,255,255,.12)',
               background:'rgba(255,255,255,.07)',color:'var(--ac)',
               fontSize:'var(--fs-emph)',fontWeight:700,
-              fontFamily:"'Special Gothic Expanded One',sans-serif",
+              fontFamily:"var(--font-display)",
               outline:'none',WebkitAppearance:'none',appearance:'none',
               cursor:'pointer',minWidth:52}}>
             {CIFRAS.map(c=><option key={c} value={c} style={{background:'#0a0a0a'}}>{c}</option>)}
@@ -281,13 +281,13 @@ export function SecuenciaPanel({
       {/* ── Multitracks con faders (8+8) ── */}
       <div>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
+          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)",flex:1}}>Multitracks</div>
           {/* Selector Capa A/B */}
           <div style={{display:'inline-flex',borderRadius:16,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
               <button key={l} onClick={()=>setSeqLayer(l)}
                 style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:'var(--fs-2xs)',fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",
+                  fontFamily:"var(--font-body)",
                   background:seqLayer===l?'rgba(255,255,255,.12)':'transparent',
                   color:seqLayer===l?'var(--tx)':'var(--tx3)'}}>
                 {l} <span style={{opacity:.5}}>{l==='A'?'1–8':'9–16'}</span>
@@ -310,7 +310,7 @@ export function SecuenciaPanel({
                   <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(var(--rd-rgb),.5)':tr.color,flexShrink:0}}/>
                   {/* Label */}
                   <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
+                    fontFamily:"var(--font-body)",textAlign:'center',
                     width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                     padding:'0 2px',flexShrink:0}}>{tr.label}</div>
                   {/* Fader Secuencia */}
@@ -347,11 +347,11 @@ export function SecuenciaPanel({
                   </div>
                   {/* Valor */}
                   <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
-                    fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
+                    fontFamily:"var(--font-body)",flexShrink:0}}>{vol}</div>
                   {/* Mute */}
                   <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
                     style={{fontSize:'var(--fs-3xs)',fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
-                      cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
+                      cursor:'pointer',fontFamily:"var(--font-body)",flexShrink:0,
                       background:muted?'var(--rd)':'rgba(255,255,255,.08)',
                       color:muted?'#fff':'var(--tx3)'}}>
                     {muted?'MUTE':'M'}
@@ -362,7 +362,7 @@ export function SecuenciaPanel({
           </div>
         ):(
           <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>Sin pistas para esta canción.</div>
           </div>
         )}
       </div>

@@ -49,7 +49,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
       <button ref={btnRef} type="button" onClick={toggle} disabled={disabled}
         style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,
           border:'1px solid var(--bd)',borderRadius:8,background:'var(--s3)',color:'var(--tx)',
-          fontSize:'var(--fs-md)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+          fontSize:'var(--fs-md)',fontWeight:700,fontFamily:"var(--font-body)",
           padding:'6px 10px',cursor:disabled?'default':'pointer',opacity:disabled?.5:1,
           width:'100%',boxSizing:'border-box',...style}}>
         <span style={{overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1,textAlign:'left'}}>
@@ -70,7 +70,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
             {options.map(o=>(
               <div key={o.value} onClick={()=>{onChange(o.value);setOpen(false);}}
                 style={{padding:'8px 10px',borderRadius:6,cursor:'pointer',fontSize:'var(--fs-md)',fontWeight:700,
-                  fontFamily:"'Lexend Giga',sans-serif",
+                  fontFamily:"var(--font-body)",
                   background:String(o.value)===String(value)?'rgba(var(--gn-rgb),.15)':'transparent',
                   color:String(o.value)===String(value)?'var(--gn)':'var(--tx2)'}}>
                 {o.label}
@@ -130,7 +130,7 @@ export function MiniCal({eventDays=[]}){
       {exp&&(
         <>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:7}}>
-            <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:'var(--fs-base)',color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
+            <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-base)',color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
             <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontWeight:700}}>{y}</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'1px'}}>

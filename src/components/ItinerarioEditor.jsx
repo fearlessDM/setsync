@@ -18,26 +18,26 @@ export function ItinerarioEditor({items,onChange,lang='es'}){
   return(
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif"}}>{tx.eventSchedule}</span>
-        <button onClick={()=>setEdit(v=>!v)} style={{fontSize:'var(--fs-base)',fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif"}}>
+        <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>{tx.eventSchedule}</span>
+        <button onClick={()=>setEdit(v=>!v)} style={{fontSize:'var(--fs-base)',fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',border:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>
           {edit?tx.done:tx.edit}
         </button>
       </div>
       {items.map((it,i)=>(
         <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'5px 0',borderBottom:'1px solid var(--bd)'}}>
           {edit
-            ?<input value={it.hora} onChange={e=>update(i,'hora',e.target.value)} style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',background:'rgba(200,169,126,.08)',border:'1px solid rgba(200,169,126,.2)',borderRadius:5,padding:'2px 6px',width:52,outline:'none'}}/>
-            :<span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
+            ?<input value={it.hora} onChange={e=>update(i,'hora',e.target.value)} style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',background:'rgba(200,169,126,.08)',border:'1px solid rgba(200,169,126,.2)',borderRadius:5,padding:'2px 6px',width:52,outline:'none'}}/>
+            :<span style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
           }
           {edit
-            ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)',background:'var(--s2)',border:'1px solid var(--bd)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"'Lexend Giga',sans-serif"}}/>
+            ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)',background:'var(--s2)',border:'1px solid var(--bd)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"var(--font-body)"}}/>
             :<span style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)'}}>{it.label}</span>
           }
           {edit&&<button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--rd)',cursor:'pointer',fontSize:'var(--fs-emph)',lineHeight:1,flexShrink:0}}>×</button>}
         </div>
       ))}
       {edit&&(
-        <button onClick={addItem} style={{marginTop:8,fontSize:'var(--fs-base)',fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',gap:4}}>
+        <button onClick={addItem} style={{marginTop:8,fontSize:'var(--fs-base)',fontWeight:700,color:'var(--ac)',background:'none',border:'none',cursor:'pointer',fontFamily:"var(--font-body)",display:'flex',alignItems:'center',gap:4}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           {tx.addItem}
         </button>

@@ -101,8 +101,8 @@ export function MusicXMLViewer({url,lang='es'}){
     <div style={{color:'var(--tx2)',fontSize:'var(--fs-lg)',textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
   );
   return(
-    <div style={{width:'100%',maxWidth:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
+    <div style={{width:'100%',maxWidth:700,fontFamily:"var(--font-body)"}}>
+      <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
       {content.composer&&<div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',marginBottom:20}}>{content.composer}</div>}
       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
         {content.measures.map((m,mi)=>(
