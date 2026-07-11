@@ -32,6 +32,7 @@
    se tocan — son alias hacia esta escala para que nada de lo que ya
    usa var(--fs-title3) etc. se rompa. Todo fontSize inline nuevo,
    módulo por módulo, debe salir de aquí, nunca un número suelto. */
+--fs-3xs:7px;--fw-3xs:700;                                    /* 7px  · micro: capo, marcas IN/OUT, compases */
 --fs-2xs:var(--fs-caption);--fw-2xs:var(--fw-caption);      /* 8px  · caption mínimo */
 --fs-xs:var(--fs-label);--fw-xs:var(--fw-label);            /* 9px  · eyebrow/label */
 --fs-sm:10px;--fw-sm:700;                                    /* 10px · badges, chips */
@@ -134,6 +135,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .fs-caption{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-caption);font-weight:var(--fw-caption);color:var(--tx3);}
 
 /* ── ESCALA EXTENDIDA v48 — clases listas para usar ── */
+.fs-3xs{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-3xs);font-weight:var(--fw-3xs);color:var(--tx3);}
 .fs-2xs{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-2xs);font-weight:var(--fw-2xs);color:var(--tx3);}
 .fs-xs{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-xs);font-weight:var(--fw-xs);color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;}
 .fs-sm{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-sm);font-weight:var(--fw-sm);color:var(--tx);}
