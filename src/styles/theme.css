@@ -7,7 +7,7 @@
 --div:rgba(255,255,255,.2);--em:rgba(255,255,255,.3);--dis:.5;
 --ov-modal:rgba(0,0,0,.6);--ov-strong:rgba(0,0,0,.8);
 --ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.68);--tx3:#7a7e88;
---gn:#30C0B7;--rd:#FD8083;--btn-c:#0E1515;
+--gn:#30C0B7;--gn-rgb:48,192,183;--rd:#FD8083;--rd-rgb:253,128,131;--btn-c:#0E1515;
 
 /* ── ESCALA TIPOGRÁFICA — aprobada v47 Parte B ──
    fs-title1/title2 usan clamp() para crecer proporcionalmente entre
@@ -94,14 +94,14 @@
 --bd:rgba(236,238,240,.12);--bd2:rgba(236,238,240,.2);
 --div:rgba(236,238,240,.22);--em:rgba(236,238,240,.32);
 --ac:#c4c6c8;--tx:#eceef0;--tx2:#949698;--tx3:#7c7c7d;
---gn:#8FA69C;--rd:#B87A72;--btn-c:#0E1515;
+--gn:#8FA69C;--gn-rgb:143,166,156;--rd:#B87A72;--rd-rgb:184,122,114;--btn-c:#0E1515;
 }
 [data-theme=costa]{
 --bg:#061a1c;--s1:rgba(73,192,212,.05);--s2:rgba(73,192,212,.03);--s3:rgba(73,192,212,.1);
 --bd:rgba(73,192,212,.14);--bd2:rgba(73,192,212,.26);
 --div:rgba(73,192,212,.3);--em:rgba(73,192,212,.4);
 --ac:#49C0D4;--tx:#f5fffe;--tx2:rgba(245,255,254,.62);--tx3:#5c8189;
---gn:#49C0D4;--rd:#F6785F;--btn-c:#061a1c;
+--gn:#49C0D4;--gn-rgb:73,192,212;--rd:#F6785F;--rd-rgb:246,120,95;--btn-c:#061a1c;
 }
 
 /* ── BASE ── */
