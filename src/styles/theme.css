@@ -2,12 +2,12 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
 /* ── Colores ── */
---bg:#080809;--s1:rgba(255,255,255,.04);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
+--bg:#0E1515;--s1:rgba(255,255,255,.04);--s2:rgba(255,255,255,.025);--s3:rgba(255,255,255,.08);
 --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.15);
---div:rgba(255,255,255,.2);--em:rgba(255,255,255,.3);
+--div:rgba(255,255,255,.2);--em:rgba(255,255,255,.3);--dis:.5;
 --ov-modal:rgba(0,0,0,.6);--ov-strong:rgba(0,0,0,.8);
 --ac:#ffffff;--tx:#f3f1ed;--tx2:rgba(243,241,237,.68);--tx3:#7a7e88;
---gn:#30C0B7;--rd:#FD8083;--btn-c:#080809;
+--gn:#30C0B7;--rd:#FD8083;--btn-c:#0E1515;
 
 /* ── ESCALA TIPOGRÁFICA — aprobada v47 Parte B ──
    fs-title1/title2 usan clamp() para crecer proporcionalmente entre
@@ -26,6 +26,23 @@
 --fs-ui:11px;--fw-ui:700;
 --fs-label:9px;--fw-label:900;
 --fs-caption:8px;--fw-caption:700;
+
+/* ── ESCALA EXTENDIDA v48 — llena los huecos que hoy se resuelven con
+   números sueltos (10px, 12px, 15-17px). Los tokens v47 de arriba NO
+   se tocan — son alias hacia esta escala para que nada de lo que ya
+   usa var(--fs-title3) etc. se rompa. Todo fontSize inline nuevo,
+   módulo por módulo, debe salir de aquí, nunca un número suelto. */
+--fs-2xs:var(--fs-caption);--fw-2xs:var(--fw-caption);      /* 8px  · caption mínimo */
+--fs-xs:var(--fs-label);--fw-xs:var(--fw-label);            /* 9px  · eyebrow/label */
+--fs-sm:10px;--fw-sm:700;                                    /* 10px · badges, chips */
+--fs-base:var(--fs-body);--fw-base:400;                      /* 11px · UI/nav default */
+--fs-md:12px;--fw-md:400;                                    /* 12px · inputs, body */
+--fs-lg:var(--fs-title3);--fw-lg:400;                         /* 13px · título de card */
+--fs-emph:clamp(14.5px, 14px + 0.25vw, 16px);--fw-emph:400;  /* 15-16px · texto líder */
+--fs-xl:var(--fs-title2);--fw-xl:400;                         /* 16-19px · título de sección */
+--fs-2xl:var(--fs-title1);--fw-2xl:400;                       /* 21-27px · título de módulo */
+--fs-3xl:clamp(24px, 22px + 1vw, 32px);--fw-3xl:400;          /* 24-32px · título de página */
+--fs-4xl:clamp(32px, 27px + 2.2vw, 46px);--fw-4xl:400;        /* 32-46px · hero/login */
 
 /* ── Subtítulo estándar (debajo de fs-title1/title2) ──
    Mismo criterio: crece proporcionalmente, nunca por debajo del tamaño
@@ -71,29 +88,20 @@
 }
 
 /* ── TEMAS ── */
-[data-theme=cream]{
---bg:#f0ebe0;--s1:rgba(0,0,0,0.04);--s2:rgba(0,0,0,0.02);--s3:rgba(0,0,0,0.07);
---bd:rgba(0,0,0,0.1);--bd2:rgba(0,0,0,0.18);
---ac:#1a1b1e;--tx:#1a1208;--tx2:#5a4a30;--tx3:#a09070;
---gn:#3a7a50;--rd:#c04040;--btn-c:#fffdf7;
+/* Estudio Nocturno = :root (arriba). Solo quedan estos 2 seleccionables. */
+[data-theme=papel]{
+--bg:#0E1515;--s1:rgba(236,238,240,.045);--s2:rgba(236,238,240,.025);--s3:rgba(236,238,240,.09);
+--bd:rgba(236,238,240,.12);--bd2:rgba(236,238,240,.2);
+--div:rgba(236,238,240,.22);--em:rgba(236,238,240,.32);
+--ac:#c4c6c8;--tx:#eceef0;--tx2:#949698;--tx3:#7c7c7d;
+--gn:#8FA69C;--rd:#B87A72;--btn-c:#0E1515;
 }
-[data-theme=gray]{
---bg:#111113;--s1:rgba(255,255,255,0.06);--s2:rgba(255,255,255,0.03);--s3:rgba(255,255,255,0.10);
---bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);
---ac:#e0e0e0;--tx:#f0ede8;--tx2:#aaa49e;--tx3:#60605a;
---gn:#5ecea0;--rd:#ff5252;--btn-c:#111;
-}
-[data-theme=bubblegum]{
---bg:#0d1f1f;--s1:rgba(255,105,180,.07);--s2:rgba(255,105,180,.04);--s3:rgba(255,105,180,.12);
---bd:rgba(255,105,180,.15);--bd2:rgba(255,105,180,.28);
---ac:#FF69B4;--tx:#e8fff8;--tx2:rgba(232,255,248,.55);--tx3:#5a8a7a;
---gn:#00F0FF;--rd:#ff4488;
-}
-[data-theme=cosmos]{
---bg:#07081a;--s1:rgba(167,139,250,.07);--s2:rgba(167,139,250,.04);--s3:rgba(167,139,250,.12);
---bd:rgba(167,139,250,.15);--bd2:rgba(167,139,250,.28);
---ac:#a78bfa;--tx:#e8e4ff;--tx2:rgba(232,228,255,.5);--tx3:#6060a0;
---gn:#34d399;--rd:#f87171;
+[data-theme=costa]{
+--bg:#061a1c;--s1:rgba(73,192,212,.05);--s2:rgba(73,192,212,.03);--s3:rgba(73,192,212,.1);
+--bd:rgba(73,192,212,.14);--bd2:rgba(73,192,212,.26);
+--div:rgba(73,192,212,.3);--em:rgba(73,192,212,.4);
+--ac:#49C0D4;--tx:#f5fffe;--tx2:rgba(245,255,254,.62);--tx3:#5c8189;
+--gn:#49C0D4;--rd:#F6785F;--btn-c:#061a1c;
 }
 
 /* ── BASE ── */
@@ -125,9 +133,20 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .fs-label{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-label);font-weight:var(--fw-label);color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;}
 .fs-caption{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-caption);font-weight:var(--fw-caption);color:var(--tx3);}
 
+/* ── ESCALA EXTENDIDA v48 — clases listas para usar ── */
+.fs-2xs{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-2xs);font-weight:var(--fw-2xs);color:var(--tx3);}
+.fs-xs{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-xs);font-weight:var(--fw-xs);color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;}
+.fs-sm{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-sm);font-weight:var(--fw-sm);color:var(--tx);}
+.fs-base{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-base);font-weight:var(--fw-base);color:var(--tx2);}
+.fs-md{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-md);font-weight:var(--fw-md);color:var(--tx);}
+.fs-lg{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-lg);font-weight:var(--fw-lg);color:var(--tx);}
+.fs-emph{font-family:'Lexend Giga',sans-serif;font-size:var(--fs-emph);font-weight:var(--fw-emph);color:var(--tx);}
+.fs-2xl{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-2xl);font-weight:var(--fw-2xl);color:var(--tx);}
+.fs-3xl{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-3xl);font-weight:var(--fw-3xl);color:var(--tx);}
+.fs-4xl{font-family:'Special Gothic Expanded One',sans-serif;font-size:var(--fs-4xl);font-weight:var(--fw-4xl);color:var(--tx);}
+
 /* ── BG FX ── */
 .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;}
-[data-theme=cream] .bg-fx,[data-theme=gray] .bg-fx{opacity:.2;}
 
 /* ── CARDS ── */
 .card{
@@ -203,7 +222,6 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 }
 .inp:focus{border-color:rgba(255,255,255,.25);box-shadow:0 0 0 3px rgba(255,255,255,.06);}
 .inp::placeholder{color:var(--tx3);}
-[data-theme=cream] .inp,[data-theme=gray] .inp{background:rgba(0,0,0,.04);}
 
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--rad-full);font-size:10px;font-weight:700;font-family:'Lexend Giga',sans-serif;}
@@ -213,8 +231,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 
 /* ── SIDEBAR ── */
 .sb{position:fixed;left:0;top:0;bottom:0;width:200px;background:#0e0e10;border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:width .25s cubic-bezier(.4,0,.2,1);overflow:hidden;}
-[data-theme=cream] .sb{background:rgba(236,230,218,.97);}
-[data-theme=gray] .sb{background:#0d0d0f;}
+
 .sb.col{width:64px;}
 /* Logo = botón de toggle — ocupa todo el sb-top */
 .sb-top{display:flex;align-items:center;padding:0;border-bottom:1px solid var(--bd);min-height:62px;flex-shrink:0;cursor:pointer;transition:background .15s;user-select:none;}
@@ -259,7 +276,6 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 /* ── SIDEBAR COLLAPSED ── */
 .sb.col .sb-top{justify-content:center;}
 
-
 .logo-txt{display:none;}
 
 /* ── MAIN CONTENT ── */
@@ -292,8 +308,7 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 
 /* ── BOTTOM NAV (mobile) ── */
 .bot{display:none;position:fixed;bottom:0;left:0;right:0;background:#0e0e10;backdrop-filter:blur(26px);border-top:1px solid var(--bd);z-index:20;padding:7px 0 calc(env(safe-area-inset-bottom,0px) + 8px);justify-content:space-around;align-items:center;}
-[data-theme=cream] .bot{background:rgba(236,230,218,.97);}
-[data-theme=gray] .bot{background:#0d0d0f;}
+
 .bn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 7px;color:var(--tx3);transition:all .15s;font-family:'Lexend Giga',sans-serif;}
 .bn.on{color:var(--ac);}
 .bn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;}
