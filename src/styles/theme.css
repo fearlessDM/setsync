@@ -573,3 +573,8 @@ h1,h2,.title-lg{font-family:'Special Gothic Expanded One',sans-serif;font-weight
 .monitor-connected-icon {
   animation: monitor-pulse 1.8s ease-in-out infinite;
 }
+/* Spinner del import de archivos (Cancionero.jsx, modo 'importar') */
+@keyframes spin {
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}

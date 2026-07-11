@@ -25,7 +25,7 @@ import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } fr
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -245,11 +245,17 @@ export default function App(){
   // encontrado y corregido en esta sesión, reproducido ejecutando el
   // bundle de producción real fuera del navegador).
   const [contentDB,setContentDB]=useState(()=>({...(appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA)}));
+  // importDB: por canción (base name) — {status:'sin_revisar'|'revisada',
+  // warnings:[string]}. Nace vacío (canciones de fábrica/manuales no tienen
+  // entrada = sin badge). Solo lo puebla el import rule-based (Cancionero.jsx,
+  // modo 'importar') y solo lo muta guardar() al confirmar una edición.
+  const [importDB,setImportDB]=useState({});
 
   const skipVarSaveRef = useRef(false);
   const skipArchSaveRef = useRef(false);
   const skipEstrSaveRef = useRef(false);
   const skipContentSaveRef = useRef(false);
+  const skipImportSaveRef = useRef(false);
   useEffect(()=>{
     // Misma espera que el efecto de eventos/personas/equipos más arriba:
     // sin currentUser confirmado, accountId puede no coincidir todavía
@@ -291,7 +297,15 @@ export default function App(){
         setContentDB(data);
       }
     });
-    return ()=>{ unsubVar(); unsubArch(); unsubEstr(); unsubContent(); };
+    const unsubImport = subscribeImportDB(accountId, data=>{
+      if(data===null){
+        guardarImportDB(accountId, importDB);
+      } else {
+        skipImportSaveRef.current = true;
+        setImportDB(data);
+      }
+    });
+    return ()=>{ unsubVar(); unsubArch(); unsubEstr(); unsubContent(); unsubImport(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online, currentUser]);
   // Los 4 efectos de guardado automático que siguen comparten el mismo bug
@@ -328,6 +342,12 @@ export default function App(){
     guardarContentDB(accountId, contentDB);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[contentDB, currentUser]);
+  useEffect(()=>{
+    if(!firebaseListo || !online || currentUser===undefined) return;
+    if(skipImportSaveRef.current){ skipImportSaveRef.current=false; return; }
+    guardarImportDB(accountId, importDB);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[importDB, currentUser]);
 
   const [songViewSongs,setSongViewSongs]=useState(null);
   const [songView,setSongView]=useState(null);
@@ -784,7 +804,7 @@ Tuya es la gloria, Por siempre amén.
             onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             userRole={userRole} onToast={showToast} lang={lang}
             equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}

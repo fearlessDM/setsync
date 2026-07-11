@@ -221,3 +221,23 @@ export async function guardarContentDB(accountId, db_){
   if(!firebaseListo) return;
   await setDoc(doc(db, 'accounts', accountId, 'data', 'contentDB'), {db: db_});
 }
+
+// ── importDB — estado de revisión por canción importada (base name →
+// {status:'sin_revisar'|'revisada', warnings:[string]}). Separado de
+// contentDB a propósito: es metadata SOBRE el origen de la canción (vino
+// de un parser automático), no el contenido en sí — así una canción nunca
+// pierde su historial de import solo por editarse el texto, y las
+// canciones que no vienen de import (manuales, de fábrica) simplemente no
+// tienen entrada acá (undefined = no aplica badge). Mismo patrón un-solo-
+// documento-sincronizado-entero que estructurasDB/contentDB.
+export function subscribeImportDB(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'importDB');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().db||{}) : null);
+  });
+}
+export async function guardarImportDB(accountId, db_){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'importDB'), {db: db_});
+}

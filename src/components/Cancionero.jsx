@@ -9,8 +9,10 @@ import { CustomSelect } from './common';
 import { BLOQUES_CHIPS, getColorBloque, abrevBloque, parseBloques } from './songview/estructura';
 import { BloqueFranjas, parseStackedLine } from './songview/EditorAcordes';
 import { detectarTonalidad } from '../utils/music';
+import { extraerTextoDeArchivo } from '../utils/fileExtract';
+import { parseCancionDesdeTexto } from '../utils/importParser';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},songParaEditar=null,onSongParaEditarConsumido=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},importDB={},setImportDB=()=>{},songParaEditar=null,onSongParaEditarConsumido=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -71,6 +73,19 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [partituraSel,setPartituraSel]=useState(null);
   const [midiPlaying,setMidiPlaying]=useState(false);
   const [crearModo,setCrearModo]=useState(null);
+  // ── Import local (rule-based, sin IA) — batch multi-archivo ─────────────
+  // archivosImport: [{id, nombreArchivo, status:'procesando'|'ok'|'error',
+  // nombre, autor, texto, warnings:[], error, incluir:bool}] — una fila por
+  // archivo subido. importResumen se llena solo DESPUÉS de confirmar el
+  // batch, para mostrar la pantalla de resumen final.
+  const [archivosImport,setArchivosImport]=useState([]);
+  const [importProcesando,setImportProcesando]=useState(false);
+  const [importResumen,setImportResumen]=useState(null);
+  // Cuando se abre el editor manual sobre una canción con
+  // importStatus:'sin_revisar' (viene de songParaEditar), acá quedan sus
+  // importWarnings para mostrarlas arriba del editor — ver useEffect de
+  // precarga más abajo y el punto 3 de la spec de revisión.
+  const [avisosImportEdicion,setAvisosImportEdicion]=useState(null);
 
   // ── Precarga del editor manual cuando se llega desde "Editar" en SongView ──
   // Antes, el botón "Editar" de SongView solo activaba un modo de arrastre
@@ -110,6 +125,11 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     // manualmente" desde que se precarga.
     keyTocadaManualRef.current=true;
     volverASongViewRef.current=songParaEditar;
+    // Punto 3 de la spec de revisión: si esta canción nació de un import
+    // sin revisar, se muestran sus avisos arriba del editor. Chequeo exacto
+    // contra 'sin_revisar' (no truthy genérico) — canciones sin entrada en
+    // importDB (undefined) o ya 'revisada' no muestran nada.
+    setAvisosImportEdicion(importDB[songParaEditar]?.status==='sin_revisar'?(importDB[songParaEditar].warnings||[]):null);
     setShowCrear(true);setCrearModo('manual');
     onSongParaEditarConsumido();
   },[songParaEditar]);
@@ -201,9 +221,22 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     const arch=archivosDB[s.n]||{};
     const totalArchivos=1+(variacionesDB[s.n]||[]).length+(arch.secuencia||[]).length+(arch.trackReferencia?1:0); // 1 = original (letra/acordes)
     const hayExtra=totalArchivos>1;
+    // Chequeo exacto contra 'sin_revisar' — undefined (canción manual/de
+    // fábrica) o 'revisada' nunca muestran el badge. Punto 2 de la spec.
+    const porRevisar=importDB[s.n]?.status==='sin_revisar';
+    const conteoAvisos=(importDB[s.n]?.warnings||[]).length;
     return(
       <div className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}>
-        <div className="scard-n" style={{paddingRight:32}}>{s.n}</div>
+        {porRevisar&&(
+          <div title={conteoAvisos>0?`${conteoAvisos} aviso${conteoAvisos===1?'':'s'} del parser para revisar`:'Importada automáticamente, sin revisar todavía'}
+            style={{position:'absolute',top:6,left:6,padding:'2px 7px',borderRadius:100,
+              background:'rgba(224,160,32,.15)',border:'1px solid rgba(224,160,32,.35)',
+              fontSize:8,fontWeight:800,color:'#e0a020',fontFamily:"'Lexend Giga',sans-serif",
+              letterSpacing:.3,zIndex:1}}>
+            Por revisar{conteoAvisos>0?` (${conteoAvisos})`:''}
+          </div>
+        )}
+        <div className="scard-n" style={{paddingRight:32,paddingTop:porRevisar?14:0}}>{s.n}</div>
         <div className="scard-s">{s.key} · <span style={{color:'var(--tx3)',fontWeight:600}}>{s.bpm} BPM</span></div>
         <button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}}
           title="Ver carpeta de esta canción"
@@ -246,7 +279,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             En Setsync una canción es una carpeta. Dentro podrás agregar variaciones, partituras por instrumento y audios de referencia.
           </div>
           {/* Opción 1: Manual */}
-          <div onClick={()=>setCrearModo('manual')}
+          <div onClick={()=>{setCrearModo('manual');setAvisosImportEdicion(null);}}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
               borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
               marginBottom:10,cursor:'pointer'}}>
@@ -273,7 +306,36 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </div>
-          {/* Opción 2: Drive masivo (enlace de Drive) */}
+          {/* Opción 2: Import local — .txt/.docx/.pdf, batch, parser por reglas (sin IA) */}
+          <div onClick={()=>{setCrearModo('importar');setArchivosImport([]);setImportResumen(null);}}
+            style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
+              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              marginBottom:10,cursor:'pointer'}}>
+            <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
+              background:'rgba(48,192,183,.1)',
+              display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                stroke="var(--gn)" strokeWidth="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/>
+              </svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:'var(--tx)',
+                fontFamily:"'Lexend Giga',sans-serif",marginBottom:3}}>
+                Importar archivos
+              </div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4}}>
+                Sube varios archivos <strong style={{color:'var(--gn)'}}>.txt, .docx o .pdf</strong> desde tu dispositivo y se convierten automáticamente. Cada canción queda marcada para revisar.
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+              stroke="var(--tx3)" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+          {/* Opción 3: Drive masivo (enlace de Drive) */}
           <div onClick={()=>setCrearModo('drive')}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
               borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
@@ -369,6 +431,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           ].join('\n\n');
           CANCIONES.push({n:nombre,key:nueva.key,bpm:Number(nueva.bpm)||90,autor:nueva.autor.trim()});
           onSaveChords(nombre,texto);
+          // Punto 4 de la spec de revisión: guardar desde el editor ES la
+          // confirmación — sin botón separado de "marcar como revisada".
+          // Solo toca importDB si la canción ya tenía una entrada
+          // 'sin_revisar'; canciones manuales (sin entrada) no se tocan.
+          if(importDB[nombre]?.status==='sin_revisar'){
+            setImportDB(prev=>({...prev,[nombre]:{...prev[nombre],status:'revisada'}}));
+          }
+          setAvisosImportEdicion(null);
           if(nueva.estructura.length>0)
             setEstructurasDB(prev=>({...prev,[nombre]:{
               guias:nueva.estructura.map(s=>({label:s.label,abrev:s.abrev||abrevBloque(s.label),color:s.color})),
@@ -393,6 +463,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               onClick={()=>{
                 const nombrePrevio=volverASongViewRef.current;
                 setCrearModo(null);
+                setAvisosImportEdicion(null);
                 if(nombrePrevio){
                   volverASongViewRef.current=null;
                   onOpenSong(nombrePrevio);
@@ -405,6 +476,34 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 {volverASongViewRef.current?'Volver a la canción':'Editor de canciones'}
               </span>
             </div>
+            {/* Punto 3 de la spec de revisión: si esta canción vino de un import
+                sin revisar, sus avisos van arriba del editor, antes que nada más. */}
+            {avisosImportEdicion!==null&&(
+              <div style={{padding:'12px 14px',borderRadius:12,marginBottom:16,
+                background:'rgba(224,160,32,.08)',border:'1px solid rgba(224,160,32,.25)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:avisosImportEdicion.length>0?8:0}}>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#e0a020" strokeWidth="2" style={{flexShrink:0}}>
+                    <path d="M12 9v4"/><path d="M12 17h.01"/>
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  </svg>
+                  <span style={{fontSize:12,fontWeight:800,color:'#e0a020',fontFamily:"'Lexend Giga',sans-serif"}}>
+                    Canción importada — por revisar
+                  </span>
+                </div>
+                {avisosImportEdicion.length>0?(
+                  <ul style={{margin:0,paddingLeft:18,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>
+                    {avisosImportEdicion.map((w,i)=><li key={i}>{w}</li>)}
+                  </ul>
+                ):(
+                  <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>
+                    El parser no reportó avisos puntuales, pero es por reglas — dale una revisada igual antes de tocarla en vivo.
+                  </div>
+                )}
+                <div style={{fontSize:10,color:'var(--tx3)',marginTop:8,fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Al guardar, esta canción queda marcada como revisada.
+                </div>
+              </div>
+            )}
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:16,lineHeight:1.6}}>
               En SetSync hacemos que tus letras sean lo más claras posibles y tenemos un formato por secciones. Carga una sección y llénala con letra y posiciona las notas.
             </div>
@@ -662,7 +761,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <button style={{flex:1,padding:'11px',borderRadius:10,border:'1px solid var(--bd)',
                 background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:13,fontWeight:700,
                 fontFamily:"'Lexend Giga',sans-serif"}}
-                onClick={()=>{setCrearModo(null);setNueva({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});keyTocadaManualRef.current=false;tapsRef.current=[];setTapCount(0);}}>
+                onClick={()=>{setCrearModo(null);setNueva({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});keyTocadaManualRef.current=false;tapsRef.current=[];setTapCount(0);setAvisosImportEdicion(null);}}>
                 Cancelar
               </button>
               <button className="btn-p"
@@ -810,6 +909,193 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           </div>
         </div>
       )}
+
+      {/* Modo 'importar' — batch local .txt/.docx/.pdf, parser por reglas (sin IA) */}
+      {crearModo==='importar'&&(()=>{
+        // Nombre único contra CANCIONES (existentes) y contra el resto del
+        // batch que se está por confirmar — evita pisar una canción real
+        // por una coincidencia de nombre (ej. dos archivos "Coro.txt" en
+        // carpetas distintas del usuario).
+        const nombreUnico=(base,yaUsados)=>{
+          let candidato=base.trim().toUpperCase()||'SIN TÍTULO';
+          let i=2;
+          const existe=n=>CANCIONES.some(c=>c.n===n)||yaUsados.has(n);
+          while(existe(candidato)) candidato=`${base.trim().toUpperCase()} (${i++})`;
+          return candidato;
+        };
+
+        const procesarArchivos=async(fileList)=>{
+          const files=Array.from(fileList);
+          if(files.length===0)return;
+          setImportProcesando(true);
+          setImportResumen(null);
+          const filas=files.map((f,i)=>({id:`imp${Date.now()}_${i}`,archivo:f,nombreArchivo:f.name,status:'procesando'}));
+          setArchivosImport(filas);
+          // Secuencial (no Promise.all) — pdfjs con varios PDF grandes en
+          // paralelo puede saturar memoria en dispositivos modestos; esto
+          // es import ocasional, no un flujo de uso constante, prioriza
+          // confiabilidad sobre velocidad.
+          for(const fila of filas){
+            try{
+              const {text,warnings:warningsExtraccion}=await extraerTextoDeArchivo(fila.archivo);
+              const {nombre,autor,texto,warnings:warningsParseo}=parseCancionDesdeTexto(text,fila.nombreArchivo.replace(/\.[a-z0-9]+$/i,''));
+              const warnings=[...warningsExtraccion,...warningsParseo];
+              if(!texto||!texto.split('\n\n').slice(1).join('').trim()){
+                setArchivosImport(prev=>prev.map(x=>x.id===fila.id?{...x,status:'error',error:'No se detectó contenido de canción en el archivo.'}:x));
+                continue;
+              }
+              setArchivosImport(prev=>prev.map(x=>x.id===fila.id?{...x,status:'ok',nombre,autor,texto,warnings,incluir:true}:x));
+            }catch(err){
+              setArchivosImport(prev=>prev.map(x=>x.id===fila.id?{...x,status:'error',error:err.message||'Error al procesar el archivo.'}:x));
+            }
+          }
+          setImportProcesando(false);
+        };
+
+        const confirmarImport=()=>{
+          const yaUsados=new Set();
+          const incluidas=archivosImport.filter(f=>f.status==='ok'&&f.incluir!==false);
+          let conAvisos=0;
+          incluidas.forEach(f=>{
+            const nombreFinal=nombreUnico(f.nombre,yaUsados);
+            yaUsados.add(nombreFinal);
+            // Reemplaza la cabecera del texto (nombre/autor) por el nombre
+            // final ya des-colisionado, por si nombreUnico le agregó "(2)".
+            const textoFinal=[`${nombreFinal}\n${f.autor||''}\n`,...f.texto.split('\n\n').slice(1)].join('\n\n');
+            const bloquesParsed=parseBloques(textoFinal);
+            const guias=bloquesParsed.map(b=>({label:b.label,abrev:abrevBloque(b.label),color:getColorBloque(b.label)}));
+            const bpmDetectado=90;
+            CANCIONES.push({n:nombreFinal,key:'G',bpm:bpmDetectado,autor:f.autor||''});
+            onSaveChords(nombreFinal,textoFinal);
+            if(guias.length>0)setEstructurasDB(prev=>({...prev,[nombreFinal]:{guias,click:{bpm:bpmDetectado,compas:'4/4'}}}));
+            // TODA canción importada nace 'sin_revisar', sin excepción —
+            // incluso si el parser no reportó ningún warning (punto 1/5 de
+            // la spec de revisión).
+            setImportDB(prev=>({...prev,[nombreFinal]:{status:'sin_revisar',warnings:f.warnings||[]}}));
+            if((f.warnings||[]).length>0)conAvisos++;
+          });
+          setImportResumen({total:incluidas.length,conAvisos});
+          setArchivosImport([]);
+          onToast(`✓ ${incluidas.length} canción${incluidas.length===1?'':'es'} importada${incluidas.length===1?'':'s'}`);
+        };
+
+        if(importResumen)return(
+          <div>
+            <div style={{textAlign:'center',padding:'40px 20px'}}>
+              <div style={{width:56,height:56,borderRadius:16,margin:'0 auto 16px',
+                background:'rgba(48,192,183,.12)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--gn)" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+                fontSize:18,color:'var(--tx)',marginBottom:8}}>
+                {importResumen.total} canción{importResumen.total===1?'':'es'} importada{importResumen.total===1?'':'s'}
+              </div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6,maxWidth:280,margin:'0 auto 20px'}}>
+                Todas quedaron marcadas <strong style={{color:'var(--rd)'}}>Por revisar</strong> en tu repertorio
+                {importResumen.conAvisos>0?<> — {importResumen.conAvisos} con avisos puntuales del parser para chequear.</>:<>, aunque el parser no reportó avisos.</>}
+                {' '}El import es por reglas, no por IA: siempre vale la pena abrir cada una una vez antes de tocarla en vivo.
+              </div>
+              <button onClick={()=>{setShowCrear(false);setCrearModo(null);setImportResumen(null);}}
+                className="btn-p" style={{padding:'10px 24px',borderRadius:10,fontSize:13,fontWeight:700,
+                fontFamily:"'Lexend Giga',sans-serif"}}>
+                Ir al repertorio
+              </button>
+            </div>
+          </div>
+        );
+
+        return(
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,cursor:'pointer'}}
+              onClick={()=>{setCrearModo(null);setArchivosImport([]);}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Subir canción</span>
+            </div>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,
+              fontSize:20,color:'var(--tx)',marginBottom:6}}>
+              Importar archivos
+            </div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:18,lineHeight:1.6}}>
+              El parser convierte automáticamente cada archivo, pero es por reglas — no por IA. Todas las canciones quedan marcadas <strong style={{color:'var(--rd)'}}>Por revisar</strong> hasta que las abras y guardes una vez.
+            </div>
+
+            {archivosImport.length===0&&(
+              <label style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10,
+                padding:'32px 16px',borderRadius:14,border:'1.5px dashed var(--bd2)',
+                background:'var(--s1)',cursor:'pointer',textAlign:'center'}}>
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--gn)" strokeWidth="1.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <div style={{fontSize:13,fontWeight:800,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                  Elegir archivos
+                </div>
+                <div style={{fontSize:11,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300}}>
+                  .txt · .docx · .pdf — puedes elegir varios a la vez
+                </div>
+                <input type="file" multiple accept=".txt,.docx,.pdf" style={{display:'none'}}
+                  onChange={e=>{procesarArchivos(e.target.files);e.target.value='';}}/>
+              </label>
+            )}
+
+            {archivosImport.length>0&&(
+              <div>
+                {archivosImport.map(f=>(
+                  <div key={f.id} style={{padding:'12px 14px',borderRadius:12,border:'1px solid var(--bd)',
+                    background:'var(--s1)',marginBottom:8,opacity:f.status==='ok'&&f.incluir===false?.5:1}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                      {f.status==='procesando'&&(
+                        <div style={{width:16,height:16,borderRadius:'50%',border:'2px solid var(--bd2)',
+                          borderTopColor:'var(--gn)',flexShrink:0,animation:'spin .8s linear infinite'}}/>
+                      )}
+                      {f.status==='error'&&(
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--rd)" strokeWidth="2" style={{flexShrink:0}}>
+                          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                      )}
+                      {f.status==='ok'&&(
+                        <input type="checkbox" checked={f.incluir!==false} onChange={()=>setArchivosImport(prev=>prev.map(x=>x.id===f.id?{...x,incluir:!x.incluir}:x))}
+                          style={{width:16,height:16,flexShrink:0,accentColor:'var(--gn)',cursor:'pointer'}}/>
+                      )}
+                      <div style={{flex:1,minWidth:0}}>
+                        {f.status==='ok'?(
+                          <input value={f.nombre} onChange={e=>setArchivosImport(prev=>prev.map(x=>x.id===f.id?{...x,nombre:e.target.value}:x))}
+                            style={{width:'100%',background:'none',border:'none',outline:'none',
+                              fontSize:13,fontWeight:800,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif",padding:0}}/>
+                        ):(
+                          <div style={{fontSize:12,fontWeight:700,color:f.status==='error'?'var(--rd)':'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>
+                            {f.nombreArchivo}
+                          </div>
+                        )}
+                        <div style={{fontSize:10,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",marginTop:2}}>
+                          {f.status==='procesando'&&'Procesando…'}
+                          {f.status==='error'&&f.error}
+                          {f.status==='ok'&&(f.warnings.length>0
+                            ?<span style={{color:'#e0a020'}}>⚠ Por revisar ({f.warnings.length})</span>
+                            :'Sin avisos del parser')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {!importProcesando&&(
+                  <button onClick={confirmarImport}
+                    disabled={archivosImport.filter(f=>f.status==='ok'&&f.incluir!==false).length===0}
+                    className="btn-p" style={{width:'100%',padding:'12px',borderRadius:12,fontSize:13,
+                      fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",marginTop:6,
+                      opacity:archivosImport.filter(f=>f.status==='ok'&&f.incluir!==false).length===0?.4:1}}>
+                    Importar {archivosImport.filter(f=>f.status==='ok'&&f.incluir!==false).length} canción{archivosImport.filter(f=>f.status==='ok'&&f.incluir!==false).length===1?'':'es'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 
