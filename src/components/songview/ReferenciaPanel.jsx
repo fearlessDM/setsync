@@ -30,13 +30,13 @@ export function ReferenciaPanel({
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8">
             <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
           </svg>
-          <span style={{flex:1,fontSize:10,fontWeight:900,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>
+          <span style={{flex:1,fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"'Lexend Giga',sans-serif"}}>
             Referencia
           </span>
-          {refAudio&&<span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:160,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
+          {refAudio&&<span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",maxWidth:160,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio.name}</span>}
           {/* Subir audio */}
           <button onClick={()=>refInputRef.current?.click()}
-            style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:9,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
+            style={{padding:'4px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.15)',background:'rgba(255,255,255,.07)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>
             {refAudio?'Cambiar':'Subir audio'}
           </button>
           <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
@@ -54,8 +54,8 @@ export function ReferenciaPanel({
               </svg>
             </div>
             <div style={{textAlign:'center'}}>
-              <div style={{fontSize:12,fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
-              <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+              <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",marginBottom:4}}>Sube un audio de referencia</div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
             </div>
           </div>
         ):(
@@ -99,7 +99,7 @@ export function ReferenciaPanel({
                       height:`${Math.max(15,h*100)}%`,
                       background: filled
                         ? inLoop&&refLooping?'var(--gn)':'rgba(200,169,126,.9)'
-                        : inLoop?'rgba(48,192,183,.3)':'rgba(255,255,255,.12)',
+                        : inLoop?'rgba(var(--gn-rgb),.3)':'rgba(255,255,255,.12)',
                       transition:'background .1s',
                     }}/>
                   );
@@ -108,13 +108,13 @@ export function ReferenciaPanel({
               {/* Marcador In */}
               {inPct!=null&&(
                 <div style={{position:'absolute',top:0,bottom:0,left:`${inPct}%`,width:2,background:'var(--gn)',zIndex:3}}>
-                  <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--gn)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>IN</div>
+                  <div style={{position:'absolute',top:0,left:2,fontSize:'var(--fs-3xs)',color:'var(--gn)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>IN</div>
                 </div>
               )}
               {/* Marcador Out */}
               {outPct!=null&&(
                 <div style={{position:'absolute',top:0,bottom:0,left:`${outPct}%`,width:2,background:'var(--rd)',zIndex:3}}>
-                  <div style={{position:'absolute',top:0,left:2,fontSize:7,color:'var(--rd)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
+                  <div style={{position:'absolute',top:0,left:2,fontSize:'var(--fs-3xs)',color:'var(--rd)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
                 </div>
               )}
               {/* Playhead */}
@@ -123,13 +123,13 @@ export function ReferenciaPanel({
 
             {/* Tiempos */}
             <div style={{display:'flex',justifyContent:'space-between',flexShrink:0}}>
-              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refTime)}</span>
+              <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refTime)}</span>
               {refLoopIn!=null&&refLoopOut!=null&&(
-                <span style={{fontSize:9,color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
+                <span style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif"}}>
                   Loop {fmt(refLoopIn)} → {fmt(refLoopOut)}
                 </span>
               )}
-              <span style={{fontSize:9,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refDuration)}</span>
+              <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif"}}>{fmt(refDuration)}</span>
             </div>
 
             {/* Controles principales */}
@@ -169,7 +169,7 @@ export function ReferenciaPanel({
               <div style={{display:'flex',gap:3}}>
                 {SPEEDS.map(s=>(
                   <button key={s} onClick={()=>{setRefSpeed(s);if(audio)audio.playbackRate=s;}}
-                    style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:9,fontWeight:700,
+                    style={{padding:'4px 6px',borderRadius:6,border:'none',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:700,
                       fontFamily:"'Lexend Giga',sans-serif",
                       background:refSpeed===s?'rgba(200,169,126,.25)':'rgba(255,255,255,.06)',
                       color:refSpeed===s?'var(--ac)':'var(--tx3)'}}>
@@ -182,19 +182,19 @@ export function ReferenciaPanel({
             {/* Loop controls */}
             <div style={{display:'flex',gap:6,flexShrink:0}}>
               <button onClick={markIn}
-                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(48,192,183,.4)':'rgba(255,255,255,.1)'}`,
-                  background:refLoopIn!=null?'rgba(48,192,183,.1)':'rgba(255,255,255,.05)',
-                  color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
+                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopIn!=null?'rgba(var(--gn-rgb),.4)':'rgba(255,255,255,.1)'}`,
+                  background:refLoopIn!=null?'rgba(var(--gn-rgb),.1)':'rgba(255,255,255,.05)',
+                  color:refLoopIn!=null?'var(--gn)':'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:900,
                   fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                <span style={{fontSize:8,letterSpacing:'.5px'}}>▶ IN</span>
+                <span style={{fontSize:'var(--fs-2xs)',letterSpacing:'.5px'}}>▶ IN</span>
                 {refLoopIn!=null&&<span style={{opacity:.7}}>{fmt(refLoopIn)}</span>}
               </button>
               <button onClick={markOut}
-                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(253,128,131,.4)':'rgba(255,255,255,.1)'}`,
-                  background:refLoopOut!=null?'rgba(253,128,131,.1)':'rgba(255,255,255,.05)',
-                  color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:9,fontWeight:900,
+                style={{flex:1,padding:'6px 8px',borderRadius:8,border:`1px solid ${refLoopOut!=null?'rgba(var(--rd-rgb),.4)':'rgba(255,255,255,.1)'}`,
+                  background:refLoopOut!=null?'rgba(var(--rd-rgb),.1)':'rgba(255,255,255,.05)',
+                  color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:900,
                   fontFamily:"'Lexend Giga',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                <span style={{fontSize:8,letterSpacing:'.5px'}}>OUT ■</span>
+                <span style={{fontSize:'var(--fs-2xs)',letterSpacing:'.5px'}}>OUT ■</span>
                 {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
               </button>
               <button onClick={()=>{
@@ -208,19 +208,19 @@ export function ReferenciaPanel({
               }} disabled={refLoopIn==null||refLoopOut==null}
                 style={{width:60,padding:'6px 8px',borderRadius:8,
                   border:`1px solid ${refLooping?'var(--gn)':'rgba(255,255,255,.1)'}`,
-                  background:refLooping?'rgba(48,192,183,.2)':'rgba(255,255,255,.05)',
+                  background:refLooping?'rgba(var(--gn-rgb),.2)':'rgba(255,255,255,.05)',
                   color:refLooping?'var(--gn)':'var(--tx3)',
                   cursor:refLoopIn==null||refLoopOut==null?'not-allowed':'pointer',
-                  fontSize:9,fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
+                  fontSize:'var(--fs-xs)',fontWeight:900,fontFamily:"'Lexend Giga',sans-serif",
                   opacity:refLoopIn==null||refLoopOut==null?.4:1,
-                  boxShadow:refLooping?'0 0 8px rgba(48,192,183,.4)':'none',
+                  boxShadow:refLooping?'0 0 8px rgba(var(--gn-rgb),.4)':'none',
                   transition:'all .2s'}}>
                 {refLooping?'↻ ON':'↻'}
               </button>
               {(refLoopIn!=null||refLoopOut!=null)&&(
                 <button onClick={clearLoop}
                   style={{width:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
-                    color:'var(--tx3)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-emph)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   ×
                 </button>
               )}

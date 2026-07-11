@@ -200,7 +200,7 @@ export function resolveLineAbsIndex(raw,targetLineIdx){
 }
 
 export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,onSelectChord,onDragChord,notacion='americano',songKey='C'){
-  if(!raw)return(<div style={{color:'var(--tx2)',textAlign:'center',padding:'40px 0',fontSize:13,fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
+  if(!raw)return(<div style={{color:'var(--tx2)',textAlign:'center',padding:'40px 0',fontSize:'var(--fs-lg)',fontFamily:"'Outfit',sans-serif"}}>Letra no disponible aún.</div>);
 
   const screenW=typeof window!=='undefined'?window.innerWidth:390;
   const FONT="'Outfit',sans-serif";
@@ -434,7 +434,7 @@ export function renderSongContent(raw,tpOff,showChords,editMode,selectedChord,on
   return(
     <div style={{width:'100%',padding:'2px 4px 12px',outline:editMode?'2px dashed rgba(200,169,126,.25)':'none',borderRadius:editMode?8:0}}>
       {editMode&&(
-        <div style={{textAlign:'center',fontSize:10,color:'var(--ac)',fontFamily:FONT,fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
+        <div style={{textAlign:'center',fontSize:'var(--fs-sm)',color:'var(--ac)',fontFamily:FONT,fontWeight:700,letterSpacing:'1px',padding:'4px 0 8px',textTransform:'uppercase',opacity:.8}}>
           ✏ Arrastra un acorde para moverlo
         </div>
       )}

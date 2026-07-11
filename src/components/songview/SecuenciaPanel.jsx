@@ -95,9 +95,9 @@ export function SecuenciaPanel({
                   borderBottom:isActive?`2px solid ${g.color}`:'2px solid transparent',
                   display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
                   transition:'all .15s'}}>
-                <span style={{fontSize:8,fontWeight:900,color:isActive?g.color:`${g.color}66`,
+                <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:isActive?g.color:`${g.color}66`,
                   fontFamily:"'Lexend Giga',sans-serif",textTransform:'uppercase',lineHeight:1}}>{g.label}</span>
-                <span style={{fontSize:5,color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
+                <span style={{fontSize:'var(--fs-3xs)',color:'rgba(255,255,255,.2)',fontWeight:700}}>{g.compases||4}c</span>
               </button>
             );
           })}
@@ -154,8 +154,8 @@ export function SecuenciaPanel({
         </div>
         {/* Tiempo */}
         <div style={{display:'flex',justifyContent:'space-between',marginTop:3}}>
-          <span style={{fontSize:8,color:'var(--tx3)'}}>{fmt(seqPos*192)}</span>
-          <span style={{fontSize:8,color:'var(--tx3)'}}>3:12</span>
+          <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)'}}>{fmt(seqPos*192)}</span>
+          <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)'}}>3:12</span>
         </div>
       </div>
 
@@ -168,7 +168,7 @@ export function SecuenciaPanel({
         {/* − BPM + */}
         <button
           style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
+            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',fontWeight:700,
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
           onPointerDown={e=>{
             e.preventDefault();
@@ -181,14 +181,14 @@ export function SecuenciaPanel({
           onPointerLeave={e=>{const b=e.currentTarget;clearTimeout(b._t);clearInterval(b._iv);}}>−</button>
 
         <div style={{textAlign:'center',padding:'0 6px'}}>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:22,
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',
             color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
-          <div style={{fontSize:7,color:'var(--tx3)',fontWeight:700,letterSpacing:1}}>BPM</div>
+          <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontWeight:700,letterSpacing:1}}>BPM</div>
         </div>
 
         <button
           style={{width:30,height:30,borderRadius:8,border:'1px solid rgba(255,255,255,.1)',
-            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:17,fontWeight:700,
+            background:'rgba(255,255,255,.06)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',fontWeight:700,
             display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,touchAction:'none'}}
           onPointerDown={e=>{
             e.preventDefault();
@@ -210,7 +210,7 @@ export function SecuenciaPanel({
             style={{padding:'5px 20px 5px 8px',borderRadius:8,
               border:'1px solid rgba(255,255,255,.12)',
               background:'rgba(255,255,255,.07)',color:'var(--ac)',
-              fontSize:14,fontWeight:700,
+              fontSize:'var(--fs-emph)',fontWeight:700,
               fontFamily:"'Special Gothic Expanded One',sans-serif",
               outline:'none',WebkitAppearance:'none',appearance:'none',
               cursor:'pointer',minWidth:52}}>
@@ -250,7 +250,7 @@ export function SecuenciaPanel({
             marginLeft:6,
             background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
             display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
-            boxShadow:clickActivo?'0 0 16px rgba(253,128,131,.5)':'0 0 16px rgba(48,192,183,.3)'}}>
+            boxShadow:clickActivo?'0 0 16px rgba(var(--rd-rgb),.5)':'0 0 16px rgba(var(--gn-rgb),.3)'}}>
           {clickActivo
             ?<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             :<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>}
@@ -281,12 +281,12 @@ export function SecuenciaPanel({
       {/* ── Multitracks con faders (8+8) ── */}
       <div>
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <div style={{fontSize:9,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
+          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"'Lexend Giga',sans-serif",flex:1}}>Multitracks</div>
           {/* Selector Capa A/B */}
           <div style={{display:'inline-flex',borderRadius:16,border:'1px solid var(--bd)',overflow:'hidden'}}>
             {['A','B'].map(l=>(
               <button key={l} onClick={()=>setSeqLayer(l)}
-                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:8,fontWeight:700,
+                style={{padding:'3px 12px',border:'none',cursor:'pointer',fontSize:'var(--fs-2xs)',fontWeight:700,
                   fontFamily:"'Lexend Giga',sans-serif",
                   background:seqLayer===l?'rgba(255,255,255,.12)':'transparent',
                   color:seqLayer===l?'var(--tx)':'var(--tx3)'}}>
@@ -304,12 +304,12 @@ export function SecuenciaPanel({
               return(
                 <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,
                   padding:'6px 3px 5px',borderRadius:10,overflow:'visible',
-                  background:muted?'rgba(253,128,131,.08)':'rgba(255,255,255,.04)',
-                  border:`1px solid ${muted?'rgba(253,128,131,.3)':'rgba(255,255,255,.07)'}`}}>
+                  background:muted?'rgba(var(--rd-rgb),.08)':'rgba(255,255,255,.04)',
+                  border:`1px solid ${muted?'rgba(var(--rd-rgb),.3)':'rgba(255,255,255,.07)'}`}}>
                   {/* Dot color */}
-                  <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(253,128,131,.5)':tr.color,flexShrink:0}}/>
+                  <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(var(--rd-rgb),.5)':tr.color,flexShrink:0}}/>
                   {/* Label */}
-                  <div style={{fontSize:6,fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
+                  <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:muted?'var(--tx3)':'var(--tx3)',
                     fontFamily:"'Lexend Giga',sans-serif",textAlign:'center',
                     width:'100%',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',
                     padding:'0 2px',flexShrink:0}}>{tr.label}</div>
@@ -346,11 +346,11 @@ export function SecuenciaPanel({
                     </div>
                   </div>
                   {/* Valor */}
-                  <div style={{fontSize:7,fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
+                  <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:muted?'var(--rd)':'var(--tx3)',
                     fontFamily:"'Lexend Giga',sans-serif",flexShrink:0}}>{vol}</div>
                   {/* Mute */}
                   <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
-                    style={{fontSize:6,fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
+                    style={{fontSize:'var(--fs-3xs)',fontWeight:900,padding:'2px 4px',borderRadius:4,border:'none',
                       cursor:'pointer',fontFamily:"'Lexend Giga',sans-serif",flexShrink:0,
                       background:muted?'var(--rd)':'rgba(255,255,255,.08)',
                       color:muted?'#fff':'var(--tx3)'}}>
@@ -362,7 +362,7 @@ export function SecuenciaPanel({
           </div>
         ):(
           <div style={{padding:'16px',borderRadius:12,border:'1px dashed rgba(255,255,255,.1)',textAlign:'center'}}>
-            <div style={{fontSize:12.5,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif"}}>Sin pistas para esta canción.</div>
           </div>
         )}
       </div>

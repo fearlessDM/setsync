@@ -50,26 +50,26 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
     <div>
       <div className="ph" style={{marginBottom:14,alignItems:'flex-start'}}>
         <div>
-          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:20,color:'var(--tx)',lineHeight:1.05}}>
+          <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05}}>
             Monitoreo
           </div>
-          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:11,color:'var(--tx2)',lineHeight:1.5,marginTop:5}}>
+          <div style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.5,marginTop:5}}>
             {tx.monitoringSubtitle}
           </div>
         </div>
       </div>
 
-      <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(253,128,131,.06)',border:'1px solid rgba(253,128,131,.25)',marginBottom:16}}>
-        <div style={{fontSize:11,color:'var(--rd)',fontWeight:700,marginBottom:2,fontFamily:"'Lexend Giga',sans-serif"}}>
+      <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(var(--rd-rgb),.06)',border:'1px solid rgba(var(--rd-rgb),.25)',marginBottom:16}}>
+        <div style={{fontSize:'var(--fs-base)',color:'var(--rd)',fontWeight:700,marginBottom:2,fontFamily:"'Lexend Giga',sans-serif"}}>
           ⚠ {tx.notConnected}
         </div>
-        <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',lineHeight:1.6,fontFamily:"'Lexend Giga',sans-serif"}}>
+        <div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',lineHeight:1.6,fontFamily:"'Lexend Giga',sans-serif"}}>
           {tx.notConnectedDesc}
         </div>
       </div>
 
       <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',marginTop:8}}>
-        <div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
+        <div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',fontFamily:"'Lexend Giga',sans-serif",lineHeight:1.8}}>
           {tx.monitoringComingSoon}
         </div>
       </div>

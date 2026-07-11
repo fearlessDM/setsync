@@ -87,7 +87,7 @@ export function PanelEstructura({seq,isLight,onReordenar,onDuplicar,onEliminar,o
       overflow:'hidden',width:64,
       maxHeight:'38vh',
     }}>
-      <div style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
+      <div style={{fontSize:'var(--fs-3xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',textAlign:'center',padding:'5px 4px 4px',borderBottom:'1px solid var(--bd)',flexShrink:0}}>
         MAPA
       </div>
       <div style={{flex:1,overflowY:'auto',scrollbarWidth:'none',padding:'3px',WebkitOverflowScrolling:'touch',touchAction:'pan-y'}}>
@@ -104,7 +104,7 @@ export function PanelEstructura({seq,isLight,onReordenar,onDuplicar,onEliminar,o
               style={{marginBottom:3,cursor:editable?'grab':'default',userSelect:'none',transition:'transform .15s,opacity .15s'}}
             >
               <div style={{display:'flex',flexDirection:'column',borderRadius:8,border:`1px solid ${color}45`,background:`${color}15`,overflow:'hidden'}}>
-                <div style={{fontSize:8,fontWeight:900,color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'5px 3px',lineHeight:1.1}}>
+                <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color,textTransform:'uppercase',letterSpacing:'.5px',textAlign:'center',padding:'5px 3px',lineHeight:1.1}}>
                   {b.label.length>6?b.label.slice(0,6)+'…':b.label}
                 </div>
                 {editable&&(
@@ -136,7 +136,7 @@ export function PanelEstructura({seq,isLight,onReordenar,onDuplicar,onEliminar,o
       {editable&&(
         <button
           onClick={onReset}
-          style={{padding:'4px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:7,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}
+          style={{padding:'4px',border:'none',borderTop:'1px solid var(--bd)',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-3xs)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}
         >
           Reset
         </button>

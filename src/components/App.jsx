@@ -536,10 +536,10 @@ Tuya es la gloria, Por siempre amén.
   const Footer=()=>(
     <div style={{padding:'32px 24px 20px',borderTop:'1px solid var(--s1)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
       <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
-      <div style={{fontSize:9,fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
+      <div style={{fontSize:'var(--fs-xs)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
         © {new Date().getFullYear()} SetSync · {tx.allRights}
       </div>
-      <div style={{fontSize:8,color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,letterSpacing:'1.5px',textTransform:'uppercase',marginTop:2}}>
+      <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"'Lexend Giga',sans-serif",fontWeight:300,letterSpacing:'1.5px',textTransform:'uppercase',marginTop:2}}>
         by <span style={{fontWeight:500}}>Agencia Fearless</span>
       </div>
     </div>
@@ -574,7 +574,7 @@ Tuya es la gloria, Por siempre amén.
   if(firebaseListo && currentUser===undefined){
     return(
       <div style={{minHeight:'100vh',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'var(--tx3)'}}>Set<span style={{color:'var(--gn)'}}>Sync</span></div>
+        <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:'var(--fs-display)',color:'var(--tx3)'}}>Set<span style={{color:'var(--gn)'}}>Sync</span></div>
       </div>
     );
   }
@@ -689,8 +689,8 @@ Tuya es la gloria, Por siempre amén.
                       display:'flex',alignItems:'center',gap:isActive?6:0,
                       overflow:'hidden',
                     }}>
-                    <span style={{fontSize:isActive?16:14,lineHeight:1,transition:'font-size .25s'}}>{l.flag}</span>
-                    {isActive&&<span style={{fontSize:10,fontWeight:700,color:'#f3f1ed',whiteSpace:'nowrap',fontFamily:"'Lexend Giga',sans-serif"}}>{l.label}</span>}
+                    <span style={{fontSize:isActive?'var(--fs-xl)':'var(--fs-emph)',lineHeight:1,transition:'font-size .25s'}}>{l.flag}</span>
+                    {isActive&&<span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'#f3f1ed',whiteSpace:'nowrap',fontFamily:"'Lexend Giga',sans-serif"}}>{l.label}</span>}
                   </button>
                 );
               })}
@@ -699,10 +699,10 @@ Tuya es la gloria, Por siempre amén.
 
           {/* Título */}
           <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
-            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:28,color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
+            <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontWeight:200,fontSize:'var(--fs-display)',color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
               {tl.choose}
             </div>
-            <div style={{fontSize:11,color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
+            <div style={{fontSize:'var(--fs-base)',color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
               {tl.sub}
             </div>
           </div>
@@ -733,7 +733,7 @@ Tuya es la gloria, Por siempre amén.
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:14,fontSize:10,fontWeight:700,color:'rgba(255,255,255,.7)',display:'flex',alignItems:'center',gap:4,fontFamily:"'Lexend Giga',sans-serif"}}>
+                <div style={{marginTop:14,fontSize:'var(--fs-sm)',fontWeight:700,color:'rgba(255,255,255,.7)',display:'flex',alignItems:'center',gap:4,fontFamily:"'Lexend Giga',sans-serif"}}>
                   Entrar <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </button>
@@ -741,7 +741,7 @@ Tuya es la gloria, Por siempre amén.
           </div>
 
           {/* Nota: se puede cambiar */}
-          <div style={{fontSize:9,color:'var(--div)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
+          <div style={{fontSize:'var(--fs-xs)',color:'var(--div)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
             {tl.canChange}
           </div>
         </div>
@@ -775,7 +775,7 @@ Tuya es la gloria, Por siempre amén.
             <div className="u-av">DM</div>
             <div className="u-inf">
               <div className="u-name">Danny</div>
-              <div style={{fontSize:9,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>Super Admin</div>
+              <div style={{fontSize:'var(--fs-xs)',color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",opacity:.7}}>Super Admin</div>
             </div>
           </div>
         </div>
@@ -805,7 +805,7 @@ Tuya es la gloria, Por siempre amén.
             userRole={userRole} onToast={showToast} lang={lang}
             equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)}/>}
-          {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:13,fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
+          {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:'var(--fs-lg)',fontFamily:"'Lexend Giga',sans-serif"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
             onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang} ensayos={ensayos} setEnsayos={setEnsayos}

@@ -95,15 +95,15 @@ export function MusicXMLViewer({url,lang='es'}){
   },[url]);
 
   if(error)return(
-    <div style={{color:'var(--rd)',fontSize:13,textAlign:'center',padding:20}}>{error}</div>
+    <div style={{color:'var(--rd)',fontSize:'var(--fs-lg)',textAlign:'center',padding:20}}>{error}</div>
   );
   if(!content)return(
-    <div style={{color:'var(--tx2)',fontSize:13,textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
+    <div style={{color:'var(--tx2)',fontSize:'var(--fs-lg)',textAlign:'center',padding:20}}>{tx.loadingSheetMusic}</div>
   );
   return(
     <div style={{width:'100%',maxWidth:700,fontFamily:"'Lexend Giga',sans-serif"}}>
-      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:20,fontWeight:400,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
-      {content.composer&&<div style={{fontSize:11,fontWeight:300,color:'var(--tx2)',marginBottom:20}}>{content.composer}</div>}
+      <div style={{fontFamily:"'Special Gothic Expanded One',sans-serif",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)',marginBottom:4}}>{content.title}</div>
+      {content.composer&&<div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',marginBottom:20}}>{content.composer}</div>}
       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
         {content.measures.map((m,mi)=>(
           <div key={mi} style={{
@@ -111,12 +111,12 @@ export function MusicXMLViewer({url,lang='es'}){
             border:'1px solid var(--bd)',background:'var(--s1)',
             minWidth:80,
           }}>
-            <div style={{fontSize:9,color:'var(--tx3)',marginBottom:4,
+            <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginBottom:4,
               fontWeight:900,letterSpacing:'1.5px'}}>C{m.number}</div>
             <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
               {m.notes.map((n,ni)=>(
                 <div key={ni} style={{
-                  fontSize:11,fontWeight:700,
+                  fontSize:'var(--fs-base)',fontWeight:700,
                   color:n.type==='rest'?'var(--tx3)':'var(--ac)',
                   minWidth:16,textAlign:'center',
                 }}>

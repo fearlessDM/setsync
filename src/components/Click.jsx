@@ -88,7 +88,7 @@ export function Click({songBpm, lang='es'}){
       </button>
       <div style={{flex:1,minWidth:0}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-          <span style={{fontSize:11,fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>
+          <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx)',fontFamily:"'Lexend Giga',sans-serif"}}>
             Click · {bpm} BPM
           </span>
           <div style={{display:'flex',gap:3}}>

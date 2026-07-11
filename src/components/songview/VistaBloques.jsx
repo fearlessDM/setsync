@@ -77,7 +77,7 @@ export const renderBloqueLines=(lines,tpOff,showChords,fs=14,notacion='americano
 // cuyo tamaño dependa del vecino.
 export function VistaBloques({secuencia,tpOff,showChords,notacion,curKey}){
   const seq=secuencia||[];
-  if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx2)',fontSize:14,fontFamily:"'Outfit',sans-serif"}}>Sin contenido disponible</div>);
+  if(!seq.length)return(<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--tx2)',fontSize:'var(--fs-emph)',fontFamily:"'Outfit',sans-serif"}}>Sin contenido disponible</div>);
   const w=typeof window!=='undefined'?window.innerWidth:390;
   const h=typeof window!=='undefined'?window.innerHeight:700;
   const cols=w>=1024?3:w>=768?2:1;
@@ -129,7 +129,7 @@ export function VistaBloques({secuencia,tpOff,showChords,notacion,curKey}){
             breakInside:'avoid',WebkitColumnBreakInside:'avoid',
             display:'inline-block',width:'100%',boxSizing:'border-box',
           }}>
-            <div style={{fontSize:9,fontWeight:700,fontFamily:"'Outfit',sans-serif",color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4}}>{bloque.label}</div>
+            <div style={{fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"'Outfit',sans-serif",color,textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5,borderBottom:`1px solid ${color}30`,paddingBottom:4}}>{bloque.label}</div>
             <div>
               {renderBloqueLines(safeLines,tpOff,showChords,fsDynamic,notacion,curKey)}
             </div>

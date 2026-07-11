@@ -284,7 +284,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.04)', height: 24 }}>
               <div style={{ position: 'relative', height: '100%', flex: 1 }}>
                 {chords.length === 0 && (
-                  <span style={{ position: 'absolute', left: 6, top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize: 10, color: 'var(--tx3)', letterSpacing: '.3px', userSelect: 'none', pointerEvents: 'none' }}>Notas...</span>
+                  <span style={{ position: 'absolute', left: 6, top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize:'var(--fs-sm)', color: 'var(--tx3)', letterSpacing: '.3px', userSelect: 'none', pointerEvents: 'none' }}>Notas...</span>
                 )}
                 {chords.map((c, chordIdx) => {
                   const isDraggingThis = dragVisual && dragVisual.pairIdx === pairIdx && dragVisual.chordIdx === chordIdx;
@@ -304,7 +304,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                       }}
                       {...dragHandlers}
                     >
-                      <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                      <span style={{ fontSize:'var(--fs-xs)', color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
                         onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, -1); }}>‹</span>
                       {isEditing ? (
                         <input
@@ -312,22 +312,22 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                           defaultValue={c.chord}
                           onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
                           onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
-                          style={{ width: 38, fontSize: 13, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
+                          style={{ width: 38, fontSize:'var(--fs-lg)', fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
                         />
                       ) : (
-                        <span style={{ fontSize: 13, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
+                        <span style={{ fontSize:'var(--fs-lg)', fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 8, textAlign: 'center' }}
                           onClick={() => setEditingChip({ pairIdx, chordIdx })}>{c.chord || '?'}</span>
                       )}
-                      <span style={{ fontSize: 9, color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
+                      <span style={{ fontSize:'var(--fs-xs)', color: '#9089e8', cursor: 'pointer', padding: '0 1px' }}
                         onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, 1); }}>›</span>
-                      <span style={{ fontSize: 8, color: '#665', cursor: 'pointer', paddingLeft: 2 }}
+                      <span style={{ fontSize:'var(--fs-2xs)', color: '#665', cursor: 'pointer', paddingLeft: 2 }}
                         onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}>✕</span>
                     </div>
                   );
                 })}
                 <button
                   onClick={() => addChord(pairIdx)}
-                  style={{ position: 'absolute', right: 3, top: 2, width: 18, height: 18, background: 'transparent', border: '1px dashed #444', borderRadius: 4, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer', fontSize: 11, lineHeight: 1 }}
+                  style={{ position: 'absolute', right: 3, top: 2, width: 18, height: 18, background: 'transparent', border: '1px dashed #444', borderRadius: 4, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer', fontSize:'var(--fs-base)', lineHeight: 1 }}
                 >+</button>
               </div>
             </div>
@@ -337,7 +337,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
                 placeholder={pairIdx === 0 ? placeholderLetra : 'Letra...'}
-                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize: 15, fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none' }}
+                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize:'var(--fs-emph)', fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none' }}
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
           {acordesRecientes.map((ch) => (
             <span key={ch}
               onClick={() => addChordFromRecent(pairs.length - 1, ch)}
-              style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.15)', color: 'var(--tx3)', fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
+              style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.15)', color: 'var(--tx3)', fontSize:'var(--fs-sm)', fontWeight: 500, padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
             >{ch}</span>
           ))}
         </div>
@@ -357,7 +357,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
 
       <button
         onClick={() => emit([...pairs, { notas: '', letra: '' }])}
-        style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px dashed var(--bd)', borderRadius: 6, color: 'var(--tx3)', fontSize: 11, cursor: 'pointer' }}
+        style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px dashed var(--bd)', borderRadius: 6, color: 'var(--tx3)', fontSize:'var(--fs-base)', cursor: 'pointer' }}
       >+ línea</button>
     </div>
   );
@@ -463,14 +463,14 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
           <button onClick={onCancel} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0, display: 'flex' }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
-          <span style={{ fontSize: 15, fontWeight: 500, color: '#fff' }}>Editar acordes</span>
+          <span style={{ fontSize:'var(--fs-emph)', fontWeight: 500, color: '#fff' }}>Editar acordes</span>
         </div>
-        <span style={{ fontSize: 12, color: '#666' }}>{label}</span>
+        <span style={{ fontSize:'var(--fs-md)', color: '#666' }}>{label}</span>
       </div>
 
       <div style={{ background: 'rgba(29,158,117,.08)', border: '1px solid rgba(29,158,117,.25)', borderRadius: 10, padding: '10px 12px', marginBottom: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: 16, color: '#5dcaa5', marginTop: 1 }}>↔</span>
-        <p style={{ fontSize: 13, color: '#9fe1cb', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
+        <span style={{ fontSize:'var(--fs-xl)', color: '#5dcaa5', marginTop: 1 }}>↔</span>
+        <p style={{ fontSize:'var(--fs-lg)', color: '#9fe1cb', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
           Arrastra el acorde a la izquierda o derecha para ajustar la posición fina sobre la letra.
         </p>
       </div>
@@ -504,7 +504,7 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
                       }}
                     >
                       <span
-                        style={{ fontSize: 10, color: '#9089e8', cursor: 'pointer', padding: '0 2px' }}
+                        style={{ fontSize:'var(--fs-sm)', color: '#9089e8', cursor: 'pointer', padding: '0 2px' }}
                         onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, -1); }}
                       >‹</span>
                       {isEditing ? (
@@ -513,20 +513,20 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
                           defaultValue={c.chord}
                           onBlur={(e) => { renameChord(pairIdx, chordIdx, e.target.value.trim() || c.chord); setEditingChip(null); }}
                           onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
-                          style={{ width: 40, fontSize: 12, fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
+                          style={{ width: 40, fontSize:'var(--fs-md)', fontWeight: 500, color: '#cecbf6', background: 'transparent', border: 'none', outline: 'none', padding: 0 }}
                         />
                       ) : (
                         <span
-                          style={{ fontSize: 12, fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 10, textAlign: 'center' }}
+                          style={{ fontSize:'var(--fs-md)', fontWeight: 500, color: '#cecbf6', padding: '0 2px', minWidth: 10, textAlign: 'center' }}
                           onClick={() => setEditingChip({ pairIdx, chordIdx })}
                         >{c.chord || '?'}</span>
                       )}
                       <span
-                        style={{ fontSize: 10, color: '#9089e8', cursor: 'pointer', padding: '0 2px' }}
+                        style={{ fontSize:'var(--fs-sm)', color: '#9089e8', cursor: 'pointer', padding: '0 2px' }}
                         onClick={(e) => { e.stopPropagation(); moveChordByChars(pairIdx, chordIdx, 1); }}
                       >›</span>
                       <span
-                        style={{ fontSize: 9, color: '#665', cursor: 'pointer', paddingLeft: 3 }}
+                        style={{ fontSize:'var(--fs-xs)', color: '#665', cursor: 'pointer', paddingLeft: 3 }}
                         onClick={(e) => { e.stopPropagation(); removeChord(pairIdx, chordIdx); }}
                       >✕</span>
                     </div>
@@ -549,7 +549,7 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
                 onPaste={(e) => handlePasteLyric(pairIdx, e)}
                 rows={1}
                 placeholder="Escribe o pega la letra aquí..."
-                style={{ width: '100%', marginTop: 4, padding: '6px 4px', background: 'transparent', border: '1px dashed #262626', borderRadius: 4, color: '#888', fontSize: 12, fontFamily: "'Outfit',sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
+                style={{ width: '100%', marginTop: 4, padding: '6px 4px', background: 'transparent', border: '1px dashed #262626', borderRadius: 4, color: '#888', fontSize:'var(--fs-md)', fontFamily: "'Outfit',sans-serif", resize: 'vertical', boxSizing: 'border-box' }}
               />
             </div>
           );
@@ -557,19 +557,19 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
 
         <button
           onClick={() => setPairs((prev) => [...prev, { notas: '', letra: '' }])}
-          style={{ width: '100%', marginTop: 6, padding: '8px', background: 'transparent', border: '1px dashed #333', borderRadius: 8, color: '#666', fontSize: 12, cursor: 'pointer' }}
+          style={{ width: '100%', marginTop: 6, padding: '8px', background: 'transparent', border: '1px dashed #333', borderRadius: 8, color: '#666', fontSize:'var(--fs-md)', cursor: 'pointer' }}
         >+ línea</button>
       </div>
 
       {acordesRecientes.length > 0 && (
         <div style={{ background: '#1c1c1c', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
-          <p style={{ fontSize: 10, color: '#666', margin: '0 0 6px', letterSpacing: '0.3px' }}>acordes recientes en esta canción</p>
+          <p style={{ fontSize:'var(--fs-sm)', color: '#666', margin: '0 0 6px', letterSpacing: '0.3px' }}>acordes recientes en esta canción</p>
           <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {acordesRecientes.map((ch) => (
               <span
                 key={ch}
                 onClick={() => { if (pairs.length) addChordFromRecent(0, ch); }}
-                style={{ background: 'rgba(127,119,221,.1)', border: '1px solid rgba(127,119,221,.4)', color: '#b8b2f0', fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 6, cursor: 'pointer' }}
+                style={{ background: 'rgba(127,119,221,.1)', border: '1px solid rgba(127,119,221,.4)', color: '#b8b2f0', fontSize:'var(--fs-md)', fontWeight: 500, padding: '3px 10px', borderRadius: 6, cursor: 'pointer' }}
               >{ch}</span>
             ))}
           </div>
@@ -577,15 +577,15 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
       )}
 
       <div style={{ background: '#161616', border: '1px solid #2a2a2a', borderRadius: 10, padding: '10px 12px', marginBottom: 14, display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 15, color: '#666' }}>📋</span>
-        <p style={{ fontSize: 12, color: '#888', margin: 0, lineHeight: 1.4 }}>
+        <span style={{ fontSize:'var(--fs-emph)', color: '#666' }}>📋</span>
+        <p style={{ fontSize:'var(--fs-md)', color: '#888', margin: 0, lineHeight: 1.4 }}>
           Al pegar texto, se pegará solo en la línea de <span style={{ color: '#bbb' }}>letra</span> — nunca en la franja de notas.
         </p>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onCancel} style={{ flex: 1, background: '#161616', border: '1px solid #333', color: '#999', fontSize: 14, fontWeight: 500, padding: 11, borderRadius: 10, cursor: 'pointer' }}>Cancelar</button>
-        <button onClick={handleSave} style={{ flex: 1, background: '#1d9e75', border: 'none', color: '#04342c', fontSize: 14, fontWeight: 500, padding: 11, borderRadius: 10, cursor: 'pointer' }}>Guardar cambios</button>
+        <button onClick={onCancel} style={{ flex: 1, background: '#161616', border: '1px solid #333', color: '#999', fontSize:'var(--fs-emph)', fontWeight: 500, padding: 11, borderRadius: 10, cursor: 'pointer' }}>Cancelar</button>
+        <button onClick={handleSave} style={{ flex: 1, background: '#1d9e75', border: 'none', color: '#04342c', fontSize:'var(--fs-emph)', fontWeight: 500, padding: 11, borderRadius: 10, cursor: 'pointer' }}>Guardar cambios</button>
       </div>
     </div>
   );

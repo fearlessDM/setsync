@@ -49,7 +49,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
       <button ref={btnRef} type="button" onClick={toggle} disabled={disabled}
         style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,
           border:'1px solid var(--bd)',borderRadius:8,background:'var(--s3)',color:'var(--tx)',
-          fontSize:12,fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
+          fontSize:'var(--fs-md)',fontWeight:700,fontFamily:"'Lexend Giga',sans-serif",
           padding:'6px 10px',cursor:disabled?'default':'pointer',opacity:disabled?.5:1,
           width:'100%',boxSizing:'border-box',...style}}>
         <span style={{overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis',flex:1,textAlign:'left'}}>
@@ -69,9 +69,9 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
             boxShadow:'0 12px 32px rgba(0,0,0,.5)',padding:4}}>
             {options.map(o=>(
               <div key={o.value} onClick={()=>{onChange(o.value);setOpen(false);}}
-                style={{padding:'8px 10px',borderRadius:6,cursor:'pointer',fontSize:12,fontWeight:700,
+                style={{padding:'8px 10px',borderRadius:6,cursor:'pointer',fontSize:'var(--fs-md)',fontWeight:700,
                   fontFamily:"'Lexend Giga',sans-serif",
-                  background:String(o.value)===String(value)?'rgba(48,192,183,.15)':'transparent',
+                  background:String(o.value)===String(value)?'rgba(var(--gn-rgb),.15)':'transparent',
                   color:String(o.value)===String(value)?'var(--gn)':'var(--tx2)'}}>
                 {o.label}
               </div>
@@ -98,8 +98,8 @@ export function Toast({msg,onDone}){
     <div className="toast">
       <div className="t-ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div>
-        <div style={{fontSize:12,fontWeight:700,color:'var(--tx)'}}>{msg.text}</div>
-        {msg.sub&&<div style={{fontSize:12.5,color:'var(--tx2)',marginTop:1}}>{msg.sub}</div>}
+        <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)'}}>{msg.text}</div>
+        {msg.sub&&<div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:1}}>{msg.sub}</div>}
       </div>
     </div>
   );
@@ -124,18 +124,18 @@ export function MiniCal({eventDays=[]}){
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="1.8">
             <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
           </svg>
-          <div style={{fontSize:8,fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'.5px'}}>{mn.slice(0,3)}</div>
+          <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'.5px'}}>{mn.slice(0,3)}</div>
         </div>
       )}
       {exp&&(
         <>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:7}}>
-            <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:11,color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
-            <span style={{fontSize:9,color:'var(--tx3)',fontWeight:700}}>{y}</span>
+            <span style={{fontFamily:"'Lexend Giga',sans-serif",fontWeight:900,fontSize:'var(--fs-base)',color:'var(--tx)',textTransform:'capitalize'}}>{mn}</span>
+            <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontWeight:700}}>{y}</span>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'1px'}}>
             {DOWS.map(d=>(
-              <div key={d} style={{fontSize:7,fontWeight:900,color:'var(--tx3)',textAlign:'center',textTransform:'uppercase',padding:'2px 0'}}>{d}</div>
+              <div key={d} style={{fontSize:'var(--fs-3xs)',fontWeight:900,color:'var(--tx3)',textAlign:'center',textTransform:'uppercase',padding:'2px 0'}}>{d}</div>
             ))}
             {cells.map((d,i)=>{
               if(!d)return(<div key={`e${i}`}/>);
@@ -144,7 +144,7 @@ export function MiniCal({eventDays=[]}){
               const hasEv=eventDays.includes(d);
               return(
                 <div key={d} style={{
-                  fontSize:9,textAlign:'center',padding:'3px 1px',borderRadius:3,lineHeight:1.2,position:'relative',
+                  fontSize:'var(--fs-xs)',textAlign:'center',padding:'3px 1px',borderRadius:3,lineHeight:1.2,position:'relative',
                   color:isToday?'var(--ac)':isSun?'var(--ac)':'var(--tx2)',
                   fontWeight:isToday||hasEv?700:400,
                   background:isToday?'rgba(200,169,126,.2)':'transparent',
