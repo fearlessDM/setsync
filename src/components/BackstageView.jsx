@@ -15,6 +15,24 @@ import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg } from '../firebase/firestore';
 
+const FAQS_PLANES = [
+  {q:'¿Cuál es la diferencia entre Cuenta Unitaria y Cuenta Equipo?', a:'Cuenta Unitaria da acceso solo a la persona que inició sesión (Lite, Pro o Premium). Cuenta Equipo es un solo pago del admin que deja a TODOS los miembros con acceso Premium completo, automático — no hace falta que cada uno pague su propio plan.'},
+  {q:'¿Cuánto cuesta cada plan?', a:'Todo es mensual, sin plan anual. Cuenta Unitaria: Lite gratis, Pro $8, Premium $12. Cuenta Equipo: 1–10 personas $18, 11–25 $28, 26–35 $39 (incluye marca blanca), 36+ $39 más $1 por persona sobre 35.'},
+  {q:'¿Por qué elegir Cuenta Equipo en vez de que cada uno pague su plan?', a:'Apenas tienes 2-3 personas que necesitan Premium, sale más barato la Cuenta Equipo que sumar planes individuales — y evita el problema de "quién paga qué". Un solo pago, todo el equipo con acceso completo.'},
+  {q:'¿Cómo se agregan miembros?', a:'El admin los agrega por correo electrónico directo desde esta pantalla. No hace falta código de invitación ni link.'},
+  {q:'Agregué a alguien que todavía no tiene cuenta en SetSync, ¿qué pasa?', a:'Queda como "pendiente". Apenas esa persona se registra o inicia sesión con ese mismo correo, se vincula sola — no hay que hacer nada más.'},
+  {q:'¿Puedo quitar a alguien del equipo?', a:'Sí, desde la misma pantalla. Al quitarlo, esa persona vuelve a su plan individual (Lite, salvo que tenga uno pago aparte).'},
+  {q:'¿El admin también cuenta como miembro del equipo?', a:'Sí, se agrega automáticamente al crear la Cuenta Equipo — no ocupa un cupo aparte del tramo.'},
+  {q:'¿Puedo cambiar de tramo si el equipo crece?', a:'Sí, se ajusta desde esta misma pantalla cuando lo necesites.'},
+  {q:'¿Qué pasa con los miembros si el pago falla?', a:'Hay un período de gracia antes de que baje nadie de plan — el equipo sigue con Premium completo mientras el admin regulariza el pago. Solo después de vencido ese plazo, todos los miembros vuelven a su plan individual.'},
+  {q:'¿Cómo sé si mi equipo está en período de gracia?', a:'Acá mismo, el admin ve el estado del equipo (Activa / En gracia / Vencida) con la fecha límite si corresponde.'},
+  {q:'¿Una persona puede pertenecer a más de un equipo a la vez?', a:'Sí. Si perteneces a dos Cuentas Equipo distintas (por ejemplo, tocas en dos bandas), basta con que una esté vigente para que tengas Premium completo.'},
+  {q:'Soy miembro de un equipo, no el admin — ¿puedo agregar o quitar gente?', a:'No, solo quien contrató la Cuenta Equipo puede gestionar miembros. Vas a ver un aviso de que perteneces al equipo, sin controles de administración.'},
+  {q:'¿La marca blanca viene en todos los tramos de equipo?', a:'No — viene incluida desde el tramo de 26–35 personas hacia arriba. Los tramos más chicos (1–10 y 11–25) no la incluyen.'},
+  {q:'¿"Límite de miembros" en Cuenta Unitaria significa que esas personas tienen acceso?', a:'No — ese límite es solo un tope de roster/lista de contactos que puedes cargar en tu cuenta (nombres, roles). No le da acceso a nadie más a la app. Para eso necesitan su propio plan individual o formar parte de una Cuenta Equipo.'},
+  {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
+];
+
 export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
@@ -45,6 +63,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   },[orgQueAdministro?.id]);
   const [emailNuevoMiembro,setEmailNuevoMiembro]=useState('');
   const [creandoOrg,setCreandoOrg]=useState(false);
+  const [faqPlanesOpen,setFaqPlanesOpen]=useState(false);
+  const [faqPlanesAbiertas,setFaqPlanesAbiertas]=useState({});
   const [activeEq,setActiveEq]=useState(null);
   const [verMiembros,setVerMiembros]=useState(false);
   const [nuevoMiembro,setNuevoMiembro]=useState(null); // {nombre,email,equipoId} — reemplaza prompt()
@@ -1269,9 +1289,43 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
           {tx.plansAndPricesTitle}
         </div>
-        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:22}}>
+        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:14}}>
           {tx.plansIntro}
         </div>
+        <button onClick={()=>setFaqPlanesOpen(v=>!v)}
+          style={{display:'flex',alignItems:'center',gap:6,padding:'7px 12px',borderRadius:100,
+            border:'1px solid var(--bd)',background:faqPlanesOpen?'var(--s2)':'var(--s1)',cursor:'pointer',marginBottom:22}}>
+          <span style={{fontSize:'var(--fs-base)'}}>❓</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)'}}>Preguntas frecuentes</span>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
+            style={{transform:faqPlanesOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        {faqPlanesOpen && (
+          <div className="card" style={{padding:14,marginBottom:22,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+            {FAQS_PLANES.map((faq,i)=>(
+              <div key={i} style={{borderBottom:i<FAQS_PLANES.length-1?'1px solid var(--s2)':'none'}}>
+                <button onClick={()=>setFaqPlanesAbiertas(v=>({...v,[i]:!v[i]}))}
+                  style={{width:'100%',background:'none',border:'none',textAlign:'left',
+                    padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
+                    justifyContent:'space-between',gap:8}}>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-md)',fontWeight:700,
+                    color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
+                    strokeWidth="2" style={{flexShrink:0,transform:faqPlanesAbiertas[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                {faqPlanesAbiertas[i]&&(
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',color:'var(--tx2)',
+                    fontWeight:300,lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.personalAccountLbl}</div>
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>

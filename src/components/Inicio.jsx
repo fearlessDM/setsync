@@ -54,10 +54,12 @@ const FAQS = [
   {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su teléfono.'},
   {q:'¿Puedo usar SetSync sin internet?', a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
   {q:'¿Cómo convoco al equipo?', a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
-  {q:'¿Cómo transpongo una canción?', a:'En SongView toca el botón de nota (ej. "D") en la barra de herramientas. Ahí puedes subir/bajar semitonos y agregar capo.'},
   {q:'¿Qué es el Cancionero Universal?', a:'Una biblioteca compartida de canciones con acordes verificados. Disponible en planes Pro y Premium. Ve a Cancionero → pestaña Universal.'},
   {q:'¿Cómo funciona la Secuencia?', a:'En SongView → pestaña Secuencia encontrarás el waveform de la canción, los multitracks con faders individuales y el click sincronizado.'},
   {q:'¿Qué formatos de audio acepta Referencia?', a:'MP3, AAC, WAV, M4A. Puedes subir el audio desde tu dispositivo y hacer loop de cualquier sección para ensayar.'},
+  {q:'¿Qué es la Cuenta Equipo?', a:'Un solo pago del admin que deja a todo el equipo con acceso Premium completo, automático. Más barato que sumar planes individuales apenas son 2-3 personas. Se activa en Backstage → Planes y precios.'},
+  {q:'¿Cómo agrego miembros a mi Cuenta Equipo?', a:'Backstage → Planes y precios → sección Cuenta Equipo. Se agregan por correo electrónico — si esa persona aún no tiene cuenta, queda pendiente y se vincula sola cuando se registre.'},
+  {q:'¿Qué pasa si dejo de pagar la Cuenta Equipo?', a:'Hay un período de gracia antes de que el equipo baje de plan — no se corta de inmediato. Puedes ver el estado exacto en Backstage → Planes y precios.'},
 ];
 
 const TUTORIALES = [
