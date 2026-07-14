@@ -15,7 +15,7 @@
 
 import { db, firebaseListo } from './config';
 import {
-  collection, doc, setDoc, deleteDoc, onSnapshot, query,
+  collection, doc, setDoc, deleteDoc, onSnapshot, query, where,
 } from 'firebase/firestore';
 
 // ── Identidad de cuenta — temporal hasta que exista un sistema de auth
@@ -240,4 +240,109 @@ export function subscribeImportDB(accountId, onChange){
 export async function guardarImportDB(accountId, db_){
   if(!firebaseListo) return;
   await setDoc(doc(db, 'accounts', accountId, 'data', 'importDB'), {db: db_});
+}
+
+// ── Cuenta Equipo (v90) — un admin paga y sus miembros, CADA UNO con su
+// propia cuenta/login independiente, quedan en Premium completo. Ojo:
+// esto NO es lo mismo que `equipos` más arriba (roster de integrantes
+// con roles, tipo "Sonido"/"Visuales", dentro de UNA sola cuenta) — no
+// confundir los dos conceptos, coexisten a propósito con nombres
+// distintos: `orgs` / `orgMiembros` acá vs `equipos` arriba.
+//
+// `orgMiembros` es una colección PLANA en la raíz (no subcolección de
+// `orgs`) para poder resolver "en qué orgs está el uid X" con un solo
+// query — necesario para soportar que una persona esté en más de un
+// equipo a la vez (multi-equipo, decisión v90).
+//
+// El admin agrega miembros por email. Si esa persona todavía no tiene
+// cuenta en SetSync, el registro queda con uid:null y estado:'pendiente'
+// — se resuelve solo la primera vez que esa persona inicia sesión con
+// ese mismo correo (ver vincularMembresiasPendientes, llamada desde
+// App.jsx apenas currentUser se confirma).
+
+export async function crearOrg({adminUid, adminEmail, tramoId}){
+  if(!firebaseListo) return null;
+  const ref = doc(collection(db, 'orgs'));
+  await setDoc(ref, {
+    adminUid, tramoId, estado:'activa', fechaLimiteGracia:null,
+    creadoEn:Date.now(), actualizadoEn:Date.now(),
+  });
+  // El admin también es miembro activo de su propio equipo desde el día 1.
+  await agregarMiembroOrg(ref.id, adminEmail, adminUid);
+  return ref.id;
+}
+
+export async function actualizarEstadoOrg(orgId, estado, fechaLimiteGracia=null){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'orgs', orgId), {estado, fechaLimiteGracia, actualizadoEn:Date.now()}, {merge:true});
+}
+
+export async function actualizarTramoOrg(orgId, tramoId){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'orgs', orgId), {tramoId, actualizadoEn:Date.now()}, {merge:true});
+}
+
+export function subscribeOrg(orgId, onChange){
+  if(!firebaseListo || !orgId) return noop();
+  return onSnapshot(doc(db, 'orgs', orgId), snap=>{
+    onChange(snap.exists() ? {...snap.data(), id:snap.id} : null);
+  });
+}
+
+// Los orgs donde el uid dado es el admin (para mostrarle su panel de gestión).
+export function subscribeOrgsComoAdmin(uid, onChange){
+  if(!firebaseListo || !uid) return noop();
+  const ref = collection(db, 'orgs');
+  return onSnapshot(query(ref, where('adminUid','==',uid)), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+
+// Miembros de UN org puntual (pantalla del admin: lista + estado de cada uno).
+export function subscribeMiembrosOrg(orgId, onChange){
+  if(!firebaseListo || !orgId) return noop();
+  const ref = collection(db, 'orgMiembros');
+  return onSnapshot(query(ref, where('orgId','==',orgId)), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})).filter(m=>m.estado!=='removido'));
+  });
+}
+
+export async function agregarMiembroOrg(orgId, email, uidConocido=null){
+  if(!firebaseListo) return null;
+  const emailLimpio = String(email).trim().toLowerCase();
+  const ref = doc(collection(db, 'orgMiembros'));
+  await setDoc(ref, {
+    orgId, email: emailLimpio,
+    uid: uidConocido, estado: uidConocido ? 'activo' : 'pendiente',
+    agregadoEn: Date.now(),
+  });
+  return ref.id;
+}
+
+export async function quitarMiembroOrg(miembroId){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'orgMiembros', miembroId), {estado:'removido'}, {merge:true});
+}
+
+// Los orgs vigentes a los que pertenece un uid (miembro activo) — fuente
+// de datos de usePlanEfectivo(). Soporta multi-equipo: puede devolver
+// más de un registro.
+export function subscribeMisMembresias(uid, onChange){
+  if(!firebaseListo || !uid) return noop();
+  const ref = collection(db, 'orgMiembros');
+  return onSnapshot(query(ref, where('uid','==',uid), where('estado','==','activo')), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+
+// Al confirmar login, vincula membresías que el admin agregó por email
+// ANTES de que esta persona tuviera cuenta en SetSync. Idempotente — si
+// no hay nada pendiente con ese correo, no hace nada.
+export async function vincularMembresiasPendientes(uid, email){
+  if(!firebaseListo || !uid || !email) return;
+  const { getDocs, updateDoc } = await import('firebase/firestore');
+  const emailLimpio = String(email).trim().toLowerCase();
+  const ref = collection(db, 'orgMiembros');
+  const snap = await getDocs(query(ref, where('email','==',emailLimpio), where('estado','==','pendiente')));
+  await Promise.all(snap.docs.map(d=>updateDoc(d.ref, {uid, estado:'activo'})));
 }

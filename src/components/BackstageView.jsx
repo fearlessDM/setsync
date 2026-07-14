@@ -13,8 +13,9 @@ import { initials } from '../utils/music';
 import { CustomSelect } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
+import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg } from '../firebase/firestore';
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,cuentaEquipo={activa:false,tramoId:null},setCuentaEquipo=()=>{},tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -26,6 +27,24 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;
+  // ── Cuenta Equipo (v90) — org(es) donde ESTE usuario es admin, y los
+  // miembros del primero (hoy soportamos gestionar uno a la vez desde
+  // esta pantalla; ver planes.js/firestore.js para el soporte multi-org
+  // ya presente en el modelo de datos). No confundir con `equipos` de
+  // más abajo (roster interno con roles).
+  const [misOrgsAdmin,setMisOrgsAdmin]=useState([]);
+  useEffect(()=>{
+    if(!currentUser?.uid) return;
+    return subscribeOrgsComoAdmin(currentUser.uid, setMisOrgsAdmin);
+  },[currentUser?.uid]);
+  const orgQueAdministro = misOrgsAdmin[0]||null;
+  const [miembrosOrgAdmin,setMiembrosOrgAdmin]=useState([]);
+  useEffect(()=>{
+    if(!orgQueAdministro?.id){ setMiembrosOrgAdmin([]); return; }
+    return subscribeMiembrosOrg(orgQueAdministro.id, setMiembrosOrgAdmin);
+  },[orgQueAdministro?.id]);
+  const [emailNuevoMiembro,setEmailNuevoMiembro]=useState('');
+  const [creandoOrg,setCreandoOrg]=useState(false);
   const [activeEq,setActiveEq]=useState(null);
   const [verMiembros,setVerMiembros]=useState(false);
   const [nuevoMiembro,setNuevoMiembro]=useState(null); // {nombre,email,equipoId} — reemplaza prompt()
@@ -1260,7 +1279,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
         <div style={{marginBottom:28}}>
           <BloquePlanes planes={PLANES_PERSONAL}
-            activo={cuentaEquipo?.activa?null:planId}
+            activo={viaEquipo?null:planId}
             onElegir={p=>{setPlanId(p.id);onToast({text:tx.planUpdatedToast,sub:p.name});}}/>
         </div>
 
@@ -1268,9 +1287,78 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
           {tx.teamAccountDesc}
         </div>
-        <BloquePlanes planes={PLANES_EQUIPO}
-          activo={cuentaEquipo?.activa?cuentaEquipo.tramoId:null}
-          onElegir={p=>{setCuentaEquipo({activa:true,tramoId:p.id});onToast({text:tx.teamActivatedToast,sub:p.name});}}/>
+
+        {orgQueAdministro ? (
+          // Soy admin de un equipo real (Firestore) — gestión completa.
+          <div className="card" style={{padding:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--ac)',fontWeight:400}}>
+                {TRAMOS_EQUIPO.find(t=>t.id===orgQueAdministro.tramoId)?.label||orgQueAdministro.tramoId}
+              </div>
+              <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',
+                padding:'3px 9px',borderRadius:100,
+                color:orgQueAdministro.estado==='activa'?'var(--gn)':orgQueAdministro.estado==='gracia'?'#f5a623':'#e5484d',
+                background:orgQueAdministro.estado==='activa'?'rgba(var(--gn-rgb),.12)':orgQueAdministro.estado==='gracia'?'#f5a62320':'#e5484d20'}}>
+                {orgQueAdministro.estado==='activa'?'Activa':orgQueAdministro.estado==='gracia'?'En gracia':'Vencida'}
+              </span>
+            </div>
+            {orgQueAdministro.estado==='gracia'&&orgQueAdministro.fechaLimiteGracia&&(
+              <div style={{fontSize:'var(--fs-xs)',color:'#f5a623',fontFamily:"var(--font-body)",marginBottom:10}}>
+                Regulariza el pago antes del {new Date(orgQueAdministro.fechaLimiteGracia).toLocaleDateString('es-CL')}, o el equipo vuelve a plan individual.
+              </div>
+            )}
+            <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>
+              Miembros ({miembrosOrgAdmin.length})
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:10}}>
+              {miembrosOrgAdmin.map(m=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,background:'var(--s2)'}}>
+                  <div style={{flex:1,minWidth:0,fontSize:'var(--fs-base)',color:'var(--tx)',fontFamily:"var(--font-body)",overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email}</div>
+                  <span style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:m.estado==='activo'?'var(--gn)':'var(--tx3)',
+                    textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}>{m.estado==='activo'?'Activo':'Pendiente'}</span>
+                  {m.uid!==orgQueAdministro.adminUid&&(
+                    <button onClick={()=>quitarMiembroOrg(m.id)}
+                      style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-sm)',padding:2,flexShrink:0}}>✕</button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:6}}>
+              <input value={emailNuevoMiembro} onChange={e=>setEmailNuevoMiembro(e.target.value)}
+                placeholder="correo@ejemplo.com" type="email"
+                style={{flex:1,padding:'8px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--bg)',color:'var(--tx)',fontSize:'var(--fs-base)',fontFamily:"var(--font-body)"}}/>
+              <button onClick={()=>{
+                  const email=emailNuevoMiembro.trim();
+                  if(!email||!email.includes('@')) return;
+                  agregarMiembroOrg(orgQueAdministro.id, email);
+                  setEmailNuevoMiembro('');
+                  onToast({text:'Miembro agregado',sub:email});
+                }}
+                style={{padding:'8px 14px',borderRadius:8,border:'none',background:'var(--ac)',color:'#fff',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
+                Agregar
+              </button>
+            </div>
+          </div>
+        ) : viaEquipo ? (
+          // Pertenezco a un equipo, pero no soy el admin — sin controles.
+          <div className="card" style={{padding:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+            <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.6}}>
+              Ya formas parte de una Cuenta Equipo — tienes acceso Premium completo. Solo quien la contrató puede agregar o quitar miembros.
+            </div>
+          </div>
+        ) : (
+          // Sin equipo todavía — activar crea el org real en Firestore.
+          <BloquePlanes planes={PLANES_EQUIPO}
+            activo={null}
+            onElegir={async p=>{
+              if(creandoOrg) return;
+              if(!currentUser?.uid){ onToast({text:'Inicia sesión para activar la Cuenta Equipo'}); return; }
+              setCreandoOrg(true);
+              await crearOrg({adminUid:currentUser.uid, adminEmail:currentUser.email, tramoId:p.id});
+              setCreandoOrg(false);
+              onToast({text:tx.teamActivatedToast,sub:p.name});
+            }}/>
+        )}
       </div>
     );
   }
@@ -1475,7 +1563,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
               letterSpacing:'1.5px',fontFamily:"var(--font-body)",marginBottom:3}}>{tx.currentPlanBtn}</div>
             <div style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--ac)',fontFamily:"var(--font-body)",
-              textTransform:'capitalize'}}>{cuentaEquipo?.activa?'Premium':planId}</div>
+              textTransform:'capitalize'}}>{viaEquipo?'Premium':planId}</div>
           </div>
           <button onClick={()=>{}}
             style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(var(--gn-rgb),.3)',

@@ -20,12 +20,13 @@ import { Multitracks } from './Multitracks';
 import { Monitoreo } from './Monitoreo';
 import { t as getT, LANGS } from '../i18n';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
-import { getPlan, featureDisponible, mensajeUpgrade, planEfectivo, TRAMOS_EQUIPO, getTramoEquipo, precioTramoEquipo } from '../data/planes';
+import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB } from '../firebase/firestore';
+import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, vincularMembresiasPendientes } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -92,20 +93,11 @@ export default function App(){
   const [theme,setTheme]=useState('dark');
   const [userRole]=useState('superadmin');
   const isAdmin=userRole==='superadmin';
-  const [planId,setPlanId]=useState('lite'); // 'lite' | 'pro' | 'premium' — selector temporal de prueba,
-  // hasta que exista cobro real. El plan personal es SIEMPRE del usuario
-  // individual (mismo principio que ya regía SongView) — PERO si la cuenta
-  // tiene Cuenta Equipo activa, ese plan personal queda sobrescrito por
-  // Premium completo para todos los miembros (arquitectura v53/v57,
-  // ver planes.js → planEfectivo). cuentaEquipo también es selector
-  // temporal de prueba hasta que exista cobro real de Cuenta Equipo.
-  const [cuentaEquipo,setCuentaEquipo]=useState({activa:false,tramoId:null});
-  const planActivo=planEfectivo(planId,cuentaEquipo);
-  const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
-  const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
-  const tieneClick=featureDisponible('click',feat,planActivo);
-  const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
-  const tieneMonitoreo=featureDisponible('monitoreo',feat,planActivo);
+  const [planId,setPlanId]=useState('lite'); // 'lite' | 'pro' | 'premium' — selector temporal de prueba
+  // hasta que exista cobro real de Cuenta Unitaria. El plan personal es
+  // SIEMPRE del usuario individual — PERO si pertenece a una Cuenta
+  // Equipo vigente, ese plan personal queda sobrescrito por Premium
+  // completo (ver usePlanEfectivo más abajo, necesita currentUser listo).
   const [online,setOnline]=useState(true); // toggle online/offline — no cierra la app, solo pausa el sync
   // ── Auth real (v42) — reemplaza el accountId fantasma por dispositivo.
   // currentUser: undefined="todavía no sabemos" (esperando a Firebase),
@@ -119,6 +111,23 @@ export default function App(){
     return unsub;
   },[]);
   const accountId = currentUser?.uid || getAccountId();
+  // ── Cuenta Equipo (v90) — usePlanEfectivo() es la fuente única de
+  // verdad: se suscribe a las membresías reales del uid en Firestore
+  // (orgMiembros→orgs) y devuelve Premium si hay ≥1 equipo vigente
+  // (activa o en gracia). Reemplaza el useState de prueba que había acá
+  // antes. Soporta multi-equipo — ver hooks/usePlanEfectivo.js.
+  const {planActivo, viaEquipo, orgsDelUsuario, orgPrincipal} = usePlanEfectivo(currentUser?.uid, planId);
+  useEffect(()=>{
+    // Resuelve membresías que un admin agregó por email ANTES de que
+    // esta persona tuviera cuenta — se vincula solo, una vez por sesión,
+    // apenas el login se confirma.
+    if(currentUser?.uid && currentUser?.email) vincularMembresiasPendientes(currentUser.uid, currentUser.email);
+  },[currentUser?.uid, currentUser?.email]);
+  const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
+  const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
+  const tieneClick=featureDisponible('click',feat,planActivo);
+  const tieneMultitracks=featureDisponible('multitracks',feat,planActivo);
+  const tieneMonitoreo=featureDisponible('monitoreo',feat,planActivo);
   const [mostrarMultitracks,setMostrarMultitracks]=useState(false);
 
   // ── Estado único, inicializado por modo (lazy init: solo corre la
@@ -786,7 +795,7 @@ Tuya es la gloria, Por siempre amén.
           {view==='inicio'&&(
             <Inicio mode={appMode} lang={lang} userRole={userRole}
               equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
-              planActivo={planActivo} planId={planId} cuentaEquipo={cuentaEquipo}
+              planActivo={planActivo} planId={planId} viaEquipo={viaEquipo} orgPrincipal={orgPrincipal}
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
               onNavigate={setView}/>
           )}
@@ -813,7 +822,7 @@ Tuya es la gloria, Por siempre amén.
             guardarSetlistEnEvento={guardarSetlistEnEvento} onLangChange={setLang}
             online={online} setOnline={setOnline} firebaseListo={firebaseListo}
             planId={planId} setPlanId={setPlanId} planActivo={planActivo}
-            cuentaEquipo={cuentaEquipo} setCuentaEquipo={setCuentaEquipo}
+            viaEquipo={viaEquipo} orgPrincipal={orgPrincipal} orgsDelUsuario={orgsDelUsuario}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             variacionesDB={variacionesDB}
             currentUser={currentUser} onCerrarSesion={cerrarSesion}

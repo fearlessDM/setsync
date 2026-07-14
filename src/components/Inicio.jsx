@@ -421,7 +421,7 @@ const NOTIFICACIONES_DEMO = [
   {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
 ];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', cuentaEquipo={activa:false,tramoId:null}, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
@@ -435,7 +435,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
     .sort((a,b)=>new Date(a.fecha)-new Date(b.fecha))[0]||null;
   const misEquipos = equipos.filter(eq=>(eq.miembros||[]).length>0);
-  const planLabel = cuentaEquipo?.activa ? 'Premium' : ({lite:'Lite',pro:'Pro',premium:'Premium'}[planId]||planId);
+  const planLabel = viaEquipo ? 'Premium' : ({lite:'Lite',pro:'Pro',premium:'Premium'}[planId]||planId);
 
   // Bloques con orden arrastrable (por filas de 2)
   // Cada "row" es un índice de bloque
@@ -666,7 +666,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.personalPlansLbl}</div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
-              const isCurrent = !cuentaEquipo?.activa && planId===p.id;
+              const isCurrent = !viaEquipo && planId===p.id;
               return (
                 <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
                   background:isCurrent?'rgba(var(--gn-rgb),.1)':'var(--s1)',
@@ -689,7 +689,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
             {TRAMOS_EQUIPO.map(t=>{
-              const isCurrentTramo = cuentaEquipo?.activa && cuentaEquipo.tramoId===t.id;
+              const isCurrentTramo = viaEquipo && orgPrincipal?.tramoId===t.id;
               const precio = t.id==='eq-36+'
                 ? `${tx.fromLbl} $${precioTramoEquipo(t.id,36)}`
                 : `$${t.precioBase}`;

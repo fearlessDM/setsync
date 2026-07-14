@@ -82,8 +82,24 @@ export function precioTramoEquipo(tramoId, numPersonas){
 // (incluido el súper admin) opera con Premium completo, sin importar cuál
 // sea su planId personal. Si no está activa, se usa el plan individual
 // normal (comportamiento histórico, sin cambios).
+// @deprecated (v90) — dependía del useState de prueba `cuentaEquipo` que
+// ya no existe en App.jsx. Nada la usa hoy; queda solo por si algún otro
+// archivo la referenciaba desde fuera de esta sesión. Usar
+// planEfectivoDesdeOrgs() para todo lo nuevo.
 export function planEfectivo(planId, cuentaEquipo){
   if(cuentaEquipo?.activa) return PLANES_SETSYNC.premium;
+  return getPlan(planId);
+}
+
+// ── v90: versión real, respaldada por Firestore (orgs/orgMiembros, ver
+// firestore.js) — reemplaza el `cuentaEquipo` de prueba de arriba, que
+// era puro useState local sin persistencia. Recibe la lista de orgs a
+// los que el usuario pertenece como miembro activo (puede ser más de
+// uno — multi-equipo, decisión v90) y basta con que UNO esté vigente
+// ('activa' o 'gracia') para que el plan efectivo sea Premium completo.
+export function planEfectivoDesdeOrgs(planId, orgsDelUsuario=[]){
+  const hayOrgVigente = orgsDelUsuario.some(o=>o && (o.estado==='activa'||o.estado==='gracia'));
+  if(hayOrgVigente) return PLANES_SETSYNC.premium;
   return getPlan(planId);
 }
 
