@@ -1,7 +1,8 @@
 // ── Utilidades de Estructura/Bloques — compartidas entre VistaBloques y ──────
-// PanelEstructura (que sigue viviendo en SongView.jsx hasta el paso 4 del
-// refactor). Funciones puras, sin estado de React.
+// otras vistas de SongView. Funciones puras, sin estado de React.
 // Extraído de SongView.jsx sin cambios de comportamiento (Tanda 1 — refactor).
+// (PanelEstructura.jsx se borró en v90 por estar huérfano — se importaba pero
+// nunca se renderizaba.)
 
 export const BLOQUE_COLORS={
   'INTRO':'#5e9eff','VERSO':'#EE227D','CORO':'#30C0B7','PRE-CORO':'#a78bfa',

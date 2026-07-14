@@ -8,7 +8,7 @@ import { tpKey } from '../utils/music';
 import { Toast, CustomSelect } from './common';
 import { renderSongContent, CHORD_RE, resolveLineAbsIndex } from './songview/vistaLineal';
 import { useMapaCancion } from './songview/useMapaCancion';
-import { PanelEstructura } from './songview/PanelEstructura';
+
 import { crearDriver, MARCAS_MESA } from '../mixer/mixerDrivers';
 import { subirAudiosMultiples, subirAudio, borrarAudio } from '../firebase/storage';
 import { getAccountId } from '../firebase/firestore';
