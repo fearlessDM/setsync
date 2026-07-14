@@ -310,7 +310,14 @@ export function subscribeMiembrosOrg(orgId, onChange){
 export async function agregarMiembroOrg(orgId, email, uidConocido=null){
   if(!firebaseListo) return null;
   const emailLimpio = String(email).trim().toLowerCase();
-  const ref = doc(collection(db, 'orgMiembros'));
+  // ID determinístico (orgId_email), NO autogenerado — a propósito: así
+  // las Security Rules pueden verificar "¿pertenezco a este org?" con un
+  // get() a una ruta conocida (orgId + mi email del token de Auth), sin
+  // necesitar una query dentro de la regla (Firestore Rules no soporta
+  // eso). Efecto secundario útil: agregar el mismo email dos veces al
+  // mismo org no duplica, solo sobreescribe.
+  const miembroId = `${orgId}_${emailLimpio}`;
+  const ref = doc(db, 'orgMiembros', miembroId);
   await setDoc(ref, {
     orgId, email: emailLimpio,
     uid: uidConocido, estado: uidConocido ? 'activo' : 'pendiente',
