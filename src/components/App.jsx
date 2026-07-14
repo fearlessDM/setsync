@@ -686,20 +686,20 @@ Tuya es la gloria, Por siempre amén.
           <div style={{marginBottom:36,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
             <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
-              {LANGS.map((l,i)=>{
+              {LANGS.map((l)=>{
                 const isActive=lang===l.code;
                 return(
                   <button key={l.code} onClick={()=>setLang(l.code)}
                     className="wheel-item"
                     style={{
-                      padding:isActive?'8px 16px':'6px 10px',
+                      padding:'8px 16px',
                       borderRadius:40,border:'none',cursor:'pointer',
                       background:isActive?'var(--bd2)':'transparent',
-                      display:'flex',alignItems:'center',gap:isActive?6:0,
-                      overflow:'hidden',
+                      transition:'background .25s',
                     }}>
-                    <span style={{fontSize:isActive?'var(--fs-xl)':'var(--fs-emph)',lineHeight:1,transition:'font-size .25s'}}>{l.flag}</span>
-                    {isActive&&<span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'#f3f1ed',whiteSpace:'nowrap',fontFamily:"var(--font-body)"}}>{l.label}</span>}
+                    <span style={{fontSize:'var(--fs-sm)',fontWeight:isActive?700:400,
+                      color:isActive?'#f3f1ed':'rgba(255,255,255,.55)',whiteSpace:'nowrap',
+                      fontFamily:"var(--font-body)",transition:'color .2s'}}>{l.label}</span>
                   </button>
                 );
               })}
