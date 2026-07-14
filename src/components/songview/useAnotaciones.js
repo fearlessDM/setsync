@@ -1,11 +1,5 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
-// ⚠️ TEMPORAL: este hook expone `debugInfo` con los números reales de
-// tamaño del canvas/contenedor, para mostrarlos en pantalla mientras se
-// termina de diagnosticar el bug de dibujo con Danny. Sacar `debugInfo`
-// y el bloque que lo actualiza una vez resuelto — no es parte del
-// diseño final, es instrumentación de diagnóstico.
-//
 // ── useAnotaciones — CUARTA REESCRITURA (rect fijo por trazo) ───────────
 // Canvas de dibujo libre (lápiz/borrador) que se superpone sobre la letra
 // en SongView. Trazos viven en memoria como datos vectoriales.
@@ -21,7 +15,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 //     grande, sin que él arrastrara tanto el dedo.
 // v4 (ESTA VERSIÓN): con el panel de debug se confirmó con números reales
 //     que canvas/contenedor/rect coincidían exactamente (394x604 los 3) —
-//     descartando cualquier problema de TAMAÑO. El problema real es de
+//     descartando cualquier problema de TAMAÑO. El problema real era de
 //     POSICIÓN: getP() llamaba a getBoundingClientRect() de nuevo en CADA
 //     movimiento del trazo — si la posición en pantalla del canvas se
 //     corre aunque sea un poco a mitad de un mismo trazo (por asentamiento
@@ -37,6 +31,12 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 // se reutiliza para TODOS los puntos de ESE trazo — nunca se vuelve a
 // leer hasta que empiece un trazo nuevo.
 //
+// VALIDADO v90: test automatizado (jsdom) que simula el layout corriéndose
+// a mitad de un trazo confirma que un gesto físico chico sigue produciendo
+// un trazo chico (no el salto errático de antes). El panel de debug ⚠️
+// TEMPORAL que existía en esta versión para el diagnóstico se sacó — ya
+// cumplió su propósito.
+//
 // Parámetros:
 //  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
 //    + el área de scroll de la letra (fuente única de verdad de tamaño)
@@ -49,7 +49,6 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   const cur=useRef(null);         // trazo en progreso
   const activePointerId=useRef(null);
   const rectRef=useRef(null);     // rect del canvas, capturado UNA VEZ por trazo
-  const [debugInfo,setDebugInfo]=useState(null); // ⚠️ TEMPORAL — ver nota arriba
 
   const redraw=useCallback(()=>{
     const cv=cvRef.current;if(!cv)return;
@@ -74,18 +73,11 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     const cv=cvRef.current, container=containerRef.current;
     if(!cv||!container)return false;
     const w=container.clientWidth, h=container.clientHeight;
-    const rect=cv.getBoundingClientRect();
-    setDebugInfo(d=>({...d,
-      containerW:w,containerH:h,
-      canvasW:cv.width,canvasH:cv.height,
-      rectW:Math.round(rect.width),rectH:Math.round(rect.height),
-    }));
     if(w===0||h===0)return false;
     if(cv.width===w&&cv.height===h)return false; // ya estaba sincronizado
     cv.width=w;
     cv.height=h;
     redraw();
-    setDebugInfo(d=>({...d,canvasW:w,canvasH:h,lastResize:new Date().toLocaleTimeString()}));
     return true;
   },[redraw,containerRef]);
 
@@ -106,11 +98,7 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
   // saltar entre referencias distintas punto a punto.
   const getP=e=>{
     const r=rectRef.current;
-    const p={x:e.clientX-r.left,y:e.clientY-r.top};
-    setDebugInfo(d=>({...d,lastClientX:Math.round(e.clientX),lastClientY:Math.round(e.clientY),
-      rectLeft:Math.round(r.left),rectTop:Math.round(r.top),
-      lastPointX:Math.round(p.x),lastPointY:Math.round(p.y)}));
-    return p;
+    return {x:e.clientX-r.left,y:e.clientY-r.top};
   };
 
   const startD=e=>{
@@ -139,7 +127,6 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     rectRef.current=null;
     try{cvRef.current?.releasePointerCapture(e.pointerId);}catch{}
     redraw();
-    setDebugInfo(d=>({...d,strokeCount:strokes.current.length}));
   };
 
   const undo=()=>{strokes.current.pop();redraw();};
@@ -152,6 +139,5 @@ export function useAnotaciones({containerRef,tool,color,sz,showAnnoBar,idx}){
     onPointerUp:endD,
     onPointerCancel:endD,
     undo,clear,
-    debugInfo, // ⚠️ TEMPORAL — ver nota arriba
   };
 }

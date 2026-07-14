@@ -14,6 +14,8 @@ import { subirAudiosMultiples, subirAudio, borrarAudio } from '../firebase/stora
 import { getAccountId } from '../firebase/firestore';
 import { firebaseListo as firebaseListoGlobal } from '../firebase/config';
 import { estimarConversion, convertirAMp3, convertirAOpus } from '../utils/audioConvert';
+import { useAnotaciones } from './songview/useAnotaciones';
+import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
 
 
 // renderSongContent re-exportado para no romper imports externos existentes
@@ -203,6 +205,27 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   useEffect(()=>{const h=()=>setIsTablet(window.innerWidth>=768);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[]);
 
   const wrapRef=useRef(null);
+
+  // ── Anotaciones (lápiz libre) + Autoscroll — v90. Reactivados: estaban
+  // guardados (nunca borrados, ver useAnotaciones.js/useAutoScroll.js)
+  // desde que Danny los sacó por bugs de dibujo. El fix de posición del
+  // trazo (rectRef capturado UNA VEZ por gesto) sigue el mismo patrón ya
+  // probado del fader de Monitoreo (ZONA BLINDADA).
+  const annoContainerRef=useRef(null); // wrapper NO-scrollable: envuelve canvas + wrapRef
+  const [dibujoActivo,setDibujoActivo]=useState(false); // ¿lápiz habilitado para dibujar ahora?
+  const [annoTool,setAnnoTool]=useState('pen'); // 'pen' | 'erase'
+  const [annoColor,setAnnoColor]=useState('#EE227D');
+  const [annoSz,setAnnoSz]=useState(4);
+  const [annoOpen,setAnnoOpen]=useState(false);
+  const annoBtnRef=useRef(null);
+  const [annoPos,setAnnoPos]=useState(null);
+  const [autoScroll,setAutoScroll]=useState(false);
+  const [scrollSpeed,setScrollSpeed]=useState(RANGO_SCROLL.default);
+  const [scrollOpen,setScrollOpen]=useState(false);
+  const scrollBtnRef=useRef(null);
+  const [scrollPos,setScrollPos]=useState(null);
+  const anno=useAnotaciones({containerRef:annoContainerRef,tool:annoTool,color:annoColor,sz:annoSz,showAnnoBar:dibujoActivo,idx});
+  const {resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
@@ -465,6 +488,116 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
         </div>
 
+        {perm.anotacionesPropias&&(
+          <div style={{position:'relative',flexShrink:0}}>
+            <button ref={annoBtnRef} onClick={()=>{
+                if(!annoOpen){
+                  const r=annoBtnRef.current.getBoundingClientRect();
+                  const panelW=Math.min(220,window.innerWidth-24);
+                  const leftIdeal=r.left+(r.width/2)-(panelW/2);
+                  const left=Math.max(12,Math.min(leftIdeal,window.innerWidth-panelW-12));
+                  setAnnoPos({top:r.bottom+6,left,width:panelW});
+                }
+                setAnnoOpen(o=>!o);
+              }}
+              title="Anotar"
+              style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
+                border:dibujoActivo?'1px solid var(--gn)':'1px solid var(--bd)',
+                background:dibujoActivo?'rgba(var(--gn-rgb),.15)':'var(--s1)',
+                color:dibujoActivo?'var(--gn)':'var(--tx3)',cursor:'pointer'}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+            </button>
+            {annoOpen&&annoPos&&createPortal(
+              <>
+                <div onClick={()=>setAnnoOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+                <div style={{position:'fixed',top:annoPos.top,left:annoPos.left,width:annoPos.width,
+                  background:'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
+                  boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
+                  <button onClick={()=>setDibujoActivo(v=>!v)}
+                    style={{width:'100%',padding:'9px',borderRadius:10,border:'none',marginBottom:12,
+                      background:dibujoActivo?'var(--gn)':'var(--s1)',color:dibujoActivo?'#000':'var(--tx2)',
+                      cursor:'pointer',fontWeight:900,fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
+                    {dibujoActivo?'DIBUJANDO — TOCA PARA PARAR':'ACTIVAR LÁPIZ'}
+                  </button>
+                  <div style={{display:'flex',gap:6,marginBottom:12}}>
+                    {['pen','erase'].map(t=>(
+                      <button key={t} onClick={()=>setAnnoTool(t)}
+                        style={{flex:1,padding:'7px',borderRadius:8,
+                          border:annoTool===t?'1px solid rgba(200,169,126,.5)':'1px solid var(--bd)',
+                          background:annoTool===t?'rgba(200,169,126,.15)':'var(--s1)',
+                          color:annoTool===t?'var(--ac)':'var(--tx3)',cursor:'pointer',fontWeight:700,fontSize:'var(--fs-sm)'}}>
+                        {t==='pen'?'Lápiz':'Borrador'}
+                      </button>
+                    ))}
+                  </div>
+                  {annoTool==='pen'&&(
+                    <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+                      {['#EE227D','#5e9eff','#30C0B7','#f5a623','#f3f1ed'].map(c=>(
+                        <button key={c} onClick={()=>setAnnoColor(c)}
+                          style={{width:26,height:26,borderRadius:'50%',
+                            border:annoColor===c?'2px solid #fff':'2px solid transparent',
+                            background:c,cursor:'pointer'}}/>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>GROSOR</div>
+                    <input type="range" min={2} max={16} value={annoSz} onChange={e=>setAnnoSz(Number(e.target.value))} style={{width:'100%'}}/>
+                  </div>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={anno.undo} style={{flex:1,padding:'7px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>Deshacer</button>
+                    <button onClick={anno.clear} style={{flex:1,padding:'7px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>Borrar todo</button>
+                  </div>
+                </div>
+              </>,
+              document.body
+            )}
+          </div>
+        )}
+
+        <div style={{position:'relative',flexShrink:0}}>
+          <button ref={scrollBtnRef} onClick={()=>{
+              if(!scrollOpen){
+                const r=scrollBtnRef.current.getBoundingClientRect();
+                const panelW=Math.min(200,window.innerWidth-24);
+                const leftIdeal=r.left+(r.width/2)-(panelW/2);
+                const left=Math.max(12,Math.min(leftIdeal,window.innerWidth-panelW-12));
+                setScrollPos({top:r.bottom+6,left,width:panelW});
+              }
+              setScrollOpen(o=>!o);
+            }}
+            title="Autoscroll"
+            style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
+              border:autoScroll?'1px solid var(--gn)':'1px solid var(--bd)',
+              background:autoScroll?'rgba(var(--gn-rgb),.15)':'var(--s1)',
+              color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer'}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="19 12 12 19 5 12"/><line x1="12" y1="5" x2="12" y2="19"/>
+            </svg>
+          </button>
+          {scrollOpen&&scrollPos&&createPortal(
+            <>
+              <div onClick={()=>setScrollOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+              <div style={{position:'fixed',top:scrollPos.top,left:scrollPos.left,width:scrollPos.width,
+                background:'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
+                boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
+                <button onClick={()=>{if(!autoScroll)resetScroll();setAutoScroll(v=>!v);}}
+                  style={{width:'100%',padding:'9px',borderRadius:10,border:'none',marginBottom:12,
+                    background:autoScroll?'var(--gn)':'var(--s1)',color:autoScroll?'#000':'var(--tx2)',
+                    cursor:'pointer',fontWeight:900,fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
+                  {autoScroll?'DETENER':'INICIAR AUTOSCROLL'}
+                </button>
+                <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>VELOCIDAD</div>
+                <input type="range" min={RANGO_SCROLL.min} max={RANGO_SCROLL.max} value={scrollSpeed}
+                  onChange={e=>setScrollSpeed(Number(e.target.value))} style={{width:'100%'}}/>
+              </div>
+            </>,
+            document.body
+          )}
+        </div>
+
         {perm.verAcordes&&(
           <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'var(--s1)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             {showChords?tx.lyricsOnly:tx.withChords}
@@ -573,7 +706,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
       {MapaMaestro()}
       {/* Contenedor de letra */}
-      <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+      <div ref={annoContainerRef} style={{flex:1,position:'relative',overflow:'hidden'}}>
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
             ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
@@ -588,6 +721,16 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
           }
         </div>
+        {perm.anotacionesPropias&&(
+          <canvas ref={anno.cvRef}
+            onPointerDown={anno.onPointerDown}
+            onPointerMove={anno.onPointerMove}
+            onPointerUp={anno.onPointerUp}
+            onPointerCancel={anno.onPointerCancel}
+            style={{position:'absolute',inset:0,zIndex:5,
+              pointerEvents:dibujoActivo?'auto':'none',
+              touchAction:dibujoActivo?'none':'auto'}}/>
+        )}
       </div>
     </div>
   );
