@@ -1247,11 +1247,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // ── PLANES Y PRECIOS ──
   if(bsView==='planes'){
     const PLANES_PERSONAL=[
-      {id:'lite',name:PLANES_SETSYNC.lite.label,mensual:PLANES_SETSYNC.lite.precioMensual,color:'var(--tx3)',sub:tx.liteSub,
+      {id:'lite',name:PLANES_SETSYNC.lite.label,mensual:PLANES_SETSYNC.lite.precioMensual,color:'#ffffff',sub:tx.liteSub,
         desc:tx.litePersonalDesc, features:tx.litePersonalFeatures},
       {id:'pro',name:PLANES_SETSYNC.pro.label,mensual:PLANES_SETSYNC.pro.precioMensual,color:'var(--gn)',sub:tx.proSub,
         desc:tx.proPersonalDesc, features:tx.proPersonalFeatures},
-      {id:'premium',name:PLANES_SETSYNC.premium.label,mensual:PLANES_SETSYNC.premium.precioMensual,color:'var(--ac)',sub:tx.premiumSub,
+      {id:'premium',name:PLANES_SETSYNC.premium.label,mensual:PLANES_SETSYNC.premium.precioMensual,color:'#c8a97e',sub:tx.premiumSub,
         desc:tx.premiumPersonalDesc, features:tx.premiumPersonalFeatures},
     ];
     const BloquePlanes=({planes,activo,onElegir})=>(
@@ -1320,7 +1320,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   style={{width:'100%',background:'none',border:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
                     justifyContent:'space-between',gap:8}}>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-md)',fontWeight:700,
+                  <span style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
                     color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
                     strokeWidth="2" style={{flexShrink:0,transform:faqPlanesAbiertas[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
