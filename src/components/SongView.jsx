@@ -1848,7 +1848,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const MonitorPanel=() => {
-    const trackH=95; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos, a pedido de Danny
+    const trackH=105; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos, +10px a pedido de Danny (antes 95)
 
     const panel = (
       <div
@@ -1873,9 +1873,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
             <div style={{flex:'1 1 auto',minWidth:0}}>
               <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"var(--font-body)",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
-            </div>
-            <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
-              <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
             </div>
           </div>
         </div>
@@ -2345,9 +2342,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <div style={{flex:'1 1 auto',minWidth:0}}>
                 <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"var(--font-body)",lineHeight:1.3}}>{tx.micInterfaceHintLbl}</div>
               </div>
-              <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
-                <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
-              </div>
             </div>
           </div>
 
@@ -2689,7 +2683,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   const SecuenciaPanel=() => {
-      const trackH=95; // fijo, mismo valor que MonitorPanel — mismo alto en ambos, a pedido de Danny
+      const trackH=105; // fijo, mismo valor que MonitorPanel — mismo alto en ambos, +10px a pedido de Danny (antes 95)
       // Calcular total de compases para proporciones del mapa
       const guias=seqData?.guias;
       const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
@@ -2780,9 +2774,6 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
             <div style={{flex:'1 1 auto',minWidth:0}}>
               <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"var(--font-body)",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
-            </div>
-            <div style={{flex:'0 0 auto',display:'flex',justifyContent:'center'}}>
-              <img src="/icono interfaz.svg" alt="" style={{width:'var(--sz-icon-interfaz)',height:'auto'}}/>
             </div>
           </div>
         </div>
@@ -2963,25 +2954,41 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 const esReal=!!multitracksLocal;
                 return(
                   <div key={i} style={{
-                    flex:'0 0 60px',display:'flex',flexDirection:'column',alignItems:'center',
+                    flex:'0 0 74px',display:'flex',flexDirection:'column',alignItems:'center',
                     gap:2,padding:'4px 2px',borderRadius:6,
                     background:muted?'rgba(var(--rd-rgb),.06)':'var(--s1)',
                     border:`1px solid ${muted?'rgba(var(--rd-rgb),.2)':'var(--s3)'}`,
                     overflow:'visible'}}>
-                    {/* Dot + nombre — mismo tamaño de texto que "CH N" en Monitoreo */}
-                    <div style={{display:'flex',alignItems:'center',gap:3,width:'100%',justifyContent:'center',flexShrink:0}}>
-                      <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(var(--rd-rgb),.5)':tr.color,flexShrink:0}}/>
-                      <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:muted?'var(--rd)':'var(--tx)',
-                        fontFamily:"var(--font-body)",letterSpacing:'.3px',overflow:'hidden',whiteSpace:'nowrap',
-                        textOverflow:'ellipsis',maxWidth:44,textAlign:'center'}}>{tr.label}</div>
+                    {/* Lectura de dB — mismo estilo/posición que Monitoreo,
+                        a pedido de Danny ("mismo estilo, el de Monitoreo,
+                        que es el más potente"). */}
+                    <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,
+                      color:muted?'var(--rd)':vol>90?'var(--rd)':vol>75?'#f59e0b':'var(--tx)',
+                      fontFamily:"var(--font-body)",letterSpacing:'.3px',
+                      flexShrink:0,textAlign:'center'}}>
+                      {volToDB(muted?0:vol)}
                     </div>
                     {/* Track + Knob — mismo trackH que Monitoreo (calculado
                         dinámicamente arriba del componente), mismo ancho de
-                        riel (48px) y mismo patrón de drag ya probado en
-                        dispositivo real (ver ZONA BLINDADA en MonitorPanel):
-                        rect capturado una sola vez al iniciar, movimiento
-                        directo en el DOM sin setState hasta soltar. */}
-                    <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'visible',flex:1}}>
+                        riel (48px), misma escala de dB a la izquierda, y
+                        mismo patrón de drag ya probado en dispositivo real
+                        (ver ZONA BLINDADA en MonitorPanel): rect capturado
+                        una sola vez al iniciar, movimiento directo en el
+                        DOM sin setState hasta soltar. */}
+                    <div style={{flex:1,display:'flex',alignItems:'stretch',gap:2,
+                      width:'100%',overflow:'visible',justifyContent:'center'}}>
+                      {/* Escala dB — igual que Monitoreo */}
+                      <div style={{position:'relative',width:10,flexShrink:0,pointerEvents:'none'}}>
+                        {DB_MARKS.map(({db,pct})=>(
+                          <div key={db} style={{
+                            position:'absolute',right:0,bottom:`${pct}%`,
+                            fontSize:'var(--fs-3xs)',color:'var(--em)',
+                            fontFamily:"var(--font-body)",
+                            lineHeight:1,transform:'translateY(50%)',textAlign:'right',
+                          }}>{db>0?'+'+db:db}</div>
+                        ))}
+                      </div>
+                      <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'visible',flex:1}}>
                       <div style={{position:'relative',width:48,height:trackH,borderRadius:2,touchAction:'none',overflow:'visible',cursor:'ns-resize'}}>
                         <div style={{position:'absolute',top:0,bottom:0,left:'50%',transform:'translateX(-50%)',width:5,
                           background:'var(--bd)',borderRadius:3,pointerEvents:'none'}}/>
@@ -3029,6 +3036,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                             boxShadow:'0 -5px 0 rgba(0,0,0,.3),0 5px 0 rgba(0,0,0,.3),0 -10px 0 rgba(0,0,0,.15),0 10px 0 rgba(0,0,0,.15)'}}/>
                         </div>
                       </div>
+                    </div>
+                    </div>
+                    {/* Nombre de la pista — misma posición/estilo que "CH N" en Monitoreo */}
+                    <div style={{display:'flex',alignItems:'center',gap:3,width:'100%',justifyContent:'center',flexShrink:0}}>
+                      <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(var(--rd-rgb),.5)':tr.color,flexShrink:0}}/>
+                      <div style={{fontSize:'var(--fs-3xs)',color:muted?'var(--rd)':'var(--tx3)',
+                        fontFamily:"var(--font-body)",fontWeight:700,letterSpacing:'.5px',overflow:'hidden',
+                        whiteSpace:'nowrap',textOverflow:'ellipsis',maxWidth:52,textAlign:'center'}}>{tr.label}</div>
                     </div>
                     {/* Mute — mismo tamaño que el de Monitoreo */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
