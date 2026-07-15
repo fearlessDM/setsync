@@ -644,7 +644,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <button onClick={()=>setVerMiembros(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:8,
           padding:'10px 12px',borderRadius:'var(--rad-sm)',border:'1px solid var(--bd)',background:'var(--s1)',
           cursor:'pointer',marginBottom:verMiembros?8:20,fontFamily:"var(--font-body)"}}>
-          <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',flex:1,textAlign:'left'}}>
+          <span style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',flex:1,textAlign:'left'}}>
             Ver todos los miembros ({personas.length})
           </span>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"

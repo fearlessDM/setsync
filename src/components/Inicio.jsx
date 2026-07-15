@@ -586,7 +586,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     <span style={{fontSize:'var(--fs-md)'}}>{n.icon}</span>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
+                    <div style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
                       color:'var(--tx)',lineHeight:1.4}}>{n.texto}</div>
                     <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:2}}>
                       {n.tiempo}
@@ -643,7 +643,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   style={{width:'100%',background:'none',border:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
                     justifyContent:'space-between',gap:8}}>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-md)',fontWeight:700,
+                  <span style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
                     color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
                     strokeWidth="2" style={{flexShrink:0,transform:faqsOpen[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
@@ -804,7 +804,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   </svg>
                 </div>
                 <div style={{flex:1,paddingTop:2}}>
-                  <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',
+                  <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',
                     fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
                   <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
                     fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
