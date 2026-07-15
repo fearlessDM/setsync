@@ -1776,6 +1776,6 @@ export const T = {
 export const t = (lang) => T[lang] || T.es;
 export const LANGS = [
   {code:'es', flag:'🇨🇱', label:'Español'},
-  {code:'pt', flag:'🇧🇷', label:'Portugués'},
-  {code:'en', flag:'🇺🇸', label:'Inglés'},
+  {code:'pt', flag:'🇧🇷', label:'Português'},
+  {code:'en', flag:'🇺🇸', label:'English'},
 ];

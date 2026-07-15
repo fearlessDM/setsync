@@ -688,7 +688,7 @@ Tuya es la gloria, Por siempre amén.
               esto, la separación visual queda mucho más grande de lo que
               indica el CSS, porque parte del "espacio" ya viene dibujado
               (en blanco) dentro de la imagen misma. */}
-          <div style={{marginTop:'clamp(-46px,-5.5vw,-30px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+          <div style={{marginTop:'clamp(-41px,calc(-5.5vw + 5px),-26px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
             <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l)=>{
