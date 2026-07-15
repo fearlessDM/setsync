@@ -1,5 +1,5 @@
 import { t as getT, LANGS } from '../i18n';
-import { PLANES_SETSYNC, TRAMOS_EQUIPO, getTramoEquipo, precioTramoEquipo } from '../data/planes';
+import { PLANES_SETSYNC, TRAMOS_EQUIPO, precioTramoEquipo } from '../data/planes';
 import { CANCIONES } from '../data/constants';
 // BackstageView: panel completo de backstage para Iglesia — gestión de eventos,
 // setlists, equipos, permisos, notificaciones y configuración de tema.
@@ -1246,8 +1246,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── PLANES Y PRECIOS ──
   if(bsView==='planes'){
-    const numPersonasEquipo = personas.length||1;
-    const tramoActual = getTramoEquipo(numPersonasEquipo);
     const PLANES_PERSONAL=[
       {id:'lite',name:PLANES_SETSYNC.lite.label,mensual:PLANES_SETSYNC.lite.precioMensual,color:'var(--tx3)',sub:tx.liteSub,
         desc:tx.litePersonalDesc, features:tx.litePersonalFeatures},
@@ -1256,17 +1254,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       {id:'premium',name:PLANES_SETSYNC.premium.label,mensual:PLANES_SETSYNC.premium.precioMensual,color:'var(--ac)',sub:tx.premiumSub,
         desc:tx.premiumPersonalDesc, features:tx.premiumPersonalFeatures},
     ];
-    const coloresEquipo={'eq-1-10':'var(--gn)','eq-11-25':'var(--ac)','eq-26-35':'#a78bfa','eq-36+':'var(--tx3)'};
-    const PLANES_EQUIPO=TRAMOS_EQUIPO.map(t=>({
-      id:t.id,
-      name:t.label,
-      mensual:precioTramoEquipo(t.id,numPersonasEquipo),
-      esDesde:t.id==='eq-36+',
-      color:coloresEquipo[t.id],
-      sub:tx.teamSub,
-      desc:tx.teamAccountDesc,
-      features:t.marcaBlanca?[...tx.teamFeaturesBase,tx.whiteLabelIncluded]:tx.teamFeaturesBase,
-    }));
     const BloquePlanes=({planes,activo,onElegir})=>(
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {planes.map(p=>(
@@ -1277,7 +1264,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:p.color,fontWeight:400}}>{p.name}</div>
               <div style={{textAlign:'right'}}>
                 <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)'}}>
-                  {p.mensual===0?tx.freeLbl:`${p.esDesde?tx.fromLbl+' ':''}$${p.mensual}`}
+                  {p.mensual===0?tx.freeLbl:`$${p.mensual}`}
                 </span>
                 {p.mensual>0&&<span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}> {tx.perMonthLbl}</span>}
               </div>
@@ -1296,7 +1283,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:activo===p.id?'default':'pointer',
                 background:activo===p.id?'var(--s3)':`${p.color}20`,color:activo===p.id?'var(--tx3)':p.color,
                 fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)"}}>
-              {activo===p.id?tx.currentPlanBtn:(planes===PLANES_EQUIPO?tx.activateBtn:tx.chooseBtn)}
+              {activo===p.id?tx.currentPlanBtn:tx.chooseBtn}
             </button>
           </div>
         ))}
@@ -1353,14 +1340,78 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
           {tx.personalAccountDesc}
         </div>
-        <div style={{marginBottom:28}}>
+        <div>
           <BloquePlanes planes={PLANES_PERSONAL}
             activo={viaEquipo?null:planId}
             onElegir={p=>{setPlanId(p.id);onToast({text:tx.planUpdatedToast,sub:p.name});}}/>
         </div>
+      </div>
+    );
+  }
 
-        <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.teamAccountLbl}</div>
-        <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+  // ── CUENTA EQUIPO (v92) — antes vivía adentro de Planes y Precios; ahora
+  // es su propio bloque de Backstage, con fondo verde para diferenciarse
+  // del resto (pedido explícito de Danny). Acá se administra el equipo
+  // YA activo (miembros, tramo, cancelar) o se activa uno nuevo si todavía
+  // no existe — todo lo de pagos/facturación de Cuenta Equipo vive acá.
+  if(bsView==='cuentaequipo'){
+    const numPersonasEquipo = personas.length||1;
+    const coloresEquipo={'eq-1-10':'var(--gn)','eq-11-25':'var(--ac)','eq-26-35':'#a78bfa','eq-36+':'var(--tx3)'};
+    const PLANES_EQUIPO=TRAMOS_EQUIPO.map(t=>({
+      id:t.id,
+      name:t.label,
+      mensual:precioTramoEquipo(t.id,numPersonasEquipo),
+      esDesde:t.id==='eq-36+',
+      color:coloresEquipo[t.id],
+      sub:tx.teamSub,
+      desc:tx.teamAccountDesc,
+      features:t.marcaBlanca?[...tx.teamFeaturesBase,tx.whiteLabelIncluded]:tx.teamFeaturesBase,
+    }));
+    const BloquePlanesEquipo=({planes,activo,onElegir})=>(
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {planes.map(p=>(
+          <div key={p.id} className="card" style={{padding:14,
+            border:activo===p.id?`1px solid ${p.color}`:'1px solid var(--bd)',
+            background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:p.color,fontWeight:400}}>{p.name}</div>
+              <div style={{textAlign:'right'}}>
+                <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)'}}>
+                  {p.esDesde?tx.fromLbl+' ':''}${p.mensual}
+                </span>
+                <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}> {tx.perMonthLbl}</span>
+              </div>
+            </div>
+            <div style={{fontSize:'var(--fs-xs)',color:p.color,fontFamily:"var(--font-body)",fontWeight:700,opacity:.75,textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{p.sub}</div>
+            <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.6,marginBottom:10,fontFamily:"var(--font-body)",fontWeight:300}}>{p.desc}</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:10}}>
+              {p.features.map(f=>(
+                <div key={f} style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                  <span style={{color:p.color,fontSize:'var(--fs-sm)',marginTop:1,flexShrink:0}}>✓</span>
+                  <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5}}>{f}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>onElegir(p)}
+              style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'none',cursor:'pointer',
+                background:`${p.color}20`,color:p.color,
+                fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+              {tx.activateBtn}
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+    return(
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+          Cuenta <span style={{color:'var(--gn)'}}>Equipo</span>
+        </div>
+        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>
           {tx.teamAccountDesc}
         </div>
 
@@ -1375,9 +1426,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         )}
         {orgQueAdministro ? (
           // Soy admin de un equipo real (Firestore) — gestión completa.
-          <div className="card" style={{padding:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+          <div className="card" style={{padding:14,border:'1px solid rgba(var(--gn-rgb),.3)',background:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--ac)',fontWeight:400}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--gn)',fontWeight:400}}>
                 {TRAMOS_EQUIPO.find(t=>t.id===orgQueAdministro.tramoId)?.label||orgQueAdministro.tramoId}
               </div>
               <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',
@@ -1419,7 +1470,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   setEmailNuevoMiembro('');
                   onToast({text:'Miembro agregado',sub:email});
                 }}
-                style={{padding:'8px 14px',borderRadius:8,border:'none',background:'var(--ac)',color:'#fff',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
+                style={{padding:'8px 14px',borderRadius:8,border:'none',background:'var(--gn)',color:'#04120f',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
                 Agregar
               </button>
             </div>
@@ -1442,7 +1493,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   }}
                   style={{padding:'8px 14px',borderRadius:8,border:'1px solid var(--bd)',
                     background:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'var(--s2)':'var(--gn)',
-                    color:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'var(--tx3)':'#fff',
+                    color:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'var(--tx3)':'#04120f',
                     fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",
                     cursor:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'default':'pointer',flexShrink:0}}>
                   Guardar
@@ -1494,14 +1545,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         ) : viaEquipo ? (
           // Pertenezco a un equipo, pero no soy el admin — sin controles.
-          <div className="card" style={{padding:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+          <div className="card" style={{padding:14,border:'1px solid rgba(var(--gn-rgb),.3)',background:'var(--s1)'}}>
             <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.6}}>
               Ya formas parte de una Cuenta Equipo — tienes acceso Premium completo. Solo quien la contrató puede agregar o quitar miembros.
             </div>
           </div>
         ) : (
           // Sin equipo todavía — activar crea el org real en Firestore.
-          <BloquePlanes planes={PLANES_EQUIPO}
+          <BloquePlanesEquipo planes={PLANES_EQUIPO}
             activo={null}
             onElegir={async p=>{
               if(creandoOrg) return;
@@ -1736,6 +1787,8 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     {id:'notif',label:tx.navNotificationsLbl,sub:tx.navNotificationsSub,icon:'bell',color:'var(--rd)',adminOnly:false,img:'/backstage/notif.jpg'},
     {id:'personalizar',label:tx.navPersonalizationLbl,sub:tx.navPersonalizationSub,icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:tx.navPastorWordLbl,sub:tx.navPastorWordSub,icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
+    {id:'cuentaequipo',label:'Cuenta Equipo',sub:'Administra tu equipo y pagos',icon:'team',color:'var(--gn)',adminOnly:false,img:'/backstage/cuentaequipo.jpg',
+      bg:'rgba(var(--gn-rgb),.16)',bgGradient:'linear-gradient(115deg,transparent 32%,rgba(var(--gn-rgb),.16) 86%)'},
     {id:'planes',label:tx.navPlansLbl,sub:tx.navPlansSub,icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
     // Ultra Admin (v91): ni siquiera entra al array si no eres el dueño de
     // la plataforma — no es un simple "oculto por CSS", el ítem no existe.
@@ -1760,7 +1813,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
-            style={{position:'relative',overflow:'hidden',background:'var(--s1)',border:'none',borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
+            style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',
+              border:it.bg?'1px solid rgba(var(--gn-rgb),.35)':'none',
+              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
             {/* Imagen de fondo del bloque — sube el archivo con este mismo
                 nombre a /public/backstage/ y aparece sola; hasta entonces
                 el bloque queda plano y limpio sin romper nada. */}
@@ -1770,7 +1825,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 objectFit:'cover',opacity:.22,transform:'rotate(-13deg)',borderRadius:10,
                 pointerEvents:'none'}}/>
             <div style={{position:'absolute',inset:0,
-              background:'linear-gradient(115deg,transparent 32%,var(--s1) 86%)',
+              background:it.bgGradient||'linear-gradient(115deg,transparent 32%,var(--s1) 86%)',
               pointerEvents:'none'}}/>
             <div style={{position:'relative'}}>
               <div style={{fontFamily:"var(--font-display)",fontWeight:400,color:'var(--tx)',lineHeight:1.1,fontSize:'var(--fs-xl)',marginBottom:5}}>{it.label}</div>
