@@ -576,6 +576,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="19 12 12 19 5 12"/><line x1="12" y1="5" x2="12" y2="19"/>
             </svg>
+            <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>Scroll</span>
           </button>
           {scrollOpen&&scrollPos&&createPortal(
             <>
@@ -1306,14 +1307,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     };
 
     const tabs=[
-      {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(
+      {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
+      {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>IconMonitor({active:a})},
+      {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(
         <div style={{width:19,height:19,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <img src="/logo referencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain',
             opacity:a?1:.55,transition:'opacity .15s'}}/>
         </div>
       )},
-      {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>IconMonitor({active:a})},
-      {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
     ];
     return(
       <div style={{
@@ -1862,14 +1863,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const MonitorPanel=() => {
-    const trackH=130; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos. Subido dos veces a pedido de Danny (95→105→130).
+    const trackH=140; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos. Subido varias veces a pedido de Danny (95→105→130→140).
 
     const panel = (
       <div
         onTouchStart={e=>e.stopPropagation()}
         onTouchMove={e=>e.stopPropagation()}
         style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(6,6,14,.97)',border:'2px solid var(--gn)',borderBottom:'none',
+          background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
           borderRadius:'14px 14px 0 0',
           backdropFilter:'blur(40px)',zIndex:200,
           transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(110%)',
@@ -2697,7 +2698,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   const SecuenciaPanel=() => {
-      const trackH=130; // fijo, mismo valor que MonitorPanel — mismo alto en ambos. Subido dos veces a pedido de Danny (95→105→130).
+      const trackH=140; // fijo, mismo valor que MonitorPanel — mismo alto en ambos. Subido varias veces a pedido de Danny (95→105→130→140).
       // Calcular total de compases para proporciones del mapa
       const guias=seqData?.guias;
       const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
@@ -3090,7 +3091,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         background:muted?'#8B0000':'var(--s3)',
                         color:muted?'#fff':'var(--tx3)',fontSize:'var(--fs-3xs)',fontWeight:900,
                         fontFamily:"var(--font-body)"}}>
-                      {muted?'MUTE':'M'}
+                      MUTE
                     </button>
                     {/* Cargar/Borrar — angostas, apiladas debajo del Mute */}
                     {esReal&&(
