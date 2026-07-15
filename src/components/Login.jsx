@@ -70,7 +70,7 @@ export function Login({onToast, lang='es'}){
       alignItems:'center',justifyContent:'center',padding:24}}>
       <div className="login-form-in" style={{width:'100%',maxWidth:360}}>
         <div style={{textAlign:'center',marginBottom:32}}>
-          <img src="/FAVICON SS.png" alt="SetSync" style={{width:64,height:64,objectFit:'contain',marginBottom:12}}/>
+          <img src="/logo blanco+texto.png" alt="SetSync" style={{width:'100%',maxWidth:210,height:'auto',objectFit:'contain',marginBottom:16}}/>
           <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300}}>
             {modo==='entrar'?tx.signInToContinue:tx.createYourAccount}
           </div>
@@ -78,27 +78,30 @@ export function Login({onToast, lang='es'}){
 
         <div style={{display:'flex',gap:6,marginBottom:20,background:'var(--s1)',borderRadius:12,padding:4}}>
           <button onClick={()=>{setModo('entrar');setError(null);}}
-            style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
+            style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
-              transition:'background .15s,color .15s',
-              background:modo==='entrar'?'var(--bd)':'transparent',
-              color:modo==='entrar'?'var(--tx)':'var(--tx3)'}}>
+              transition:'background .15s,color .15s,border-color .15s',
+              border:modo==='entrar'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
+              background:modo==='entrar'?'rgba(200,169,126,.12)':'transparent',
+              color:modo==='entrar'?'#c8a97e':'var(--tx3)'}}>
             {tx.signIn}
           </button>
           <button onClick={()=>{setModo('crear');setError(null);}}
-            style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
+            style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
-              transition:'background .15s,color .15s',
-              background:modo==='crear'?'var(--bd)':'transparent',
-              color:modo==='crear'?'var(--tx)':'var(--tx3)'}}>
+              transition:'background .15s,color .15s,border-color .15s',
+              border:modo==='crear'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
+              background:modo==='crear'?'rgba(200,169,126,.12)':'transparent',
+              color:modo==='crear'?'#c8a97e':'var(--tx3)'}}>
             {tx.createAccount}
           </button>
           <button onClick={()=>{setModo('codigo');setError(null);}}
-            style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
+            style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
-              transition:'background .15s,color .15s',
-              background:modo==='codigo'?'var(--bd)':'transparent',
-              color:modo==='codigo'?'var(--tx)':'var(--tx3)'}}>
+              transition:'background .15s,color .15s,border-color .15s',
+              border:modo==='codigo'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
+              background:modo==='codigo'?'rgba(200,169,126,.12)':'transparent',
+              color:modo==='codigo'?'#c8a97e':'var(--tx3)'}}>
             Código
           </button>
         </div>

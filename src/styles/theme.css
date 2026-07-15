@@ -178,7 +178,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 
 /* ── BOTONES ── */
 .btn{
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:9px 18px;
   border-radius:var(--rad-full);
   border:none;cursor:pointer;
@@ -613,4 +613,8 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 }
 .login-form-in {
   animation: login-in .3s cubic-bezier(.4,0,.2,1);
+}
+.login-form-in input:focus {
+  border-color:rgba(200,169,126,.45)!important;
+  box-shadow:0 0 0 3px rgba(200,169,126,.12);
 }
