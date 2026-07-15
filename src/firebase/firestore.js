@@ -445,3 +445,39 @@ export async function vincularMembresiasPendientes(uid, email){
   const snap = await getDocs(query(ref, where('email','==',emailLimpio), where('estado','==','pendiente')));
   await Promise.all(snap.docs.map(d=>updateDoc(d.ref, {uid, estado:'activo'})));
 }
+
+// ── Ultra Admin (v91) — el DUEÑO de la plataforma (Danny), distinto de un
+// admin de Cuenta Equipo cualquiera (que solo administra SU propio org).
+// Mientras no exista pasarela de pago real, Danny confirma manualmente los
+// pagos (transferencia, etc.) fuera de la app y ajusta acá el estado de
+// CUALQUIER org. Gateado por uid fijo — el chequeo de acá es solo para
+// esconder la UI; la barrera de seguridad real vive en firestore.rules
+// (orgs solo acepta writes de estado/fechaLimiteGracia de este uid).
+// Si Danny cambia de cuenta/uid alguna vez, este valor debe actualizarse
+// ACÁ y en firestore.rules a la vez, o el panel queda inaccesible.
+export const PLATFORM_OWNER_UID = 'uskOltgjasMMIY8lyqFa00eXUxu2';
+export function esUltraAdmin(uid){
+  return !!uid && uid === PLATFORM_OWNER_UID;
+}
+
+// Todos los orgs de la plataforma, sin filtro — SOLO para el panel de
+// Ultra Admin. No es la barrera de seguridad (eso lo hacen las Rules):
+// si alguien sin ser el dueño llega a llamar esto, Firestore rechaza la
+// lectura igual.
+export function subscribeTodosLosOrgs(onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'orgs');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+
+// Cancelación VOLUNTARIA por el propio admin del equipo — a diferencia de
+// 'vencida' (se le venció el período de gracia sin pagar), 'cancelada' es
+// una decisión propia. Mismo efecto práctico en planEfectivoDesdeOrgs
+// (ninguno de los dos cuenta como vigente) — se separan solo para que el
+// historial/UI puedan distinguir el motivo si hace falta más adelante.
+export async function cancelarOrg(orgId){
+  if(!firebaseListo) return;
+  await actualizarEstadoOrg(orgId, 'cancelada', null);
+}

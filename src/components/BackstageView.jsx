@@ -13,7 +13,7 @@ import { initials } from '../utils/music';
 import { CustomSelect } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
-import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg } from '../firebase/firestore';
+import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
 
 const FAQS_PLANES = [
   {q:'¿Cuál es la diferencia entre Cuenta Unitaria y Cuenta Equipo?', a:'Cuenta Unitaria da acceso solo a la persona que inició sesión (Lite, Pro o Premium). Cuenta Equipo es un solo pago del admin que deja a TODOS los miembros con acceso Premium completo, automático — no hace falta que cada uno pague su propio plan.'},
@@ -55,7 +55,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     if(!currentUser?.uid) return;
     return subscribeOrgsComoAdmin(currentUser.uid, setMisOrgsAdmin);
   },[currentUser?.uid]);
-  const orgQueAdministro = misOrgsAdmin[0]||null;
+  // v91: antes solo se mostraba misOrgsAdmin[0] — si alguna vez administras
+  // más de un equipo, los demás quedaban invisibles en esta pantalla. Ahora
+  // se puede elegir cuál ver/gestionar (el selector solo aparece si hay
+  // más de uno; con uno solo, comportamiento idéntico a antes).
+  const [orgAdminSeleccionadoId,setOrgAdminSeleccionadoId]=useState(null);
+  const orgQueAdministro = misOrgsAdmin.find(o=>o.id===orgAdminSeleccionadoId) || misOrgsAdmin[0] || null;
   const [miembrosOrgAdmin,setMiembrosOrgAdmin]=useState([]);
   useEffect(()=>{
     if(!orgQueAdministro?.id){ setMiembrosOrgAdmin([]); return; }
@@ -63,6 +68,23 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   },[orgQueAdministro?.id]);
   const [emailNuevoMiembro,setEmailNuevoMiembro]=useState('');
   const [creandoOrg,setCreandoOrg]=useState(false);
+  // ── Cambiar tramo / cancelar (v91) — self-service del propio admin del
+  // equipo, sobre orgQueAdministro. Cambiar tramo lo puede hacer cualquier
+  // admin de org (no toca estado, solo tramoId — permitido por Rules).
+  // Cancelar SÍ toca estado, pero solo a 'cancelada' (nunca a 'activa'/
+  // 'gracia' — reactivar queda reservado al Ultra Admin, ver más abajo).
+  const [tramoSeleccion,setTramoSeleccion]=useState('');
+  const [confirmandoCancelar,setConfirmandoCancelar]=useState(false);
+  const [cancelandoOrg,setCancelandoOrg]=useState(false);
+  // ── Ultra Admin (v91) — SOLO Danny. Ver esUltraAdmin() en firestore.js.
+  const esDueñoPlataforma = esUltraAdmin(currentUser?.uid);
+  const [todosLosOrgs,setTodosLosOrgs]=useState([]);
+  useEffect(()=>{
+    if(!esDueñoPlataforma) return;
+    return subscribeTodosLosOrgs(setTodosLosOrgs);
+  },[esDueñoPlataforma]);
+  const [uaEdicion,setUaEdicion]=useState({}); // {[orgId]: {estado, fechaLimiteGracia, tramoId}} — borrador antes de guardar
+  const [uaGuardando,setUaGuardando]=useState(null); // orgId en vuelo
   const [faqPlanesOpen,setFaqPlanesOpen]=useState(false);
   const [faqPlanesAbiertas,setFaqPlanesAbiertas]=useState({});
   const [activeEq,setActiveEq]=useState(null);
@@ -1342,6 +1364,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           {tx.teamAccountDesc}
         </div>
 
+        {misOrgsAdmin.length>1&&(
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>
+              Administras {misOrgsAdmin.length} equipos
+            </div>
+            <CustomSelect value={orgQueAdministro?.id} onChange={setOrgAdminSeleccionadoId}
+              options={misOrgsAdmin.map(o=>({value:o.id,label:`${TRAMOS_EQUIPO.find(t=>t.id===o.tramoId)?.label||o.tramoId} · ${o.estado}`}))}/>
+          </div>
+        )}
         {orgQueAdministro ? (
           // Soy admin de un equipo real (Firestore) — gestión completa.
           <div className="card" style={{padding:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
@@ -1392,6 +1423,74 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 Agregar
               </button>
             </div>
+
+            {/* ── Cambiar tramo (v91) — self-service, solo toca tramoId ── */}
+            <div style={{marginTop:14,paddingTop:12,borderTop:'1px solid var(--s3)'}}>
+              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>
+                Cambiar tramo
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <CustomSelect value={tramoSeleccion||orgQueAdministro.tramoId} onChange={setTramoSeleccion}
+                  style={{flex:1,fontSize:'var(--fs-base)'}}
+                  options={TRAMOS_EQUIPO.map(t=>({value:t.id,label:`${t.label} · $${precioTramoEquipo(t.id,miembrosOrgAdmin.length||1)}/mes`}))}/>
+                <button
+                  disabled={!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId}
+                  onClick={async()=>{
+                    await actualizarTramoOrg(orgQueAdministro.id, tramoSeleccion);
+                    onToast({text:'Tramo actualizado',sub:TRAMOS_EQUIPO.find(t=>t.id===tramoSeleccion)?.label});
+                    setTramoSeleccion('');
+                  }}
+                  style={{padding:'8px 14px',borderRadius:8,border:'1px solid var(--bd)',
+                    background:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'var(--s2)':'var(--gn)',
+                    color:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'var(--tx3)':'#fff',
+                    fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",
+                    cursor:(!tramoSeleccion||tramoSeleccion===orgQueAdministro.tramoId)?'default':'pointer',flexShrink:0}}>
+                  Guardar
+                </button>
+              </div>
+              <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:6,lineHeight:1.5}}>
+                El nuevo precio aplica desde el próximo cobro. No necesitas avisarnos — se ajusta solo.
+              </div>
+            </div>
+
+            {/* ── Cancelar Cuenta Equipo (v91) — solo pasa a 'cancelada',      ── */}
+            {/* nunca reactiva por sí sola. Confirmación en 2 pasos, sin      */}
+            {/* window.confirm() nativo (consistente con el resto de la app). */}
+            <div style={{marginTop:14,paddingTop:12,borderTop:'1px solid var(--s3)'}}>
+              {!confirmandoCancelar ? (
+                <button onClick={()=>setConfirmandoCancelar(true)}
+                  style={{background:'none',border:'none',color:'var(--rd)',fontSize:'var(--fs-xs)',
+                    fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",padding:0,opacity:.75}}>
+                  Cancelar Cuenta Equipo
+                </button>
+              ):(
+                <div style={{padding:'10px 12px',borderRadius:10,border:'1px solid rgba(var(--rd-rgb),.3)',background:'rgba(var(--rd-rgb),.06)'}}>
+                  <div style={{fontSize:'var(--fs-base)',color:'var(--tx)',fontFamily:"var(--font-body)",fontWeight:700,marginBottom:2}}>
+                    ¿Seguro que quieres cancelar?
+                  </div>
+                  <div style={{fontSize:'var(--fs-xs)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.5,marginBottom:10}}>
+                    Todos los miembros ({miembrosOrgAdmin.length}) vuelven a su plan individual de inmediato. Puedes volver a activar una Cuenta Equipo cuando quieras.
+                  </div>
+                  <div style={{display:'flex',gap:8}}>
+                    <button onClick={()=>setConfirmandoCancelar(false)} disabled={cancelandoOrg}
+                      style={{flex:1,padding:'7px 0',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
+                      No, mantener
+                    </button>
+                    <button disabled={cancelandoOrg}
+                      onClick={async()=>{
+                        setCancelandoOrg(true);
+                        await cancelarOrg(orgQueAdministro.id);
+                        setCancelandoOrg(false);
+                        setConfirmandoCancelar(false);
+                        onToast({text:'Cuenta Equipo cancelada',sub:'Los miembros vuelven a su plan individual'});
+                      }}
+                      style={{flex:1,padding:'7px 0',borderRadius:8,border:'none',background:'var(--rd)',color:'#fff',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
+                      {cancelandoOrg?'Cancelando…':'Sí, cancelar'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : viaEquipo ? (
           // Pertenezco a un equipo, pero no soy el admin — sin controles.
@@ -1413,6 +1512,104 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               onToast({text:tx.teamActivatedToast,sub:p.name});
             }}/>
         )}
+      </div>
+    );
+  }
+
+  // ── ULTRA ADMIN (v91) — SOLO Danny. Gate doble: el ítem de menú que
+  // lleva acá ni siquiera se renderiza para nadie más (ver ITEMS más
+  // abajo), y esto es una segunda capa por si alguien fuerza bsView vía
+  // devtools — sin ser el dueño, subscribeTodosLosOrgs igual vuelve vacío
+  // porque Firestore Rules rechaza la lectura para cualquier otro uid.
+  if(bsView==='ultraadmin'){
+    if(!esDueñoPlataforma)return(
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
+        <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)'}}>No autorizado.</div>
+      </div>
+    );
+    const setEdicion=(orgId,campo,valor)=>setUaEdicion(prev=>({...prev,[orgId]:{...prev[orgId],[campo]:valor}}));
+    const valorEdicion=(org,campo)=> uaEdicion[org.id]?.[campo] ?? org[campo] ?? '';
+    return(
+      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+          Ultra <span style={{color:'var(--ac)'}}>Admin</span>
+        </div>
+        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>
+          Todos los equipos de la plataforma ({todosLosOrgs.length}). Mientras no haya pasarela de pago, confirma acá manualmente cuando alguien te transfiera.
+        </div>
+
+        {todosLosOrgs.length===0&&(
+          <div style={{padding:20,textAlign:'center',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>Sin equipos creados todavía.</div>
+        )}
+
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {todosLosOrgs.map(org=>{
+            const estadoColor=org.estado==='activa'?'var(--gn)':org.estado==='gracia'?'#f5a623':'var(--tx3)';
+            const dirty = uaEdicion[org.id] && Object.keys(uaEdicion[org.id]).length>0;
+            return(
+              <div key={org.id} className="card" style={{padding:14,border:`1px solid ${estadoColor}40`}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',
+                    padding:'3px 9px',borderRadius:100,color:estadoColor,background:`${estadoColor}20`,flexShrink:0}}>
+                    {org.estado}
+                  </span>
+                  <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{org.adminUid}</span>
+                  <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',flexShrink:0}}>{TRAMOS_EQUIPO.find(t=>t.id===org.tramoId)?.label||org.tramoId}</span>
+                </div>
+                <div style={{display:'flex',gap:6,marginBottom:8,flexWrap:'wrap'}}>
+                  <CustomSelect value={valorEdicion(org,'estado')} onChange={v=>setEdicion(org.id,'estado',v)}
+                    style={{flex:'1 1 140px',fontSize:'var(--fs-sm)'}}
+                    options={[{value:'activa',label:'Activa'},{value:'gracia',label:'En gracia'},{value:'vencida',label:'Vencida'},{value:'cancelada',label:'Cancelada'}]}/>
+                  <CustomSelect value={valorEdicion(org,'tramoId')} onChange={v=>setEdicion(org.id,'tramoId',v)}
+                    style={{flex:'1 1 140px',fontSize:'var(--fs-sm)'}}
+                    options={TRAMOS_EQUIPO.map(t=>({value:t.id,label:t.label}))}/>
+                  {valorEdicion(org,'estado')==='gracia'&&(
+                    <input type="date" value={valorEdicion(org,'fechaLimiteGracia')?new Date(valorEdicion(org,'fechaLimiteGracia')).toISOString().slice(0,10):''}
+                      onChange={e=>setEdicion(org.id,'fechaLimiteGracia', e.target.value?new Date(e.target.value+'T00:00:00').getTime():null)}
+                      style={{flex:'1 1 140px',padding:'6px 8px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-sm)',fontFamily:"var(--font-body)"}}/>
+                  )}
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <button disabled={!dirty||uaGuardando===org.id}
+                    onClick={async()=>{
+                      setUaGuardando(org.id);
+                      const edicion=uaEdicion[org.id]||{};
+                      if('estado' in edicion || 'fechaLimiteGracia' in edicion){
+                        await actualizarEstadoOrg(org.id, edicion.estado??org.estado, edicion.estado==='gracia'?(edicion.fechaLimiteGracia??org.fechaLimiteGracia??null):null);
+                      }
+                      if('tramoId' in edicion){
+                        await actualizarTramoOrg(org.id, edicion.tramoId);
+                      }
+                      setUaEdicion(prev=>{const next={...prev};delete next[org.id];return next;});
+                      setUaGuardando(null);
+                      onToast({text:'Equipo actualizado',sub:org.adminUid});
+                    }}
+                    style={{padding:'6px 14px',borderRadius:8,border:'none',
+                      background:(!dirty||uaGuardando===org.id)?'var(--s3)':'var(--ac)',
+                      color:(!dirty||uaGuardando===org.id)?'var(--tx3)':'#fff',
+                      fontWeight:700,fontSize:'var(--fs-sm)',fontFamily:"var(--font-body)",
+                      cursor:(!dirty||uaGuardando===org.id)?'default':'pointer'}}>
+                    {uaGuardando===org.id?'Guardando…':'Guardar cambios'}
+                  </button>
+                  {dirty&&uaGuardando!==org.id&&(
+                    <button onClick={()=>setUaEdicion(prev=>{const next={...prev};delete next[org.id];return next;})}
+                      style={{background:'none',border:'none',color:'var(--tx3)',fontSize:'var(--fs-sm)',cursor:'pointer',fontFamily:"var(--font-body)"}}>
+                      Deshacer
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -1540,6 +1737,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     {id:'personalizar',label:tx.navPersonalizationLbl,sub:tx.navPersonalizationSub,icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:tx.navPastorWordLbl,sub:tx.navPastorWordSub,icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
     {id:'planes',label:tx.navPlansLbl,sub:tx.navPlansSub,icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
+    // Ultra Admin (v91): ni siquiera entra al array si no eres el dueño de
+    // la plataforma — no es un simple "oculto por CSS", el ítem no existe.
+    ...(esDueñoPlataforma?[{id:'ultraadmin',label:'Ultra Admin',sub:'Todos los equipos de la plataforma',icon:'shield',color:'var(--rd)',adminOnly:false,img:'/backstage/planes.jpg'}]:[]),
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;
