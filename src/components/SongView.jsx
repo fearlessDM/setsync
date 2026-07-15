@@ -211,7 +211,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // desde que Danny los sacó por bugs de dibujo. El fix de posición del
   // trazo (rectRef capturado UNA VEZ por gesto) sigue el mismo patrón ya
   // probado del fader de Monitoreo (ZONA BLINDADA).
-  const annoContainerRef=useRef(null); // wrapper NO-scrollable: envuelve canvas + wrapRef
+  const annoContainerRef=useRef(null); // envuelve SOLO la letra (adentro del área scrolleable), no el viewport — así el canvas scrollea junto con la canción
   const [dibujoActivo,setDibujoActivo]=useState(false); // ¿lápiz habilitado para dibujar ahora?
   const [annoTool,setAnnoTool]=useState('pen'); // 'pen' | 'erase'
   const [annoColor,setAnnoColor]=useState('#EE227D');
@@ -590,7 +590,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   {autoScroll?'DETENER':'INICIAR AUTOSCROLL'}
                 </button>
                 <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>VELOCIDAD</div>
-                <input type="range" min={RANGO_SCROLL.min} max={RANGO_SCROLL.max} value={scrollSpeed}
+                <input type="range" min={RANGO_SCROLL.min} max={RANGO_SCROLL.max} step={RANGO_SCROLL.step||1} value={scrollSpeed}
                   onChange={e=>setScrollSpeed(Number(e.target.value))} style={{width:'100%'}}/>
               </div>
             </>,
@@ -706,7 +706,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column',position:'relative'}}>
       {MapaMaestro()}
       {/* Contenedor de letra */}
-      <div ref={annoContainerRef} style={{flex:1,position:'relative',overflow:'hidden'}}>
+      <div style={{flex:1,position:'relative',overflow:'hidden'}}>
         <div ref={wrapRef} className="sv-content" style={{position:'absolute',inset:0,overflowY:'auto',scrollbarWidth:'none',background:svBg,padding:'10px 10px 112px 10px',display:'flex',alignItems:'flex-start',justifyContent:'flex-start'}}>
           {song.docId
             ?<iframe src={`https://docs.google.com/document/d/${song.docId}/preview`} allowFullScreen style={{position:'absolute',inset:0,width:'100%',height:'100%',border:'none',zIndex:1}}/>
@@ -718,19 +718,30 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   style={{maxWidth:'100%',borderRadius:14,border:'1px solid var(--bd)',
                     boxShadow:'0 20px 50px rgba(0,0,0,.4)'}}/>
               </div>
-            :<div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
+            // ── BUG FIX (reportado por Danny): el canvas de anotaciones vivía
+            // como hermano de este div, DENTRO del wrapper NO-scrollable de
+            // afuera — quedaba anclado al viewport y no se movía con la
+            // letra al hacer scroll (manual o automático). Fix: annoContainerRef
+            // ahora envuelve SOLO la letra, adentro del área que sí scrollea
+            // (wrapRef). Su alto natural = alto real del contenido (no el del
+            // viewport), así que el canvas —posicionado absolute inset:0
+            // adentro suyo— crece con la canción completa y se desplaza junto
+            // con ella al hacer scroll, en vez de quedar fijo en pantalla.
+            :<div ref={annoContainerRef} style={{width:'100%',position:'relative'}}>
+                <div style={{width:'100%'}}>{renderSongContent(getSongContent(song),tpOff,showChords,editMode,selectedChord,(c)=>setSelectedChord(c),(li,ci,steps)=>handleDragChord(li,ci,steps),notacion,curKey)}</div>
+                {perm.anotacionesPropias&&(
+                  <canvas ref={anno.cvRef}
+                    onPointerDown={anno.onPointerDown}
+                    onPointerMove={anno.onPointerMove}
+                    onPointerUp={anno.onPointerUp}
+                    onPointerCancel={anno.onPointerCancel}
+                    style={{position:'absolute',inset:0,zIndex:5,
+                      pointerEvents:dibujoActivo?'auto':'none',
+                      touchAction:dibujoActivo?'none':'auto'}}/>
+                )}
+              </div>
           }
         </div>
-        {perm.anotacionesPropias&&(
-          <canvas ref={anno.cvRef}
-            onPointerDown={anno.onPointerDown}
-            onPointerMove={anno.onPointerMove}
-            onPointerUp={anno.onPointerUp}
-            onPointerCancel={anno.onPointerCancel}
-            style={{position:'absolute',inset:0,zIndex:5,
-              pointerEvents:dibujoActivo?'auto':'none',
-              touchAction:dibujoActivo?'none':'auto'}}/>
-        )}
       </div>
     </div>
   );

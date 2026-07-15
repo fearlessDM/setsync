@@ -38,8 +38,12 @@ import { useRef, useEffect, useCallback } from 'react';
 // cumplió su propósito.
 //
 // Parámetros:
-//  - containerRef: ref del contenedor NO-scrollable que envuelve canvas
-//    + el área de scroll de la letra (fuente única de verdad de tamaño)
+//  - containerRef: ref del contenedor que envuelve SOLO el contenido de la
+//    letra (adentro del área con scroll) — su alto natural es el alto real
+//    de la canción completa, no el del viewport. Así el canvas (hijo suyo,
+//    absolute inset:0) crece con la canción y se desplaza junto con ella al
+//    hacer scroll, en vez de quedar fijo en pantalla (bug real corregido,
+//    reportado por Danny: el rayado no seguía a la letra al scrollear).
 //  - tool, color, sz: herramienta activa (vienen del estado de AnnoBar)
 //  - showAnnoBar: si la barra de anotación está abierta (controla si se dibuja)
 //  - idx: índice de canción activa, para re-disparar el resize al cambiar
