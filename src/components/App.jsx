@@ -675,15 +675,20 @@ Tuya es la gloria, Por siempre amén.
         <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'min(760px,95vw)',padding:'0 clamp(16px,4vw,40px)',display:'flex',flexDirection:'column',alignItems:'center'}}>
 
           {/* Logo vertical — visible con tagline */}
-          <div style={{paddingTop:40,paddingBottom:10,display:'flex',flexDirection:'column',alignItems:'center'}}>
+          <div style={{paddingTop:40,paddingBottom:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
             <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
               height:'clamp(200px,36vw,300px)',width:'auto',objectFit:'contain',
               filter:'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
             }}/>
           </div>
 
-          {/* Selector de idioma tipo rueda */}
-          <div style={{marginBottom:36,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+          {/* Selector de idioma tipo rueda — marginTop negativo compensa el
+              aire transparente que trae el propio PNG del logo debajo del
+              tagline (~15% de su alto, medido en el archivo real). Sin
+              esto, la separación visual queda mucho más grande de lo que
+              indica el CSS, porque parte del "espacio" ya viene dibujado
+              (en blanco) dentro de la imagen misma. */}
+          <div style={{marginTop:'clamp(-46px,-5.5vw,-30px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
             <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l)=>{
