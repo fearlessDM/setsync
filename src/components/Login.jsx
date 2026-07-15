@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { registrarse, iniciarSesion, iniciarSesionConGoogle } from '../firebase/auth';
+import { registrarse, iniciarSesion, iniciarSesionConGoogle, iniciarSesionAnonima } from '../firebase/auth';
+import { resolverInvitacion, agregarMiembroCuenta, setAccountIdOverride } from '../firebase/firestore';
 import { t as getT } from '../i18n';
 
 // Login.jsx — Primera pantalla real de autenticación de SetSync. Antes la
@@ -8,10 +9,11 @@ import { t as getT } from '../i18n';
 // esa identidad fantasma por una cuenta real.
 export function Login({onToast, lang='es'}){
   const tx=getT(lang);
-  const [modo,setModo]=useState('entrar'); // 'entrar' | 'crear'
+  const [modo,setModo]=useState('entrar'); // 'entrar' | 'crear' | 'codigo'
   const [nombre,setNombre]=useState('');
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
+  const [codigo,setCodigo]=useState('');
   const [cargando,setCargando]=useState(false);
   const [error,setError]=useState(null);
 
@@ -38,6 +40,29 @@ export function Login({onToast, lang='es'}){
     try{ await iniciarSesionConGoogle(); }
     catch(err){ setError(err.message); }
     finally{ setCargando(false); }
+  };
+
+  // Unirse a una cuenta compartida con el código que le dio el admin —
+  // sin registro con email. Le da una identidad anónima real (verificable
+  // por las Security Rules) y la registra como miembro de esa cuenta.
+  const unirseConCodigo=async(e)=>{
+    e.preventDefault();
+    setError(null);
+    if(!nombre.trim()||!codigo.trim()){ setError(tx.errorFillFields); return; }
+    setCargando(true);
+    try{
+      const accId=await resolverInvitacion(codigo);
+      if(!accId){ setError('Código inválido — revisa que esté bien escrito.'); return; }
+      const user=await iniciarSesionAnonima(nombre);
+      await agregarMiembroCuenta(accId, user.uid, nombre.trim());
+      setAccountIdOverride(accId);
+      // onAuthChange en App.jsx toma el relevo — accountId ahora lee el
+      // override que acabamos de guardar, no el uid nuevo directo.
+    }catch(err){
+      setError(err.message||'Algo salió mal.');
+    }finally{
+      setCargando(false);
+    }
   };
 
   return(
@@ -68,8 +93,46 @@ export function Login({onToast, lang='es'}){
               color:modo==='crear'?'var(--tx)':'var(--tx3)'}}>
             {tx.createAccount}
           </button>
+          <button onClick={()=>{setModo('codigo');setError(null);}}
+            style={{flex:1,padding:'9px 0',borderRadius:9,border:'none',cursor:'pointer',
+              fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
+              transition:'background .15s,color .15s',
+              background:modo==='codigo'?'var(--bd)':'transparent',
+              color:modo==='codigo'?'var(--tx)':'var(--tx3)'}}>
+            Código
+          </button>
         </div>
 
+        {modo==='codigo'?(
+          <form onSubmit={unirseConCodigo} style={{display:'flex',flexDirection:'column',gap:10}}>
+            <div style={{fontSize:'var(--fs-sm)',color:'var(--tx2)',fontFamily:"var(--font-body)",
+              lineHeight:1.5,marginBottom:2}}>
+              El admin de tu equipo te dio un código de 6 letras/números — ingrésalo acá para unirte a la cuenta compartida.
+            </div>
+            <input placeholder={tx.yourName} value={nombre} onChange={e=>setNombre(e.target.value)}
+              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
+                background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
+            <input placeholder="Código (ej: A3F9K2)" value={codigo}
+              onChange={e=>setCodigo(e.target.value.toUpperCase())}
+              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
+                background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)",
+                letterSpacing:'2px',textTransform:'uppercase'}}/>
+
+            {error&&(
+              <div style={{fontSize:'var(--fs-base)',color:'var(--rd)',fontFamily:"var(--font-body)",
+                lineHeight:1.5,padding:'8px 10px',background:'rgba(var(--rd-rgb),.08)',borderRadius:8}}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={cargando} className="btn btn-ac"
+              style={{padding:'13px 0',borderRadius:10,border:'none',
+                fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:4}}>
+              {cargando?tx.oneMoment:'Unirme al equipo'}
+            </button>
+          </form>
+        ):(
+        <>
         <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:10}}>
           {modo==='crear'&&(
             <input placeholder={tx.yourName} value={nombre} onChange={e=>setNombre(e.target.value)}
@@ -115,6 +178,8 @@ export function Login({onToast, lang='es'}){
           </svg>
           {tx.continueWithGoogle}
         </button>
+        </>
+        )}
 
         <div style={{textAlign:'center',marginTop:24,fontSize:'var(--fs-2xs)',fontWeight:700,color:'var(--tx3)',
           fontFamily:"var(--font-body)",lineHeight:1.6}}>

@@ -16,6 +16,7 @@ import { firebaseListo as firebaseListoGlobal } from '../firebase/config';
 import { estimarConversion, convertirAMp3, convertirAOpus } from '../utils/audioConvert';
 import { useAnotaciones } from './songview/useAnotaciones';
 import { useAutoScroll, RANGO_SCROLL } from './songview/useAutoScroll';
+import { useModoVivo, calcularProgramacion } from '../hooks/useModoVivo';
 
 
 // renderSongContent re-exportado para no romper imports externos existentes
@@ -35,7 +36,7 @@ const PERMISOS_TOTAL={
 };
 
 const POPUP_SEEN_KEY='ss_bloques_popup_seen';
-export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null,accountId=null,authListo=true}){
+export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSaveChords,contentDB={},permisos=null,lang='es',sidebarVisible=false,sidebarCollapsed=false,ensayosDisponibles=[],archivosDB={},setArchivosDB=()=>{},variacionesDB={},estructurasDB={},onEditInCancionero=null,accountId=null,authListo=true,miNombre='Líder'}){
   const tx=getT(lang);
   // ── Capa de permisos (Academia) — ÚLTIMA capa, solo oculta/muestra
   // controles. Nunca se entrevera dentro de cada feature: cada feature sigue
@@ -226,6 +227,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [scrollPos,setScrollPos]=useState(null);
   const anno=useAnotaciones({containerRef:annoContainerRef,tool:annoTool,color:annoColor,sz:annoSz,showAnnoBar:dibujoActivo,idx});
   const {resetScroll}=useAutoScroll({wrapRef,autoScroll,setAutoScroll,scrollSpeed,idx});
+  const [vivoOpen,setVivoOpen]=useState(false);
+  const vivoBtnRef=useRef(null);
+  const [vivoPos,setVivoPos]=useState(null);
 
   const song=songs[idx];
   const curKey=tpKey(song.key,tpOff);
@@ -390,7 +394,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     style={{width:'100%',padding:'8px',fontSize:'var(--fs-emph)',fontWeight:700,color:'var(--ac)',textAlign:'center',
                       fontFamily:"var(--font-display)"}}/>
                 </div>
-                <button onClick={toggleTransporteMaestro}
+                <button onClick={handleTransportePress}
                   style={{width:'100%',padding:'10px',borderRadius:10,border:'none',
                     background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
                     fontSize:'var(--fs-base)',fontWeight:900,fontFamily:"'Outfit',sans-serif"}}>
@@ -599,6 +603,73 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           )}
         </div>
 
+        {isAdmin&&(
+          <div style={{position:'relative',flexShrink:0}}>
+            <button ref={vivoBtnRef} onClick={()=>{
+                if(!vivoOpen){
+                  const r=vivoBtnRef.current.getBoundingClientRect();
+                  const panelW=Math.min(260,window.innerWidth-24);
+                  const leftIdeal=r.left+(r.width/2)-(panelW/2);
+                  const left=Math.max(12,Math.min(leftIdeal,window.innerWidth-panelW-12));
+                  setVivoPos({top:r.bottom+6,left,width:panelW});
+                }
+                setVivoOpen(o=>!o);
+              }}
+              title="Modo En Vivo"
+              style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
+                border:modoVivo.sesionActiva?'1px solid var(--rd)':'1px solid var(--bd)',
+                background:modoVivo.sesionActiva?'rgba(var(--rd-rgb),.15)':'var(--s1)',
+                color:modoVivo.sesionActiva?'var(--rd)':'var(--tx3)',cursor:'pointer'}}>
+              <div style={{width:7,height:7,borderRadius:'50%',background:modoVivo.sesionActiva?'var(--rd)':'var(--tx3)',
+                boxShadow:modoVivo.sesionActiva?'0 0 6px var(--rd)':'none',flexShrink:0}}/>
+              <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>En Vivo</span>
+            </button>
+            {vivoOpen&&vivoPos&&createPortal(
+              <>
+                <div onClick={()=>setVivoOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
+                <div style={{position:'fixed',top:vivoPos.top,left:vivoPos.left,width:vivoPos.width,
+                  background:'rgba(10,10,20,.97)',border:`2px solid ${svBd}`,borderRadius:16,padding:14,zIndex:999,
+                  boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
+                  {!modoVivo.sesionActiva?(
+                    <button onClick={()=>{modoVivo.iniciar();setVivoOpen(false);}}
+                      style={{width:'100%',padding:'9px',borderRadius:10,border:'none',
+                        background:'var(--rd)',color:'#fff',cursor:'pointer',fontWeight:900,
+                        fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
+                      ● INICIAR MODO EN VIVO
+                    </button>
+                  ):(
+                    <>
+                      <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:8,
+                        textTransform:'uppercase',letterSpacing:'1px'}}>
+                        Equipo ({modoVivo.participantes.filter(p=>p.estado==='aceptado').length} de {modoVivo.participantes.length||0})
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:12,maxHeight:150,overflowY:'auto'}}>
+                        {modoVivo.participantes.map(p=>(
+                          <div key={p.id} style={{display:'flex',alignItems:'center',gap:6,fontSize:'var(--fs-sm)',color:'var(--tx2)'}}>
+                            <div style={{width:6,height:6,borderRadius:'50%',
+                              background:p.estado==='aceptado'?'var(--gn)':p.estado==='rechazado'?'var(--rd)':'var(--tx3)'}}/>
+                            {p.nombre}
+                          </div>
+                        ))}
+                        {modoVivo.participantes.length===0&&(
+                          <div style={{fontSize:'var(--fs-sm)',color:'var(--tx3)',fontStyle:'italic'}}>Esperando que el equipo acepte…</div>
+                        )}
+                      </div>
+                      <button onClick={()=>{modoVivo.finalizar();setVivoOpen(false);}}
+                        style={{width:'100%',padding:'9px',borderRadius:10,border:'1px solid var(--rd)',
+                          background:'rgba(var(--rd-rgb),.1)',color:'var(--rd)',cursor:'pointer',fontWeight:900,
+                          fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
+                        FINALIZAR MODO EN VIVO
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>,
+              document.body
+            )}
+          </div>
+        )}
+
         {perm.verAcordes&&(
           <button onClick={()=>setShowChords(v=>!v)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,border:!showChords?'1px solid rgba(200,169,126,.35)':'1px solid var(--bd)',background:!showChords?'rgba(200,169,126,.1)':'var(--s1)',color:!showChords?'var(--ac)':'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
             {showChords?tx.lyricsOnly:tx.withChords}
@@ -771,6 +842,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const multitrackAudioRefs=useRef([]); // array de elementos <audio> reales, uno por pista
   const [multitrackPlaying,setMultitrackPlaying]=useState(false);
   const multitrackInputRef=useRef(null);
+
+  // ── Modo En Vivo (v90) — el líder controla play/pause de TODAS las
+  // pistas para todo el equipo a la vez. esLider hoy se ata a isAdmin
+  // (mismo criterio que el resto de controles de líder en la app —
+  // Backstage usa isLeader=userRole==='leader'||isAdmin). Ver
+  // hooks/useModoVivo.js para el motor de sincronización.
+  const modoVivo=useModoVivo({accountId, esLider:isAdmin, miNombre, eventoId:null, songIndex:idx, songName:song?.name});
+  const scheduledTimeoutRef=useRef(null);
 
   const [subiendoMultitracks,setSubiendoMultitracks]=useState(null); // {pct} | null — progreso de subida a Storage
   const [waveformReal,setWaveformReal]=useState(null); // [0-1,...] | null — picos de amplitud reales del primer track, null = usar el patrón decorativo (WAVE_DATA)
@@ -952,6 +1031,28 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // Paso 1: el usuario elige archivos → se calculan estimaciones de tamaño/
   // tiempo para MP3 y Opus (sin convertir nada todavía) y se abre el modal
   // para que elija formato con esa información a la vista.
+  // Marca (o desmarca, si ya lo era) una pista como 'click' o 'guia' — el
+  // resto de las pistas ('' o cualquier otro instrumento) no necesita
+  // esta etiqueta. Sirve para 2 cosas: (1) Monitoreo puede mostrar un
+  // fader LOCAL para esas 2 pistas específicas sin ocupar canal real de
+  // la mesa (a pedido de Danny — "ahorrar canales del mixer digital"),
+  // (2) referencia rápida de cuál es cuál sin depender del nombre del
+  // archivo. Solo una pista puede tener cada rol a la vez (si marco otra
+  // como 'click', la anterior se destilda sola).
+  const marcarRolPista=(i,rol)=>{
+    const aplicar=(arr)=>arr.map((t,j)=>{
+      if(j===i) return {...t, rol: t.rol===rol?null:rol};
+      if(t.rol===rol) return {...t, rol:null}; // solo una pista por rol
+      return t;
+    });
+    setMultitracksLocal(prev=>{
+      if(!prev) return prev;
+      const next=aplicar(prev);
+      setArchivosDB(prevDB=>({...prevDB,[baseName]:{...(prevDB[baseName]||{secuencia:[]}),multitracks:next}}));
+      return next;
+    });
+  };
+
   const elegirMultitracksLocal=async(files)=>{
     console.log('[SetSync] cargarMultitracksLocal disparada, archivos:',files?.length);
     const arr=Array.from(files).slice(0,MAX_MULTITRACKS);
@@ -1116,6 +1217,63 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       if(hayMultitracks&&multitrackPlaying)toggleMultitrackPlay();
     }
   };
+
+  // ── Modo En Vivo — ejecución local del transporte sincronizado ──────
+  // Reutiliza el mismo motor de siempre (click + multitracks juntos),
+  // pero llamado desde la programación de Modo En Vivo en vez de un
+  // click directo del usuario. Misma seguridad de "arrancar todas las
+  // pistas en el mismo tick" que ya tenía toggleMultitrackPlay.
+  const ejecutarTransporte=(accion,posSeg)=>{
+    const tracks=multitrackAudioRefs.current.filter(Boolean);
+    if(accion==='pausar'){
+      tracks.forEach(a=>{a.pause();a.currentTime=posSeg;});
+      stopClick();
+      setClickActivo(false);
+      setMultitrackPlaying(false);
+    } else { // 'arrancar_ahora'
+      tracks.forEach(a=>{a.currentTime=posSeg;});
+      Promise.all(tracks.map(a=>a.play().catch(()=>{}))).then(()=>setMultitrackPlaying(true));
+      startClick(seqBpm,seqCifra);
+      setClickActivo(true);
+    }
+  };
+
+  // Reacciona a cambios en el transporte compartido (sesion.transporte) —
+  // corre para TODOS los que aceptaron la sesión, incluido el líder (así
+  // hay un solo camino de código para todos, sin duplicar lógica entre
+  // "soy líder" y "soy participante"). calcularProgramacion es una
+  // función pura, testeada aparte (ver hooks/useModoVivo.js).
+  useEffect(()=>{
+    if(scheduledTimeoutRef.current){clearTimeout(scheduledTimeoutRef.current);scheduledTimeoutRef.current=null;}
+    if(!modoVivo.sesionActiva||!modoVivo.yaAcepte) return;
+    const prog=calcularProgramacion(modoVivo.sesion?.transporte);
+    if(prog.accion==='pausar'){
+      ejecutarTransporte('pausar',prog.posSeg);
+    } else if(prog.accion==='arrancar_ahora'){
+      ejecutarTransporte('arrancar_ahora',prog.posSeg);
+    } else if(prog.accion==='programar'){
+      scheduledTimeoutRef.current=setTimeout(()=>ejecutarTransporte('arrancar_ahora',prog.posSeg),prog.delayMs);
+    }
+    return ()=>{if(scheduledTimeoutRef.current)clearTimeout(scheduledTimeoutRef.current);};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[modoVivo.sesion?.transporte?.reproduciendo,modoVivo.sesion?.transporte?.tsInicioAbs,
+     modoVivo.sesion?.transporte?.posBaseSeg,modoVivo.sesionActiva,modoVivo.yaAcepte]);
+
+  // Botón de play/pause que ve el usuario: si hay una sesión En Vivo
+  // activa y soy el líder, publica el cambio (todo el equipo lo recibe,
+  // incluido yo mismo, vía el efecto de arriba) en vez de tocar el
+  // transporte local directo. Fuera de una sesión En Vivo, comportamiento
+  // de siempre, sin cambios.
+  const handleTransportePress=()=>{
+    if(modoVivo.sesionActiva&&isAdmin){
+      const posActual=multitrackAudioRefs.current.find(Boolean)?.currentTime||0;
+      if(multitrackPlaying||clickActivo) modoVivo.publicarPause(posActual);
+      else modoVivo.publicarPlay(posActual);
+      return;
+    }
+    toggleTransporteMaestro();
+  };
+
   // Aplica volumen/mute real a cada <audio> cuando cambian los faders —
   // antes trackVols/trackMutes solo movían el knob visual.
   useEffect(()=>{
@@ -1699,7 +1857,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xl)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
           </div>
           {/* Play/Stop — control maestro, mismo transporte que Secuencia */}
-          <button onClick={toggleTransporteMaestro}
+          <button onClick={handleTransportePress}
             style={{width:52,height:52,borderRadius:'50%',border:'none',flexShrink:0,
               background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
               display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s',
@@ -1982,6 +2140,48 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             )}
           </div>
         )}
+
+        {/* ── Click y Guía — canales LOCALES, sin ir a la mesa ──────────
+            A pedido de Danny: en vez de que Click/Guía viajen por cable
+            hacia la mesa y vuelvan por el monitor (consumiendo 2 canales
+            reales), cada músico los ajusta acá mismo, en su propio
+            celular — mismo trackVols/trackMutes que ya usa el fader de
+            Secuencia (literalmente el mismo estado, no una copia), así
+            que mover esto es lo mismo que moverlo allá. Solo aparece si
+            alguna pista fue marcada como Click o Guía en Secuencia. */}
+        {(()=>{
+          const tracks=multitracksLocal||seqData.multitracks||[];
+          const pistaClick=tracks.map((t,i)=>({...t,i})).find(t=>t.rol==='click');
+          const pistaGuia=tracks.map((t,i)=>({...t,i})).find(t=>t.rol==='guia');
+          if(!pistaClick&&!pistaGuia) return null;
+          return(
+            <div style={{padding:'10px 12px',margin:'0 8px 10px',borderRadius:10,
+              border:'1px dashed rgba(200,169,126,.4)',background:'rgba(200,169,126,.05)'}}>
+              <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',
+                letterSpacing:'1px',marginBottom:2}}>🎧 Click y Guía — solo en este celular</div>
+              <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginBottom:8,lineHeight:1.4}}>
+                No ocupan canal de la mesa — cada uno los ajusta acá, en su propio teléfono.
+              </div>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {[pistaClick,pistaGuia].filter(Boolean).map(p=>(
+                  <div key={p.i} style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx)',width:44,flexShrink:0}}>
+                      {p.rol==='click'?'Click':'Guía'}
+                    </span>
+                    <input type="range" min={0} max={100} value={trackVols[p.i]??80}
+                      onChange={e=>setTrackVols(v=>{const n=[...v];n[p.i]=Number(e.target.value);return n;})}
+                      style={{flex:1}}/>
+                    <button onClick={()=>setTrackMutes(m=>{const n=[...m];n[p.i]=!n[p.i];return n;})}
+                      style={{padding:'3px 8px',borderRadius:6,border:'none',cursor:'pointer',flexShrink:0,
+                        fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
+                        background:trackMutes[p.i]?'#8B0000':'var(--s3)',
+                        color:trackMutes[p.i]?'#fff':'var(--tx3)'}}>MUTE</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Grid de faders — 8 canales (con selector de capa A/B) en móvil,
             los 16 juntos cuando hay espacio horizontal real (tablet
@@ -3085,6 +3285,26 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         fontFamily:"var(--font-body)",fontWeight:700,letterSpacing:'.5px',overflow:'hidden',
                         whiteSpace:'nowrap',textOverflow:'ellipsis',maxWidth:52,textAlign:'center'}}>Ch{i+1}</div>
                     </div>
+                    {/* Marcar como Click / Guía — habilita el fader local
+                        de Monitoreo para esta pista (sin usar canal real
+                        de la mesa). Solo si son pistas reales (subidas),
+                        no en el set de demo. */}
+                    {esReal&&(
+                      <div style={{display:'flex',gap:3,width:'100%',flexShrink:0}}>
+                        <button onClick={e=>{e.stopPropagation();marcarRolPista(i,'click');}}
+                          title="Marcar como Click"
+                          style={{flex:1,padding:'2px 0',borderRadius:4,border:'none',cursor:'pointer',
+                            fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
+                            background:tr.rol==='click'?'var(--ac)':'var(--s3)',
+                            color:tr.rol==='click'?'#000':'var(--tx3)'}}>CLICK</button>
+                        <button onClick={e=>{e.stopPropagation();marcarRolPista(i,'guia');}}
+                          title="Marcar como Guía"
+                          style={{flex:1,padding:'2px 0',borderRadius:4,border:'none',cursor:'pointer',
+                            fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
+                            background:tr.rol==='guia'?'var(--ac)':'var(--s3)',
+                            color:tr.rol==='guia'?'#000':'var(--tx3)'}}>GUÍA</button>
+                      </div>
+                    )}
                     {/* Mute — mismo tamaño que el de Monitoreo */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
                       style={{width:'100%',padding:'3px 0',borderRadius:4,border:'none',cursor:'pointer',flexShrink:0,
@@ -3280,6 +3500,39 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <div style={{width:`${convirtiendo.pct}%`,height:'100%',background:'var(--gn)',transition:'width .2s'}}/>
               </div>
               <div style={{fontSize:'var(--fs-base)',color:'var(--tx3)',marginTop:8}}>{convirtiendo.pct}%</div>
+            </div>
+          </div>,
+          document.body
+        )}
+        {/* ── Invitación a Modo En Vivo — aparece a cualquiera del equipo
+            (que no sea el líder) apenas hay una sesión llamando a la que
+            todavía no respondió. */}
+        {modoVivo.necesitoResponder&&createPortal(
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:999,
+            display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+            <div style={{background:svBg,border:'2px solid var(--rd)',borderRadius:18,padding:24,maxWidth:320,width:'100%',textAlign:'center'}}>
+              <div style={{width:10,height:10,borderRadius:'50%',background:'var(--rd)',
+                boxShadow:'0 0 10px var(--rd)',margin:'0 auto 14px'}}/>
+              <div style={{fontSize:'var(--fs-xl)',fontFamily:"var(--font-display)",color:svTx,marginBottom:8}}>
+                Modo En Vivo
+              </div>
+              <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6,marginBottom:20}}>
+                <strong style={{color:svTx}}>{modoVivo.sesion?.liderNombre||'El líder'}</strong> te está llamando a sumarse — vas a escuchar y ver lo que él controle (play, grabación, anotaciones).
+              </div>
+              <div style={{display:'flex',gap:10}}>
+                <button onClick={modoVivo.rechazar}
+                  style={{flex:1,padding:'11px',borderRadius:10,border:'1px solid var(--bd)',
+                    background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontWeight:700,
+                    fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-base)'}}>
+                  Rechazar
+                </button>
+                <button onClick={modoVivo.aceptar}
+                  style={{flex:2,padding:'11px',borderRadius:10,border:'none',
+                    background:'var(--gn)',color:'#000',cursor:'pointer',fontWeight:900,
+                    fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-base)'}}>
+                  Aceptar y sumarme
+                </button>
+              </div>
             </div>
           </div>,
           document.body

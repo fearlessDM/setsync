@@ -100,6 +100,71 @@ export async function publicarSesionActiva(accountId, {eventoId, songIndex, song
     {eventoId, songIndex, songName, timestamp}, {merge:true});
 }
 
+// ── Modo En Vivo (v90) — extiende la sesión compartida de arriba con
+// líder + invitación + transporte sincronizado (play/pause de TODAS las
+// pistas de Secuencia, para todo el equipo a la vez). Vive en el MISMO
+// doc `sesion/activa` (no una colección aparte) porque es exactamente el
+// mismo concepto — "lo que el líder transmite en vivo" — solo que ahora
+// incluye control real, no solo qué canción está mirando.
+//
+// Sincronización SIN servidor de tiempo real: en vez de que cada
+// dispositivo reaccione al instante en que le llega el mensaje (variable
+// según la red), el líder manda un instante ABSOLUTO futuro cercano
+// (tsInicioAbs, epoch ms — reloj propio del dispositivo, que en celulares
+// modernos ya viene sincronizado por red/NTU del sistema operativo). Cada
+// participante programa su propio play para ese mismo instante — así la
+// variación de latencia de Firestore deja de importar tanto. No es
+// sample-perfect de estudio, pero alcanza para tocar en vivo con click.
+export async function iniciarModoVivo(accountId, {liderUid, liderNombre, eventoId, songIndex, songName}){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'sesion', 'activa'), {
+    eventoId, songIndex, songName, timestamp:Date.now(),
+    liderUid, liderNombre, estado:'llamando',
+    transporte:{reproduciendo:false, tsInicioAbs:null, posBaseSeg:0},
+  }, {merge:true});
+}
+export async function finalizarModoVivo(accountId){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'sesion', 'activa'),
+    {estado:'finalizada', transporte:{reproduciendo:false, tsInicioAbs:null, posBaseSeg:0}}, {merge:true});
+}
+// El líder llama esto para poner en 'activa' apenas alguien acepta, o
+// para reflejar play/pause/cambio de canción durante la sesión.
+export async function actualizarModoVivo(accountId, cambios){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'sesion', 'activa'), cambios, {merge:true});
+}
+
+// Participantes — subcolección del mismo doc. Sin pre-crear invitados:
+// cualquiera que vea estado 'llamando'/'activa' y no tenga su propio
+// participantes/{deviceId} puede responder. Simple y suficiente para
+// equipos chicos/medianos (tope real de Cuenta Equipo son 35-36+ personas).
+export function subscribeParticipantesVivo(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'accounts', accountId, 'sesion', 'activa', 'participantes');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+export async function responderModoVivo(accountId, deviceId, nombre, respuesta){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'sesion', 'activa', 'participantes', deviceId),
+    {nombre, estado:respuesta, respondidoEn:Date.now()});
+}
+
+// Identidad de ESTE dispositivo — separada de accountId a propósito: en
+// equipos que comparten una sola Cuenta (invite por código, ver más abajo),
+// accountId es el mismo para todos, pero cada celular sigue necesitando
+// su propia identidad para saber quién aceptó qué en Modo En Vivo.
+export function getDeviceId(){
+  let id = localStorage.getItem('setsync_device_id');
+  if(!id){
+    id = 'dev_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+    localStorage.setItem('setsync_device_id', id);
+  }
+  return id;
+}
+
 // ── Invitación por código (unirse al equipo de la cuenta sin login) ────
 // invites/{codigo} -> {accountId, creadoEn}. Código corto, fácil de
 // dictar o poner en un QR. Sin expiración por ahora (se puede agregar
@@ -119,6 +184,33 @@ export async function resolverInvitacion(codigo){
   const { getDoc } = await import('firebase/firestore');
   const snap = await getDoc(doc(db, 'invites', codigo.toUpperCase().trim()));
   return snap.exists() ? snap.data().accountId : null;
+}
+
+// ── Miembros de una cuenta compartida (v90) — reemplaza el modelo viejo
+// donde "unirse por código" solo sobreescribía un accountId en
+// localStorage, sin ninguna identidad verificable por las Security
+// Rules. Ahora: la persona se autentica (aunque sea anónima, ver
+// auth.js → iniciarSesionAnonima) y queda registrada acá — las reglas
+// verifican esto con exists(), no un match exacto de uid.
+export async function agregarMiembroCuenta(accountId, uid, nombre){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'miembros', uid), {
+    nombre, agregadoEn: Date.now(),
+  });
+}
+
+// El accountId "real" (dueño) sigue siendo currentUser.uid por defecto.
+// Pero alguien que se unió por código necesita que accountId apunte a
+// la cuenta COMPARTIDA, no a su propio uid nuevo — este override, guardado
+// en localStorage, gana sobre currentUser.uid cuando existe. Ver App.jsx.
+export function getAccountIdOverride(){
+  return localStorage.getItem('setsync_invited_account_id') || null;
+}
+export function setAccountIdOverride(accountId){
+  localStorage.setItem('setsync_invited_account_id', accountId);
+}
+export function limpiarAccountIdOverride(){
+  localStorage.removeItem('setsync_invited_account_id');
 }
 
 // ── Ensayos (v44-ampliación) — misma forma que Eventos/Personas/Equipos ──

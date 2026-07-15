@@ -26,7 +26,7 @@ import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, vincularMembresiasPendientes } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -110,7 +110,10 @@ export default function App(){
     const unsub = onAuthChange(setCurrentUser);
     return unsub;
   },[]);
-  const accountId = currentUser?.uid || getAccountId();
+  // El override (alguien que se unió por código a una cuenta compartida,
+  // ver Login.jsx) gana sobre el propio uid — si no hay override, mismo
+  // comportamiento de siempre.
+  const accountId = getAccountIdOverride() || currentUser?.uid || getAccountId();
   // ── Cuenta Equipo (v90) — usePlanEfectivo() es la fuente única de
   // verdad: se suscribe a las membresías reales del uid en Firestore
   // (orgMiembros→orgs) y devuelve Premium si hay ≥1 equipo vigente
@@ -830,7 +833,7 @@ Tuya es la gloria, Por siempre amén.
             viaEquipo={viaEquipo} orgPrincipal={orgPrincipal} orgsDelUsuario={orgsDelUsuario}
             tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
             variacionesDB={variacionesDB}
-            currentUser={currentUser} onCerrarSesion={cerrarSesion}
+            currentUser={currentUser} onCerrarSesion={()=>{limpiarAccountIdOverride();cerrarSesion();}}
             persistirEnsayo={persistirEnsayo}
             navResetKey={backstageKey}
             onNavigate={setView}/>}
@@ -852,6 +855,7 @@ Tuya es la gloria, Por siempre amén.
             sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
             archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}
             accountId={accountId} authListo={currentUser!==undefined}
+            miNombre={currentUser?.displayName||currentUser?.email||'Líder'}
             onEditInCancionero={(nombreCancion)=>{
               setSongView(null);setSongViewSongs(null);
               setSongParaEditar(nombreCancion);

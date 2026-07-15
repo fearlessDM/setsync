@@ -11,6 +11,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInAnonymously,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -57,6 +58,20 @@ export async function iniciarSesionConGoogle(){
   if(!firebaseListo) throw new Error('Firebase no está configurado todavía.');
   try{
     const cred = await signInWithPopup(auth, googleProvider);
+    return cred.user;
+  }catch(err){ throw new Error(mensajeError(err)); }
+}
+
+// Login anónimo — para quien se une a una cuenta compartida con un
+// código de invitación, sin querer/necesitar registrarse con email. Le
+// da una identidad REAL de Firebase Auth (uid estable, verificable por
+// las Security Rules), a diferencia del viejo accountId "fantasma" que
+// solo vivía en localStorage y no servía para nada ante las reglas.
+export async function iniciarSesionAnonima(nombre){
+  if(!firebaseListo) throw new Error('Firebase no está configurado todavía.');
+  try{
+    const cred = await signInAnonymously(auth);
+    if(nombre?.trim()) await updateProfile(cred.user, {displayName: nombre.trim()});
     return cred.user;
   }catch(err){ throw new Error(mensajeError(err)); }
 }
