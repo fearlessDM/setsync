@@ -1283,13 +1283,27 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const canPrev = idx > 0;
     const isLast  = idx === songs.length - 1;
 
-    // Icono Secuencia: logo PNG provisto por Danny (public/logo secuencias.png)
-    const IconSecuencia=({active})=>(
-      <div style={{width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <img src="/logo secuencias.png" alt="" style={{width:'90%',height:'90%',objectFit:'contain',
-          opacity:active?1:.55,transition:'opacity .15s'}}/>
-      </div>
-    );
+    // Icono Secuencia: soundwave (SVG inline) — a pedido de Danny, vuelve
+    // a ser el ícono de onda de audio que tenía antes (se había reemplazado
+    // por el logo PNG /logo secuencias.png). Mismo lenguaje visual que
+    // IconMonitor: color según estado activo, sin dependencias externas.
+    const IconSecuencia=({active,size=22})=>{
+      const col=active?'var(--ac)':'var(--tx3)';
+      // Alturas de barras — pico simétrico al centro, como una onda de audio.
+      const barras=[
+        {x:2, y1:10,y2:14},{x:6, y1:6, y2:18},{x:10,y1:9, y2:15},
+        {x:14,y1:3, y2:21},{x:18,y1:7, y2:17},{x:22,y1:10,y2:14},
+      ];
+      return(
+        <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
+          {barras.map(({x,y1,y2})=>(
+            <line key={x} x1={x} y1={y1} x2={x} y2={y2}
+              stroke={col} strokeWidth="2" strokeLinecap="round"
+              opacity={active?1:.75}/>
+          ))}
+        </svg>
+      );
+    };
 
     const tabs=[
       {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(
@@ -1848,7 +1862,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   };
 
   const MonitorPanel=() => {
-    const trackH=105; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos, +10px a pedido de Danny (antes 95)
+    const trackH=130; // fijo, compartido por Monitoreo y Secuencia — mismo alto en ambos. Subido dos veces a pedido de Danny (95→105→130).
 
     const panel = (
       <div
@@ -2683,7 +2697,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   );
 
   const SecuenciaPanel=() => {
-      const trackH=105; // fijo, mismo valor que MonitorPanel — mismo alto en ambos, +10px a pedido de Danny (antes 95)
+      const trackH=130; // fijo, mismo valor que MonitorPanel — mismo alto en ambos. Subido dos veces a pedido de Danny (95→105→130).
       // Calcular total de compases para proporciones del mapa
       const guias=seqData?.guias;
       const totalComp=guias?guias.reduce((s,g)=>s+(g.compases||4),0):0;
@@ -2952,6 +2966,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 const esReal=!!multitracksLocal;
+                // Indicador de señal — mismo cálculo cosmético que Monitoreo
+                // (se deriva del propio fader, no es análisis de audio real;
+                // Monitoreo tampoco lo hace, ver vuLit ahí). Agregado a
+                // pedido de Danny para que ambos paneles se vean iguales.
+                const vuLit=muted?0:Math.round((vol/100)*12);
                 return(
                   <div key={i} style={{
                     flex:'0 0 74px',display:'flex',flexDirection:'column',alignItems:'center',
@@ -2992,6 +3011,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       <div style={{position:'relative',width:48,height:trackH,borderRadius:2,touchAction:'none',overflow:'visible',cursor:'ns-resize'}}>
                         <div style={{position:'absolute',top:0,bottom:0,left:'50%',transform:'translateX(-50%)',width:5,
                           background:'var(--bd)',borderRadius:3,pointerEvents:'none'}}/>
+                        {/* Indicador de señal — mismo markup que el VU meter de Monitoreo */}
+                        <div style={{
+                          position:'absolute',top:3,bottom:3,right:3,width:4,
+                          display:'flex',flexDirection:'column-reverse',gap:1,
+                          zIndex:1,pointerEvents:'none',
+                        }}>
+                          {Array.from({length:12},(_,si)=>{
+                            const lit=si<vuLit;
+                            const col=si>=10?'var(--rd)':si>=8?'#f59e0b':'var(--gn)';
+                            return(
+                              <div key={si} style={{
+                                flex:1,borderRadius:.5,
+                                background:lit?col:'var(--s3)',
+                                boxShadow:lit&&si>=8?`0 0 3px ${col}`:'none',
+                              }}/>
+                            );
+                          })}
+                        </div>
                         <div style={{
                           position:'absolute',left:'50%',transform:'translateX(-50%)',
                           width:44,height:30,borderRadius:6,zIndex:2,
@@ -3038,12 +3075,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       </div>
                     </div>
                     </div>
-                    {/* Nombre de la pista — misma posición/estilo que "CH N" en Monitoreo */}
+                    {/* Nombre de la pista — estándar Ch1, Ch2... a pedido de
+                        Danny (antes mostraba tr.label, el nombre real del
+                        archivo cargado — "nombres de fantasía" que no quería). */}
                     <div style={{display:'flex',alignItems:'center',gap:3,width:'100%',justifyContent:'center',flexShrink:0}}>
                       <div style={{width:5,height:5,borderRadius:'50%',background:muted?'rgba(var(--rd-rgb),.5)':tr.color,flexShrink:0}}/>
                       <div style={{fontSize:'var(--fs-3xs)',color:muted?'var(--rd)':'var(--tx3)',
                         fontFamily:"var(--font-body)",fontWeight:700,letterSpacing:'.5px',overflow:'hidden',
-                        whiteSpace:'nowrap',textOverflow:'ellipsis',maxWidth:52,textAlign:'center'}}>{tr.label}</div>
+                        whiteSpace:'nowrap',textOverflow:'ellipsis',maxWidth:52,textAlign:'center'}}>Ch{i+1}</div>
                     </div>
                     {/* Mute — mismo tamaño que el de Monitoreo */}
                     <button onClick={e=>{e.stopPropagation();setTrackMutes(m=>{const n=[...m];n[i]=!n[i];return n;})}}
