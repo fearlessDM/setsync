@@ -711,7 +711,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
       <div style={{background:'#111113',border:'1px solid var(--bd)',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
         <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',fontWeight:400,color:'var(--tx)',marginBottom:8}}>{tx.saveChangesLbl}</div>
-        <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
+        <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'none',background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:'var(--fs-lg)'}}>{tx.saveAndExitLbl}</button>
           <button onClick={()=>{setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,border:'1px solid var(--bd)',background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:'var(--fs-lg)'}}>{tx.exitWithoutSavingLbl}</button>
@@ -1468,8 +1468,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
       {id:'referencia',label:tx.referenceTabLbl,renderIcon:(a)=>(<IconSecuencia active={a}/>)},
       {id:'monitor', label:tx.monitorTabLbl,  renderIcon:(a)=>IconMonitor({active:a})},
       {id:'secuencia',label:tx.sequenceTabLbl,renderIcon:(a)=>(
-        <div style={{width:19,height:19,display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <img src="/logo referencias.svg" alt="" style={{width:'72%',height:'72%',objectFit:'contain',
+        <div style={{width:22,height:22,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <img src="/logo referencias.svg" alt="" style={{width:'88%',height:'88%',objectFit:'contain',
             opacity:a?1:.55,transition:'opacity .15s'}}/>
         </div>
       )},
@@ -1983,7 +1983,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               + Subir track de secuencia
             </label>
           ):((carpetaActual.secuencia||[]).length===0&&(
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
+            <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>{tx.noTracksYetShort}</div>
           ))}
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:8}}>{tx.referenceTrackLbl}</div>
@@ -1995,7 +1995,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <span style={{fontSize:'var(--fs-base)',color:'var(--gn)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{carpetaActual.trackReferencia.nombre}</span>
             </button>
           ):(
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
+            <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
           )}
 
           {/* ── Nota tipo post-it ── */}
@@ -2041,12 +2041,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 6px',flexShrink:0}}>
           <div style={{display:'flex',alignItems:'flex-start',gap:10,width:'100%'}}>
             <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flexShrink:0}}>{tx.monitorTabLbl}</span>
-            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.wifiHintLbl}</span>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
-            <div style={{flex:'1 1 auto',minWidth:0}}>
-              <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"var(--font-body)",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
-            </div>
+            <span style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.wifiHintLbl}</span>
           </div>
         </div>
 
@@ -2549,7 +2544,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flexShrink:0}}>
                 {tx.referenceTabLbl}
               </span>
-              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.referenceSubLbl}</span>
+              <span style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.referenceSubLbl}</span>
             </div>
             <input ref={refInputRef} type="file" accept="audio/*" style={{display:'none'}}
               onChange={e=>{if(e.target.files[0])loadFile(e.target.files[0]);}}/>
@@ -2591,7 +2586,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 <div style={{textAlign:'center'}}>
                   <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx2)',fontFamily:"var(--font-body)",marginBottom:4}}>{tx.uploadReferenceAudioLbl}</div>
-                  <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+                  <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
                 </div>
               </div>
             ):(()=>{
@@ -2617,7 +2612,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
                 {/* Nombre del archivo + botón para cambiarlo */}
                 <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
-                  <span style={{flex:1,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
+                  <span style={{flex:1,fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{refAudio?.name}</span>
                   <button onClick={()=>refInputRef.current?.click()}
                     style={{padding:'4px 10px',borderRadius:8,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"var(--font-body)",flexShrink:0}}>
                     {tx.changeBtn}
@@ -2804,7 +2799,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     ):isRecording&&recordSlot===i?(
                       <div style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--rd)',fontFamily:"var(--font-body)"}}>● Grabando · {fmtDur(recordElapsed)}</div>
                     ):(
-                      <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>{tx.emptySlotLbl}</div>
+                      <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>{tx.emptySlotLbl}</div>
                     )}
                   </div>
                   {slot&&(<audio src={slot.url} controls style={{height:26,maxWidth:90}}/>)}
@@ -2984,12 +2979,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <div style={{padding:'10px 14px 0'}}>
           <div style={{display:'flex',alignItems:'flex-start',gap:10,width:'100%'}}>
             <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flexShrink:0}}>{tx.sequenceTabLbl}</span>
-            <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.sequenceSubLbl}</span>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginTop:4}}>
-            <div style={{flex:'1 1 auto',minWidth:0}}>
-              <div style={{fontSize:'var(--fs-hint)',color:'#e0a458',fontWeight:400,fontFamily:"var(--font-body)",lineHeight:1.3}}>{tx.audioInterfaceHintLbl}</div>
-            </div>
+            <span style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:300,fontFamily:"var(--font-body)",flex:1,minWidth:0,lineHeight:1.3}}>{tx.sequenceSubLbl}</span>
           </div>
         </div>
         {/* ── MAPA DE ESTRUCTURA — integrado en el panel ── */}
@@ -3338,7 +3328,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           ):(
             <div style={{padding:'16px',borderRadius:12,border:'1px dashed var(--bd)',textAlign:'center'}}>
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>{tx.noTracksForSongLbl}</div>
+              <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>{tx.noTracksForSongLbl}</div>
             </div>
           )}
         </div>
@@ -3402,7 +3392,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
             </div>
             <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+              <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
             </div>
           </div>
           {/* AnnoBar (tono, notación, Solo letra, Editar) — en tablet comparte fila con el título en vez de quedar debajo */}
@@ -3571,7 +3561,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           </span>
         </button>
         <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
+          <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
         </div>
       </div>
       {AnnoBar()}
