@@ -677,7 +677,7 @@ Tuya es la gloria, Por siempre amén.
           {/* Logo vertical — visible con tagline */}
           <div style={{paddingTop:40,paddingBottom:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
             <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
-              height:'clamp(200px,36vw,300px)',width:'auto',objectFit:'contain',
+              height:'clamp(220px,39.6vw,330px)',width:'auto',objectFit:'contain',
               filter:'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
             }}/>
           </div>
@@ -688,7 +688,7 @@ Tuya es la gloria, Por siempre amén.
               esto, la separación visual queda mucho más grande de lo que
               indica el CSS, porque parte del "espacio" ya viene dibujado
               (en blanco) dentro de la imagen misma. */}
-          <div style={{marginTop:'clamp(-41px,calc(-5.5vw + 5px),-26px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+          <div style={{marginTop:'clamp(-45px,calc(-6.05vw + 5px),-29px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
             <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l)=>{
@@ -703,7 +703,7 @@ Tuya es la gloria, Por siempre amén.
                       transition:'background .25s',
                     }}>
                     <span style={{fontSize:'var(--fs-sm)',fontWeight:isActive?700:400,
-                      color:isActive?'#f3f1ed':'rgba(255,255,255,.55)',whiteSpace:'nowrap',
+                      color:isActive?'#e0a458':'rgba(255,255,255,.55)',whiteSpace:'nowrap',
                       fontFamily:"var(--font-body)",transition:'color .2s'}}>{l.label}</span>
                   </button>
                 );
@@ -713,7 +713,7 @@ Tuya es la gloria, Por siempre amén.
 
           {/* Título */}
           <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'var(--fs-display)',color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'calc(var(--fs-display) * 0.95)',color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
               {tl.choose}
             </div>
             <div style={{fontSize:'var(--fs-base)',color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
