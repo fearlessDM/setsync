@@ -773,7 +773,7 @@ Tuya es la gloria, Por siempre amén.
         {/* Logo = botón de toggle */}
         <div className="sb-top" onClick={()=>setSbCol(c=>!c)} title={sbCol?'Expandir menú':'Colapsar menú'}>
           <div className="logo-area">
-            <img className="logo-horiz" src="/LOGO2 horiz blanco.png" alt="SetSync"/>
+            <img className="logo-horiz" src={theme==='blue-lava'?'/LOGO horiz  oscuro.png':'/LOGO2 horiz blanco.png'} alt="SetSync"/>
             <img className="logo-fav"   src="/FAVICON SS.png"        alt="SS"/>
           </div>
         </div>

@@ -314,9 +314,9 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       }}>
         <div style={{flex:1}}>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
+            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
-            color:'var(--tx2)',lineHeight:1.5}}>
+            color:'var(--tx2)',lineHeight:1.4}}>
             {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : tx.navMonthsHint}
           </div>
         </div>
@@ -638,10 +638,10 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       <div style={{marginBottom:'var(--sp-md)'}}>
         <div style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
           <div style={{flex:1}}>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
               {f.nombre}
             </div>
-            <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.5}}>
+            <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4}}>
               Tu setlist para esta fecha. Repasa con tiempo.
             </div>
           </div>

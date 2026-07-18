@@ -271,10 +271,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       {crearModo===null&&(
         <div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-2xl)',color:'var(--tx)',marginBottom:4}}>
+            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:4}}>
             Subir canción/carpeta
           </div>
-          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:24,lineHeight:1.5}}>
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:24,lineHeight:1.4}}>
             En Setsync una canción es una carpeta. Dentro podrás agregar variaciones, partituras por instrumento y audios de referencia.
           </div>
           {/* Opción 1: Manual */}
@@ -508,7 +508,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </div>
 
             {/* Info */}
-            <div className="card" style={{padding:14,marginBottom:20}}>
+            <div className="card" style={{padding:18,marginBottom:20}}>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
                 placeholder="Título canción"
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
@@ -781,10 +781,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               fontFamily:"var(--font-body)"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-2xl)',color:'var(--tx)',marginBottom:6}}>
+            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
             Subir partitura
           </div>
-          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.6}}>
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
             Selecciona el formato según lo que necesites hacer con la partitura.
           </div>
           {/* Explicación formatos */}
@@ -855,10 +855,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               fontFamily:"var(--font-body)"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-2xl)',color:'var(--tx)',marginBottom:6}}>
+            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
             Subir por Drive
           </div>
-          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.6}}>
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
             Conecta una carpeta de Google Drive que contenga tus canciones y carga todo el repertorio de una vez.
           </div>
           <div style={{padding:'16px',borderRadius:12,background:'var(--s1)',marginBottom:12}}>
@@ -1003,10 +1003,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>Subir canción</span>
             </div>
             <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-              fontSize:'var(--fs-2xl)',color:'var(--tx)',marginBottom:6}}>
+              fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
               Importar archivos
             </div>
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:18,lineHeight:1.6}}>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:18,lineHeight:1.5}}>
               El parser convierte automáticamente cada archivo, pero es por reglas — no por IA. Todas las canciones quedan marcadas <strong style={{color:'var(--rd)'}}>Por revisar</strong> hasta que las abras y guardes una vez.
             </div>
 
@@ -1247,7 +1247,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   display:'flex',alignItems:'center',gap:5}}>
                 ← Colecciones
               </button>
-              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400,
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-title2)',textTransform:'uppercase',fontWeight:400,
                 color:colecciones[coleccionSel].color,marginBottom:14}}>
                 {colecciones[coleccionSel].nombre}
               </div>

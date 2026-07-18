@@ -11,7 +11,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
     <div>
       <div className="ph">
         <div>
-          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{vx.equipoPersona.plural}</div>
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{vx.equipoPersona.plural}</div>
           <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-lg)',color:'var(--ac)',fontWeight:400}}>{tx.tapTeamHint}</div>
         </div>
         
