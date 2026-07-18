@@ -738,8 +738,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             fontSize:'var(--fs-display)',color:'#fff',lineHeight:1.1}}>
             Hola <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
-          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
-            color:'rgba(255,255,255,.45)',marginTop:4}}>
+          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',
+            color:'var(--tx2)',lineHeight:1.4,marginTop:4}}>
             SetSync · {mode==='iglesia'?tx.footerTaglineIglesia:tx.footerTaglineBanda}
           </div>
         </div>

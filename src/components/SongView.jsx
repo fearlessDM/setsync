@@ -230,7 +230,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const vivoBtnRef=useRef(null);
   const [vivoPos,setVivoPos]=useState(null);
 
-  const song=songs[idx];
+  const song=songs[idx]||songs[songs.length-1]||{name:'',key:'C'};
   const curKey=tpKey(song.key,tpOff);
   const sonaKey=tpKey(curKey,-capo);
 
@@ -1471,7 +1471,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         minHeight:54,
       }}>
         {/* ← Anterior */}
-        <button onClick={()=>canPrev&&setIdx(i=>i-1)} disabled={!canPrev}
+        <button onClick={()=>canPrev&&setIdx(i=>Math.max(i-1,0))} disabled={!canPrev}
           style={{
             flex:1,margin:'6px 3px',borderRadius:9,
             background:'var(--s1)',
@@ -1512,7 +1512,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         })}
 
         {/* Siguiente → */}
-        <button onClick={()=>{ if(isLast) onClose(); else setIdx(i=>i+1); }}
+        <button onClick={()=>{ if(isLast) onClose(); else setIdx(i=>Math.min(i+1,songs.length-1)); }}
           style={{
             flex:1,margin:'6px 3px',borderRadius:9,
             background:'var(--s1)',
@@ -3314,13 +3314,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const NavBar=()=>(
     <>
       {idx>0&&(
-        <button onClick={()=>setIdx(i=>i-1)}
+        <button onClick={()=>setIdx(i=>Math.max(i-1,0))}
           style={{position:'fixed',left:12,bottom:72,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,background:'rgba(10,10,20,.88)',backdropFilter:'blur(20px)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           {tx.previous}
         </button>
       )}
-      <button onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>i+1);}}
+      <button onClick={()=>{if(idx===songs.length-1)onClose();else setIdx(i=>Math.min(i+1,songs.length-1));}}
         style={{position:'fixed',right:12,bottom:72,zIndex:20,display:'flex',alignItems:'center',gap:5,padding:'9px 14px',borderRadius:100,background:'var(--bd)',backdropFilter:'blur(20px)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",boxShadow:'0 4px 20px rgba(0,0,0,.5)'}}>
         {idx===songs.length-1?tx.done:tx.next}
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>

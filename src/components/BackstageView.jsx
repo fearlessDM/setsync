@@ -39,6 +39,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const feat=getModoFeatures(mode);
   const tipos=getTiposEventoDisponibles(mode,lang);
   const [bsView,setBsView]=useState(null);
+  const [helpOpen,setHelpOpen]=useState(false);
   // Volver a Backstage home al re-tocar el botón del nav, aunque ya
   // estuvieras adentro de una subpágina — no solo con la flecha atrás.
   useEffect(()=>{ if(navResetKey>0) setBsView(null); },[navResetKey]);
@@ -155,12 +156,108 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
     return AVATAR_PALETTE[h%AVATAR_PALETTE.length];
   };
+
+  // ── Tutoriales del bot\u00f3n de ayuda "i" ──────────────────────────────────
+  const TUTORIALES_HELP={
+    evento:{
+      titulo:'Cómo crear un evento',
+      pasos:[
+        'Elige el tipo de evento (Domingo, Ensayo, Especial) o escribe un nombre propio.',
+        'Selecciona la fecha, lugar y hora.',
+        'Agrega las canciones al setlist — puedes asignar variaciones o instrumentos distintos a cada persona.',
+        'Marca qué equipos quedan convocados para esta fecha.',
+        'Arma el itinerario con los horarios del día si lo necesitas.',
+        'Agrega notas para el equipo y adjunta un archivo si hace falta (PDF, Word o audio).',
+        'Toca "Crear evento" para publicarlo — tu equipo lo verá automáticamente en Próxima Fecha.',
+      ],
+    },
+    equipos:{
+      titulo:'Cómo gestionar equipos, roles y personas',
+      pasos:[
+        'Para agregar una persona nueva: botón "Agregar miembro" arriba de la lista, completa nombre y correo (opcional).',
+        'Para crear un equipo nuevo: al final de la pantalla, escribe el nombre y los roles separados por coma (ej: Líder, Músico, Técnico).',
+        'Toca cualquier equipo para ver su detalle — ahí puedes agregar/quitar miembros, cambiar su rol, o subir foto de perfil.',
+        'Los roles de un equipo se editan en su detalle: escribe uno nuevo y presiona Enter, o toca la × para quitar uno existente.',
+        'Una persona puede pertenecer a más de un equipo a la vez — se agrega desde el selector "Agregar miembro al equipo" en cada detalle.',
+      ],
+    },
+    notif:{
+      titulo:'Cómo enviar notificaciones',
+      pasos:[
+        'Elige a quién va dirigida: todo el equipo, o un equipo específico.',
+        'Selecciona el tipo de alerta: recordatorio, cambio de setlist, urgente o general — esto define el color e ícono que verán.',
+        'Escribe el mensaje.',
+        'Si quieres que también llegue por correo electrónico (no solo dentro de la app), activa esa opción antes de enviar.',
+        'Toca "Enviar" — el equipo lo recibe al instante.',
+      ],
+    },
+    ensayo:{
+      titulo:'Cómo crear un ensayo',
+      pasos:[
+        'Opcional: asigna el ensayo a un evento existente para tenerlos vinculados.',
+        'Elige qué setlist vas a repasar (de los que ya guardaste desde Crear setlist).',
+        'Marca qué equipos quedan convocados a este ensayo.',
+        'Agrega notas de foco (ej: "repasar transiciones del bloque de adoración") y adjunta un archivo si lo necesitas.',
+        'Toca "Crear ensayo" — si ya había ensayos para el mismo evento, puedes duplicar uno existente en vez de partir de cero.',
+      ],
+    },
+    permisos:{
+      titulo:'Cómo delegar permisos',
+      pasos:[
+        'Selecciona a la persona del equipo que va a recibir permisos de líder.',
+        'Marca los permisos específicos que va a tener: editar setlist, convocar equipo, enviar notificaciones, editar itinerario, gestionar equipos, palabra del pastor, o ver Backstage.',
+        'Toca "Guardar líder" — la persona queda con acceso solo a lo que marcaste, sin necesitar tu aprobación cada vez.',
+        'Puedes quitarle el acceso en cualquier momento desde la lista de "Líderes actuales", tocando la × junto a su nombre.',
+      ],
+    },
+    backstage:{
+      titulo:'Qué es Backstage',
+      pasos:[
+        'Backstage es el panel de control de tu equipo — desde acá administras todo lo que no ve el resto de los músicos.',
+        'Crear fecha/setlist/ensayo: arma los eventos y el contenido que tu equipo va a usar.',
+        'Gestión de equipos: quiénes son, en qué equipo están, y qué rol cumplen.',
+        'Delegar permisos: da acceso de líder a otras personas sin que dependan de ti para todo.',
+        'Notificaciones: avisa a tu equipo directo desde la app.',
+        'Personalización: logo, tema visual e idioma de tu cuenta.',
+        'Cada pantalla tiene su propio botón de ayuda "i" con instrucciones específicas.',
+      ],
+    },
+  };
+  const HelpBtn=()=>(
+    <button className="help-btn" onClick={()=>setHelpOpen(true)} aria-label="Ayuda">i</button>
+  );
+  const HelpModal=()=>{
+    const t=TUTORIALES_HELP[helpOpen];
+    if(!t)return null;
+    return(
+      <div className="help-ov" onClick={()=>setHelpOpen(false)}>
+        <div className="help-modal" onClick={e=>e.stopPropagation()}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)'}}>{t.titulo}</div>
+            <button onClick={()=>setHelpOpen(false)} style={{width:26,height:26,borderRadius:'50%',background:'var(--s2)',color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:'var(--fs-lg)'}}>×</button>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {t.pasos.map((p,i)=>(
+              <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
+                <div style={{width:20,height:20,borderRadius:'50%',background:'var(--gn)',color:'var(--btn-c)',fontSize:'var(--fs-xs)',fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontWeight:300,lineHeight:1.5,fontFamily:"var(--font-body)"}}>{p}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
+        <button className="help-btn" onClick={()=>setHelpOpen('evento')} aria-label="Ayuda">i</button>
+        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.createDateSub}</div>
@@ -383,6 +480,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           Crear evento
         </button>
       </div>
+      {helpOpen==='evento'&&<HelpModal/>}
     </div>
   );
 
@@ -597,9 +695,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
         {/* Header */}
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+          <button className="help-btn" onClick={()=>setHelpOpen('equipos')} aria-label="Ayuda">i</button>
+          <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+          </div>
         </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
@@ -852,6 +953,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             Crear equipo
           </button>
         </div>
+        {helpOpen==='equipos'&&<HelpModal/>}
       </div>
     );
   }
@@ -860,9 +962,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // ── DELEGAR PERMISOS ──
   if(bsView==='permisos')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
+        <button className="help-btn" onClick={()=>setHelpOpen('permisos')} aria-label="Ayuda">i</button>
+        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
@@ -958,14 +1063,18 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           Guardar líder
         </button>
       </div>
+      {helpOpen==='permisos'&&<HelpModal/>}
     </div>
   );
 
   if(bsView==='notif')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
+        <button className="help-btn" onClick={()=>setHelpOpen('notif')} aria-label="Ayuda">i</button>
+        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>{tx.notificationsTitleLbl}</div>
       <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
@@ -1009,6 +1118,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           Enviar
         </button>
       </div>
+      {helpOpen==='notif'&&<HelpModal/>}
     </div>
   );
 
@@ -1662,9 +1772,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     };
     return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
+        <button className="help-btn" onClick={()=>setHelpOpen('ensayo')} aria-label="Ayuda">i</button>
+        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
+        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>
@@ -1760,6 +1873,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           Crear ensayo
         </button>
       </div>
+      {helpOpen==='ensayo'&&<HelpModal/>}
     </div>
     );
   }
@@ -1791,6 +1905,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
+          <button className="help-btn" onClick={()=>setHelpOpen('backstage')} aria-label="Ayuda">i</button>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05}}>{tx.backstage}</div>
           <span style={{padding:'2px 9px',borderRadius:100,fontSize:'var(--fs-xs)',fontWeight:700,background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"var(--font-body)",flexShrink:0,alignSelf:'center'}}>{isAdmin?tx.superAdminLbl:tx.leaderLbl}</span>
         </div>
@@ -1887,6 +2002,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         )}
       </div>
+      {helpOpen==='backstage'&&<HelpModal/>}
     </div>
   );
 }
