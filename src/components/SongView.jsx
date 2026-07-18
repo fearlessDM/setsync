@@ -2131,9 +2131,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{padding:'10px 12px',margin:'0 8px 10px',borderRadius:10,
               background:'rgba(200,169,126,.05)'}}>
               <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',
-                letterSpacing:'1px',marginBottom:2}}>🎧 Click y Guía — solo en este celular</div>
+                letterSpacing:'1px',marginBottom:2}}>🎧 Click y Guía — solo en este dispositivo</div>
               <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginBottom:8,lineHeight:1.4}}>
-                No ocupan canal de la mesa — cada uno los ajusta acá, en su propio teléfono.
+                No ocupan canal de la mesa — cada uno los ajusta acá, en su propio dispositivo.
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
                 {[pistaClick,pistaGuia].filter(Boolean).map(p=>(

@@ -27,12 +27,12 @@ const FEATURES_MKT = [
   {icon:'globe',    title:'Hecho para LatAm',        desc:'Español nativo, no traducido.'},
   {icon:'split',    title:'Iglesia y Banda',         desc:'Dos interfaces, un mismo motor.'},
   {icon:'library',  title:'Cancionero Universal',    desc:'Banco de canciones compartido entre iglesias.'},
-  {icon:'wifi',     title:'Monitoreo y mezcla personal inalámbrica WiFi', desc:'Cada músico controla su propio bus desde el teléfono.'},
+  {icon:'wifi',     title:'Monitoreo y mezcla personal inalámbrica WiFi', desc:'Cada músico controla su propio bus desde su dispositivo.'},
   {icon:'bell',     title:'Notificaciones al equipo por evento', desc:'Convoca y recuerda sin salir de la app.'},
   {icon:'activity', title:'Secuencias en vivo',      desc:'Click, mapa de estructura y multitracks sincronizados.'},
   {icon:'users',    title:'Gestión de equipos de trabajo, roles y líderes', desc:'Delega permisos por área sin perder el control.'},
   {icon:'copy',     title:'Múltiples archivos y variaciones por canción', desc:'Distintas versiones y arreglos sin duplicar tu cancionero.'},
-  {icon:'mic',      title:'Grabaciones de ensayos',  desc:'Graba y revisa el ensayo directo desde tu teléfono.'},
+  {icon:'mic',      title:'Grabaciones de ensayos',  desc:'Graba y revisa el ensayo directo desde tu dispositivo.'},
   {icon:'calendar', title:'Calendario',              desc:'Todas tus fechas y ensayos en un solo lugar.'},
 ];
 const FEATURES_MKT_ICONS = {
@@ -51,7 +51,7 @@ const FEATURES_MKT_ICONS = {
 
 const FAQS = [
   {q:'¿Cómo creo mi primer setlist?', a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
-  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su teléfono.'},
+  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su dispositivo — recomendamos usar tablet para la mejor experiencia.'},
   {q:'¿Puedo usar SetSync sin internet?', a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
   {q:'¿Cómo convoco al equipo?', a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
   {q:'¿Qué es el Cancionero Universal?', a:'Una biblioteca compartida de canciones con acordes verificados. Disponible en planes Pro y Premium. Ve a Cancionero → pestaña Universal.'},
@@ -67,11 +67,11 @@ const TUTORIALES = [
     slug:'monitoreo',
     titulo:'Conexión a Monitoreo Inalámbrico',
     icon:'🎛️',
-    resumen:'Conecta SetSync a tu mesa Behringer X32, XR18 o Midas M32 para controlar el monitor de cada músico desde su teléfono.',
+    resumen:'Conecta SetSync a tu mesa Behringer X32, XR18 o Midas M32 para controlar el monitor de cada músico desde su dispositivo.',
     contenido:`
 # Conexión a Monitoreo Inalámbrico
 
-SetSync se conecta a tu mesa digital por WiFi, usando el protocolo OSC (Open Sound Control) por debajo — en la práctica, es tu teléfono hablándole a la mesa por la misma red inalámbrica. El proceso es simple: los dispositivos (no solo teléfonos — también tablets o notebooks) deben estar conectados a la red WiFi que genera la mesa.
+SetSync se conecta a tu mesa digital por WiFi, usando el protocolo OSC (Open Sound Control) por debajo — en la práctica, es tu dispositivo hablándole a la mesa por la misma red inalámbrica. El proceso es simple: los dispositivos (tablets, notebooks o cualquier equipo con WiFi) deben estar conectados a la red WiFi que genera la mesa. **Recomendamos usar tablet para la mejor experiencia de usuario** — pantalla más grande, ideal para tener el mapa de estructura y el mixer de monitor visibles a la vez.
 
 ## ¿Qué es un bus?
 
@@ -88,7 +88,7 @@ Un bus de monitor es tu propia mezcla, independiente de lo que suena en las corn
 Conecta un router al puerto Ethernet de la mesa. La mesa creará una red o se unirá a la existente. Anota la IP de la mesa (aparece en el menú Setup → Network).
 
 **2. Conectar los dispositivos**
-Todos los músicos deben conectar su dispositivo (celular, tablet o notebook) a la misma red WiFi que genera la mesa.
+Todos los músicos deben conectar su dispositivo (idealmente una tablet, para mejor experiencia) a la misma red WiFi que genera la mesa.
 
 **3. Activar en SetSync**
 Abre una canción → pestaña Monitor → ingresa la IP de la mesa → conectar.
