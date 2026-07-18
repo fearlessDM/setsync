@@ -22,10 +22,10 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
             <div style={{padding:'12px 15px',display:'flex',alignItems:'center',gap:9,borderBottom:'1px solid var(--bd)'}}>
               <div style={{width:8,height:8,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`,flexShrink:0}}/>
               <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flex:1}}>{eq.name}</span>
-              <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,fontFamily:"var(--font-body)",background:'var(--s2)',border:'1px solid var(--bd)',padding:'2px 8px',borderRadius:100}}>{tx.memberCount((eq.miembros||[]).length)}</span>
+              <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,fontFamily:"var(--font-body)",background:'var(--s2)',padding:'2px 8px',borderRadius:100}}>{tx.memberCount((eq.miembros||[]).length)}</span>
             </div>
             <div style={{padding:'8px 15px',borderBottom:'1px solid var(--bd)',display:'flex',flexWrap:'wrap',gap:5}}>
-              {(eq.roles||[]).map(r=><span key={r} style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)",background:'var(--s1)',border:'1px solid var(--bd)',padding:'3px 9px',borderRadius:100}}>{r}</span>)}
+              {(eq.roles||[]).map(r=><span key={r} style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)",background:'var(--s1)',padding:'3px 9px',borderRadius:100}}>{r}</span>)}
             </div>
             <div style={{padding:'0 15px'}}>
               {(eq.miembros||[]).map(m=>(
@@ -35,7 +35,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
                     <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx)',fontFamily:"var(--font-body)"}}>{m.name}</div>
                     <div style={{fontSize:'var(--fs-2xs)',fontWeight:700,color:'var(--tx3)',fontFamily:"var(--font-body)"}}>{m.email}</div>
                   </div>
-                  <span style={{fontSize:'var(--fs-2xs)',color:eq.color,fontWeight:700,fontFamily:"var(--font-body)",background:eq.color+'18',border:`1px solid ${eq.color}33`,padding:'2px 7px',borderRadius:100}}>{m.role}</span>
+                  <span style={{fontSize:'var(--fs-2xs)',color:eq.color,fontWeight:700,fontFamily:"var(--font-body)",background:eq.color+'18',padding:'2px 7px',borderRadius:100}}>{m.role}</span>
                 </div>
               ))}
             </div>

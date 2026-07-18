@@ -129,7 +129,7 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
 
   if(tracks.length===0){
     return(
-      <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',
+      <div style={{padding:'20px',borderRadius:14,textAlign:'center',
         color:'var(--tx2)',fontSize:'var(--fs-base)',fontWeight:300,fontFamily:"var(--font-body)"}}>
         {tx.noTracksYet}
       </div>
@@ -137,10 +137,10 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
   }
 
   return(
-    <div style={{padding:'14px',borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)'}}>
+    <div style={{padding:'14px',borderRadius:14,background:'var(--s1)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
         <button onClick={()=>playing?stopAll():playAll()}
-          style={{width:38,height:38,borderRadius:'50%',border:'none',cursor:'pointer',flexShrink:0,
+          style={{width:38,height:38,borderRadius:'50%',cursor:'pointer',flexShrink:0,
             background:playing?'var(--gn)':'var(--ac)',color:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
           {playing?(
             <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
@@ -173,12 +173,10 @@ export function Multitracks({tracks=[], lang='es', onToast=()=>{}}){
               style={{flex:1,accentColor:'var(--ac)'}}/>
             <button onClick={()=>setTrack(t.id,{muted:!s.muted})}
               style={{fontSize:'var(--fs-xs)',fontWeight:700,padding:'3px 7px',borderRadius:6,cursor:'pointer',flexShrink:0,
-                border:`1px solid ${s.muted?'var(--rd)':'var(--bd)'}`,
                 background:s.muted?'rgba(var(--rd-rgb),.12)':'transparent',
                 color:s.muted?'var(--rd)':'var(--tx3)',fontFamily:"var(--font-body)"}}>M</button>
             <button onClick={()=>setTrack(t.id,{solo:!s.solo})}
               style={{fontSize:'var(--fs-xs)',fontWeight:700,padding:'3px 7px',borderRadius:6,cursor:'pointer',flexShrink:0,
-                border:`1px solid ${s.solo?'var(--gn)':'var(--bd)'}`,
                 background:s.solo?'rgba(var(--gn-rgb),.12)':'transparent',
                 color:s.solo?'var(--gn)':'var(--tx3)',fontFamily:"var(--font-body)"}}>S</button>
           </div>

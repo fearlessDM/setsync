@@ -693,7 +693,7 @@ Tuya es la gloria, Por siempre amén.
               (en blanco) dentro de la imagen misma. */}
           <div style={{marginTop:'clamp(-35px,calc(-6.05vw + 15px),-19px)',marginBottom:18,display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
 
-            <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',border:'1px solid var(--s3)',animation:'wheel-glow 4s ease-in-out infinite'}}>
+            <div style={{display:'flex',alignItems:'center',gap:4,padding:'4px',borderRadius:50,background:'var(--s1)',animation:'wheel-glow 4s ease-in-out infinite'}}>
               {LANGS.map((l)=>{
                 const isActive=lang===l.code;
                 return(
@@ -701,7 +701,7 @@ Tuya es la gloria, Por siempre amén.
                     className="wheel-item"
                     style={{
                       padding:'8px 16px',
-                      borderRadius:40,border:'none',cursor:'pointer',
+                      borderRadius:40,cursor:'pointer',
                       background:isActive?'var(--bd2)':'transparent',
                       transition:'background .25s',
                     }}>
@@ -731,7 +731,6 @@ Tuya es la gloria, Por siempre amén.
                 className="mode-card"
                 style={{
                   padding:'clamp(20px,3vw,36px) clamp(14px,2.5vw,28px) clamp(16px,2.5vw,28px)',borderRadius:18,
-                  border:'1px solid var(--bd)',
                   background:'var(--s1)',
                   cursor:'pointer',textAlign:'left',
                   backdropFilter:'blur(20px)',
@@ -869,7 +868,7 @@ Tuya es la gloria, Por siempre amén.
               {tieneClick&&<Click songBpm={songViewSongs[songView]?.bpm} lang={lang}/>}
               {tieneMultitracks&&(
                 <button onClick={()=>setMostrarMultitracks(v=>!v)}
-                  style={{padding:'7px 10px',borderRadius:10,border:'1px solid var(--bd)',background:'var(--s1)',
+                  style={{padding:'7px 10px',borderRadius:10,background:'var(--s1)',
                     color:'var(--tx2)',fontSize:'var(--fs-subtitle)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
                   {mostrarMultitracks?tx.hideTracks:tx.showTracks}
                 </button>

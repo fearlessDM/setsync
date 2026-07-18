@@ -130,7 +130,6 @@ function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
               flex:'1 0 auto',
               minWidth: 0,
               padding:'10px 4px 9px',
-              border:'none',
               borderBottom: isActive ? '2px solid var(--ac)' : '2px solid transparent',
               borderRadius:0,
               background:'transparent',
@@ -170,7 +169,6 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         padding:'20px 18px',
         borderRadius:'var(--rad-lg)',
         background: isNext ? 'var(--s1)' : 'var(--s1)',
-        border: isNext ? '1px solid var(--bd2)' : '1px solid var(--bd)',
         cursor: onOpen ? 'pointer' : 'default',
         transition:'all .2s',
         opacity: isPast ? 0.85 : 1,
@@ -197,8 +195,6 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         {!isPast && badge && (
           <span style={{
             padding:'4px 11px', borderRadius:'var(--rad-full)', fontSize:'var(--fs-3xs)', fontWeight:700,
-            border: pub
-              ? '1px solid rgba(94,206,160,.35)' : '1px solid rgba(255,200,100,.25)',
             background: pub ? 'rgba(94,206,160,.08)' : 'rgba(255,200,100,.06)',
             color: pub ? 'var(--gn)' : 'rgba(255,200,100,.8)',
             flexShrink:0, whiteSpace:'nowrap',
@@ -209,7 +205,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
             onClick={e=>{e.stopPropagation(); onLive && onLive();}}
             style={{
               padding:'8px 13px', borderRadius:'var(--rad-sm)',
-              border:'1px solid rgba(94,206,160,.35)', background:'rgba(94,206,160,.1)',
+              background:'rgba(94,206,160,.1)',
               cursor:'pointer', display:'flex', alignItems:'center', gap:5, flexShrink:0,
               fontFamily:"var(--font-body)", fontWeight:700, fontSize:'var(--fs-base)', color:'var(--gn)',
             }}
@@ -230,8 +226,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
           padding:'7px 10px',
           borderRadius:'var(--rad-xs)',
           background:'var(--s1)',
-          border:'1px solid var(--s1)',
-        }}>
+          }}>
           {lugar && (
             <div style={{display:'flex', alignItems:'center', gap:5, flex:1, minWidth:0}}>
               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
@@ -260,7 +255,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
             <div key={eq.id} style={{
               display:'flex', alignItems:'center', gap:5,
               padding:'3px 10px', borderRadius:'var(--rad-full)',
-              background: eq.color+'12', border:'1px solid '+eq.color+'30',
+              background: eq.color+'12',
             }}>
               <div style={{width:6, height:6, borderRadius:'50%', background:eq.color, flexShrink:0}}/>
               <span style={{fontSize:'var(--fs-sm)', fontWeight:300, color:'var(--tx)', fontFamily:"var(--font-body)"}}>{eq.name}</span>
@@ -337,8 +332,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             const day = parseInt(dayStr);
             if(sl===null) return(
               <div key={day} style={{padding:'20px 18px',borderRadius:'var(--rad-lg)',
-                background:'rgba(255,82,82,.04)',border:'1px solid rgba(255,82,82,.15)',
-                display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
+                background:'rgba(255,82,82,.04)',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
                 <div style={{width:42,height:42,borderRadius:11,background:'rgba(255,82,82,.08)',
                   display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <span style={{fontSize:'var(--fs-xl)',fontWeight:900,color:'rgba(255,82,82,.5)'}}>–</span>
@@ -455,7 +449,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       {sinEventos && (
         <div style={{padding:'var(--sp-xl) var(--pw-x,16px)'}}>
           <div style={{padding:'40px 24px',borderRadius:'var(--rad-lg)',background:'var(--s1)',
-            border:'1px solid var(--bd)',textAlign:'center'}}>
+            textAlign:'center'}}>
             <div style={{marginBottom:'var(--sp-sm)',opacity:.5,display:'flex',justifyContent:'center'}}>
               <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="5" width="18" height="16" rx="2"/>
@@ -545,13 +539,13 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
   const [open,setOpen]=useState(false);
   if(!open)return(
     <div style={{marginBottom:'var(--sp-md)'}}>
-      <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
+      <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{tx.teamReminderLbl}</div>
         <button onClick={()=>setOpen(true)}
           onMouseEnter={e=>e.currentTarget.style.background='rgba(200,169,126,.12)'}
           onMouseLeave={e=>e.currentTarget.style.background='rgba(200,169,126,.07)'}
-          style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"var(--font-body)",transition:'all .15s'}}>
-          <div style={{width:38,height:38,borderRadius:'var(--rad-sm)',background:'rgba(200,169,126,.12)',border:'1px solid rgba(200,169,126,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          style={{width:'100%',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'rgba(200,169,126,.07)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)',fontFamily:"var(--font-body)",transition:'all .15s'}}>
+          <div style={{width:38,height:38,borderRadius:'var(--rad-sm)',background:'rgba(200,169,126,.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div style={{flex:1,textAlign:'left'}}>
@@ -564,15 +558,15 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
     </div>
   );
   return(
-    <div style={{marginBottom:'var(--sp-md)',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',border:'1px solid rgba(200,169,126,.28)',background:'rgba(200,169,126,.05)'}}>
+    <div style={{marginBottom:'var(--sp-md)',padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'rgba(200,169,126,.05)'}}>
       <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span style={{fontWeight:900,fontSize:'var(--fs-lg)',color:'var(--tx)'}}>{tx.teamMessageLbl}</span>
-        <button onClick={()=>setOpen(false)} style={{marginLeft:'auto',background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
+        <button onClick={()=>setOpen(false)} style={{marginLeft:'auto',background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
       </div>
       <div style={{display:'flex',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
         {[1,2].map(n=>(
-          <button key={n} onClick={()=>setAvisoActivo(n)} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',border:avisoActivo===n?'1px solid rgba(200,169,126,.4)':'1px solid var(--bd)',background:avisoActivo===n?'rgba(200,169,126,.08)':'var(--s1)',color:avisoActivo===n?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:'var(--fs-md)',cursor:'pointer',fontFamily:"var(--font-body)"}}>Aviso {n}</button>
+          <button key={n} onClick={()=>setAvisoActivo(n)} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',background:avisoActivo===n?'rgba(200,169,126,.08)':'var(--s1)',color:avisoActivo===n?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:'var(--fs-md)',cursor:'pointer',fontFamily:"var(--font-body)"}}>Aviso {n}</button>
         ))}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
@@ -583,12 +577,12 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       </div>
       {!custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{tx.previewLbl}</div>
-        <div style={{padding:'10px var(--sp-sm)',borderRadius:'var(--rad-sm)',background:'var(--s1)',border:'1px solid var(--bd)',fontSize:'var(--fs-base)',color:'var(--tx)',lineHeight:1.7,whiteSpace:'pre-wrap',maxHeight:160,overflowY:'auto'}}>{msg}</div>
-        <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:'var(--fs-base)',color:'var(--ac)',fontWeight:700,background:'none',border:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>{tx.editMessageLbl}</button>
+        <div style={{padding:'10px var(--sp-sm)',borderRadius:'var(--rad-sm)',background:'var(--s1)',fontSize:'var(--fs-base)',color:'var(--tx)',lineHeight:1.7,whiteSpace:'pre-wrap',maxHeight:160,overflowY:'auto'}}>{msg}</div>
+        <button onClick={()=>setCustom(true)} style={{marginTop:8,fontSize:'var(--fs-base)',color:'var(--ac)',fontWeight:700,background:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>{tx.editMessageLbl}</button>
       </div>)}
       {custom&&(<div style={{marginBottom:'var(--sp-xs)'}}>
         <textarea className="inp" value={msg} onChange={e=>setMsg(e.target.value)} style={{minHeight:80,fontSize:'var(--fs-md)',lineHeight:1.6,resize:'vertical',marginBottom:6}}/>
-        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,diasAntes));}} style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',background:'none',border:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>← Regenerar automático</button>
+        <button onClick={()=>{setCustom(false);setMsg(generarMensaje(activeSunday,sl,diasAntes));}} style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',background:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>← Regenerar automático</button>
       </div>)}
       <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
@@ -651,7 +645,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               Tu setlist para esta fecha. Repasa con tiempo.
             </div>
           </div>
-          <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',border:'1px solid rgba(var(--gn-rgb),.35)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+          <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
             <div style={{display:'flex',alignItems:'center',gap:5}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
               <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
@@ -660,7 +654,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           </button>
         </div>
         {/* Lugar y hora */}
-        <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',border:'1px solid var(--bd)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
           <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
@@ -679,10 +673,10 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       </div>
 
       {/* Canciones */}
-      <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+      <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
         <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.setlistLbl}</span>
-          <span style={{padding:'2px 8px',borderRadius:'var(--rad-full)',border:'1px solid rgba(94,206,160,.4)',background:'rgba(94,206,160,.08)',color:'var(--gn)',fontSize:'var(--fs-xs)',fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
+          <span style={{padding:'2px 8px',borderRadius:'var(--rad-full)',background:'rgba(94,206,160,.08)',color:'var(--gn)',fontSize:'var(--fs-xs)',fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
             <div style={{width:5,height:5,borderRadius:'50%',background:'var(--gn)'}}/>Publicado
           </span>
         </div>
@@ -712,7 +706,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
 
       {/* Ensayos de este evento */}
       {ensayosDelEvento.length>0&&(
-        <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+        <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>
               Ensayos · {ensayosDelEvento.length}
@@ -730,7 +724,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
 
       {/* Equipos */}
       {equiposAMostrar.length>0&&(
-        <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+        <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.teamsCalledLbl}</span>
             <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
@@ -744,7 +738,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               </div>
               <div style={{padding:'0 var(--sp-md) var(--sp-xs)',display:'flex',flexWrap:'wrap',gap:5}}>
                 {(eq.miembros||[]).map(m=>(
-                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'var(--s1)',border:'1px solid var(--s3)'}}>
+                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'var(--s1)',}}>
                     <div style={{width:16,height:16,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-3xs)',fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
                     <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
                     <span style={{fontSize:'var(--fs-xs)',color:eq.color,fontWeight:300}}>{m.role}</span>
@@ -761,7 +755,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       {/* Itinerario — v40: ahora viene del evento real (ItinerarioEditor en
           Crear evento), ya no es texto fijo inventado sin conexión */}
       {f.itinerario&&f.itinerario.length>0&&(
-        <div style={{background:'var(--s1)',border:'1px solid var(--bd)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
+        <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.itineraryLbl}</span>
           </div>
@@ -787,6 +781,6 @@ export function PremiereView({onToast,lang='es'}){
   const tx = getT(lang);
   const [sel,setSel]=useState(null);
   const top=PREMIERES[0];
-  if(sel){const p=PREMIERES.find(x=>x.id===sel);return(<div style={{padding:'0 0 90px'}}><div style={{padding:'var(--sp-md)',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setSel(null)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg><span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.premiereLbl}</span></div><div style={{margin:'0 var(--pw-x,16px)',padding:'var(--sp-lg)',borderRadius:'var(--rad-md)',background:'linear-gradient(135deg,rgba(200,169,126,.15),rgba(100,80,180,.1))',border:'1px solid rgba(200,169,126,.3)',marginBottom:'var(--sp-md)'}}><div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{p.oficial?tx.officialChordsLbl:tx.comingSoonLbl}</div><div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'var(--fs-display)',color:'var(--tx)',marginBottom:4}}>{p.name}</div><div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',marginBottom:'var(--sp-sm)'}}>{p.album&&`${p.album} · `}{p.sello}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'var(--sp-md)'}}><span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--ac)',background:'rgba(200,169,126,.1)',border:'1px solid rgba(200,169,126,.25)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.key}</span><span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)',background:'var(--s1)',border:'1px solid var(--bd)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.bpm} BPM</span>{p.dias&&<span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.1)',border:'1px solid rgba(255,82,82,.28)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>⚡ En {p.dias} días</span>}</div><div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.7}}>{p.desc}</div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}><button className="btn btn-p" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.addToSetlistBtn,sub:p.name})}><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>{tx.addToSetlistBtn}</button><button className="btn btn-g" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.willNotifyToast,sub:tx.atPremiereOfLbl(p.name)})}><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>{tx.notifyMeBtn}</button></div></div>);}
-  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',border:'1px solid rgba(200,169,126,.25)',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:'var(--fs-emph)'}}>★</span><span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.nextPremiereLbl}</span></div><div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',border:'1px solid rgba(255,82,82,.3)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',border:'1px solid var(--bd)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{p.album||p.sello}</div><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{tx.shortComingSoonLbl}</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',textAlign:'center',lineHeight:1.7}}>{tx.representLabelQuestion}<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:tx.comingSoonLbl,sub:tx.labelContactLbl})}>{tx.publishHereLbl}</span></div></div></div>);
+  if(sel){const p=PREMIERES.find(x=>x.id===sel);return(<div style={{padding:'0 0 90px'}}><div style={{padding:'var(--sp-md)',display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setSel(null)}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg><span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.premiereLbl}</span></div><div style={{margin:'0 var(--pw-x,16px)',padding:'var(--sp-lg)',borderRadius:'var(--rad-md)',background:'linear-gradient(135deg,rgba(200,169,126,.15),rgba(100,80,180,.1))',marginBottom:'var(--sp-md)'}}><div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:'var(--sp-xs)'}}>{p.oficial?tx.officialChordsLbl:tx.comingSoonLbl}</div><div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'var(--fs-display)',color:'var(--tx)',marginBottom:4}}>{p.name}</div><div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',marginBottom:'var(--sp-sm)'}}>{p.album&&`${p.album} · `}{p.sello}</div><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:'var(--sp-md)'}}><span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--ac)',background:'rgba(200,169,126,.1)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.key}</span><span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)',background:'var(--s1)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>{p.bpm} BPM</span>{p.dias&&<span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.1)',padding:'4px 10px',borderRadius:'var(--rad-full)'}}>⚡ En {p.dias} días</span>}</div><div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.7}}>{p.desc}</div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}><button className="btn btn-p" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.addToSetlistBtn,sub:p.name})}><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>{tx.addToSetlistBtn}</button><button className="btn btn-g" style={{width:'100%',justifyContent:'center'}} onClick={()=>onToast({text:tx.willNotifyToast,sub:tx.atPremiereOfLbl(p.name)})}><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>{tx.notifyMeBtn}</button></div></div>);}
+  return(<div style={{padding:'0 0 90px'}}><div style={{margin:'var(--sp-md) var(--pw-x,16px)',borderRadius:'var(--rad-lg)',overflow:'hidden',cursor:'pointer'}} onClick={()=>setSel(top.id)}><div style={{background:'linear-gradient(135deg,rgba(10,8,20,.95),rgba(30,20,60,.92))',padding:'22px 20px 20px'}}><div style={{display:'flex',alignItems:'center',gap:6,marginBottom:'var(--sp-xs)'}}><span style={{fontSize:'var(--fs-emph)'}}>★</span><span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.nextPremiereLbl}</span></div><div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',color:'var(--tx)',lineHeight:1.1,marginBottom:4}}>{top.name}</div><div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',marginBottom:'var(--sp-md)'}}>{top.album} · {top.sello}</div><div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--rd)',background:'rgba(255,82,82,.12)',padding:'5px 12px',borderRadius:'var(--rad-full)'}}>⚡ En {top.dias} días</span><span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>🏛 247 iglesias →</span></div></div></div><div style={{padding:'0 var(--pw-x,16px)',display:'flex',flexDirection:'column',gap:'var(--sp-xs)'}}>{PREMIERES.map(p=>(<div key={p.id} onClick={()=>setSel(p.id)} style={{padding:'var(--sp-md)',borderRadius:'var(--rad-md)',background:'var(--s1)',cursor:'pointer',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}><div style={{flex:1}}><div style={{fontWeight:700,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:2}}>{p.name}</div><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{p.album||p.sello}</div><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:3}}>{p.key} · {p.bpm} BPM{p.oficial?' · ✓ Oficial':''}</div></div><div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>{p.dias?<span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--rd)'}}>{p.dias}d</span>:<span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{tx.shortComingSoonLbl}</span>}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg></div></div>))}</div><div style={{padding:'var(--sp-md)',marginTop:'var(--sp-xs)',borderTop:'1px solid var(--bd)'}}><div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',textAlign:'center',lineHeight:1.7}}>{tx.representLabelQuestion}<br/><span style={{color:'var(--ac)',fontWeight:700,cursor:'pointer'}} onClick={()=>onToast({text:tx.comingSoonLbl,sub:tx.labelContactLbl})}>{tx.publishHereLbl}</span></div></div></div>);
 }

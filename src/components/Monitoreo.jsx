@@ -59,7 +59,7 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
         </div>
       </div>
 
-      <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(var(--rd-rgb),.06)',border:'1px solid rgba(var(--rd-rgb),.25)',marginBottom:16}}>
+      <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(var(--rd-rgb),.06)',marginBottom:16}}>
         <div style={{fontSize:'var(--fs-base)',color:'var(--rd)',fontWeight:700,marginBottom:2,fontFamily:"var(--font-body)"}}>
           ⚠ {tx.notConnected}
         </div>
@@ -68,7 +68,7 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
         </div>
       </div>
 
-      <div style={{padding:'20px',borderRadius:14,border:'1px dashed var(--bd)',textAlign:'center',marginTop:8}}>
+      <div style={{padding:'20px',borderRadius:14,textAlign:'center',marginTop:8}}>
         <div style={{fontSize:'var(--fs-base)',fontWeight:300,color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.8}}>
           {tx.monitoringComingSoon}
         </div>

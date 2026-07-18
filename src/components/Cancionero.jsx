@@ -203,7 +203,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     <div className={`bpm-sec ${type}`}>
       <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:10}}>
         <span style={{fontFamily:"var(--font-body)",fontWeight:500,fontSize:'var(--fs-lg)',color:'var(--tx)'}}>{title}</span>
-        <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontWeight:500,background:'var(--s1)',border:'1px solid var(--bd)',padding:'2px 6px',borderRadius:100}}>{range}</span>
+        <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontWeight:500,background:'var(--s1)',padding:'2px 6px',borderRadius:100}}>{range}</span>
       </div>
       <div className={`bpm-bar ${type}`}/>
       <div className="sg">
@@ -230,8 +230,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         {porRevisar&&(
           <div title={conteoAvisos>0?`${conteoAvisos} aviso${conteoAvisos===1?'':'s'} del parser para revisar`:'Importada automáticamente, sin revisar todavía'}
             style={{position:'absolute',top:6,left:6,padding:'2px 7px',borderRadius:100,
-              background:'rgba(224,160,32,.15)',border:'1px solid rgba(224,160,32,.35)',
-              fontSize:'var(--fs-2xs)',fontWeight:800,color:'#e0a020',fontFamily:"var(--font-body)",
+              background:'rgba(224,160,32,.15)',fontSize:'var(--fs-2xs)',fontWeight:800,color:'#e0a020',fontFamily:"var(--font-body)",
               letterSpacing:.3,zIndex:1}}>
             Por revisar{conteoAvisos>0?` (${conteoAvisos})`:''}
           </div>
@@ -241,7 +240,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         <button onClick={e=>{e.stopPropagation();setSongParaVariar(s.n);}}
           title="Ver carpeta de esta canción"
           style={{position:'absolute',top:6,right:6,display:'flex',flexDirection:'column',
-            alignItems:'center',gap:1,background:'none',border:'none',cursor:'pointer',padding:0}}>
+            alignItems:'center',gap:1,background:'none',cursor:'pointer',padding:0}}>
           <div style={{width:24,height:24,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
             background:hayExtra?'rgba(200,169,126,.15)':'var(--s3)'}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -281,7 +280,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           {/* Opción 1: Manual */}
           <div onClick={()=>{setCrearModo('manual');setAvisosImportEdicion(null);}}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
-              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              borderRadius:14,background:'var(--s1)',
               marginBottom:10,cursor:'pointer'}}>
             <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
               background:'rgba(200,169,126,.1)',
@@ -309,7 +308,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           {/* Opción 2: Import local — .txt/.docx/.pdf, batch, parser por reglas (sin IA) */}
           <div onClick={()=>{setCrearModo('importar');setArchivosImport([]);setImportResumen(null);}}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
-              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              borderRadius:14,background:'var(--s1)',
               marginBottom:10,cursor:'pointer'}}>
             <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
               background:'rgba(var(--gn-rgb),.1)',
@@ -338,7 +337,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           {/* Opción 3: Drive masivo (enlace de Drive) */}
           <div onClick={()=>setCrearModo('drive')}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
-              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              borderRadius:14,background:'var(--s1)',
               marginBottom:10,cursor:'pointer'}}>
             <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
               background:'var(--s1)',
@@ -366,7 +365,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           {/* Opción 3: Partitura */}
           <div onClick={()=>setCrearModo('partitura')}
             style={{display:'flex',alignItems:'center',gap:14,padding:'16px',
-              borderRadius:14,border:'1px solid var(--bd)',background:'var(--s1)',
+              borderRadius:14,background:'var(--s1)',
               cursor:'pointer'}}>
             <div style={{width:44,height:44,borderRadius:12,flexShrink:0,
               background:'rgba(94,206,160,.1)',
@@ -480,7 +479,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 sin revisar, sus avisos van arriba del editor, antes que nada más. */}
             {avisosImportEdicion!==null&&(
               <div style={{padding:'12px 14px',borderRadius:12,marginBottom:16,
-                background:'rgba(224,160,32,.08)',border:'1px solid rgba(224,160,32,.25)'}}>
+                background:'rgba(224,160,32,.08)',}}>
                 <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:avisosImportEdicion.length>0?8:0}}>
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#e0a020" strokeWidth="2" style={{flexShrink:0}}>
                     <path d="M12 9v4"/><path d="M12 17h.01"/>
@@ -512,21 +511,20 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div className="card" style={{padding:14,marginBottom:20}}>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
                 placeholder="Título canción"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
               <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
                 placeholder="Compositor / detalles"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
               <div style={{display:'flex',gap:8}}>
                 <CustomSelect value={nueva.key} onChange={v=>{keyTocadaManualRef.current=true;setNueva(vv=>({...vv,key:v}));}}
                   style={{flex:1,fontSize:'var(--fs-lg)'}}
                   options={['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>({value:k,label:k}))}/>
                 <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
                   placeholder="BPM" type="number"
-                  style={{flex:1,padding:'9px 12px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)'}}/>
+                  style={{flex:1,padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)'}}/>
                 <button type="button" onClick={handleTap}
                   style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-                    gap:2,width:56,padding:'6px 4px',borderRadius:8,flexShrink:0,border:'1px solid var(--bd)',
-                    background:tapCount>0?'rgba(var(--gn-rgb),.12)'  :'var(--s2)',color:tapCount>0?'var(--gn)'  :'var(--tx2)',
+                    gap:2,width:56,padding:'6px 4px',borderRadius:8,flexShrink:0,background:tapCount>0?'rgba(var(--gn-rgb),.12)'  :'var(--s2)',color:tapCount>0?'var(--gn)'  :'var(--tx2)',
                     cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:900,fontFamily:"var(--font-body)",transition:'background .15s,color .15s'}}>
                   <span style={{width:6,height:6,borderRadius:'50%',background:tapCount>0?'var(--gn)'  :'var(--tx3)'}}/>TAP
                 </button>
@@ -537,15 +535,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
               {BLOQUES_CHIPS.map(chip=>(
                 <button key={chip.label} onClick={()=>agregarBloque(chip.label)}
-                  style={{padding:'6px 14px',borderRadius:100,border:`1.5px solid ${chip.color}`,
-                    background:`${chip.color}18`,color:chip.color,
+                  style={{padding:'6px 14px',borderRadius:100,background:`${chip.color}18`,color:chip.color,
                     fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer'}}>
                   + {chip.label}
                 </button>
               ))}
               {otroLabel===false?(
                 <button onClick={()=>setNueva(p=>({...p,__otroLabel:''}))}
-                  style={{padding:'6px 14px',borderRadius:100,border:'1.5px dashed var(--bd)',background:'transparent',
+                  style={{padding:'6px 14px',borderRadius:100,background:'transparent',
                     color:'var(--tx3)',fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer'}}>
                   + Otro
                 </button>
@@ -558,9 +555,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       if(e.key==='Escape')setNueva(p=>({...p,__otroLabel:false}));
                     }}
                     placeholder="Nombre de la sección"
-                    style={{padding:'5px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-md)',width:160}}/>
+                    style={{padding:'5px 10px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-md)',width:160}}/>
                   <button onClick={()=>{if(otroLabel.trim())agregarBloque(otroLabel.trim());setNueva(p=>({...p,__otroLabel:false}));}}
-                    style={{padding:'5px 10px',borderRadius:8,background:'var(--gn)',color:'#000',border:'none',cursor:'pointer',fontSize:'var(--fs-md)',fontWeight:700}}>+</button>
+                    style={{padding:'5px 10px',borderRadius:8,background:'var(--gn)',color:'#000',cursor:'pointer',fontSize:'var(--fs-md)',fontWeight:700}}>+</button>
                 </div>
               )}
             </div>
@@ -568,33 +565,31 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             {/* Bloques creados */}
             {nueva.bloques.length===0?(
               <div style={{textAlign:'center',padding:'24px 0',color:'var(--tx2)',fontSize:'var(--fs-subtitle)',
-                fontFamily:"var(--font-body)",border:'1px dashed var(--bd)',borderRadius:12,marginBottom:20}}>
+                fontFamily:"var(--font-body)",borderRadius:12,marginBottom:20}}>
                 Toca un chip para empezar
               </div>
             ):(
               <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
                 {nueva.bloques.map((bloque,bi)=>(
-                  <div key={bloque.id} style={{borderRadius:12,overflow:'hidden',border:`1.5px solid ${bloque.color}40`}}>
+                  <div key={bloque.id} style={{borderRadius:12,overflow:'hidden',}}>
                     <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',
                       background:`${bloque.color}20`,borderBottom:`1px solid ${bloque.color}30`}}>
                       <div style={{width:10,height:10,borderRadius:'50%',background:bloque.color,flexShrink:0}}/>
                       <span style={{flex:1,fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
                         color:bloque.color,textTransform:'uppercase',letterSpacing:'.5px'}}>{bloque.label}</span>
                       <button onClick={()=>moverBloque(bi,-1)} disabled={bi===0}
-                        style={{width:22,height:22,borderRadius:5,border:'none',
-                          background:bi===0?'transparent':'var(--s3)',color:bi===0?'var(--bd)':'var(--tx2)',
+                        style={{width:22,height:22,borderRadius:5,background:bi===0?'transparent':'var(--s3)',color:bi===0?'var(--bd)':'var(--tx2)',
                           cursor:bi===0?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                       </button>
                       <button onClick={()=>moverBloque(bi,1)} disabled={bi===nueva.bloques.length-1}
-                        style={{width:22,height:22,borderRadius:5,border:'none',
-                          background:bi===nueva.bloques.length-1?'transparent':'var(--s3)',
+                        style={{width:22,height:22,borderRadius:5,background:bi===nueva.bloques.length-1?'transparent':'var(--s3)',
                           color:bi===nueva.bloques.length-1?'var(--bd)':'var(--tx2)',
                           cursor:bi===nueva.bloques.length-1?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                       </button>
                       <button onClick={()=>eliminarBloque(bloque.id)}
-                        style={{width:22,height:22,borderRadius:5,border:'none',background:'transparent',
+                        style={{width:22,height:22,borderRadius:5,background:'transparent',
                           color:'var(--tx3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:2}}>
                         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
@@ -626,7 +621,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   <div style={{
                     display:'flex',alignItems:'stretch',height:32,
                     borderRadius:8,overflow:'hidden',
-                    border:'1px solid var(--bd)',marginBottom:12,
+                    marginBottom:12,
                   }}>
                     {nueva.estructura.map((sec,si)=>{
                       const pct=100/nueva.estructura.length;
@@ -654,8 +649,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       <div key={sec.id} style={{
                         display:'flex',alignItems:'center',gap:0,
                         borderRadius:100,overflow:'hidden',
-                        border:`1.5px solid ${sec.color}`,
-                      }}>
+                        }}>
                         {/* Chip principal con abreviación */}
                         <div style={{
                           padding:'5px 10px',
@@ -670,8 +664,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                         {si>0&&(
                           <button onClick={()=>moverEstructura(si,-1)}
                             title="Mover izquierda"
-                            style={{width:22,height:'100%',border:'none',
-                              borderLeft:`1px solid ${sec.color}40`,
+                            style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
                               background:`${sec.color}10`,color:sec.color,
                               cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
@@ -688,8 +681,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                             return{...v,estructura:arr};
                           });
                         }} title="Duplicar"
-                          style={{width:22,height:'100%',border:'none',
-                            borderLeft:`1px solid ${sec.color}40`,
+                          style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
                             background:`${sec.color}10`,color:sec.color,
                             cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                           <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
@@ -701,8 +693,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                         {si<nueva.estructura.length-1&&(
                           <button onClick={()=>moverEstructura(si,1)}
                             title="Mover derecha"
-                            style={{width:22,height:'100%',border:'none',
-                              borderLeft:`1px solid ${sec.color}40`,
+                            style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
                               background:`${sec.color}10`,color:sec.color,
                               cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                             <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
@@ -714,8 +705,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                         <button onClick={()=>setNueva(v=>({...v,
                           estructura:v.estructura.filter((_,i)=>i!==si)}))}
                           title="Quitar"
-                          style={{width:22,height:'100%',border:'none',
-                            borderLeft:`1px solid ${sec.color}40`,
+                          style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
                             background:`${sec.color}10`,color:sec.color,
                             cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
                           <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
@@ -745,7 +735,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                             {id,label:b.label,abrev,color:b.color}]}));
                         }}
                         style={{padding:'5px 12px',borderRadius:100,
-                          border:`1.5px solid ${b.color}`,background:`${b.color}18`,
+                          background:`${b.color}18`,
                           color:b.color,fontFamily:"var(--font-body)",
                           fontSize:'var(--fs-base)',fontWeight:900,cursor:'pointer',letterSpacing:'.5px'}}>
                         {abrev}
@@ -758,8 +748,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
             {/* Botones finales */}
             <div style={{display:'flex',gap:8}}>
-              <button style={{flex:1,padding:'11px',borderRadius:10,border:'1px solid var(--bd)',
-                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-lg)',fontWeight:700,
+              <button style={{flex:1,padding:'11px',borderRadius:10,background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-lg)',fontWeight:700,
                 fontFamily:"var(--font-body)"}}
                 onClick={()=>{setCrearModo(null);setNueva({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});keyTocadaManualRef.current=false;tapsRef.current=[];setTapCount(0);setAvisosImportEdicion(null);}}>
                 Cancelar
@@ -806,7 +795,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
              desc:'Partitura escaneada o exportada. Solo visualización directa, sin edición ni transposición. Útil para partituras antiguas o de editores externos.'},
           ].map(f=>(
             <div key={f.fmt} style={{padding:'14px',borderRadius:12,
-              border:`1px solid ${f.color}22`,background:`${f.color}08`,
+              background:`${f.color}08`,
               marginBottom:10}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                 <span style={{fontSize:'var(--fs-lg)',fontWeight:800,color:f.color,
@@ -819,7 +808,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           ))}
           <label style={{display:'flex',flexDirection:'column',alignItems:'center',
             justifyContent:'center',gap:10,padding:'24px',borderRadius:14,
-            border:'2px dashed rgba(200,169,126,.3)',background:'rgba(200,169,126,.04)',
+            background:'rgba(200,169,126,.04)',
             cursor:'pointer',marginTop:8}}>
             <input type="file" accept=".xml,.mxl,.musicxml,.pdf"
               style={{display:'none'}}
@@ -872,8 +861,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.6}}>
             Conecta una carpeta de Google Drive que contenga tus canciones y carga todo el repertorio de una vez.
           </div>
-          <div style={{padding:'16px',borderRadius:12,border:'1px solid var(--bd)',
-            background:'var(--s1)',marginBottom:12}}>
+          <div style={{padding:'16px',borderRadius:12,background:'var(--s1)',marginBottom:12}}>
             <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',
               fontFamily:"var(--font-body)",marginBottom:8}}>Formatos soportados</div>
             {[
@@ -892,8 +880,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           </div>
           <button
             onClick={()=>{setShowCrear(false);setCrearModo(null);}}
-            style={{width:'100%',padding:'12px',borderRadius:12,border:'none',
-              background:'rgba(200,169,126,.12)',color:'var(--ac)',
+            style={{width:'100%',padding:'12px',borderRadius:12,background:'rgba(200,169,126,.12)',color:'var(--ac)',
               fontSize:'var(--fs-lg)',fontWeight:700,cursor:'pointer',
               fontFamily:"var(--font-body)",display:'flex',
               alignItems:'center',justifyContent:'center',gap:8}}>
@@ -1025,8 +1012,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
             {archivosImport.length===0&&(
               <label style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10,
-                padding:'32px 16px',borderRadius:14,border:'1.5px dashed var(--bd2)',
-                background:'var(--s1)',cursor:'pointer',textAlign:'center'}}>
+                padding:'32px 16px',borderRadius:14,background:'var(--s1)',cursor:'pointer',textAlign:'center'}}>
                 <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--gn)" strokeWidth="1.5">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
@@ -1045,12 +1031,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             {archivosImport.length>0&&(
               <div>
                 {archivosImport.map(f=>(
-                  <div key={f.id} style={{padding:'12px 14px',borderRadius:12,border:'1px solid var(--bd)',
-                    background:'var(--s1)',marginBottom:8,opacity:f.status==='ok'&&f.incluir===false?.5:1}}>
+                  <div key={f.id} style={{padding:'12px 14px',borderRadius:12,background:'var(--s1)',marginBottom:8,opacity:f.status==='ok'&&f.incluir===false?.5:1}}>
                     <div style={{display:'flex',alignItems:'center',gap:10}}>
                       {f.status==='procesando'&&(
-                        <div style={{width:16,height:16,borderRadius:'50%',border:'2px solid var(--bd2)',
-                          borderTopColor:'var(--gn)',flexShrink:0,animation:'spin .8s linear infinite'}}/>
+                        <div style={{width:16,height:16,borderRadius:'50%',borderTopColor:'var(--gn)',flexShrink:0,animation:'spin .8s linear infinite'}}/>
                       )}
                       {f.status==='error'&&(
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--rd)" strokeWidth="2" style={{flexShrink:0}}>
@@ -1064,7 +1048,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       <div style={{flex:1,minWidth:0}}>
                         {f.status==='ok'?(
                           <input value={f.nombre} onChange={e=>setArchivosImport(prev=>prev.map(x=>x.id===f.id?{...x,nombre:e.target.value}:x))}
-                            style={{width:'100%',background:'none',border:'none',outline:'none',
+                            style={{width:'100%',background:'none',outline:'none',
                               fontSize:'var(--fs-lg)',fontWeight:800,color:'var(--tx)',fontFamily:"var(--font-body)",padding:0}}/>
                         ):(
                           <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:f.status==='error'?'var(--rd)':'var(--tx2)',fontFamily:"var(--font-body)"}}>
@@ -1112,8 +1096,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         </div>
         <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
           style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',
-            borderRadius:100,border:'1px solid var(--bd2)',
-            background:'var(--s3)',color:'var(--tx)',
+            borderRadius:100,background:'var(--s3)',color:'var(--tx)',
             fontWeight:700,fontSize:'var(--fs-base)',cursor:'pointer',
             fontFamily:"var(--font-body)",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -1139,7 +1122,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             onClick={()=>{if(t.id==='drive'){setShowCrear(true);setCrearModo('drive');}else setTab(t.id);}}
             style={{
               padding:'5px 12px',borderRadius:100,
-              border:`1px solid ${tab===t.id?t.color+'60':'var(--bd)'}`,
               background:tab===t.id?t.bg:'transparent',
               color:tab===t.id?t.color:'var(--tx3)',
               fontWeight:700,fontSize:'var(--fs-sm)',cursor:'pointer',
@@ -1156,7 +1138,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
       <div style={{display:'flex',gap:8,marginBottom:14}}>
         <input className="inp" placeholder="Buscar canción..." style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
-        <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,border:'1px solid var(--bd)',background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",height:42,display:'flex',alignItems:'center',gap:5}}>
+        <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",height:42,display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           {bv?tx.byList:tx.byBpm}
         </button>
@@ -1189,7 +1171,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
       {tab==='universal'&&(
         <div>
-          <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(94,206,160,.06)',border:'1px solid rgba(94,206,160,.2)',marginBottom:14}}>
+          <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(94,206,160,.06)',marginBottom:14}}>
             <div style={{fontSize:'var(--fs-base)',color:'var(--gn)',fontWeight:700,marginBottom:2}}>Cancionero Universal</div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>Canciones compartidas por iglesias de la comunidad Setlist. Solo disponible en Modo Iglesia.</div>
           </div>
@@ -1214,7 +1196,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   Agrupa tus canciones por álbum, temporada o cualquier criterio.
                 </div>
                 <button onClick={()=>setShowCrearColeccion(true)}
-                  style={{padding:'7px 14px',borderRadius:9,border:'none',background:'#e07820',
+                  style={{padding:'7px 14px',borderRadius:9,background:'#e07820',
                     color:'#000',fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",
                     display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
                   <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -1239,8 +1221,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   {colecciones.map((c,i)=>(
                     <div key={i} onClick={()=>setColeccionSel(i)}
                       style={{padding:14,borderRadius:14,cursor:'pointer',
-                        background:`${c.color}12`,border:`1px solid ${c.color}35`,
-                        display:'flex',flexDirection:'column',gap:8}}>
+                        background:`${c.color}12`,display:'flex',flexDirection:'column',gap:8}}>
                       <div style={{width:32,height:32,borderRadius:9,background:`${c.color}22`,
                         display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={c.color} strokeWidth="2">
@@ -1261,7 +1242,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           ):(
             <div>
               <button onClick={()=>setColeccionSel(null)}
-                style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',
+                style={{background:'none',color:'var(--tx3)',cursor:'pointer',
                   fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginBottom:14,
                   display:'flex',alignItems:'center',gap:5}}>
                 ← Colecciones
@@ -1292,7 +1273,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               onClick={()=>setShowCrearColeccion(false)}>
               <div onClick={e=>e.stopPropagation()}
                 style={{background:'var(--bg)',borderRadius:16,padding:20,maxWidth:360,width:'100%',
-                  border:'1px solid var(--bd)',maxHeight:'80vh',overflowY:'auto'}}>
+                  maxHeight:'80vh',overflowY:'auto'}}>
                 <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',
                   fontWeight:400,color:'var(--tx)',marginBottom:14}}>Nueva colección</div>
                 <input className="inp" placeholder="Nombre de la colección..."
@@ -1304,8 +1285,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 <div style={{display:'flex',gap:6,marginBottom:14}}>
                   {['#c8a97e','#30C0B7','#e07820','#a78bfa','#FD8083','#5ecea0'].map(col=>(
                     <button key={col} onClick={()=>setNuevaColeccion(v=>({...v,color:col}))}
-                      style={{width:26,height:26,borderRadius:'50%',border:nuevaColeccion.color===col?'2px solid #fff':'2px solid transparent',
-                        background:col,cursor:'pointer'}}/>
+                      style={{width:26,height:26,borderRadius:'50%',background:col,cursor:'pointer'}}/>
                   ))}
                 </div>
                 <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
@@ -1319,7 +1299,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                         style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,
                           cursor:'pointer',background:sel?'rgba(224,120,32,.1)':'transparent'}}>
                         <div style={{width:14,height:14,borderRadius:4,flexShrink:0,
-                          border:`1px solid ${sel?'#e07820':'var(--bd)'}`,background:sel?'#e07820':'transparent'}}/>
+                          background:sel?'#e07820':'transparent'}}/>
                         <span style={{fontSize:'var(--fs-base)',color:'var(--tx)',fontWeight:600}}>{s.n}</span>
                       </div>
                     );
@@ -1327,8 +1307,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={()=>setShowCrearColeccion(false)}
-                    style={{flex:1,padding:'10px',borderRadius:9,border:'1px solid var(--bd)',
-                      background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-md)',
+                    style={{flex:1,padding:'10px',borderRadius:9,background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-md)',
                       fontWeight:700,fontFamily:"var(--font-body)"}}>Cancelar</button>
                   <button disabled={!nuevaColeccion.nombre.trim()}
                     onClick={()=>{
@@ -1339,8 +1318,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       setNuevaColeccion({nombre:'',color:'#c8a97e',canciones:[]});
                       setShowCrearColeccion(false);
                     }}
-                    style={{flex:2,padding:'10px',borderRadius:9,border:'none',
-                      background:nuevaColeccion.nombre.trim()?'#e07820':'var(--s3)',
+                    style={{flex:2,padding:'10px',borderRadius:9,background:nuevaColeccion.nombre.trim()?'#e07820':'var(--s3)',
                       color:nuevaColeccion.nombre.trim()?'#000':'var(--tx3)',
                       cursor:nuevaColeccion.nombre.trim()?'pointer':'not-allowed',fontSize:'var(--fs-md)',
                       fontWeight:700,fontFamily:"var(--font-body)"}}>Crear colección</button>
@@ -1361,11 +1339,11 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             {title:'GLORIA EN GLORIA',autor:'Bethel Music',tipo:'MusicXML',paginas:6,tonalidad:'D',desc:'Partitura interactiva con transposición automática. Compatible con MuseScore.'},
             {title:'LA BONDAD DE DIOS',autor:'Bethel Music',tipo:'PDF',paginas:3,tonalidad:'C',desc:'Lead sheet con cifrado y letra. Versión para todos los instrumentos.'},
           ].map((p,i)=>(
-            <div key={i} style={{display:'flex',gap:12,padding:'14px',borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',marginBottom:8,cursor:'pointer'}}
+            <div key={i} style={{display:'flex',gap:12,padding:'14px',borderRadius:12,background:'var(--s1)',marginBottom:8,cursor:'pointer'}}
               onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.4)'}
               onMouseLeave={e=>e.currentTarget.style.borderColor='var(--bd)'}>
               {/* Icono clave de sol */}
-              <div style={{width:44,height:44,borderRadius:10,background:'rgba(167,139,250,.1)',border:'1px solid rgba(167,139,250,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <div style={{width:44,height:44,borderRadius:10,background:'rgba(167,139,250,.1)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                 <svg viewBox="0 0 50 60" width="20" height="24" fill="rgba(167,139,250,0.9)">
                   <path d="M25 4c2.5 0 5 1.5 6.5 3.5C33 9.5 33 12 32 14c-1 2-3 3-5 3.5v28c2.5 1 4 3 4 5.5 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-2.5 1.5-4.5 4-5.5V17.5c-2-.5-4-1.5-5-3.5-1-2-1-4.5.5-6.5C20 5.5 22.5 4 25 4z"/>
                 </svg>
@@ -1376,17 +1354,16 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,padding:'2px 7px',borderRadius:100,
                     background:p.tipo==='MusicXML'?'rgba(var(--gn-rgb),.12)':'rgba(167,139,250,.12)',
                     color:p.tipo==='MusicXML'?'var(--gn)':'#a78bfa',
-                    border:`1px solid ${p.tipo==='MusicXML'?'rgba(var(--gn-rgb),.3)':'rgba(167,139,250,.3)'}`,
                     fontFamily:"var(--font-body)"}}>{p.tipo}</span>
                 </div>
                 <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:4,fontFamily:"var(--font-body)"}}>{p.autor} · {p.tonalidad} · {p.paginas} págs.</div>
                 <div style={{fontSize:'var(--fs-sm)',color:'var(--tx2)',lineHeight:1.5,fontFamily:"var(--font-body)",fontWeight:300}}>{p.desc}</div>
               </div>
               <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:6,flexShrink:0}}>
-                <button style={{padding:'5px 10px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
+                <button style={{padding:'5px 10px',borderRadius:8,background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
                   Ver
                 </button>
-                <button style={{padding:'5px 10px',borderRadius:8,border:'1px solid var(--bd)',background:'var(--s2)',color:'var(--tx3)',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
+                <button style={{padding:'5px 10px',borderRadius:8,background:'var(--s2)',color:'var(--tx3)',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
                   ↓ PDF
                 </button>
               </div>
@@ -1394,7 +1371,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           ))}
           {/* Upload zone */}
           {isAdmin&&(
-            <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:12,border:'1px dashed rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',cursor:'pointer',marginTop:8}}
+            <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:12,background:'rgba(167,139,250,.05)',cursor:'pointer',marginTop:8}}
               onMouseEnter={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.6)'}
               onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(167,139,250,.3)'}>
               <input type="file" accept=".pdf,.xml,.mxl,.musicxml" style={{display:'none'}}/>
@@ -1415,11 +1392,11 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           display:'flex',alignItems:'center',justifyContent:'center',padding:20}}
           onClick={()=>setSongParaVariar(null)}>
           <div style={{width:'100%',maxWidth:360,padding:18,borderRadius:16,
-              background:'var(--bg)',border:'1px solid var(--bd)',boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}
+              background:'var(--bg)',boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}
             onClick={e=>e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
               <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)',fontWeight:400}}>{songParaVariar}</div>
-              <button onClick={()=>setSongParaVariar(null)} style={{background:'none',border:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
+              <button onClick={()=>setSongParaVariar(null)} style={{background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
             </div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,marginBottom:14}}>
               Elige qué versión abrir — cada una puede tener su propia letra, acordes o notas.
@@ -1427,14 +1404,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
               <button onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,'original');setSongParaVariar(null);}}
                 style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
-                  border:'1px solid var(--bd)',background:'var(--s1)',cursor:'pointer',textAlign:'left'}}>
+                  background:'var(--s1)',cursor:'pointer',textAlign:'left'}}>
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                 <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',flex:1,fontFamily:"var(--font-body)"}}>Original</span>
               </button>
               {(variacionesDB[songParaVariar]||[]).map(v=>(
                 <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
                   style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
-                    border:'1px solid rgba(200,169,126,.3)',background:'rgba(200,169,126,.06)',cursor:'pointer',textAlign:'left'}}>
+                    background:'rgba(200,169,126,.06)',cursor:'pointer',textAlign:'left'}}>
                   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
                     {v.tipo==='partitura'
                       ?<path d="M9 18V5l12-2v13"/>
@@ -1446,14 +1423,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               ))}
             </div>
             {isAdmin&&(nuevaVariacion?.cancion===songParaVariar?(
-              <div style={{padding:12,borderRadius:12,border:'1px solid var(--bd)',background:'var(--s1)',marginBottom:14}}>
+              <div style={{padding:12,borderRadius:12,background:'var(--s1)',marginBottom:14}}>
                 <div style={{display:'flex',gap:6,marginBottom:10}}>
                   <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'letra'}))}
-                    style={{flex:1,padding:'7px 0',borderRadius:8,border:'none',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
+                    style={{flex:1,padding:'7px 0',borderRadius:8,cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
                       fontFamily:"var(--font-body)",background:nuevaVariacion.tipo==='letra'?'rgba(200,169,126,.18)':'var(--s1)',
                       color:nuevaVariacion.tipo==='letra'?'var(--ac)':'var(--tx3)'}}>Letra/acordes</button>
                   <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'partitura'}))}
-                    style={{flex:1,padding:'7px 0',borderRadius:8,border:'none',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
+                    style={{flex:1,padding:'7px 0',borderRadius:8,cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
                       fontFamily:"var(--font-body)",background:nuevaVariacion.tipo==='partitura'?'rgba(200,169,126,.18)':'var(--s1)',
                       color:nuevaVariacion.tipo==='partitura'?'var(--ac)':'var(--tx3)'}}>Partitura (archivo)</button>
                 </div>
@@ -1465,7 +1442,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                     style={{minHeight:100,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-base)',marginBottom:8}}/>
                 ):(
                   <label style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:8,
-                    border:'1px dashed var(--div)',background:'var(--s1)',cursor:'pointer',marginBottom:8}}>
+                    background:'var(--s1)',cursor:'pointer',marginBottom:8}}>
                     <input type="file" accept="image/*,.pdf" style={{display:'none'}}
                       onChange={e=>setNuevaVariacion(v=>({...v,archivo:e.target.files[0]||null}))}/>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1474,17 +1451,16 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 )}
                 <div style={{display:'flex',gap:6}}>
                   <button onClick={()=>setNuevaVariacion(null)}
-                    style={{flex:1,padding:'8px 0',borderRadius:8,border:'1px solid var(--bd)',background:'transparent',
+                    style={{flex:1,padding:'8px 0',borderRadius:8,background:'transparent',
                       color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>Cancelar</button>
                   <button onClick={guardarNuevaVariacion}
-                    style={{flex:2,padding:'8px 0',borderRadius:8,border:'none',background:'var(--ac)',
+                    style={{flex:2,padding:'8px 0',borderRadius:8,background:'var(--ac)',
                       color:'#000',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:900,fontFamily:"var(--font-body)"}}>Guardar variación</button>
                 </div>
               </div>
             ):(
               <button onClick={()=>abrirNuevaVariacion(songParaVariar)}
-                style={{width:'100%',padding:'9px 12px',borderRadius:10,border:'1px dashed var(--div)',
-                  background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,
+                style={{width:'100%',padding:'9px 12px',borderRadius:10,background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,
                   fontFamily:"var(--font-body)"}}>
                 + Agregar variación (partitura o notas por instrumento)
               </button>
@@ -1506,8 +1482,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               ))}
               {isAdmin&&(
                 <label style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,
-                  padding:'9px 12px',borderRadius:10,border:'1px dashed var(--div)',
-                  background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,
+                  padding:'9px 12px',borderRadius:10,background:'var(--s1)',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,
                   fontFamily:"var(--font-body)"}}>
                   <input type="file" accept="audio/*" style={{display:'none'}}
                     onChange={e=>{agregarSecuencia(songParaVariar,e.target.files[0]);e.target.value='';}}/>

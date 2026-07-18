@@ -108,7 +108,7 @@ export function MusicXMLViewer({url,lang='es'}){
         {content.measures.map((m,mi)=>(
           <div key={mi} style={{
             padding:'8px 10px',borderRadius:8,
-            border:'1px solid var(--bd)',background:'var(--s1)',
+            background:'var(--s1)',
             minWidth:80,
           }}>
             <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginBottom:4,

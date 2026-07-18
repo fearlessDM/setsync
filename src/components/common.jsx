@@ -48,7 +48,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
     <>
       <button ref={btnRef} type="button" onClick={toggle} disabled={disabled}
         style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,
-          border:'1px solid var(--bd)',borderRadius:8,background:'var(--s3)',color:'var(--tx)',
+          borderRadius:8,background:'var(--s3)',color:'var(--tx)',
           fontSize:'var(--fs-md)',fontWeight:700,fontFamily:"var(--font-body)",
           padding:'6px 10px',cursor:disabled?'default':'pointer',opacity:disabled?.5:1,
           width:'100%',boxSizing:'border-box',...style}}>
@@ -65,7 +65,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
           <div style={{position:'fixed',left:pos.left,width:pos.width,
             top:pos.top??undefined,bottom:pos.bottom??undefined,
             maxHeight:pos.maxHeight,overflowY:'auto',zIndex:999,
-            background:'#17171b',border:'1px solid var(--bd2)',borderRadius:10,
+            background:'#17171b',borderRadius:10,
             boxShadow:'0 12px 32px rgba(0,0,0,.5)',padding:4}}>
             {options.map(o=>(
               <div key={o.value} onClick={()=>{onChange(o.value);setOpen(false);}}

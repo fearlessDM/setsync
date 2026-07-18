@@ -81,7 +81,6 @@ export function Login({onToast, lang='es'}){
             style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
               transition:'background .15s,color .15s,border-color .15s',
-              border:modo==='entrar'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
               background:modo==='entrar'?'rgba(200,169,126,.12)':'transparent',
               color:modo==='entrar'?'#c8a97e':'var(--tx3)'}}>
             {tx.signIn}
@@ -90,7 +89,6 @@ export function Login({onToast, lang='es'}){
             style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
               transition:'background .15s,color .15s,border-color .15s',
-              border:modo==='crear'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
               background:modo==='crear'?'rgba(200,169,126,.12)':'transparent',
               color:modo==='crear'?'#c8a97e':'var(--tx3)'}}>
             {tx.createAccount}
@@ -99,7 +97,6 @@ export function Login({onToast, lang='es'}){
             style={{flex:1,padding:'9px 0',borderRadius:9,cursor:'pointer',
               fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
               transition:'background .15s,color .15s,border-color .15s',
-              border:modo==='codigo'?'1px solid rgba(200,169,126,.4)':'1px solid transparent',
               background:modo==='codigo'?'rgba(200,169,126,.12)':'transparent',
               color:modo==='codigo'?'#c8a97e':'var(--tx3)'}}>
             Código
@@ -113,12 +110,10 @@ export function Login({onToast, lang='es'}){
               El admin de tu equipo te dio un código de 6 letras/números — ingrésalo acá para unirte a la cuenta compartida.
             </div>
             <input placeholder={tx.yourName} value={nombre} onChange={e=>setNombre(e.target.value)}
-              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
-                background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
+              style={{padding:'12px 14px',borderRadius:10,background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
             <input placeholder="Código (ej: A3F9K2)" value={codigo}
               onChange={e=>setCodigo(e.target.value.toUpperCase())}
-              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
-                background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)",
+              style={{padding:'12px 14px',borderRadius:10,background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)",
                 letterSpacing:'2px',textTransform:'uppercase'}}/>
 
             {error&&(
@@ -129,8 +124,7 @@ export function Login({onToast, lang='es'}){
             )}
 
             <button type="submit" disabled={cargando} className="btn btn-ac"
-              style={{padding:'13px 0',borderRadius:10,border:'none',
-                fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:4}}>
+              style={{padding:'13px 0',borderRadius:10,fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:4}}>
               {cargando?tx.oneMoment:'Unirme al equipo'}
             </button>
           </form>
@@ -139,15 +133,12 @@ export function Login({onToast, lang='es'}){
         <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:10}}>
           {modo==='crear'&&(
             <input placeholder={tx.yourName} value={nombre} onChange={e=>setNombre(e.target.value)}
-              style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
-                background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
+              style={{padding:'12px 14px',borderRadius:10,background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
           )}
           <input type="email" placeholder={tx.emailPlaceholder} value={email} onChange={e=>setEmail(e.target.value)}
-            style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
-              background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
+            style={{padding:'12px 14px',borderRadius:10,background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
           <input type="password" placeholder={tx.passwordPlaceholder} value={password} onChange={e=>setPassword(e.target.value)}
-            style={{padding:'12px 14px',borderRadius:10,border:'1px solid var(--bd)',
-              background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
+            style={{padding:'12px 14px',borderRadius:10,background:'var(--s1)',color:'var(--tx)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}/>
 
           {error&&(
             <div style={{fontSize:'var(--fs-base)',color:'var(--rd)',fontFamily:"var(--font-body)",
@@ -157,8 +148,7 @@ export function Login({onToast, lang='es'}){
           )}
 
           <button type="submit" disabled={cargando} className="btn btn-ac"
-            style={{padding:'13px 0',borderRadius:10,border:'none',
-              fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:4}}>
+            style={{padding:'13px 0',borderRadius:10,fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:4}}>
             {cargando?tx.oneMoment:modo==='entrar'?tx.signIn:tx.createAccount}
           </button>
         </form>
@@ -170,8 +160,7 @@ export function Login({onToast, lang='es'}){
         </div>
 
         <button onClick={conGoogle} disabled={cargando} className="btn btn-g"
-          style={{width:'100%',padding:'12px 0',borderRadius:10,border:'1px solid var(--bd2)',
-            color:'var(--tx)',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
+          style={{width:'100%',padding:'12px 0',borderRadius:10,color:'var(--tx)',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",
             display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

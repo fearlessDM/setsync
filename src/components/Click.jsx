@@ -76,9 +76,9 @@ export function Click({songBpm, lang='es'}){
 
   return(
     <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:12,
-      border:'1px solid var(--bd)',background:'var(--s1)'}}>
+      background:'var(--s1)'}}>
       <button onClick={()=>playing?stop():start()}
-        style={{width:34,height:34,borderRadius:'50%',border:'none',cursor:'pointer',flexShrink:0,
+        style={{width:34,height:34,borderRadius:'50%',cursor:'pointer',flexShrink:0,
           background:playing?'var(--gn)':'var(--ac)',color:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center'}}>
         {playing?(
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>

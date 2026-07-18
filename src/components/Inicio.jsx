@@ -244,8 +244,7 @@ function TutorialPage({ tut, onClose }) {
       <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
         borderBottom:'1px solid var(--s3)',padding:'12px 14px',
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
-        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
-          background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
         <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)'}}>
           {tut.titulo}
@@ -299,14 +298,13 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
       <div style={{position:'sticky',top:0,background:'rgba(8,8,9,.97)',
         borderBottom:'1px solid var(--s3)',padding:'12px 14px',
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
-        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,border:'1px solid var(--bd)',
-          background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
+        <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
         <div style={{flex:1,fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400}}>
           {tx.ideasNotesLbl}
         </div>
         <button onClick={onCreate}
-          style={{padding:'6px 14px',borderRadius:8,border:'none',background:'var(--ac)',
+          style={{padding:'6px 14px',borderRadius:8,background:'var(--ac)',
             color:'#000',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
             fontFamily:"var(--font-body)"}}>{tx.newNoteBtn}</button>
       </div>
@@ -318,8 +316,7 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
           </div>
         ):notas.map((n,i)=>(
           <div key={i} style={{padding:'12px 10px',borderRadius:12,
-            background:'var(--s1)',border:'1px solid var(--s3)',
-            cursor:'pointer',position:'relative'}}>
+            background:'var(--s1)',cursor:'pointer',position:'relative'}}>
             <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
               color:'var(--tx)',marginBottom:4,lineHeight:1.3,
               overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
@@ -330,7 +327,7 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
             </div>
             <button onClick={e=>{e.stopPropagation();onDelete(i);}}
               style={{position:'absolute',top:6,right:6,width:18,height:18,borderRadius:4,
-                border:'none',background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-md)',
+                background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-md)',
                 display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
           </div>
         ))}
@@ -366,13 +363,13 @@ function NotasBlock({lang='es'}) {
             {notas.length>0&&(
               <button onClick={()=>setVerTodas(true)}
                 style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',background:'none',
-                  border:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>
+                  cursor:'pointer',fontFamily:"var(--font-body)"}}>
                 {tx.seeAllLbl(notas.length)}
               </button>
             )}
             <button onClick={()=>editando?guardar():setEditando(true)}
               style={{fontSize:'var(--fs-xs)',fontWeight:700,color:editando?'var(--ac)':'var(--tx3)',
-                background:'none',border:'none',cursor:'pointer',
+                background:'none',cursor:'pointer',
                 fontFamily:"var(--font-body)"}}>
               {editando?tx.saveNoteBtn:tx.newNoteBtn}
             </button>
@@ -383,7 +380,7 @@ function NotasBlock({lang='es'}) {
             autoFocus
             placeholder={tx.writeNotePlaceholder}
             style={{width:'100%',minHeight:72,background:'var(--s1)',
-              border:'1px solid var(--bd)',borderRadius:8,
+              borderRadius:8,
               color:'var(--tx)',fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',
               fontWeight:300,lineHeight:1.7,padding:'8px 10px',resize:'none',outline:'none',
               boxSizing:'border-box'}}/>
@@ -524,7 +521,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
                   background:'var(--s1)',cursor:'pointer',
-                  border:'1px solid var(--s3)'}}>
+                  }}>
                 <div style={{fontFamily:"var(--font-display)",
                   fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}>{val}</div>
                 <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',
@@ -616,8 +613,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <div key={tut.slug}
                 onClick={()=>setTutorialActivo(tut)}
                 style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
-                  background:'var(--s1)',border:'1px solid var(--s3)',
-                  display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
+                  background:'var(--s1)',display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
                 onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
                 onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
                 <div style={{fontSize:'var(--fs-xl)'}}>{tut.icon}</div>
@@ -640,7 +636,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             {FAQS.map((faq,i)=>(
               <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
                 <button onClick={()=>toggleFaq(i)}
-                  style={{width:'100%',background:'none',border:'none',textAlign:'left',
+                  style={{width:'100%',background:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
                     justifyContent:'space-between',gap:8}}>
                   <span style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
@@ -672,7 +668,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               return (
                 <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
                   background:isCurrent?'rgba(var(--gn-rgb),.1)':'var(--s1)',
-                  border:isCurrent?'1px solid rgba(var(--gn-rgb),.35)':'1px solid var(--s3)'}}>
+                  }}>
                   <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:isCurrent?'var(--gn)':'var(--tx3)',
                     textTransform:'uppercase',letterSpacing:'.5px',marginBottom:5,
                     fontFamily:"var(--font-body)"}}>{p.label}</div>
@@ -699,7 +695,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 <div key={t.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
                   padding:'8px 12px',borderRadius:10,
                   background:isCurrentTramo?'rgba(var(--gn-rgb),.1)':'var(--s1)',
-                  border:isCurrentTramo?'1px solid rgba(var(--gn-rgb),.35)':'1px solid var(--s3)'}}>
+                  }}>
                   <div>
                     <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:400}}>{t.label}</span>
                     {t.marcaBlanca&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontFamily:"var(--font-body)",marginTop:1}}>{tx.whiteLabelIncluded}</div>}
@@ -786,7 +782,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
         {/* ── Bloque marketero — fijo al final, fuera del reordenamiento ── */}
         <div style={{marginTop:4,padding:'var(--sp-md)',borderRadius:'var(--rad-lg)',
-          background:'var(--s1)',border:'1px solid rgba(var(--gn-rgb),.15)'}}>
+          background:'var(--s1)',}}>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
             fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>Por qué SetSync es el mejor</div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
