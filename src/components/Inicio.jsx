@@ -246,7 +246,7 @@ function TutorialPage({ tut, onClose }) {
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
         <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400,color:'var(--tx)'}}>
+        <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-pagehead)',textTransform:'uppercase',fontWeight:400,color:'var(--tx)'}}>
           {tut.titulo}
         </div>
       </div>
@@ -300,7 +300,7 @@ function NotasPage({notas,onClose,onDelete,onCreate,lang='es'}) {
         display:'flex',alignItems:'center',gap:10,zIndex:1}}>
         <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx)',cursor:'pointer',fontSize:'var(--fs-xl)',
           display:'flex',alignItems:'center',justifyContent:'center'}}>←</button>
-        <div style={{flex:1,fontFamily:"var(--font-display)",fontSize:'var(--fs-2xl)',fontWeight:400}}>
+        <div style={{flex:1,fontFamily:"var(--font-display)",fontSize:'var(--fs-pagehead)',textTransform:'uppercase',fontWeight:400}}>
           {tx.ideasNotesLbl}
         </div>
         <button onClick={onCreate}
@@ -538,8 +538,6 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>{tx.songsCardLbl}</Lbl>
           <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
-          <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-subtitle)',color:'var(--tx2)',
-            fontWeight:300,marginTop:4}}>{tx.songs}</div>
           {feat.cancioneroUniversal&&(
             <div style={{fontSize:'var(--fs-xs)',color:'var(--gn)',fontFamily:"var(--font-body)",
               fontWeight:700,marginTop:6}}>{tx.universalCheck}</div>

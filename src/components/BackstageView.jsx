@@ -370,6 +370,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               lugar:evLugar,hora:evHora,setlist:[...evSetlist],
               equiposConvocados:evEquipos||equipos.map(e=>e.id),
               itinerario:[...evItinerario],
+              notas:evNotas||null,
               archivo:evArchivo?{name:evArchivo.name}:null};
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
@@ -679,10 +680,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             {personas.map((m,i)=>(
               <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
                 borderBottom:i<personas.length-1?'1px solid var(--s1)':'none',background:'var(--s1)'}}>
-                {m.foto
-                  ?<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
-                  :<div style={{width:26,height:26,borderRadius:'50%',background:`${colorForName(m.name)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-2xs)',fontWeight:900,color:colorForName(m.name),flexShrink:0,fontFamily:"var(--font-body)"}}>{initials(m.name)}</div>
-                }
+                {m.foto&&<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:'var(--fs-md)',fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
                   <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:tx.noEmailRegistered}</div>
@@ -748,10 +746,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               {/* Miembros del equipo */}
               {(eq.miembros||[]).map(m=>(
                 <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--s1)'}}>
-                  {m.foto
-                    ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
-                    :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx2)',flexShrink:0}}>{initials(m.name)}</div>
-                  }
+                  {m.foto&&<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
                   <span style={{flex:1,fontSize:'var(--fs-md)',fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
                   <CustomSelect value={m.role} onChange={v=>{
                     const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:v}:mm)};

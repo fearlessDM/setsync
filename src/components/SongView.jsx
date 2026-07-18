@@ -194,9 +194,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(edited&&onSaveChords){onSaveChords(song.name,edited);setToast('✓ Acordes guardados oficialmente');}
     setEditMode(false);setSelectedChord(null);
   };
-  const svBg      ='rgba(4,4,12,.97)';
-  const svHdrBg   ='rgba(5,5,14,.92)';
-  const svNavBg   ='rgba(5,5,14,.88)';
+  const svBg      ='rgba(8,8,8,.97)';
+  const svHdrBg   ='rgba(8,8,8,.92)';
+  const svNavBg   ='rgba(8,8,8,.88)';
   const svTx      ='var(--tx)';
   const svTx3     ='var(--tx3)';
   const svAc      ='var(--ac)';
@@ -2010,7 +2010,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchStart={e=>e.stopPropagation()}
         onTouchMove={e=>e.stopPropagation()}
         style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(8,8,9,.98)',borderBottom:'none',
+          background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
           borderRadius:'14px 14px 0 0',
           backdropFilter:'blur(40px)',zIndex:200,
           transform:(bottomTab==='monitor'&&showMonitor)?'translateY(0)':'translateY(110%)',
@@ -2507,7 +2507,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     const panel = (
         <div style={{
           position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-          background:'rgba(8,8,9,.98)',borderBottom:'none',
+          background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
           borderRadius:'14px 14px 0 0',
           backdropFilter:'blur(40px)',zIndex:110,
           transform:bottomTab==='referencia'?'translateY(0)':'translateY(100%)',
@@ -2937,7 +2937,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         onTouchMove={e=>e.stopPropagation()}
         style={{
         position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',left:0,right:0,
-        background:'rgba(8,8,9,.98)',borderBottom:'none',
+        background:'rgba(8,8,9,.98)',border:'2px solid var(--gn)',borderBottom:'none',
         borderRadius:'14px 14px 0 0',
         backdropFilter:'blur(40px)',zIndex:110,
         maxHeight:'72vh',

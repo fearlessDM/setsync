@@ -815,7 +815,7 @@ Tuya es la gloria, Por siempre amén.
             mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} personas={personas} ensayos={ensayos}/>}
           {view==='misetlist'&&<MiSetlist
-            fecha={fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Dom ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]}}
+            fecha={fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Domingo ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]}}
             onOpenSong={i=>abrirSongDesdeEvento(i,(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[])}
             onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
             userRole={userRole} onToast={showToast} lang={lang}

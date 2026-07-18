@@ -1089,14 +1089,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
-          <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontWeight:200,fontFamily:"var(--font-body)",lineHeight:1.6,maxWidth:420}}>
+          <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontWeight:200,fontFamily:"var(--font-body)",lineHeight:1.6}}>
             Las canciones son carpetas, no archivos.<br/>
             Letras y acordes, partituras por instrumento, secuencias y audios de referencia — todo vive junto, dentro de la canción.
           </div>
         </div>
         <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
           style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',
-            borderRadius:100,background:'var(--s3)',color:'var(--tx)',
+            borderRadius:100,background:'var(--gn)',color:'var(--btn-c)',
             fontWeight:700,fontSize:'var(--fs-base)',cursor:'pointer',
             fontFamily:"var(--font-body)",flexShrink:0}}>
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">

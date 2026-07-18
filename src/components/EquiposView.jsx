@@ -30,7 +30,7 @@ export function EquiposView({onToast,onGestionar,mode,lang='es',equipos=[]}){
             <div style={{padding:'0 15px'}}>
               {(eq.miembros||[]).map(m=>(
                 <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid var(--bd)'}}>
-                  <div style={{width:24,height:24,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'80,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-3xs)',fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
+                  {m.foto&&<img src={m.foto} alt={m.name} style={{width:24,height:24,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx)',fontFamily:"var(--font-body)"}}>{m.name}</div>
                     <div style={{fontSize:'var(--fs-2xs)',fontWeight:700,color:'var(--tx3)',fontFamily:"var(--font-body)"}}>{m.email}</div>

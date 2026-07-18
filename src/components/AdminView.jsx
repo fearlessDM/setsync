@@ -739,7 +739,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               <div style={{padding:'0 var(--sp-md) var(--sp-xs)',display:'flex',flexWrap:'wrap',gap:5}}>
                 {(eq.miembros||[]).map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'var(--s1)',}}>
-                    <div style={{width:16,height:16,borderRadius:'50%',background:'linear-gradient(135deg,'+eq.color+'60,'+eq.color+')',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-3xs)',fontWeight:900,color:'#fff',flexShrink:0}}>{initials(m.name)}</div>
+                    {m.foto&&<img src={m.foto} alt={m.name} style={{width:16,height:16,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
                     <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
                     <span style={{fontSize:'var(--fs-xs)',color:eq.color,fontWeight:300}}>{m.role}</span>
                   </div>
@@ -747,6 +747,31 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Notas del evento */}
+      {f.notas&&(
+        <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+          <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
+            <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Notas del evento</span>
+          </div>
+          <div style={{padding:'12px var(--sp-md)',fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>
+            {f.notas}
+          </div>
+        </div>
+      )}
+
+      {/* Archivo adjunto */}
+      {f.archivo&&(
+        <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
+          <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
+            <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Archivo adjunto</span>
+          </div>
+          <div style={{padding:'11px var(--sp-md)',display:'flex',alignItems:'center',gap:8}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.archivo.name}</span>
+          </div>
         </div>
       )}
 
