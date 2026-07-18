@@ -24,6 +24,7 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 --fs-display:28px;--fw-display:200;
 --fs-title1:clamp(21px, 19px + 0.6vw, 27px);--fw-title1:400;
 --fs-title2:clamp(16px, 15px + 0.35vw, 19px);--fw-title2:400;
+--fs-pagehead:clamp(19px, 16px + 0.8vw, 28px);--fw-pagehead:400;
 --fs-title3:13px;--fw-title3:400;
 --fs-body:11px;--fw-body:300;
 --fs-ui:11px;--fw-ui:700;
@@ -116,7 +117,7 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 --gn:#F56E0F;--gn-rgb:245,110,15;--rd:#0B7C60;--rd-rgb:11,124,96;--btn-c:#1F2D33;
 }
 [data-theme=blue-lava]{
---bg:#EEE9DF;--s1:rgba(90,90,92,.08);--s2:rgba(90,90,92,.04);--s3:rgba(90,90,92,.13);
+--bg:#EEE9DF;--s1:rgba(60,60,62,.15);--s2:rgba(60,60,62,.08);--s3:rgba(60,60,62,.22);
 --bd:rgba(44,59,77,.12);--bd2:rgba(44,59,77,.2);
 --div:rgba(44,59,77,.22);--em:rgba(44,59,77,.32);
 --ac:#2C3B4D;--tx:#2C3B4D;--tx2:rgba(44,59,77,.72);--tx3:#8a6a4f;

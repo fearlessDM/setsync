@@ -271,7 +271,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       {crearModo===null&&(
         <div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:4}}>
+            fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:4}}>
             Subir canción/carpeta
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:24,lineHeight:1.4}}>
@@ -471,7 +471,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-title1)',color:'var(--tx)'}}>
+              <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-pagehead)',textTransform:'uppercase',fontWeight:400,color:'var(--tx)'}}>
                 {volverASongViewRef.current?'Volver a la canción':'Editor de canciones'}
               </span>
             </div>
@@ -508,7 +508,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </div>
 
             {/* Info */}
-            <div className="card" style={{padding:18,marginBottom:20}}>
+            <div className="card" style={{padding:22,marginBottom:20}}>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
                 placeholder="Título canción"
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
@@ -781,7 +781,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               fontFamily:"var(--font-body)"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
+            fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
             Subir partitura
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
@@ -855,7 +855,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               fontFamily:"var(--font-body)"}}>Subir canción</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
+            fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
             Subir por Drive
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
@@ -1003,7 +1003,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>Subir canción</span>
             </div>
             <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-              fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
+              fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
               Importar archivos
             </div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:18,lineHeight:1.5}}>
@@ -1088,7 +1088,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
-          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title1)',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
           <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontWeight:200,fontFamily:"var(--font-body)",lineHeight:1.6,maxWidth:420}}>
             Las canciones son carpetas, no archivos.<br/>
             Letras y acordes, partituras por instrumento, secuencias y audios de referencia — todo vive junto, dentro de la canción.
@@ -1247,7 +1247,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   display:'flex',alignItems:'center',gap:5}}>
                 ← Colecciones
               </button>
-              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-title2)',textTransform:'uppercase',fontWeight:400,
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-pagehead)',textTransform:'uppercase',fontWeight:400,
                 color:colecciones[coleccionSel].color,marginBottom:14}}>
                 {colecciones[coleccionSel].nombre}
               </div>

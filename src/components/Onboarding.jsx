@@ -16,7 +16,7 @@ export function Onboarding({onFinish}){
           <div className="ob-step">
             <div className="ob-lgo">
               <div className="logo-mk"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
-              <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)'}}>Setlist</div>
+              <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)'}}>Setlist</div>
             </div>
             <div className="ob-lbl">Paso 1 de 3 · Step 1 of 3</div>
             <div className="ob-ttl">Elige tu idioma <span style={{color:'var(--ac)'}}>/ Choose</span></div>

@@ -50,7 +50,7 @@ export function Monitoreo({lang='es', onToast=()=>{}}){
     <div>
       <div className="ph" style={{marginBottom:14,alignItems:'flex-start'}}>
         <div>
-          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-title2)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05}}>
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05}}>
             Monitoreo
           </div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4,marginTop:5}}>

@@ -547,7 +547,7 @@ Tuya es la gloria, Por siempre amén.
 
   const Footer=()=>(
     <div style={{padding:'32px 24px 20px',borderTop:'1px solid var(--s1)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
-      <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
+      <img src={theme==='blue-lava'?'/LOGO oscuroVERTICAL (2).png':'/LOGO BLANCO VERTICAL.png'} alt="SetSync" style={{width:56,height:'auto',objectFit:'contain',filter:'grayscale(1)'}}/>
       <div style={{fontSize:'var(--fs-xs)',fontFamily:"var(--font-body)",fontWeight:300,color:'var(--tx3)',textAlign:'center',lineHeight:1.8,letterSpacing:'.5px'}}>
         © {new Date().getFullYear()} SetSync · {tx.allRights}
       </div>
@@ -679,9 +679,9 @@ Tuya es la gloria, Por siempre amén.
 
           {/* Logo vertical — visible con tagline */}
           <div style={{paddingTop:40,paddingBottom:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
-            <img src="/LOGO BLANCO VERTICAL.png" alt="SetSync" style={{
+            <img src={theme==='blue-lava'?'/LOGO oscuroVERTICAL (2).png':'/LOGO BLANCO VERTICAL.png'} alt="SetSync" style={{
               height:'clamp(220px,39.6vw,330px)',width:'auto',objectFit:'contain',
-              filter:'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
+              filter:theme==='blue-lava'?'drop-shadow(0 0 40px rgba(0,0,0,0.12))':'drop-shadow(0 0 60px rgba(255,255,255,0.18))',
             }}/>
           </div>
 
