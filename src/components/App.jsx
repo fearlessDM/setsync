@@ -90,7 +90,7 @@ export default function App(){
   const goToView=id=>{setView(id);if(id==='backstage')setBackstageKey(k=>k+1);};
   const [sbCol,setSbCol]=useState(false);
   const [toast,setToast]=useState(null);
-  const [theme,setTheme]=useState('dark');
+  const [theme,setTheme]=useState('grafite');
   const [userRole]=useState('superadmin');
   const isAdmin=userRole==='superadmin';
   const [planId,setPlanId]=useState('lite'); // 'lite' | 'pro' | 'premium' — selector temporal de prueba
@@ -541,9 +541,9 @@ Tuya es la gloria, Por siempre amén.
     showToast({text:'Setlist guardado',sub:`${nuevoSetlist.length} canciones`});
   };
 
-  // Temas: dark es el default desde :root en theme.css
-  // gray y cream usan [data-theme] selector en theme.css
-  const dataTheme = theme==='dark' ? undefined : theme;
+  // Temas: grafite es el default desde :root en theme.css
+  // abyssal/brasa/midnight/blue-lava usan [data-theme] selector en theme.css
+  const dataTheme = theme==='grafite' ? undefined : theme;
 
   const Footer=()=>(
     <div style={{padding:'32px 24px 20px',borderTop:'1px solid var(--s1)',display:'flex',flexDirection:'column',alignItems:'center',gap:12,opacity:.35,userSelect:'none'}}>
