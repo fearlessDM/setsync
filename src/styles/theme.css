@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Lexend+Giga:wght@100;175;300;400;500;700&family=Outfit:wght@300;400;500;600;700;900&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button,input,textarea,select{border:none;background:none;font:inherit;color:inherit;outline:none;-webkit-appearance:none;appearance:none;}
 :root{
 /* ── Colores ── */
 --bg:#1F1F1F;--s1:rgba(255,255,255,.05);--s2:rgba(255,255,255,.03);--s3:rgba(255,255,255,.1);
