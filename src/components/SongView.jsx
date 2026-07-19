@@ -137,7 +137,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const [showModePopup,setShowModePopup]=useState(false);
   const [notacion,setNotacion]=useState('americano'); // 'americano' | 'latino' | 'grados'
 
-  const getSongContent=(song)=>{const k=song.name||song.n||'';return editedSongs[k]||contentDB[k]||null;};
+  const getSongContent=(song)=>{if(!song)return null;const k=song.name||song.n||'';return editedSongs[k]||contentDB[k]||null;};
 
   // ── Mapa de la Canción — vista de NAVEGACIÓN del panel lateral, INDEPENDIENTE
   // del contenido real de la canción. Reordenar/duplicar/eliminar aquí NUNCA
@@ -152,7 +152,8 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   const handleDragChord=(lineIdx,chordIdx,steps)=>{
     if(!steps)return;
     const song=songs[idx];
-    if(song&&!song.name&&song.n){song.name=song.n;}
+    if(!song)return;
+    if(!song.name&&song.n){song.name=song.n;}
     const raw=getSongContent(song)||'';
     const allLines=raw.split('\n');
 
@@ -190,6 +191,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const handleSaveEdit=()=>{
     const song=songs[idx];
+    if(!song)return;
     const edited=editedSongs[song.name];
     if(edited&&onSaveChords){onSaveChords(song.name,edited);setToast('✓ Acordes guardados oficialmente');}
     setEditMode(false);setSelectedChord(null);
