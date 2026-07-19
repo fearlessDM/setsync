@@ -802,7 +802,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{height:38,display:'flex',alignItems:'center',overflow:'hidden'}}>
             <span key={chipIdx} className="hero-chip-swipe"
               style={{padding:'9px 16px',borderRadius:8,background:'var(--gn)',
-                fontSize:'var(--fs-md)',fontWeight:500,color:'#fff',textTransform:'uppercase',
+                fontSize:'10px',fontWeight:500,color:'#000',textTransform:'uppercase',
                 letterSpacing:'.5px',fontFamily:"var(--font-body)",display:'inline-block'}}>
               {HERO_CHIPS[chipIdx]}
             </span>
