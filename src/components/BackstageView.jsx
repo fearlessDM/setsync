@@ -251,7 +251,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── CREAR EVENTO ──
   if(bsView==='evento')return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
+    <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('evento')} aria-label="Ayuda">i</button>
         <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -693,7 +693,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   if(bsView==='equipos'){
     return(
-      <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
+      <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
           <button className="help-btn" onClick={()=>setHelpOpen('equipos')} aria-label="Ayuda">i</button>
@@ -961,7 +961,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
   // ── DELEGAR PERMISOS ──
   if(bsView==='permisos')return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
+    <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
         <button className="help-btn" onClick={()=>setHelpOpen('permisos')} aria-label="Ayuda">i</button>
         <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -1068,7 +1068,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   );
 
   if(bsView==='notif')return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+    <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('notif')} aria-label="Ayuda">i</button>
         <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -1771,7 +1771,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       onToast({text:tx.rehearsalDuplicatedToast,sub:copia.nombre});
     };
     return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+    <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('ensayo')} aria-label="Ayuda">i</button>
         <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
@@ -1902,7 +1902,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // en vez del icono de color chico.
 
   return(
-    <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
+    <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
           <button className="help-btn" onClick={()=>setHelpOpen('backstage')} aria-label="Ayuda">i</button>

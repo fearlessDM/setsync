@@ -420,7 +420,7 @@ const NOTIFICACIONES_DEMO = [
   {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
 ];
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[] }) {
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={} }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
@@ -439,9 +439,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   // Bloques con orden arrastrable (por filas de 2)
   // Cada "row" es un índice de bloque
   const BLOCK_ROWS = [
-    ['proximo'],
-    ['notificaciones'],
     ['equipo'],
+    ['notificaciones'],
     ['cancionero','plan'],
     ['notas'],
     ['tutoriales'],
@@ -511,12 +510,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'equipo': return (
         <Card cols={2} key="equipo">
-          <Lbl>{tx.myTeamLbl}</Lbl>
+          <Lbl>Resumen</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
               {label:tx.peopleLbl,val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
               {label:tx.teams,val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
               {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
+              {label:tx.songsCardLbl,val:CANCIONES.length,color:'var(--ac)',onClick:()=>onNavigate('repertorio')},
+              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'var(--gn)',onClick:()=>onNavigate('repertorio')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
@@ -747,17 +748,6 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       {/* Grid con bloques arrastrables */}
       <div style={{padding:'var(--sp-md) var(--pw-x,var(--sp-md))'}}>
-        {/* Indicador de que los bloques se pueden arrastrar/reordenar */}
-        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:10,opacity:.5}}>
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
-            <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
-            <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-            <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-          </svg>
-          <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:300}}>
-            Mantén presionado y arrastra para reordenar
-          </span>
-        </div>
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
           return (

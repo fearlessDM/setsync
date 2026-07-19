@@ -332,14 +332,14 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             const day = parseInt(dayStr);
             if(sl===null) return(
               <div key={day} style={{padding:'20px 18px',borderRadius:'var(--rad-lg)',
-                background:'rgba(255,82,82,.04)',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
-                <div style={{width:42,height:42,borderRadius:11,background:'rgba(255,82,82,.08)',
+                background:'rgba(255,82,82,.08)',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
+                <div style={{width:42,height:42,borderRadius:11,background:'rgba(255,82,82,.15)',
                   display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                  <span style={{fontSize:'var(--fs-xl)',fontWeight:900,color:'rgba(255,82,82,.5)'}}>–</span>
+                  <span style={{fontSize:'var(--fs-xl)',fontWeight:900,color:'var(--rd)'}}>–</span>
                 </div>
                 <div>
-                  <div style={{fontWeight:700,fontSize:'var(--fs-emph)',color:'var(--tx2)'}}>Dom {day}</div>
-                  <div style={{fontSize:'var(--fs-base)',color:'rgba(255,82,82,.7)',marginTop:2,fontWeight:700}}>{tx.noReunion}</div>
+                  <div style={{fontWeight:700,fontSize:'var(--fs-emph)',color:'var(--tx)'}}>Dom {day}</div>
+                  <div style={{fontSize:'var(--fs-base)',color:'var(--rd)',marginTop:2,fontWeight:700}}>{tx.noReunion}</div>
                 </div>
               </div>
             );
@@ -549,7 +549,7 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div style={{flex:1,textAlign:'left'}}>
-            <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--ac)'}}>{tx.sendReminderBtn}</div>
+            <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--ac)',marginTop:3}}>{tx.sendReminderBtn}</div>
             <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',marginTop:2}}>Aviso 1 y 2 · Info del evento + ánimo al equipo</div>
           </div>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -733,7 +733,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <div key={eq.id} style={{borderBottom:'1px solid var(--s1)'}}>
               <div style={{padding:'8px var(--sp-md)',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-                <span style={{fontWeight:900,fontSize:'var(--fs-md)',color:'var(--tx)',flex:1}}>{eq.name}</span>
+                <span style={{fontWeight:900,fontSize:'14px',color:'var(--tx)',flex:1}}>{eq.name}</span>
                 <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
               </div>
               <div style={{padding:'0 var(--sp-md) var(--sp-xs)',display:'flex',flexWrap:'wrap',gap:5}}>

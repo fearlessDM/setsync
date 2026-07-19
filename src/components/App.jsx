@@ -803,7 +803,7 @@ Tuya es la gloria, Por siempre amén.
             <Inicio mode={appMode} lang={lang} userRole={userRole}
               equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
               planActivo={planActivo} planId={planId} viaEquipo={viaEquipo} orgPrincipal={orgPrincipal}
-              tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo}
+              tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo} archivosDB={archivosDB}
               onNavigate={setView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}

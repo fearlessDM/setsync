@@ -327,7 +327,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 }
 
 /* ── BOTTOM NAV (mobile) ── */
-.bot{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);backdrop-filter:blur(26px);border-top:1px solid var(--bd);z-index:20;padding:7px 0 calc(env(safe-area-inset-bottom,0px) + 8px);justify-content:space-around;align-items:center;}
+.bot{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);backdrop-filter:blur(26px);z-index:20;padding:7px 0 calc(env(safe-area-inset-bottom,0px) + 8px);justify-content:space-around;align-items:center;}
 
 .bn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 7px;color:var(--tx3);transition:all .15s;font-family:var(--font-body);}
 .bn.on{color:var(--ac);}
@@ -631,13 +631,14 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 
 /* ── Botón de ayuda "i" + modal de tutorial ── */
 .help-btn{
+  position:absolute;top:9px;right:9px;z-index:5;
   width:26px;height:26px;border-radius:50%;
-  background:var(--s2);color:var(--tx3);
+  background:rgba(var(--gn-rgb),.12);color:var(--gn);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;flex-shrink:0;font-family:var(--font-body);
   font-weight:900;font-size:12px;transition:all .15s;
 }
-.help-btn:hover{background:var(--s3);color:var(--tx);}
+.help-btn:hover{background:rgba(var(--gn-rgb),.22);}
 .help-ov{
   position:fixed;inset:0;background:var(--ov-modal);
   z-index:300;display:flex;justify-content:center;
