@@ -532,12 +532,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>Tu Resumen</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
-              {label:tx.peopleLbl,val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
-              {label:tx.teams,val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
-              {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
-              {label:tx.songsCardLbl,val:CANCIONES.length,color:'#F5A623',onClick:()=>onNavigate('repertorio')},
-              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'#4ECDC4',onClick:()=>onNavigate('repertorio')},
-              {label:'Fechas',val:eventos.length,color:'#FF6B9D',onClick:()=>onNavigate('fechas')},
+              {label:tx.peopleLbl,val:personas.length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
+              {label:tx.teams,val:misEquipos.length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
+              {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
+              {label:tx.songsCardLbl,val:CANCIONES.length,color:'#D4AF37',onClick:()=>onNavigate('repertorio')},
+              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'#D4AF37',onClick:()=>onNavigate('repertorio')},
+              {label:'Fechas',val:eventos.length,color:'#D4AF37',onClick:()=>onNavigate('fechas')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
@@ -763,21 +763,35 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       )}
 
       {/* Hero */}
-      <div style={{position:'relative',height:200,overflow:'hidden'}}>
+      <div style={{position:'relative',minHeight:230,overflow:'hidden'}}>
         <img src={BG_IMGS[bgIdx%BG_IMGS.length]} alt=""
-          style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.28) saturate(.6)'}}
+          style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.28) saturate(.6)',
+            position:'absolute',inset:0}}
           loading="lazy"/>
         <div style={{position:'absolute',inset:0,
-          background:'linear-gradient(180deg,transparent 20%,var(--bg) 100%)'}}/>
-        <div style={{position:'absolute',inset:0,padding:'var(--sp-lg) var(--sp-md)',
-          display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
+          background:'linear-gradient(180deg,transparent 15%,var(--bg) 100%)'}}/>
+        <div style={{position:'relative',padding:'var(--sp-lg) var(--sp-md)',paddingTop:36,
+          display:'flex',flexDirection:'column'}}>
+          <div style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-xs)',
+            color:'var(--gn)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
+            Bienvenido a SetSync
+          </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:200,
-            fontSize:'var(--fs-display)',color:'#fff',lineHeight:1.1}}>
+            fontSize:'var(--fs-display)',color:'#fff',lineHeight:1.1,marginBottom:8}}>
             Hola <span style={{color:'var(--ac)'}}>{nombre}</span>
           </div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',
-            color:'var(--tx2)',lineHeight:1.4,marginTop:4}}>
-            SetSync · Sincroniza personas, bandas y equipos · Eventos · Repertorio · Asistente en vivo
+            color:'var(--tx2)',lineHeight:1.4,marginBottom:14,maxWidth:480}}>
+            Todo lo que necesitas para coordinar tu banda y tocar en vivo, en un solo lugar.
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+            {['Calendario de eventos y ensayos','Coordinación de Banda y equipos de trabajo',
+              'Notificaciones y mensajería','Setlists y Repertorio','Secuencias y monitoreo en vivo',
+              'y mucho más'].map(chip=>(
+              <span key={chip} style={{padding:'5px 11px',borderRadius:100,background:'rgba(255,255,255,.08)',
+                backdropFilter:'blur(8px)',fontSize:'var(--fs-xs)',fontWeight:600,color:'var(--tx2)',
+                fontFamily:"var(--font-body)"}}>{chip}</span>
+            ))}
           </div>
         </div>
       </div>
