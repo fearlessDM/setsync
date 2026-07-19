@@ -14,6 +14,14 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
+const HERO_CHIPS = [
+  'Calendario de eventos y ensayos',
+  'Coordinación de Banda y equipos de trabajo',
+  'Notificaciones y mensajería',
+  'Setlists y Repertorio',
+  'Secuencias y monitoreo en vivo',
+  'y mucho más',
+];
 
 // Cuenta Equipo — tramos y precios vienen ahora de planes.js (fuente única
 // de verdad, ver TRAMOS_EQUIPO). Antes vivían hardcodeados acá con el
@@ -449,6 +457,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const [tutorialActivo, setTutorialActivo] = useState(null);
   const [faqsOpen, setFaqsOpen] = useState({});
   const [notifOpen, setNotifOpen] = useState(false);
+  const [chipIdx, setChipIdx] = useState(0);
+  useEffect(()=>{
+    const t=setInterval(()=>setChipIdx(i=>(i+1)%HERO_CHIPS.length),2000);
+    return()=>clearInterval(t);
+  },[]);
   const [tutOpen, setTutOpen] = useState({});
 
   const hoy = new Date();
@@ -532,12 +545,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>Tu Resumen</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
-              {label:tx.peopleLbl,val:personas.length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
-              {label:tx.teams,val:misEquipos.length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
-              {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#D4AF37',onClick:()=>onNavigate('backstage')},
-              {label:tx.songsCardLbl,val:CANCIONES.length,color:'#D4AF37',onClick:()=>onNavigate('repertorio')},
-              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'#D4AF37',onClick:()=>onNavigate('repertorio')},
-              {label:'Fechas',val:eventos.length,color:'#D4AF37',onClick:()=>onNavigate('fechas')},
+              {label:tx.peopleLbl,val:personas.length,color:'var(--tx)',onClick:()=>onNavigate('backstage')},
+              {label:tx.teams,val:misEquipos.length,color:'var(--tx)',onClick:()=>onNavigate('backstage')},
+              {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'var(--tx)',onClick:()=>onNavigate('backstage')},
+              {label:tx.songsCardLbl,val:CANCIONES.length,color:'var(--tx)',onClick:()=>onNavigate('repertorio')},
+              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'var(--tx)',onClick:()=>onNavigate('repertorio')},
+              {label:'Fechas',val:eventos.length,color:'var(--tx)',onClick:()=>onNavigate('fechas')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
@@ -784,14 +797,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             color:'var(--tx2)',lineHeight:1.4,marginBottom:14,maxWidth:480}}>
             Todo lo que necesitas para coordinar tu banda y tocar en vivo, en un solo lugar.
           </div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-            {['Calendario de eventos y ensayos','Coordinación de Banda y equipos de trabajo',
-              'Notificaciones y mensajería','Setlists y Repertorio','Secuencias y monitoreo en vivo',
-              'y mucho más'].map(chip=>(
-              <span key={chip} style={{padding:'5px 11px',borderRadius:100,background:'rgba(255,255,255,.08)',
-                backdropFilter:'blur(8px)',fontSize:'var(--fs-xs)',fontWeight:600,color:'var(--tx2)',
-                fontFamily:"var(--font-body)"}}>{chip}</span>
-            ))}
+          <div style={{height:38,display:'flex',alignItems:'center',overflow:'hidden'}}>
+            <span key={chipIdx} className="hero-chip-swipe"
+              style={{padding:'9px 16px',borderRadius:12,background:'rgba(var(--gn-rgb),.16)',
+                fontSize:'var(--fs-md)',fontWeight:700,color:'var(--gn)',
+                fontFamily:"var(--font-body)",display:'inline-block'}}>
+              {HERO_CHIPS[chipIdx]}
+            </span>
           </div>
         </div>
       </div>
