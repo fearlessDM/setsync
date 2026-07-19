@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CANCIONES } from '../data/constants';
 import { getModoFeatures } from '../data/modo';
 import { PLANES_SETSYNC, TRAMOS_EQUIPO, precioTramoEquipo } from '../data/planes';
@@ -420,6 +420,25 @@ const NOTIFICACIONES_DEMO = [
   {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
 ];
 
+// Número que corre desde 0 hasta su valor final al montar/cambiar (Resumen de Inicio)
+function AnimatedNumber({value,duration=600}){
+  const [display,setDisplay]=useState(0);
+  useEffect(()=>{
+    let raf,start;
+    const from=0,to=Number(value)||0;
+    const step=(ts)=>{
+      if(!start)start=ts;
+      const progress=Math.min((ts-start)/duration,1);
+      const eased=1-Math.pow(1-progress,3); // ease-out cubic
+      setDisplay(Math.round(from+(to-from)*eased));
+      if(progress<1)raf=requestAnimationFrame(step);
+    };
+    raf=requestAnimationFrame(step);
+    return()=>cancelAnimationFrame(raf);
+  },[value,duration]);
+  return display;
+}
+
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={} }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
@@ -429,6 +448,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const nombre = 'Daniel';
   const [tutorialActivo, setTutorialActivo] = useState(null);
   const [faqsOpen, setFaqsOpen] = useState({});
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [tutOpen, setTutOpen] = useState({});
 
   const hoy = new Date();
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
@@ -441,8 +462,6 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const BLOCK_ROWS = [
     ['equipo'],
     ['notificaciones'],
-    ['cancionero','plan'],
-    ['notas'],
     ['tutoriales'],
     ['faqs'],
     ['planes'],
@@ -518,13 +537,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
               {label:tx.songsCardLbl,val:CANCIONES.length,color:'var(--ac)',onClick:()=>onNavigate('repertorio')},
               {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'var(--gn)',onClick:()=>onNavigate('repertorio')},
+              {label:'Fechas',val:eventos.length,color:'#a78bfa',onClick:()=>onNavigate('fechas')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
                   background:'var(--s1)',cursor:'pointer',
                   }}>
                 <div style={{fontFamily:"var(--font-display)",
-                  fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}>{val}</div>
+                  fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}><AnimatedNumber value={val}/></div>
                 <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',
                   color:'var(--tx3)',fontWeight:700,marginTop:4,textTransform:'uppercase',
                   letterSpacing:'1px'}}>{label}</div>
@@ -560,14 +580,19 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'notificaciones': return (
         <Card cols={2} key="notificaciones">
-          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:notifOpen?8:0,cursor:'pointer'}}
+            onClick={()=>setNotifOpen(v=>!v)}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="1.8">
-              <path d="M4 4h13l3 3v13H4z"/><path d="M17 4v6h6"/>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-              letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>{tx.lastNotifications}</span>
+              letterSpacing:'1.5px',fontFamily:"var(--font-body)",flex:1}}>{tx.lastNotifications}</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
+              style={{transform:notifOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
-          {NOTIFICACIONES_DEMO.length===0?(
+          {notifOpen&&(NOTIFICACIONES_DEMO.length===0?(
             <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
               {tx.noNotificationsYet}
@@ -594,7 +619,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 </div>
               ))}
             </div>
-          )}
+          ))}
         </Card>
       );
 
@@ -607,23 +632,34 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'tutoriales': return (
         <Card cols={2} key="tutoriales">
           <Lbl>{tx.tutorialsLbl}</Lbl>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-            {TUTORIALES.map(tut=>(
-              <div key={tut.slug}
-                onClick={()=>setTutorialActivo(tut)}
-                style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
-                  background:'var(--s1)',display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
-                onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
-                onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
-                <div style={{fontSize:'var(--fs-xl)'}}>{tut.icon}</div>
-                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
-                  color:'var(--tx)',lineHeight:1.3}}>{tut.titulo}</div>
-                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
-                  color:'var(--tx3)',lineHeight:1.5}}>{tut.resumen}</div>
-                <div style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:700,
-                  fontFamily:"var(--font-body)",marginTop:2}}>{tx.seeMoreLbl}</div>
+          <div style={{display:'flex',flexDirection:'column',gap:0}}>
+            {TUTORIALES.map((tut,i)=>{
+              const isOpen=!!tutOpen[tut.slug];
+              return(
+              <div key={tut.slug} style={{borderBottom:i<TUTORIALES.length-1?'1px solid var(--s1)':'none'}}>
+                <button onClick={()=>setTutOpen(v=>({...v,[tut.slug]:!v[tut.slug]}))}
+                  style={{width:'100%',background:'none',textAlign:'left',
+                    padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
+                    justifyContent:'space-between',gap:8}}>
+                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
+                    color:'var(--tx)',lineHeight:1.3}}>{tut.icon} {tut.titulo}</span>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)"
+                    strokeWidth="2" style={{flexShrink:0,transform:isOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                {isOpen&&(
+                  <div style={{paddingBottom:12}}>
+                    <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
+                      color:'var(--tx3)',lineHeight:1.5,marginBottom:6}}>{tut.resumen}</div>
+                    <div onClick={()=>setTutorialActivo(tut)}
+                      style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:700,
+                        fontFamily:"var(--font-body)",cursor:'pointer',display:'inline-block'}}>{tx.seeMoreLbl}</div>
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       );
@@ -741,7 +777,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',
             color:'var(--tx2)',lineHeight:1.4,marginTop:4}}>
-            SetSync · {mode==='iglesia'?tx.footerTaglineIglesia:tx.footerTaglineBanda}
+            SetSync · Sincroniza personas, bandas y equipos · Eventos · Repertorio · Asistente en vivo
           </div>
         </div>
       </div>

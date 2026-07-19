@@ -259,9 +259,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.createDateSub}</div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
           {tipos.map(t=>t.label).map(op=>(
@@ -273,7 +273,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
         <input className="inp" placeholder={tx.orCustomNamePlaceholder} value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.dateFieldLbl}</div>
         <div style={{display:'flex',gap:8}}>
           <CustomSelect style={{flex:1}} placeholder={tx.dayLbl}
@@ -290,7 +290,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             options={['2026','2027','2028'].map(y=>({value:y,label:y}))}/>
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.placeAndTimeLbl}</div>
         <div style={{display:'flex',gap:8}}>
           <input className="inp" placeholder="Lugar (ej: Iglesia Central)" style={{flex:2}}
@@ -299,7 +299,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             value={evHora} onChange={e=>setEvHora(e.target.value)}/>
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>{tx.selectSongsLbl}</div>
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,marginBottom:10}}>
           También puedes asignar diferentes variaciones de la canción a cada persona
@@ -377,7 +377,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           ))}
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.teamsCalledLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
           {equipos.map(eq=>{
@@ -415,18 +415,18 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.itineraryLbl}</div>
         <ItinerarioEditor items={evItinerario} onChange={setEvItinerario} lang={lang}/>
       </div>
-      <div className="card" style={{padding:22,marginBottom:18}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNotesLbl}</div>
         <textarea className="inp" value={evNotas} onChange={e=>setEvNotas(e.target.value)}
           style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}
           placeholder={"Ej: Llegar 30 min antes del ensayo. Revisar las canciones con tiempo.\nContactar a Cony para confirmar el equipo de proyecciones.\nFecha límite para cambios en el setlist: jueves en la noche."}/>
       </div>
 
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.attachedFileLbl}</div>
         <div style={{fontSize:'var(--fs-sm)',color:'var(--tx2)',fontWeight:300,marginBottom:10,fontFamily:"var(--font-body)"}}>
           PDF, Word o audio — visible para el equipo en los detalles del evento
@@ -519,15 +519,15 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
-        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
-        <div className="card" style={{padding:22,marginBottom:12}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.setlistNameLbl}</div>
           <input className="inp" placeholder="Ej: Setlist 6 de julio · Noche de adoración..." value={slNombre} onChange={e=>setSlNombre(e.target.value)}/>
         </div>
-        <div className="card" style={{padding:22,marginBottom:12}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
             Asignar a evento
             <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:'var(--fs-subtitle)',marginLeft:6}}>· opcional, puedes hacerlo después</span>
@@ -551,7 +551,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             </div>
           )}
         </div>
-        <div className="card" style={{padding:22,marginBottom:12}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
             <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.selectSongsLbl}</div>
             {slCanciones.length>0&&(
@@ -657,7 +657,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
         {slGuardados.length>0&&(
-          <div className="card" style={{padding:22,marginBottom:12}}>
+          <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
             <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>
               Setlists guardados ({slGuardados.length})
             </div>
@@ -702,7 +702,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
           </div>
         </div>
-        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
         </div>
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
@@ -969,7 +969,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
       </div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:20}}>
@@ -1076,9 +1076,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:6}}>{tx.notificationsTitleLbl}</div>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.notificationsTitleLbl}</div>
       <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
-      <div className="card" style={{padding:24,marginBottom:12}}>
+      <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
           {[tx.wholeTeamLbl,...equipos.map(e=>e.name)].map(dest=>(
@@ -1086,7 +1086,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           ))}
         </div>
       </div>
-      <div className="card" style={{padding:24,marginBottom:12}}>
+      <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>{tx.alertTypeLbl}</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
           {[{id:'recordatorio',label:tx.reminderLbl,color:'#c8a97e',icon:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>},
@@ -1100,7 +1100,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           ))}
         </div>
       </div>
-      <div className="card" style={{padding:24,marginBottom:16}}>
+      <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:16}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:10}}>{tx.messageLbl}</div>
         <textarea className="inp" placeholder="Ej: Hola equipo, este domingo llegamos a las 9:00am. ¡Los esperamos!" value={notifMsg} onChange={e=>setNotifMsg(e.target.value)} style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}/>
       </div>
@@ -1129,9 +1129,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:5}}>{tx.navPersonalizationLbl}</div>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.navPersonalizationLbl}</div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.personalizationSubLbl}</div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.myOrgLbl}</div>
         <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}} defaultValue="Iglesia"/>
         <div style={{display:'flex',gap:8,marginBottom:8}}>
@@ -1151,7 +1151,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.visualThemeLbl}</div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10}}>
           {[
@@ -1197,7 +1197,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           ))}
         </div>
       </div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.languageLbl}</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
           {LANGS.map(l=>(
@@ -1215,7 +1215,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
 
       {(tienePremiere||tieneMonitoreo)&&(
-        <div className="card" style={{padding:22,marginBottom:12}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>
             Features Pro/Premium
           </div>
@@ -1240,7 +1240,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       )}
       {firebaseListo&&currentUser&&(
-        <div className="card" style={{padding:22,marginBottom:12}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.accountLbl}</div>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
             <div style={{width:36,height:36,borderRadius:10,background:'rgba(var(--gn-rgb),.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1282,11 +1282,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
         Palabra del <span style={{color:'var(--ac)'}}>{tx.pastorScreenTitleLbl}</span>
       </div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>{tx.pastorSubLbl}</div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
           <div style={{width:24,height:24,borderRadius:7,background:'rgba(200,169,126,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#c8a97e" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -1299,7 +1299,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           rows={4} style={{width:'100%',resize:'vertical',fontFamily:"var(--font-body)",fontSize:'var(--fs-lg)',lineHeight:1.6}}
           value={pastorTexto||''} onChange={e=>setPastorTexto(e.target.value)}/>
       </div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
           <div style={{width:24,height:24,borderRadius:7,background:'rgba(var(--gn-rgb),.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
@@ -1310,7 +1310,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           rows={5} style={{width:'100%',resize:'vertical',fontFamily:"var(--font-body)",fontSize:'var(--fs-lg)',lineHeight:1.6}}
           value={pastorNotas||''} onChange={e=>setPastorNotas(e.target.value)}/>
       </div>
-      <div className="card" style={{padding:22,marginBottom:12}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
           <div style={{width:24,height:24,borderRadius:7,background:'rgba(var(--rd-rgb),.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--rd)" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1357,7 +1357,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     const BloquePlanes=({planes,activo,onElegir})=>(
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {planes.map(p=>(
-          <div key={p.id} className="card" style={{padding:22,
+          <div key={p.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,
             background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
               <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:p.color,fontWeight:400}}>{p.name}</div>
@@ -1394,7 +1394,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
-        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           {tx.plansAndPricesTitle}
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:14}}>
@@ -1412,7 +1412,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </button>
 
         {faqPlanesOpen && (
-          <div className="card" style={{padding:22,marginBottom:22,background:'var(--s1)'}}>
+          <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:22,background:'var(--s1)'}}>
             {FAQS_PLANES.map((faq,i)=>(
               <div key={i} style={{borderBottom:i<FAQS_PLANES.length-1?'1px solid var(--s2)':'none'}}>
                 <button onClick={()=>setFaqPlanesAbiertas(v=>({...v,[i]:!v[i]}))}
@@ -1469,7 +1469,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     const BloquePlanesEquipo=({planes,activo,onElegir})=>(
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {planes.map(p=>(
-          <div key={p.id} className="card" style={{padding:22,
+          <div key={p.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,
             background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
               <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:p.color,fontWeight:400}}>{p.name}</div>
@@ -1506,7 +1506,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
-        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Cuenta <span style={{color:'var(--gn)'}}>Equipo</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:18}}>
@@ -1524,7 +1524,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         )}
         {orgQueAdministro ? (
           // Soy admin de un equipo real (Firestore) — gestión completa.
-          <div className="card" style={{padding:22,background:'var(--s1)'}}>
+          <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,background:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
               <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--gn)',fontWeight:400}}>
                 {TRAMOS_EQUIPO.find(t=>t.id===orgQueAdministro.tramoId)?.label||orgQueAdministro.tramoId}
@@ -1642,7 +1642,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         ) : viaEquipo ? (
           // Pertenezco a un equipo, pero no soy el admin — sin controles.
-          <div className="card" style={{padding:22,background:'var(--s1)'}}>
+          <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,background:'var(--s1)'}}>
             <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.6}}>
               Ya formas parte de una Cuenta Equipo — tienes acceso Premium completo. Solo quien la contrató puede agregar o quitar miembros.
             </div>
@@ -1687,7 +1687,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
-        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+        <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Ultra <span style={{color:'var(--ac)'}}>Admin</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:18}}>
@@ -1703,7 +1703,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             const estadoColor=org.estado==='activa'?'var(--gn)':org.estado==='gracia'?'#f5a623':'var(--tx3)';
             const dirty = uaEdicion[org.id] && Object.keys(uaEdicion[org.id]).length>0;
             return(
-              <div key={org.id} className="card" style={{padding:22,}}>
+              <div key={org.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
                   <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',
                     padding:'3px 9px',borderRadius:100,color:estadoColor,background:`${estadoColor}20`,flexShrink:0}}>
@@ -1779,12 +1779,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.backstage}</span>
         </div>
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>
       </div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>{tx.rehearsalSubLbl}</div>
 
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.assignToLbl}</div>
         <CustomSelect value={ensRef} onChange={setEnsRef}
           placeholder="Sin asignar — ensayo libre"
@@ -1792,7 +1792,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
 
       {ensayosDelEvento.length>0&&(
-        <div className="card" style={{padding:22,marginBottom:14,background:'rgba(200,169,126,.05)'}}>
+        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14,background:'rgba(200,169,126,.05)'}}>
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
             Ya hay {ensayosDelEvento.length} ensayo{ensayosDelEvento.length>1?'s':''} para este evento
           </div>
@@ -1805,14 +1805,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       )}
 
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.rehearsalSetlistLbl}</div>
         <CustomSelect value={ensSetlistId} onChange={setEnsSetlistId}
           placeholder={tx.noSetlistAssignedLbl}
           options={slGuardados.map(sl=>({value:sl.id,label:`${sl.nombre} · ${sl.canciones.length} canciones`}))}/>
       </div>
 
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.callTeamsLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
           {equipos.map(eq=>{
@@ -1830,14 +1830,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
 
-      <div className="card" style={{padding:22,marginBottom:14}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.rehearsalNotesLbl}</div>
         <textarea className="inp" value={ensNotas} onChange={e=>setEnsNotas(e.target.value)}
           style={{minHeight:70,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}
           placeholder="Ej: Repasar bloque de adoración, foco en transiciones."/>
       </div>
 
-      <div className="card" style={{padding:22,marginBottom:18}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.attachedFileLbl}</div>
         {ensArchivo?(
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',

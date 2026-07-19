@@ -716,11 +716,8 @@ Tuya es la gloria, Por siempre amén.
 
           {/* Título */}
           <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'calc(var(--fs-display) * 0.95)',color:'#f3f1ed',marginBottom:10,lineHeight:1.1}}>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'calc(var(--fs-display) * 0.95 + 4px)',color:'#ffffff',marginBottom:10,lineHeight:1.1}}>
               {tl.choose}
-            </div>
-            <div style={{fontSize:'var(--fs-base)',color:'rgba(255,255,255,.4)',lineHeight:1.7,fontWeight:300}}>
-              {tl.sub}
             </div>
           </div>
 
@@ -756,10 +753,6 @@ Tuya es la gloria, Por siempre amén.
             ))}
           </div>
 
-          {/* Nota: se puede cambiar */}
-          <div style={{fontSize:'var(--fs-xs)',color:'var(--div)',textAlign:'center',lineHeight:1.7,padding:'0 16px 60px',fontWeight:300}}>
-            {tl.canChange}
-          </div>
         </div>
       </div>
     );

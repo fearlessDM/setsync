@@ -508,7 +508,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </div>
 
             {/* Info */}
-            <div className="card" style={{padding:22,marginBottom:20}}>
+            <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:20}}>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
                 placeholder="Título canción"
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
