@@ -447,6 +447,31 @@ function AnimatedNumber({value,duration=600}){
   return display;
 }
 
+const Card = ({children, cols=1, onClick, style={}, i=0}) => (
+  <div onClick={onClick} className="press-glow block-entry" style={{
+    position:'relative',
+    background:'var(--s1)',borderRadius:'var(--rad-lg)',
+    padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
+    gridColumn:`span ${cols}`,transition:'background .15s','--i':i,...style,
+  }}
+  onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
+  onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
+  >
+    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
+      style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
+      <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+      <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+      <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+    </svg>
+    {children}
+  </div>
+);
+
+const Lbl = ({children}) => (
+  <div style={{fontFamily:"var(--font-display)",fontWeight:400,
+    fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>{children}</div>
+);
+
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={} }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
@@ -463,6 +488,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     return()=>clearInterval(t);
   },[]);
   const [tutOpen, setTutOpen] = useState({});
+  const [tutSectionOpen, setTutSectionOpen] = useState(false);
 
   const hoy = new Date();
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
@@ -473,38 +499,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   // Bloques con orden arrastrable (por filas de 2)
   // Cada "row" es un índice de bloque
   const BLOCK_ROWS = [
-    ['equipo'],
     ['notificaciones'],
+    ['equipo'],
     ['tutoriales'],
     ['faqs'],
     ['planes'],
   ];
   const { order, onDragStart, onDragEnter, onDragEnd } = useDragRows(BLOCK_ROWS.map((_,i)=>i));
-
-  const Card = ({children, cols=1, onClick, style={}, i=0}) => (
-    <div onClick={onClick} className="press-glow block-entry" style={{
-      position:'relative',
-      background:'var(--s1)',borderRadius:'var(--rad-lg)',
-      padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
-      gridColumn:`span ${cols}`,transition:'background .15s','--i':i,...style,
-    }}
-    onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
-    onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
-    >
-      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
-        style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
-        <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
-        <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-        <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-      </svg>
-      {children}
-    </div>
-  );
-
-  const Lbl = ({children}) => (
-    <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-      fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>{children}</div>
-  );
 
   const toggleFaq = i => setFaqsOpen(v=>({...v,[i]:!v[i]}));
 
@@ -644,36 +645,34 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'tutoriales': return (
         <Card cols={2} i={i} key="tutoriales">
-          <Lbl>{tx.tutorialsLbl}</Lbl>
-          <div style={{display:'flex',flexDirection:'column',gap:0}}>
-            {TUTORIALES.map((tut,i)=>{
-              const isOpen=!!tutOpen[tut.slug];
-              return(
-              <div key={tut.slug} style={{borderBottom:i<TUTORIALES.length-1?'1px solid var(--s1)':'none'}}>
-                <button onClick={()=>setTutOpen(v=>({...v,[tut.slug]:!v[tut.slug]}))}
-                  style={{width:'100%',background:'none',textAlign:'left',
-                    padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
-                    justifyContent:'space-between',gap:8}}>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
-                    color:'var(--tx)',lineHeight:1.3}}>{tut.icon} {tut.titulo}</span>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)"
-                    strokeWidth="2" style={{flexShrink:0,transform:isOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </button>
-                {isOpen&&(
-                  <div style={{paddingBottom:12}}>
-                    <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
-                      color:'var(--tx3)',lineHeight:1.5,marginBottom:6}}>{tut.resumen}</div>
-                    <div onClick={()=>setTutorialActivo(tut)}
-                      style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:700,
-                        fontFamily:"var(--font-body)",cursor:'pointer',display:'inline-block'}}>{tx.seeMoreLbl}</div>
-                  </div>
-                )}
-              </div>
-              );
-            })}
+          <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
+            onClick={()=>setTutSectionOpen(v=>!v)}>
+            <div style={{flex:1}}><Lbl>{tx.tutorialsLbl}</Lbl></div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+              style={{transform:tutSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
+          {tutSectionOpen&&(
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:10}}>
+              {TUTORIALES.map(tut=>(
+                <div key={tut.slug}
+                  onClick={()=>setTutorialActivo(tut)}
+                  style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
+                    background:'var(--s2)',display:'flex',flexDirection:'column',gap:6,transition:'background .15s'}}
+                  onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
+                  onPointerLeave={e=>e.currentTarget.style.background='var(--s2)'}>
+                  <div style={{fontSize:'var(--fs-xl)'}}>{tut.icon}</div>
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
+                    color:'var(--tx)',lineHeight:1.3}}>{tut.titulo}</div>
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
+                    color:'var(--tx3)',lineHeight:1.5}}>{tut.resumen}</div>
+                  <div style={{fontSize:'var(--fs-xs)',color:'var(--ac)',fontWeight:700,
+                    fontFamily:"var(--font-body)",marginTop:2}}>{tx.seeMoreLbl}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       );
 
@@ -709,10 +708,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>{tx.plansSetSyncLbl}</Lbl>
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.personalPlansLbl}</div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:14}}>
+            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6,marginTop:4}}>SetSync Solo</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:16}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
               const isCurrent = !viaEquipo && planId===p.id;
+              const detalle = p.multiBanda ? 'Multi-banda + PDF'
+                : p.monitoreo ? 'Vista Escenario + Monitoreo'
+                : `${p.limiteCanciones} canciones`;
               return (
                 <div key={p.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
                   background:isCurrent?'rgba(var(--gn-rgb),.1)':'var(--s1)',
@@ -725,6 +727,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     {p.precioMensual===0?tx.freeLbl:`$${p.precioMensual}`}
                   </div>
                   {p.precioMensual>0&&<div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginTop:1}}>/mes</div>}
+                  <div style={{fontSize:'8px',color:'var(--tx3)',marginTop:5,lineHeight:1.3,fontFamily:"var(--font-body)"}}>{detalle}</div>
                   {isCurrent&&<div style={{fontSize:'var(--fs-3xs)',color:'var(--gn)',fontWeight:700,marginTop:4}}>{tx.yourPlanLbl}</div>}
                 </div>
               );
@@ -732,34 +735,33 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>{tx.teamPlansPerPersonLbl}</div>
-          <div style={{display:'flex',flexDirection:'column',gap:5}}>
-            {TRAMOS_EQUIPO.map(t=>{
+            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>SetSync Teams</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
+            {TRAMOS_EQUIPO.slice(0,3).map(t=>{
               const isCurrentTramo = viaEquipo && orgPrincipal?.tramoId===t.id;
               const precio = t.id==='eq-36+'
                 ? `${tx.fromLbl} $${precioTramoEquipo(t.id,36)}`
                 : `$${t.precioBase}`;
               return (
-                <div key={t.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                  padding:'8px 12px',borderRadius:10,
+                <div key={t.id} style={{padding:'10px 6px',borderRadius:10,textAlign:'center',
                   background:isCurrentTramo?'rgba(var(--gn-rgb),.1)':'var(--s1)',
                   }}>
-                  <div>
-                    <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:400}}>{t.label}</span>
-                    {t.marcaBlanca&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontFamily:"var(--font-body)",marginTop:1}}>{tx.whiteLabelIncluded}</div>}
-                    {isCurrentTramo&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--gn)',fontWeight:700,fontFamily:"var(--font-body)",marginTop:1}}>{tx.yourPlanLbl}</div>}
+                  <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:isCurrentTramo?'var(--gn)':'var(--tx3)',
+                    textTransform:'uppercase',letterSpacing:'.5px',marginBottom:5,
+                    fontFamily:"var(--font-body)"}}>{t.label}</div>
+                  <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-emph)',
+                    color:'var(--tx)',fontWeight:400}}>{precio}</div>
+                  <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginTop:1}}>fijo/mes</div>
+                  <div style={{fontSize:'8px',color:t.marcaBlanca?'var(--gn)':'var(--tx3)',marginTop:5,lineHeight:1.3,fontFamily:"var(--font-body)"}}>
+                    {t.marcaBlanca?tx.whiteLabelIncluded:'Premium para todos'}
                   </div>
-                  <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',fontFamily:"var(--font-body)",fontWeight:700,flexShrink:0}}>{precio}</span>
+                  {isCurrentTramo&&<div style={{fontSize:'var(--fs-3xs)',color:'var(--gn)',fontWeight:700,marginTop:4}}>{tx.yourPlanLbl}</div>}
                 </div>
               );
             })}
           </div>
-
-          <div style={{marginTop:12,textAlign:'center'}}>
-            <span style={{fontSize:'var(--fs-sm)',color:'var(--gn)',fontWeight:700,cursor:'pointer',
-              fontFamily:"var(--font-body)"}} onClick={()=>onNavigate('backstage')}>
-              {tx.viewFullPlansLbl}
-            </span>
+          <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',marginTop:8,fontFamily:"var(--font-body)",textAlign:'center'}}>
+            {TRAMOS_EQUIPO[3].label}: {tx.fromLbl} ${precioTramoEquipo('eq-36+',36)} — ver en Backstage → Planes
           </div>
         </Card>
       );
@@ -799,9 +801,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           </div>
           <div style={{height:38,display:'flex',alignItems:'center',overflow:'hidden'}}>
             <span key={chipIdx} className="hero-chip-swipe"
-              style={{padding:'9px 16px',borderRadius:12,background:'rgba(var(--gn-rgb),.16)',
-                fontSize:'var(--fs-md)',fontWeight:700,color:'var(--gn)',
-                fontFamily:"var(--font-body)",display:'inline-block'}}>
+              style={{padding:'9px 16px',borderRadius:8,background:'var(--gn)',
+                fontSize:'var(--fs-md)',fontWeight:500,color:'#fff',textTransform:'uppercase',
+                letterSpacing:'.5px',fontFamily:"var(--font-body)",display:'inline-block'}}>
               {HERO_CHIPS[chipIdx]}
             </span>
           </div>
