@@ -529,15 +529,15 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'equipo': return (
         <Card cols={2} key="equipo">
-          <Lbl>Resumen</Lbl>
+          <Lbl>Tu Resumen</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
               {label:tx.peopleLbl,val:personas.length,color:'var(--ac)',onClick:()=>onNavigate('backstage')},
               {label:tx.teams,val:misEquipos.length,color:'var(--gn)',onClick:()=>onNavigate('backstage')},
               {label:tx.leadersLbl,val:equipos.filter(e=>e.lider).length,color:'#a78bfa',onClick:()=>onNavigate('backstage')},
-              {label:tx.songsCardLbl,val:CANCIONES.length,color:'var(--ac)',onClick:()=>onNavigate('repertorio')},
-              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'var(--gn)',onClick:()=>onNavigate('repertorio')},
-              {label:'Fechas',val:eventos.length,color:'#a78bfa',onClick:()=>onNavigate('fechas')},
+              {label:tx.songsCardLbl,val:CANCIONES.length,color:'#F5A623',onClick:()=>onNavigate('repertorio')},
+              {label:'Multitracks',val:Object.values(archivosDB).filter(a=>(a?.secuencia||[]).length>0).length,color:'#4ECDC4',onClick:()=>onNavigate('repertorio')},
+              {label:'Fechas',val:eventos.length,color:'#FF6B9D',onClick:()=>onNavigate('fechas')},
             ].map(({label,val,color,onClick})=>(
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
@@ -545,7 +545,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   }}>
                 <div style={{fontFamily:"var(--font-display)",
                   fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}><AnimatedNumber value={val}/></div>
-                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',
+                <div style={{fontFamily:"var(--font-body)",fontSize:'8px',
                   color:'var(--tx3)',fontWeight:700,marginTop:4,textTransform:'uppercase',
                   letterSpacing:'1px'}}>{label}</div>
               </div>

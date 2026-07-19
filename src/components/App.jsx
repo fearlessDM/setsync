@@ -3,7 +3,7 @@
 // retirado). El modo elegido en el onboarding controla vocabulario y
 // features vía data/modo.js, y el mismo árbol de componentes (Backstage,
 // Fechas, Repertorio, Equipos) sirve a ambos modos.
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, Component } from 'react';
 import { CANCIONES, SETLISTS, EVENTOS_ESPECIALES, EQUIPOS_DATA, COVERS_DEMO } from '../data/constants';
 import { SONG_CONTENT_IGLESIA } from '../data/songs-iglesia';
 import { SONG_CONTENT_BANDA } from '../data/songs-banda';
@@ -27,6 +27,43 @@ import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
 import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
+
+// ── ErrorBoundary ──────────────────────────────────────────────────────
+// Red de seguridad: si algo dentro de SongView (o cualquier hijo envuelto)
+// tira un error de render no anticipado, React por defecto desmonta TODO
+// el árbol y deja la pantalla en negro/blanco sin ningún mensaje — exactamente
+// el bug reportado varias veces ("se va a negro"). Con esto, cualquier error
+// futuro no detectado en revisión de código queda contenido: se muestra un
+// aviso recuperable con botón para volver, en vez de tumbar la app entera.
+class ErrorBoundary extends Component {
+  constructor(props){ super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(){ return { hasError: true }; }
+  componentDidCatch(error, info){
+    console.error('SetSync — error capturado por ErrorBoundary:', error, info);
+  }
+  render(){
+    if(this.state.hasError){
+      return (
+        <div style={{position:'fixed',inset:0,background:'var(--bg)',color:'var(--tx)',
+          display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+          gap:16,padding:24,zIndex:500,textAlign:'center'}}>
+          <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',textTransform:'uppercase'}}>
+            Algo no cargó bien
+          </div>
+          <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',maxWidth:340}}>
+            Hubo un problema mostrando esta canción. Volvé atrás e intentá de nuevo — si sigue pasando, avisa qué canción y desde dónde la abriste.
+          </div>
+          <button onClick={()=>{this.setState({hasError:false});this.props.onReset&&this.props.onReset();}}
+            style={{padding:'10px 20px',borderRadius:100,background:'var(--gn)',color:'var(--btn-c)',
+              fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
+            Volver
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ── Seed de datos Banda (antes vivía dentro de BandaApp.jsx) ─────────────
 const SEED_BANDA_EVENTOS=[
@@ -153,8 +190,6 @@ export default function App(){
     // propio en contentDB (sembrado más abajo); tipo:'partitura' trae su
     // propio archivo (imagen/PDF) y SongView lo muestra en vez del acorde.
     'YESHUA':[
-      {id:'v_demo_bajo',   label:'Bajo',    tipo:'letra'},
-      {id:'v_demo_piano',  label:'Piano',   tipo:'letra'},
       {id:'v_demo_trombon',label:'Trombón', tipo:'partitura',
         archivoNombre:'Yeshua - Trombón.svg',
         archivoUrl:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgNjAwIDgwMCI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjZmRmYWYzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI1MCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMxYTFhMWEiIGZvbnQtd2VpZ2h0PSJib2xkIj5ZRVNIVUE8L3RleHQ+Cjx0ZXh0IHg9IjQwIiB5PSI3MiIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGZpbGw9IiM1NTUiPlRyb21ib24gZW4gRG8gLSBNYXJjb3MgQnJ1bmV0PC90ZXh0Pgo8ZyBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMS4yIj4KPGxpbmUgeDE9IjQwIiB5MT0iMTIwIiB4Mj0iNTYwIiB5Mj0iMTIwIi8+CjxsaW5lIHgxPSI0MCIgeTE9IjEzMiIgeDI9IjU2MCIgeTI9IjEzMiIvPgo8bGluZSB4MT0iNDAiIHkxPSIxNDQiIHgyPSI1NjAiIHkyPSIxNDQiLz4KPGxpbmUgeDE9IjQwIiB5MT0iMTU2IiB4Mj0iNTYwIiB5Mj0iMTU2Ii8+CjxsaW5lIHgxPSI0MCIgeTE9IjE2OCIgeDI9IjU2MCIgeTI9IjE2OCIvPgo8L2c+CjxwYXRoIGQ9Ik01MiAxMTIgQzQwIDEyMiA0MCAxNDAgNTUgMTQ4IEM3MCAxNTYgNzIgMTY4IDU4IDE3NiBDNDggMTgyIDQ0IDE3MiA1MCAxNjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzExMSIgc3Ryb2tlLXdpZHRoPSIyLjUiLz4KPGcgc3Ryb2tlPSIjMjIyIiBzdHJva2Utd2lkdGg9IjEuMiI+CjxsaW5lIHgxPSI0MCIgeTE9IjIyMCIgeDI9IjU2MCIgeTI9IjIyMCIvPgo8bGluZSB4MT0iNDAiIHkxPSIyMzIiIHgyPSI1NjAiIHkyPSIyMzIiLz4KPGxpbmUgeDE9IjQwIiB5MT0iMjQ0IiB4Mj0iNTYwIiB5Mj0iMjQ0Ii8+CjxsaW5lIHgxPSI0MCIgeTE9IjI1NiIgeDI9IjU2MCIgeTI9IjI1NiIvPgo8bGluZSB4MT0iNDAiIHkxPSIyNjgiIHgyPSI1NjAiIHkyPSIyNjgiLz4KPC9nPgo8cGF0aCBkPSJNNTIgMjEyIEM0MCAyMjIgNDAgMjQwIDU1IDI0OCBDNzAgMjU2IDcyIDI2OCA1OCAyNzYgQzQ4IDI4MiA0NCAyNzIgNTAgMjY2IiBmaWxsPSJub25lIiBzdHJva2U9IiMxMTEiIHN0cm9rZS13aWR0aD0iMi41Ii8+CjxnIGZpbGw9IiMxMTEiPgo8Y2lyY2xlIGN4PSIxNDAiIGN5PSIxNDQiIHI9IjYiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMzIiIHI9IjYiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSIxNTAiIHI9IjYiLz4KPGNpcmNsZSBjeD0iMzIwIiBjeT0iMTIwIiByPSI2Ii8+PGNpcmNsZSBjeD0iMzgwIiBjeT0iMTU2IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDQwIiBjeT0iMTM4IiByPSI2Ii8+CjxjaXJjbGUgY3g9IjE0MCIgY3k9IjI0NCIgcj0iNiIvPjxjaXJjbGUgY3g9IjIwMCIgY3k9IjIzMiIgcj0iNiIvPjxjaXJjbGUgY3g9IjI2MCIgY3k9IjI1MCIgcj0iNiIvPgo8Y2lyY2xlIGN4PSIzMjAiIGN5PSIyMjAiIHI9IjYiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjYiLz48Y2lyY2xlIGN4PSI0NDAiIGN5PSIyMzgiIHI9IjYiLz4KPC9nPgo8dGV4dCB4PSI0MCIgeT0iNzQwIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iIzk5OSI+UGFydGl0dXJhIGRlbW8gZ2VuZXJhZGEgcG9yIFNldFN5bmMgLSByZWVtcGxhemFyIHBvciBlbCBQREYgcmVhbDwvdGV4dD4KPC9zdmc+'},
@@ -842,17 +877,19 @@ Tuya es la gloria, Por siempre amén.
 
       {songView!==null&&songViewSongs&&songViewSongs.length>0&&(
         <>
-          <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
-            theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
-            sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
-            archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}
-            accountId={accountId} authListo={currentUser!==undefined}
-            miNombre={currentUser?.displayName||currentUser?.email||'Líder'}
-            onEditInCancionero={(nombreCancion)=>{
-              setSongView(null);setSongViewSongs(null);
-              setSongParaEditar(nombreCancion);
-              setView('repertorio');
-            }}/>
+          <ErrorBoundary onReset={()=>{setSongView(null);setSongViewSongs(null);}}>
+            <SongView songs={songViewSongs} startIdx={songView} onClose={()=>{setSongView(null);setSongViewSongs(null);}}
+              theme={theme} isAdmin={isAdmin} onSaveChords={handleSaveChords} contentDB={contentDB} lang={lang}
+              sidebarVisible={false} sidebarCollapsed={sbCol} ensayosDisponibles={ensayos}
+              archivosDB={archivosDB} setArchivosDB={setArchivosDB} variacionesDB={variacionesDB} estructurasDB={estructurasDB}
+              accountId={accountId} authListo={currentUser!==undefined}
+              miNombre={currentUser?.displayName||currentUser?.email||'Líder'}
+              onEditInCancionero={(nombreCancion)=>{
+                setSongView(null);setSongViewSongs(null);
+                setSongParaEditar(nombreCancion);
+                setView('repertorio');
+              }}/>
+          </ErrorBoundary>
           {(tieneClick||tieneMultitracks)&&(
             <div style={{position:'fixed',bottom:80,right:16,zIndex:60,width:240,display:'flex',flexDirection:'column',gap:8}}>
               {mostrarMultitracks&&tieneMultitracks&&(

@@ -1207,57 +1207,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                 color:lang===l.code?'var(--ac)':'var(--tx3)',
                 fontSize:'var(--fs-sm)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",
                 display:'flex',alignItems:'center',gap:6}}>
-              <span style={{fontSize:'var(--fs-emph)'}}>{l.flag}</span>
               <span style={{lineHeight:1.2}}>{l.label}</span>
             </button>
           ))}
         </div>
       </div>
-
-      {(tienePremiere||tieneMonitoreo)&&(
-        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
-          <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:12}}>
-            Features Pro/Premium
-          </div>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {tienePremiere&&(
-              <button onClick={()=>{setBsView(null);onNavigate('premiere');}}
-                style={{padding:'10px 12px',borderRadius:10,background:'var(--s1)',
-                  color:'var(--tx)',fontSize:'var(--fs-md)',fontWeight:700,cursor:'pointer',textAlign:'left',
-                  fontFamily:"var(--font-body)"}}>
-                ★ Premiere — Estrenos exclusivos
-              </button>
-            )}
-            {tieneMonitoreo&&(
-              <button onClick={()=>{setBsView(null);onNavigate('monitoreo');}}
-                style={{padding:'10px 12px',borderRadius:10,background:'var(--s1)',
-                  color:'var(--tx)',fontSize:'var(--fs-md)',fontWeight:700,cursor:'pointer',textAlign:'left',
-                  fontFamily:"var(--font-body)"}}>
-                ⊟ Monitoreo — Mezcla en vivo (UI)
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-      {firebaseListo&&currentUser&&(
-        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
-          <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.accountLbl}</div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
-            <div style={{width:36,height:36,borderRadius:10,background:'rgba(var(--gn-rgb),.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.displayName||tx.noNameLbl}</div>
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{currentUser.email}</div>
-            </div>
-          </div>
-          <button onClick={onCerrarSesion}
-            style={{width:'100%',padding:'10px 0',borderRadius:10,background:'rgba(var(--rd-rgb),.06)',color:'var(--rd)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,
-              fontFamily:"var(--font-body)"}}>
-            Cerrar sesión
-          </button>
-        </div>
-      )}
 
     </div>
   );
