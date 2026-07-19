@@ -761,7 +761,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             })}
           </div>
           <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',marginTop:8,fontFamily:"var(--font-body)",textAlign:'center'}}>
-            {TRAMOS_EQUIPO[3].label}: {tx.fromLbl} ${precioTramoEquipo('eq-36+',36)} — ver en Backstage → Planes
+            Sobre 35 personas: mismo precio del tramo 26–35, +$1 por cada persona adicional.
           </div>
         </Card>
       );
