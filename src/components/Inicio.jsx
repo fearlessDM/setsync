@@ -468,12 +468,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   ];
   const { order, onDragStart, onDragEnter, onDragEnd } = useDragRows(BLOCK_ROWS.map((_,i)=>i));
 
-  const Card = ({children, cols=1, onClick, style={}}) => (
-    <div onClick={onClick} style={{
+  const Card = ({children, cols=1, onClick, style={}, i=0}) => (
+    <div onClick={onClick} className="press-glow block-entry" style={{
       position:'relative',
       background:'var(--s1)',borderRadius:'var(--rad-lg)',
       padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
-      gridColumn:`span ${cols}`,transition:'background .15s',...style,
+      gridColumn:`span ${cols}`,transition:'background .15s','--i':i,...style,
     }}
     onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
     onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
@@ -496,11 +496,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const toggleFaq = i => setFaqsOpen(v=>({...v,[i]:!v[i]}));
 
   // Renderizar cada bloque por key
-  const renderBlock = (key) => {
+  const renderBlock = (key, i=0) => {
     switch(key) {
 
       case 'proximo': return (
-        <Card cols={2} onClick={()=>onNavigate('fechas')} key="proximo">
+        <Card cols={2} i={i} onClick={()=>onNavigate('fechas')} key="proximo">
           <Lbl>{mode==='iglesia'?tx.nextDateCard:tx.nextShowCard}</Lbl>
           {proximoEvento ? (<>
             <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',
@@ -528,7 +528,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'equipo': return (
-        <Card cols={2} key="equipo">
+        <Card cols={2} i={i} key="equipo">
           <Lbl>Tu Resumen</Lbl>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
@@ -555,7 +555,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'cancionero': return (
-        <Card onClick={()=>onNavigate('repertorio')} key="cancionero">
+        <Card i={i} onClick={()=>onNavigate('repertorio')} key="cancionero">
           <Lbl>{tx.songsCardLbl}</Lbl>
           <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{CANCIONES.length}</div>
@@ -567,7 +567,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'plan': return (
-        <Card onClick={()=>onNavigate('backstage')} key="plan">
+        <Card i={i} onClick={()=>onNavigate('backstage')} key="plan">
           <Lbl>{tx.myPlanLbl}</Lbl>
           <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',
             color:'var(--ac)',lineHeight:1,fontWeight:400}}>{planLabel}</div>
@@ -579,7 +579,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'notificaciones': return (
-        <Card cols={2} key="notificaciones">
+        <Card cols={2} i={i} key="notificaciones">
           <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:notifOpen?8:0,cursor:'pointer'}}
             onClick={()=>setNotifOpen(v=>!v)}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="1.8">
@@ -630,7 +630,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'tutoriales': return (
-        <Card cols={2} key="tutoriales">
+        <Card cols={2} i={i} key="tutoriales">
           <Lbl>{tx.tutorialsLbl}</Lbl>
           <div style={{display:'flex',flexDirection:'column',gap:0}}>
             {TUTORIALES.map((tut,i)=>{
@@ -665,7 +665,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'faqs': return (
-        <Card cols={2} key="faqs">
+        <Card cols={2} i={i} key="faqs">
           <Lbl>{tx.faqLbl}</Lbl>
           <div style={{display:'flex',flexDirection:'column',gap:0}}>
             {FAQS.map((faq,i)=>(
@@ -692,7 +692,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'planes': return (
-        <Card cols={2} key="planes">
+        <Card cols={2} i={i} key="planes">
           <Lbl>{tx.plansSetSyncLbl}</Lbl>
 
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
@@ -799,7 +799,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 marginBottom:'var(--gap,10px)',
                 cursor:'grab',
               }}>
-              {keys.map(key=>renderBlock(key))}
+              {keys.map(key=>renderBlock(key,dragIdx))}
             </div>
           );
         })}

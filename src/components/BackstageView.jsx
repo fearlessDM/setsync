@@ -801,12 +801,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-          {equipos.map(eq=>(
+          {equipos.map((eq,i)=>(
             <div key={eq.id}
               onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}
+              className="press-glow block-entry"
               style={{
                 borderRadius:14,background:'var(--s1)',overflow:'hidden',cursor:'pointer',
-                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none',
+                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none','--i':i,
               }}>
               {/* Card header */}
               <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
@@ -1866,10 +1867,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        {ITEMS.map(it=>(
+        {ITEMS.map((it,i)=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
+            className="press-glow block-entry"
             style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',
-              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
+              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104,'--i':i}}>
             {/* Imagen de fondo del bloque — sube el archivo con este mismo
                 nombre a /public/backstage/ y aparece sola; hasta entonces
                 el bloque queda plano y limpio sin romper nada. */}

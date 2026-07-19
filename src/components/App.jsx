@@ -114,6 +114,11 @@ const ROLES_BANDA=[
 ];
 
 export default function App(){
+  // Fix iOS Safari (v93): sin ESTE listener, el pseudo-selector :active de
+  // CSS a veces no dispara al tocar (bug histórico de WebKit). Con esto
+  // resuelto acá, TODO :active de la app funciona en iPhone — incluye el
+  // touch feedback de .scard y de los bloques con className="press-glow".
+  useEffect(()=>{document.addEventListener('touchstart',()=>{},{passive:true});},[]);
   const [appMode,setAppMode]=useState(null); // null | 'iglesia' | 'banda' — UNA sola decisión, para siempre
   const [lang,setLang]=useState('es');
   const tx=getT(lang);

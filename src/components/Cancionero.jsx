@@ -207,7 +207,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       </div>
       <div className={`bpm-bar ${type}`}/>
       <div className="sg">
-        {songs.map(s=><SongCard key={s.n} s={s}/>)}
+        {songs.map((s,i)=><SongCard key={s.n} s={s} i={i}/>)}
       </div>
     </div>
   );
@@ -217,7 +217,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   // distinta en cada una (una de ellas ni siquiera tenía el folder-chip).
   // v36-ampliación: folder-chip más grande y centrado, con conteo de
   // archivos de la carpeta (1 = original + variaciones/partituras).
-  const SongCard=({s})=>{
+  const SongCard=({s,i=0})=>{
     const arch=archivosDB[s.n]||{};
     const totalArchivos=1+(variacionesDB[s.n]||[]).length+(arch.secuencia||[]).length+(arch.trackReferencia?1:0); // 1 = original (letra/acordes)
     const hayExtra=totalArchivos>1;
@@ -226,7 +226,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     const porRevisar=importDB[s.n]?.status==='sin_revisar';
     const conteoAvisos=(importDB[s.n]?.warnings||[]).length;
     return(
-      <div className="scard" onClick={()=>abrirCancion(s.n)} style={{cursor:'pointer',position:'relative'}}>
+      <div className="scard block-entry" onClick={()=>abrirCancion(s.n)}
+        style={{cursor:'pointer',position:'relative','--i':Math.min(i,12)}}>
         {porRevisar&&(
           <div title={conteoAvisos>0?`${conteoAvisos} aviso${conteoAvisos===1?'':'s'} del parser para revisar`:'Importada automáticamente, sin revisar todavía'}
             style={{position:'absolute',top:6,left:6,padding:'2px 7px',borderRadius:100,
@@ -1166,7 +1167,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </button>
           </div>
         ):bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)
-        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map(s=><SongCard key={s.n} s={s}/>)}</div>)
+        :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map((s,i)=><SongCard key={s.n} s={s} i={i}/>)}</div>)
       )}
 
       {tab==='universal'&&(
@@ -1176,8 +1177,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>Canciones compartidas por iglesias de la comunidad Setlist. Solo disponible en Modo Iglesia.</div>
           </div>
           <div className="sg">
-            {UNIVERSAL.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase())).map(s=>(
-              <div key={s.n} className="scard" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer'}}>
+            {UNIVERSAL.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase())).map((s,i)=>(
+              <div key={s.n} className="scard block-entry" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer','--i':Math.min(i,12)}}>
                 <div className="scard-n">{s.n}</div>
                 <div className="scard-s">{s.key} · {s.bpm} BPM</div>
                 <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginTop:4,fontStyle:'italic'}}>{s.equipo}</div>
