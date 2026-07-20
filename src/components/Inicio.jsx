@@ -586,22 +586,37 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'comofunciona': return (
         <Card cols={2} i={i} key="comofunciona">
           <Lbl>Cómo funciona</Lbl>
-          <div style={{display:'flex',flexDirection:'column',gap:0,marginTop:6}}>
-            {COMO_FUNCIONA_STEPS.map((s,si)=>(
-              <div key={si} style={{display:'flex',gap:12,padding:'10px 0',
-                borderBottom:si<COMO_FUNCIONA_STEPS.length-1?'1px solid var(--s1)':'none'}}>
-                <div style={{width:24,height:24,borderRadius:'50%',background:'rgba(var(--gn-rgb),.14)',
-                  color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-sm)',fontWeight:400,
-                  display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{si+1}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
-                    color:'var(--tx)',marginBottom:3}}>{s.titulo}</div>
-                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
-                    color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
+            {COMO_FUNCIONA_STEPS.slice(0,4).map((s,si)=>(
+              <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(var(--gn-rgb),.14)',
+                    color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-sm)',fontWeight:400,
+                    display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</div>
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
+                    color:'var(--tx)',textTransform:'uppercase',letterSpacing:'.3px'}}>{s.titulo}</div>
                 </div>
+                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',fontWeight:300,
+                  color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
               </div>
             ))}
           </div>
+          {COMO_FUNCIONA_STEPS.slice(4).map((s,si)=>(
+            <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'rgba(var(--gn-rgb),.08)',marginTop:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--gn)" stroke="var(--gn)" strokeWidth="1"
+                  style={{flexShrink:0}}>
+                  <path d="M6 3h12l4 6-10 12L2 9z"/>
+                </svg>
+                <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
+                  color:'var(--tx)',textTransform:'uppercase',letterSpacing:'.3px',flex:1}}>{s.titulo}</div>
+                <span style={{fontSize:'8px',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',
+                  letterSpacing:'.5px'}}>Pro</span>
+              </div>
+              <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',fontWeight:300,
+                color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
+            </div>
+          ))}
         </Card>
       );
 
