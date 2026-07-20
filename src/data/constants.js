@@ -4,7 +4,6 @@
 export const SETLISTS = {
   5:  [{name:'YESHUA',key:'D',bpm:130},{name:'ALABA (PRAISE)',key:'G',bpm:128},{name:'HERMOSO DIOS',key:'D',bpm:92},{name:'SIEMPRE A TIEMPO',key:'Am',bpm:76}],
   12: [{name:'TODA LENGUA TODA NACIÓN',key:'A',bpm:124},{name:'COMO EN EL CIELO',key:'D',bpm:102},{name:'LA BONDAD DE DIOS',key:'C',bpm:89},{name:'OCEANOS',key:'D',bpm:72},{name:'A TI ME RINDO',key:'G',bpm:68}],
-  19: null,
   26: [{name:'AL QUE ESTÁ SENTADO EN EL TRONO',key:'G',bpm:126},{name:'SANTO POR SIEMPRE',key:'C',bpm:80},{name:'ANCLADO',key:'G',bpm:88},{name:'EN MEMORIA DE TI',key:'G',bpm:60}],
 };
 

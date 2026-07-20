@@ -801,13 +801,12 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-          {equipos.map((eq,i)=>(
+          {equipos.map(eq=>(
             <div key={eq.id}
               onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}
-              className="press-glow block-entry"
               style={{
                 borderRadius:14,background:'var(--s1)',overflow:'hidden',cursor:'pointer',
-                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none','--i':i,
+                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none',
               }}>
               {/* Card header */}
               <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
@@ -1159,9 +1158,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             {id:'grafite',  label:tx.themeGrafiteLbl,  sub:tx.themeGrafiteSub,
               bg:'linear-gradient(135deg,#1F1F1F 0%,#161616 100%)',
               preview:['#1F1F1F','#AFFA01','#2D5BFF']},
-            {id:'abyssal', label:tx.themeAbyssalLbl, sub:tx.themeAbyssalSub,
-              bg:'linear-gradient(135deg,#1B2632 0%,#141c26 100%)',
-              preview:['#1B2632','#FFB162','#A35139']},
             {id:'brasa', label:tx.themeBrasaLbl, sub:tx.themeBrasaSub,
               bg:'linear-gradient(135deg,#161616 0%,#0f0f0f 100%)',
               preview:['#161616','#FFE7D0','#FC6E20']},
@@ -1815,8 +1811,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
-        <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!ensEquipos.length}
+        <button className="btn btn-p" style={{flex:2,justifyContent:'center'}}
           onClick={()=>{
+            if(!ensEquipos.length){onToast({text:tx.selectAtLeastOnePermToast||'Selecciona al menos un equipo'});return;}
             const sl=slGuardados.find(s=>s.id===ensSetlistId);
             const nuevo={id:`ens${Date.now()}`,ref:ensRef,setlistId:ensSetlistId,setlistNombre:sl?.nombre||'',equipos:[...ensEquipos],archivo:ensArchivo,notas:ensNotas,nombre:tx.rehearsalLbl};
             setEnsayos(prev=>[...prev,nuevo]);
@@ -1862,16 +1859,14 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
           <button className="help-btn" onClick={()=>setHelpOpen('backstage')} aria-label="Ayuda">i</button>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05}}>{tx.backstage}</div>
-          <span style={{padding:'2px 9px',borderRadius:100,fontSize:'var(--fs-xs)',fontWeight:700,background:'rgba(200,169,126,.07)',color:'var(--ac)',fontFamily:"var(--font-body)",flexShrink:0,alignSelf:'center'}}>{isAdmin?tx.superAdminLbl:tx.leaderLbl}</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        {ITEMS.map((it,i)=>(
+        {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
-            className="press-glow block-entry"
             style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',
-              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104,'--i':i}}>
+              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
             {/* Imagen de fondo del bloque — sube el archivo con este mismo
                 nombre a /public/backstage/ y aparece sola; hasta entonces
                 el bloque queda plano y limpio sin romper nada. */}

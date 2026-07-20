@@ -166,7 +166,8 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
     <div
       onClick={onOpen}
       style={{
-        padding:'20px 18px',
+        position:'relative',
+        paddingTop:28,paddingBottom:28,paddingLeft:18,paddingRight:18,
         borderRadius:'var(--rad-lg)',
         background: isNext ? 'var(--s1)' : 'var(--s1)',
         cursor: onOpen ? 'pointer' : 'default',
@@ -174,6 +175,17 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         opacity: isPast ? 0.85 : 1,
       }}
     >
+      {isLeader&&onOpen&&(
+        <button onClick={e=>{e.stopPropagation();onOpen();}}
+          style={{position:'absolute',bottom:8,right:8,width:24,height:24,borderRadius:7,
+            background:'var(--s3)',color:'var(--tx3)',display:'flex',alignItems:'center',
+            justifyContent:'center',cursor:'pointer',zIndex:2}}
+          aria-label="Editar">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+          </svg>
+        </button>
+      )}
       {/* ── Fila superior: título + badge + botón live ── */}
       <div style={{display:'flex', alignItems:'flex-start', gap:12, marginBottom: isPast?0:10}}>
         <div style={{flex:1}}>
@@ -313,6 +325,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
         display:'flex', alignItems:'flex-start', gap:'var(--sp-sm)',
       }}>
         <div style={{flex:1}}>
+          <div style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-xs)',color:'var(--tx3)',
+            textTransform:'uppercase',letterSpacing:'1px',marginBottom:3}}>Eventos en</div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
             fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
@@ -331,7 +345,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
           {setlistsDelMes.map(([dayStr,sl])=>{
             const day = parseInt(dayStr);
             if(sl===null) return(
-              <div key={day} style={{padding:'20px 18px',borderRadius:'var(--rad-lg)',
+              <div key={day} style={{paddingTop:28,paddingBottom:28,paddingLeft:18,paddingRight:18,borderRadius:'var(--rad-lg)',
                 background:'rgba(255,82,82,.08)',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
                 <div style={{width:42,height:42,borderRadius:11,background:'rgba(255,82,82,.15)',
                   display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -756,7 +770,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Notas del evento</span>
           </div>
-          <div style={{padding:'12px var(--sp-md)',fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>
+          <div style={{padding:'20px var(--sp-md)',fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>
             {f.notas}
           </div>
         </div>
@@ -768,7 +782,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Archivo adjunto</span>
           </div>
-          <div style={{padding:'11px var(--sp-md)',display:'flex',alignItems:'center',gap:8}}>
+          <div style={{padding:'19px var(--sp-md)',display:'flex',alignItems:'center',gap:8}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.archivo.name}</span>
           </div>

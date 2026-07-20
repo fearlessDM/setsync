@@ -95,13 +95,6 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 /* Grafite = :root (arriba), es el tema default. Todos los temas comparten
    las mismas fuentes (Special Gothic Expanded One + Lexend Giga) — son
    temas 100% color-only, no cambian tipografía. */
-[data-theme=abyssal]{
---bg:#101820;--s1:rgba(238,233,223,.06);--s2:rgba(238,233,223,.03);--s3:rgba(238,233,223,.1);
---bd:rgba(238,233,223,.12);--bd2:rgba(238,233,223,.2);
---div:rgba(238,233,223,.22);--em:rgba(238,233,223,.32);
---ac:#EEE9DF;--tx:#EEE9DF;--tx2:rgba(238,233,223,.68);--tx3:#c9c4b8;
---gn:#FFB162;--gn-rgb:255,177,98;--rd:#A35139;--rd-rgb:163,81,57;--btn-c:#1B2632;
-}
 [data-theme=brasa]{
 --bg:#161616;--s1:rgba(255,231,208,.06);--s2:rgba(255,231,208,.03);--s3:rgba(255,231,208,.1);
 --bd:rgba(255,231,208,.12);--bd2:rgba(255,231,208,.2);
@@ -650,6 +643,10 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 }
 .hero-chip-swipe{
   animation:hero-chip-swipe-up .45s cubic-bezier(.2,.8,.2,1);
+  font-size:10px;
+}
+@media(max-width:767px){
+  .hero-chip-swipe{ font-size:9px; }
 }
 
 @keyframes help-slide-down {

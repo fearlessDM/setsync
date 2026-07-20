@@ -590,9 +590,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             {COMO_FUNCIONA_STEPS.slice(0,4).map((s,si)=>(
               <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                  <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(var(--gn-rgb),.14)',
-                    color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-sm)',fontWeight:400,
-                    display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</div>
+                  <div style={{color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-lg)',fontWeight:400,
+                    flexShrink:0}}>{si+1}</div>
                   <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
                     color:'var(--tx)',textTransform:'uppercase',letterSpacing:'.3px'}}>{s.titulo}</div>
                 </div>
@@ -768,8 +767,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} i={i} key="planes">
           <Lbl>{tx.plansSetSyncLbl}</Lbl>
 
-          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6,marginTop:4}}>SetSync Solo</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:6,marginTop:4}}>
+            <div style={{fontSize:'11px',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+              letterSpacing:'1px',fontFamily:"var(--font-body)"}}>SetSync Solo</div>
+            <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontWeight:300,fontFamily:"var(--font-body)"}}>Cuenta personal</div>
+          </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:16}}>
             {Object.values(PLANES_SETSYNC).map(p=>{
               const isCurrent = !viaEquipo && planId===p.id;
@@ -795,8 +797,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             })}
           </div>
 
-          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-            letterSpacing:'1px',fontFamily:"var(--font-body)",marginBottom:6}}>SetSync Teams</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:6}}>
+            <div style={{fontSize:'11px',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+              letterSpacing:'1px',fontFamily:"var(--font-body)"}}>SetSync Teams</div>
+            <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontWeight:300,fontFamily:"var(--font-body)"}}>Un pago activa Pro para todo tu equipo</div>
+          </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
             {TRAMOS_EQUIPO.slice(0,3).map(t=>{
               const isCurrentTramo = viaEquipo && orgPrincipal?.tramoId===t.id;
@@ -813,9 +818,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-emph)',
                     color:'var(--tx)',fontWeight:400}}>{precio}</div>
                   <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginTop:1}}>fijo/mes</div>
-                  <div style={{fontSize:'8px',color:t.marcaBlanca?'var(--gn)':'var(--tx3)',marginTop:5,lineHeight:1.3,fontFamily:"var(--font-body)"}}>
-                    {t.marcaBlanca?tx.whiteLabelIncluded:'Premium para todos'}
-                  </div>
+                  {t.marcaBlanca&&(
+                    <div style={{fontSize:'8px',color:'var(--gn)',marginTop:5,lineHeight:1.3,fontFamily:"var(--font-body)"}}>
+                      {tx.whiteLabelIncluded}
+                    </div>
+                  )}
                   {isCurrentTramo&&<div style={{fontSize:'var(--fs-3xs)',color:'var(--gn)',fontWeight:700,marginTop:4}}>{tx.yourPlanLbl}</div>}
                 </div>
               );
@@ -846,7 +853,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           loading="lazy"/>
         <div style={{position:'absolute',inset:0,
           background:'linear-gradient(180deg,transparent 15%,var(--bg) 100%)'}}/>
-        <div style={{position:'relative',padding:'var(--sp-lg) var(--sp-md)',paddingTop:36,
+        <div style={{position:'relative',padding:'var(--sp-md) var(--sp-md) 4px',paddingTop:36,
           display:'flex',flexDirection:'column'}}>
           <div style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-xs)',
             color:'var(--gn)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
@@ -863,7 +870,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{height:28,display:'flex',alignItems:'center',overflow:'hidden'}}>
             <span key={chipIdx} className="hero-chip-swipe"
               style={{padding:'9px 16px',borderRadius:8,background:'var(--gn)',
-                fontSize:'10px',fontWeight:500,color:'#000',textTransform:'uppercase',
+                fontWeight:500,color:'#000',textTransform:'uppercase',
                 letterSpacing:'.5px',fontFamily:"var(--font-body)",display:'inline-block'}}>
               {HERO_CHIPS[chipIdx]}
             </span>
@@ -872,7 +879,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       </div>
 
       {/* Grid con bloques arrastrables */}
-      <div style={{padding:'var(--sp-md) var(--pw-x,var(--sp-md))'}}>
+      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)'}}>
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
           return (

@@ -114,11 +114,6 @@ const ROLES_BANDA=[
 ];
 
 export default function App(){
-  // Fix iOS Safari (v93): sin ESTE listener, el pseudo-selector :active de
-  // CSS a veces no dispara al tocar (bug histórico de WebKit). Con esto
-  // resuelto acá, TODO :active de la app funciona en iPhone — incluye el
-  // touch feedback de .scard y de los bloques con className="press-glow".
-  useEffect(()=>{document.addEventListener('touchstart',()=>{},{passive:true});},[]);
   const [appMode,setAppMode]=useState(null); // null | 'iglesia' | 'banda' — UNA sola decisión, para siempre
   const [lang,setLang]=useState('es');
   const tx=getT(lang);
@@ -582,7 +577,7 @@ Tuya es la gloria, Por siempre amén.
   };
 
   // Temas: grafite es el default desde :root en theme.css
-  // abyssal/brasa/midnight/blue-lava usan [data-theme] selector en theme.css
+  // brasa/midnight/blue-lava usan [data-theme] selector en theme.css
   const dataTheme = theme==='grafite' ? undefined : theme;
 
   const Footer=()=>(
@@ -715,7 +710,7 @@ Tuya es la gloria, Por siempre amén.
         </div>
 
         {/* ── Contenido ── */}
-        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'min(760px,95vw)',padding:'0 clamp(16px,4vw,40px)',display:'flex',flexDirection:'column',alignItems:'center'}}>
+        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'min(760px,95vw)',padding:'0 clamp(8px,2vw,20px)',display:'flex',flexDirection:'column',alignItems:'center'}}>
 
           {/* Logo vertical — visible con tagline */}
           <div style={{paddingTop:40,paddingBottom:0,display:'flex',flexDirection:'column',alignItems:'center'}}>
@@ -772,21 +767,21 @@ Tuya es la gloria, Por siempre amén.
                   cursor:'pointer',textAlign:'left',
                   backdropFilter:'blur(20px)',
                 }}>
-                <div style={{fontSize:'clamp(7px,1.2vw,10px)',fontWeight:900,color:'var(--em)',letterSpacing:'2px',marginBottom:10,fontFamily:"var(--font-body)"}}>
+                <div style={{fontSize:'clamp(7px,1.2vw,10px)',fontWeight:900,color:'var(--ac)',letterSpacing:'2px',marginBottom:10,fontFamily:"var(--font-body)"}}>
                   {item.data.tag}
                 </div>
-                <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'clamp(22px,4vw,32px)',color:'#fff',marginBottom:14,lineHeight:1}}>
+                <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'clamp(22px,4vw,32px)',color:'var(--ac)',marginBottom:14,lineHeight:1}}>
                   {item.data.title}
                 </div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
                   {item.data.lines.map((line,i)=>(
                     <div key={i} style={{display:'flex',alignItems:'flex-start',gap:6}}>
-                      <div style={{width:4,height:4,borderRadius:'50%',background:'var(--em)',flexShrink:0,marginTop:5}}/>
-                      <span style={{fontSize:'clamp(9px,1.3vw,12px)',color:'rgba(255,255,255,.5)',lineHeight:1.6,fontWeight:300,fontFamily:"var(--font-body)"}}>{line}</span>
+                      <div style={{width:4,height:4,borderRadius:'50%',background:'var(--ac)',flexShrink:0,marginTop:5}}/>
+                      <span style={{fontSize:'clamp(9px,1.3vw,12px)',color:'var(--ac)',opacity:.75,lineHeight:1.6,fontWeight:300,fontFamily:"var(--font-body)"}}>{line}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:14,fontSize:'var(--fs-sm)',fontWeight:700,color:'rgba(255,255,255,.7)',display:'flex',alignItems:'center',gap:4,fontFamily:"var(--font-body)"}}>
+                <div style={{marginTop:14,fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--ac)',display:'flex',alignItems:'center',gap:4,fontFamily:"var(--font-body)"}}>
                   Entrar <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </button>
