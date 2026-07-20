@@ -14,6 +14,19 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
+const COMO_FUNCIONA_STEPS = [
+  {titulo:'Ingresa tu gente',
+    desc:'Arma tu banda y equipos de trabajo o producción, delega líderes por equipo, cada uno con un rol. Sin recargar tu tiempo.'},
+  {titulo:'Ingresa tu repertorio',
+    desc:'Importa o escribe canciones — PDF, Word, DOCX, MP3, incluso partituras por instrumento.'},
+  {titulo:'Crea un evento',
+    desc:'Carga el calendario con todo el detalle de tus próximas fechas y convoca a tus equipos.'},
+  {titulo:'Toca en vivo',
+    desc:'Ve tus letras, cambia notación, auto scroll, haz anotaciones para ti o para todos, sincronizando pantallas con tu equipo.'},
+  {titulo:'Monitoreo WiFi',
+    desc:'Conecta tu dispositivo a la mesa digital y haz tu mezcla personal. Lanza pistas multitrack, guía, click y todo lo que necesites — y mucho más con SetSync.'},
+];
+
 const HERO_CHIPS = [
   'Calendario de eventos y ensayos',
   'Coordinación de Banda y equipos de trabajo',
@@ -489,6 +502,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   },[]);
   const [tutOpen, setTutOpen] = useState({});
   const [tutSectionOpen, setTutSectionOpen] = useState(false);
+  const [faqSectionOpen, setFaqSectionOpen] = useState(false);
 
   const hoy = new Date();
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
@@ -501,6 +515,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const BLOCK_ROWS = [
     ['notificaciones'],
     ['equipo'],
+    ['comofunciona'],
     ['tutoriales'],
     ['faqs'],
     ['planes'],
@@ -562,6 +577,28 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 <div style={{fontFamily:"var(--font-body)",fontSize:'8px',
                   color:'var(--tx3)',fontWeight:700,marginTop:4,textTransform:'uppercase',
                   letterSpacing:'1px'}}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      );
+
+      case 'comofunciona': return (
+        <Card cols={2} i={i} key="comofunciona">
+          <Lbl>Cómo funciona</Lbl>
+          <div style={{display:'flex',flexDirection:'column',gap:0,marginTop:6}}>
+            {COMO_FUNCIONA_STEPS.map((s,si)=>(
+              <div key={si} style={{display:'flex',gap:12,padding:'10px 0',
+                borderBottom:si<COMO_FUNCIONA_STEPS.length-1?'1px solid var(--s1)':'none'}}>
+                <div style={{width:24,height:24,borderRadius:'50%',background:'rgba(var(--gn-rgb),.14)',
+                  color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-sm)',fontWeight:400,
+                  display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{si+1}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,
+                    color:'var(--tx)',marginBottom:3}}>{s.titulo}</div>
+                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:300,
+                    color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -678,28 +715,37 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'faqs': return (
         <Card cols={2} i={i} key="faqs">
-          <Lbl>{tx.faqLbl}</Lbl>
-          <div style={{display:'flex',flexDirection:'column',gap:0}}>
-            {FAQS.map((faq,i)=>(
-              <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
-                <button onClick={()=>toggleFaq(i)}
-                  style={{width:'100%',background:'none',textAlign:'left',
-                    padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
-                    justifyContent:'space-between',gap:8}}>
-                  <span style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
-                    color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
-                    strokeWidth="2" style={{flexShrink:0,transform:faqsOpen[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </button>
-                {faqsOpen[i]&&(
-                  <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',color:'var(--tx2)',
-                    fontWeight:300,lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>
-                )}
-              </div>
-            ))}
+          <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
+            onClick={()=>setFaqSectionOpen(v=>!v)}>
+            <div style={{flex:1}}><Lbl>{tx.faqLbl}</Lbl></div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+              style={{transform:faqSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
+          {faqSectionOpen&&(
+            <div style={{display:'flex',flexDirection:'column',gap:0,marginTop:8}}>
+              {FAQS.map((faq,i)=>(
+                <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
+                  <button onClick={()=>toggleFaq(i)}
+                    style={{width:'100%',background:'none',textAlign:'left',
+                      padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
+                      justifyContent:'space-between',gap:8}}>
+                    <span style={{fontFamily:"var(--font-body)",fontSize:'10px',fontWeight:400,
+                      color:'var(--tx)',lineHeight:1.4}}>{faq.q}</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)"
+                      strokeWidth="2" style={{flexShrink:0,transform:faqsOpen[i]?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  {faqsOpen[i]&&(
+                    <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',color:'var(--tx2)',
+                      fontWeight:300,lineHeight:1.7,paddingBottom:10}}>{faq.a}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       );
 
@@ -799,7 +845,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             color:'var(--tx2)',lineHeight:1.4,marginBottom:14,maxWidth:480}}>
             Todo lo que necesitas para coordinar tu banda y tocar en vivo, en un solo lugar.
           </div>
-          <div style={{height:38,display:'flex',alignItems:'center',overflow:'hidden'}}>
+          <div style={{height:28,display:'flex',alignItems:'center',overflow:'hidden'}}>
             <span key={chipIdx} className="hero-chip-swipe"
               style={{padding:'9px 16px',borderRadius:8,background:'var(--gn)',
                 fontSize:'10px',fontWeight:500,color:'#000',textTransform:'uppercase',
