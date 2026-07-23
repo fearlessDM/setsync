@@ -146,7 +146,17 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   // (letra/acordes original + variaciones/partituras si existen) — nunca
   // salta directo a la letra. Pedido de Danny 01-Jul-2026: una canción es
   // una carpeta, así que siempre se elige qué abrir dentro de ella.
-  const abrirCancion=(name)=>{ setSongParaVariar(name); };
+  const abrirCancion=(name)=>{
+    // Si la canción tiene variaciones (partituras, versiones alternativas),
+    // mostramos el popup para elegir cuál abrir — es información relevante.
+    // Si solo tiene la Original, abrimos directamente sin paso intermedio.
+    const vars=variacionesDB[name]||[];
+    if(vars.length>0){
+      setSongParaVariar(name);
+    } else {
+      onOpenSong&&onOpenSong(name,'original');
+    }
+  };
   // Abre el formulario de nueva variación (reemplaza el prompt() de antes —
   // ahora soporta 2 tipos: letra/acordes propios, o partitura-archivo)
   const abrirNuevaVariacion=(name)=>{
@@ -1395,34 +1405,62 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           <div style={{width:'100%',maxWidth:360,padding:18,borderRadius:16,
               background:'var(--bg)',boxShadow:'0 20px 60px rgba(0,0,0,.5)'}}
             onClick={e=>e.stopPropagation()}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
-              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)',fontWeight:400}}>{songParaVariar}</div>
-              <button onClick={()=>setSongParaVariar(null)} style={{background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)',fontWeight:400,lineHeight:1.1}}>{songParaVariar}</div>
+              <button onClick={()=>setSongParaVariar(null)} style={{background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1,flexShrink:0}}>×</button>
             </div>
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,marginBottom:14}}>
-              Elige qué versión abrir — cada una puede tener su propia letra, acordes o notas.
-            </div>
-            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
-              <button onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,'original');setSongParaVariar(null);}}
-                style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
-                  background:'var(--s1)',cursor:'pointer',textAlign:'left'}}>
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',flex:1,fontFamily:"var(--font-body)"}}>Original</span>
-              </button>
-              {(variacionesDB[songParaVariar]||[]).map(v=>(
-                <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
-                  style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,
-                    background:'rgba(200,169,126,.06)',cursor:'pointer',textAlign:'left'}}>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
-                    {v.tipo==='partitura'
-                      ?<path d="M9 18V5l12-2v13"/>
-                      :<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>}
-                  </svg>
-                  <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--ac)',flex:1,fontFamily:"var(--font-body)"}}>{v.label}</span>
-                  {v.tipo==='partitura'&&<span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",textTransform:'uppercase'}}>Partitura</span>}
-                </button>
-              ))}
-            </div>
+
+            {/* Acción principal: ver letra/acordes — siempre primero y destacada */}
+            <button onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,'original');setSongParaVariar(null);}}
+              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'12px 14px',
+                borderRadius:12,background:'rgba(200,169,126,.1)',cursor:'pointer',textAlign:'left',
+                marginBottom:8}}>
+              <div style={{width:32,height:32,borderRadius:9,background:'rgba(200,169,126,.2)',
+                display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--ac)" strokeWidth="2">
+                  <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                </svg>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--ac)',fontFamily:"var(--font-body)"}}>Ver letra y acordes</div>
+                <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:1}}>Versión original</div>
+              </div>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2" opacity=".5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+
+            {/* Variaciones adicionales — solo si existen */}
+            {(variacionesDB[songParaVariar]||[]).length>0&&(
+              <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:8}}>
+                <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                  letterSpacing:'1.5px',fontFamily:"var(--font-body)",marginBottom:2,paddingLeft:2}}>
+                  Otras versiones
+                </div>
+                {(variacionesDB[songParaVariar]||[]).map(v=>(
+                  <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
+                    style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,
+                      background:'var(--s1)',cursor:'pointer',textAlign:'left'}}>
+                    <div style={{width:28,height:28,borderRadius:8,background:'rgba(200,169,126,.08)',
+                      display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
+                        {v.tipo==='partitura'
+                          ?<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></>
+                          :<path d="M9 18V5l12-2v13"/>}
+                      </svg>
+                    </div>
+                    <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',flex:1,fontFamily:"var(--font-body)"}}>{v.label}</span>
+                    {v.tipo==='partitura'&&(
+                      <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
+                        textTransform:'uppercase',letterSpacing:'.5px',background:'var(--s2)',
+                        padding:'2px 6px',borderRadius:4}}>Partitura</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div style={{marginBottom:14}}/>
+
             {isAdmin&&(nuevaVariacion?.cancion===songParaVariar?(
               <div style={{padding:12,borderRadius:12,background:'var(--s1)',marginBottom:14}}>
                 <div style={{display:'flex',gap:6,marginBottom:10}}>

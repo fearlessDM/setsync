@@ -526,42 +526,41 @@ Tuya es la gloria, Por siempre amén.
     if(!setlist||!setlist.length)return;
     // Los ítems del setlist pueden venir en 3 formatos (compatibilidad):
     // - string (nombre de canción, formato viejo)
-    // - objeto ya resuelto con name/key/bpm (formato viejo de variaciones)
-    // - {cancion, variacionId, personaId} — formato nuevo con asignación
-    //   de variación/partitura por persona (v36-ampliación)
+    // - {name,key,bpm,...} — objeto resuelto formato viejo
+    // - {cancion, variacionId, asignaciones} — formato nuevo v36+
     const songs=setlist.map(item=>{
-      if(typeof item==='string')return CANCIONES.find(c=>c.n===item)||{n:item,name:item,key:'',bpm:''};
+      // Formato 1: string simple
+      if(typeof item==='string'){
+        const base=CANCIONES.find(c=>c.n===item);
+        return base?{...base,name:base.n}:{n:item,name:item,key:'',bpm:''};
+      }
+      // Formato 2: objeto nuevo con campo cancion
       if(item&&item.cancion){
-        const base=CANCIONES.find(c=>c.n===item.cancion)||{n:item.cancion,key:'',bpm:''};
-        // asignaciones: puede haber varias (ej. Piano→Ana y Bajo→Luis en la
-        // misma canción) — al abrir genérico no sabemos "cuál es la mía"
-        // sin login, así que se abre el Original y se muestran todas las
-        // asignaciones como referencia en el header.
+        const nombreCancion=item.cancion;
+        const base=CANCIONES.find(c=>c.n===nombreCancion)||{n:nombreCancion,key:'',bpm:''};
         const asignaciones=(item.asignaciones||(item.variacionId?[{variacionId:item.variacionId,personaId:item.personaId}]:[]))
           .map(a=>{
-            const v=a.variacionId&&a.variacionId!=='original'?(variacionesDB[item.cancion]||[]).find(x=>x.id===a.variacionId):null;
+            const v=a.variacionId&&a.variacionId!=='original'?(variacionesDB[nombreCancion]||[]).find(x=>x.id===a.variacionId):null;
             const persona=a.personaId?personas.find(p=>p.id===a.personaId):null;
             return (v||persona)?{variacion:v?.label||'Original',persona:persona?.name||null}:null;
           }).filter(Boolean);
-        return{
-          ...base,
-          name: item.cancion,
-          key: base.key, bpm: base.bpm,
-          asignaciones,
-        };
+        return{...base, name:nombreCancion, key:base.key, bpm:base.bpm, asignaciones};
       }
+      // Formato 3: objeto viejo {name, key, bpm} — enriquecer contra CANCIONES si existe
       if(typeof item==='object'&&item){
-        // Compatibilidad hacia atrás — pero antes esto devolvía el objeto
-        // tal cual, y los setlists de SETLISTS (formato viejo, solo
-        // {name,key,bpm}) nunca traían artista/autor. Se enriquece contra
-        // CANCIONES si existe una coincidencia, sin pisar key/bpm propios
-        // del item (pueden venir ajustados para ese evento puntual).
-        const base=CANCIONES.find(c=>c.n===item.name);
-        return base?{...base,...item}:item;
+        const nombreCancion=item.name||item.n||'';
+        if(!nombreCancion) return null; // defensivo: descartar items sin nombre
+        const base=CANCIONES.find(c=>c.n===nombreCancion);
+        // Spread: base primero para tener artista/autor, luego item para
+        // respetar key/bpm propios del evento si fueron ajustados
+        return base?{...base,...item,name:nombreCancion}:{...item,name:nombreCancion,n:nombreCancion};
       }
-      return {n:String(item),name:String(item),key:'',bpm:''};
-    });
-    setSongViewSongs(songs);setSongView(idx);
+      return null;
+    }).filter(Boolean); // eliminar cualquier item inválido que quedó null
+    if(!songs.length)return;
+    // Ajustar idx si quedó fuera de rango tras el filtrado
+    const safeIdx=Math.min(Math.max(0,idx),songs.length-1);
+    setSongViewSongs(songs);setSongView(safeIdx);
   };
   const handleSaveChords=(name,content)=>{setContentDB(prev=>({...prev,[name]:content}));showToast('✓ Acordes guardados');};
 
