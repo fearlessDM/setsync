@@ -50,6 +50,9 @@ export const EVENTOS_ESPECIALES=[
    setlist:[{name:'YESHUA',key:'D',bpm:130},{name:'BUENO ERES TU',key:'D',bpm:94}]},
 ];
 
+// Solo canciones con letra real en songs-iglesia.js.
+// Las que aparecen en setlists sin letra no están aquí — se agregan
+// cuando se sube su contenido desde el Cancionero o por importación.
 export const CANCIONES = [
   {n:'YESHUA',                 key:'D',  bpm:130, artista:'Maverick City Music'},
   {n:'TODA LENGUA TODA NACIÓN',key:'A',  bpm:124, artista:'Marcos Witt'},
@@ -64,30 +67,6 @@ export const CANCIONES = [
   {n:'ABBA PADRE',            key:'D',  bpm:68,  artista:'Redimi2'},
   {n:'NO HAY LUGAR MÁS ALTO', key:'C',  bpm:80,  artista:'Ingrid Rosario'},
   {n:'JESÚS ERES MI REY',     key:'E',  bpm:116, artista:'Hillsong en Español'},
-  // Canciones presentes en setlists — agregadas para que el SongView las
-  // reconozca y no arroje pantalla negra al intentar abrirlas desde Fechas.
-  // La letra se puede cargar después desde el Cancionero o importando.
-  {n:'HERMOSO DIOS',                  key:'D',  bpm:92,  artista:''},
-  {n:'SIEMPRE A TIEMPO',              key:'Am', bpm:76,  artista:''},
-  {n:'COMO EN EL CIELO',              key:'D',  bpm:102, artista:'Elevation Worship'},
-  {n:'OCEANOS',                       key:'D',  bpm:72,  artista:'Hillsong United'},
-  {n:'A TI ME RINDO',                 key:'G',  bpm:68,  artista:''},
-  {n:'AL QUE ESTÁ SENTADO EN EL TRONO',key:'G', bpm:126, artista:''},
-  {n:'ANCLADO',                       key:'G',  bpm:88,  artista:'Bethel Music'},
-  {n:'EN MEMORIA DE TI',              key:'G',  bpm:60,  artista:''},
-  {n:'LEÓN',                          key:'E',  bpm:120, artista:'Elevation Worship'},
-  {n:'BUENO ERES TU',                 key:'D',  bpm:94,  artista:''},
-  {n:'QUE SE ABRA EL CIELO',          key:'D',  bpm:118, artista:''},
-  {n:'TU PROVEERÁS',                  key:'G',  bpm:73,  artista:''},
-  {n:'SEGURO ESTOY',                  key:'D',  bpm:58,  artista:''},
-  {n:'BARRO',                         key:'C',  bpm:82,  artista:'Hillsong en Español'},
-  {n:'COMUNIÓN',                      key:'D',  bpm:62,  artista:''},
-  {n:'NO SOY ESCLAVO',                key:'A',  bpm:112, artista:''},
-  {n:'LO HARÁS OTRA VEZ',             key:'G',  bpm:70,  artista:'Elevation Worship'},
-  {n:'SIEMPRE YHWH',                  key:'G',  bpm:100, artista:''},
-  {n:'MI ESPERANZA',                  key:'G',  bpm:90,  artista:''},
-  {n:'LLEVAME A LA CRUZ',             key:'G',  bpm:78,  artista:''},
-  {n:'CENTRO',                        key:'G',  bpm:55,  artista:''},
 ];
 
 export const MODES = {

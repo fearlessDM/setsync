@@ -196,9 +196,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     if(edited&&onSaveChords){onSaveChords(song.name,edited);setToast('✓ Acordes guardados oficialmente');}
     setEditMode(false);setSelectedChord(null);
   };
-  const svBg      ='rgba(8,8,8,.97)';
-  const svHdrBg   ='rgba(8,8,8,.92)';
-  const svNavBg   ='rgba(8,8,8,.88)';
+  // svBg usa la variable de tema en lugar de negro fijo — así Brasa, Blue Lava
+  // y cualquier tema claro/cálido muestran su color real en vez de negro.
+  // Se mantiene una opacidad alta para que los elementos flotantes (header,
+  // nav) tengan el efecto de cristal oscuro sobre la letra.
+  const svBg      ='var(--bg)';
+  const svHdrBg   ='color-mix(in srgb, var(--bg) 92%, transparent)';
+  const svNavBg   ='color-mix(in srgb, var(--bg) 88%, transparent)';
   const svTx      ='var(--tx)';
   const svTx3     ='var(--tx3)';
   const svAc      ='var(--ac)';
