@@ -552,9 +552,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   // En PC / tablet horizontal (≥1024px) los bloques van SIEMPRE abiertos y
   // no se colapsan (el chevron se oculta por CSS). En tablet vertical y
   // móvil siguen colapsables como hasta ahora.
-  // Fijo-abierto en PC y tablet horizontal (cualquier pantalla ancha en
-  // landscape ≥768px). En tablet vertical y móvil siguen colapsables.
-  const MQ_FIJO='(min-width:1024px), (min-width:768px) and (orientation:landscape)';
+  // Fijo-abierto en cualquier tablet o PC (≥768px, vertical u horizontal).
+  // Solo en móvil (<768px) los bloques siguen colapsables.
+  const MQ_FIJO='(min-width:768px)';
   const [anchoFijoAbierto,setAnchoFijoAbierto]=useState(
     typeof window!=='undefined' && window.matchMedia(MQ_FIJO).matches);
   useEffect(()=>{
@@ -628,7 +628,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       case 'equipo': return (
         <Card cols={2} i={i} key="equipo">
           <Lbl>Tu Resumen</Lbl>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+          <div className="resumen-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
             {[
               {label:tx.peopleLbl,val:personas.length,color:'var(--tx)',onClick:()=>onNavigate('backstage')},
               {label:tx.teams,val:misEquipos.length,color:'var(--tx)',onClick:()=>onNavigate('backstage')},
@@ -640,6 +640,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               <div key={label} onClick={onClick}
                 style={{textAlign:'center',padding:'10px 8px',borderRadius:12,
                   background:'var(--s1)',cursor:'pointer',
+                  display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
                   }}>
                 <div style={{fontFamily:"var(--font-display)",
                   fontSize:'var(--fs-display)',color,lineHeight:1,fontWeight:400}}><AnimatedNumber value={val}/></div>
@@ -991,7 +992,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       </div>
 
       {/* Bloques colapsables — los Cards se colapsan a sí mismos */}
-      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:13}}>
+      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
 
         <div className="inicio-blocks">
         {order.map((rowIdx,dragIdx)=>{

@@ -175,7 +175,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         background:'var(--s1)',
         cursor:'pointer',
         transition:'all .25s',
-        opacity: isPast ? 0.75 : 1,
+        opacity: isPast ? 0.55 : 1,
       }}
     >
       {/* Acento vertical "fecha actual" — solo visible en vista grid (PC /
@@ -411,6 +411,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
           <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
             {eventosDelMes.map(ev=>{
               const d=new Date(ev.fecha);
+              const evPast = ev.fecha && d < new Date(new Date().setHours(0,0,0,0));
               return(
                 <TarjetaFecha
                   key={ev.id}
@@ -421,6 +422,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   setlist={ev.setlist||[]}
                   equipos={equipos}
                   isLeader={isLeader}
+                  isPast={evPast}
                   tx={tx}
                   onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[],equiposConvocados:ev.equiposConvocados||null,itinerario:ev.itinerario||null});}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
@@ -434,17 +436,10 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
         </div>
       )}
 
-      {/* ── Eventos especiales ── */}
+      {/* ── Eventos especiales (v93: sin divisor "Eventos especiales" —
+          fluyen junto al resto) ── */}
       {especialesDelMes.length>0 && (
         <div style={{padding:'0 var(--pw-x,16px) var(--sp-md)'}}>
-          {(setlistsDelMes.length>0||eventosDelMes.length>0)&&(
-            <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
-              marginBottom:'var(--gap)'}}>
-              <div style={{flex:1,height:1,background:'var(--s3)'}}/>
-              <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.specialEventsLbl}</span>
-              <div style={{flex:1,height:1,background:'var(--s3)'}}/>
-            </div>
-          )}
           <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
             {especialesDelMes.map((ev,i)=>(
               <TarjetaFecha

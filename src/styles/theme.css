@@ -525,16 +525,29 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   }
   .cal-grid>*{ min-width:0; }
 
-  /* Línea "fecha actual": en el layout de grid una línea horizontal
-     full-width entre celdas no aplica. Se oculta y en su lugar la tarjeta
-     del próximo evento (la que sigue a la línea) se marca con una barra
-     de acento vertical a su izquierda vía .cal-grid > div:has(.cal-hoy-linea). */
-  .cal-hoy-linea{ display:none!important; }
-  .cal-grid>div:has(.cal-hoy-linea){
-    border-left:3px solid var(--ac);
-    border-radius:var(--rad-md);
-    padding-left:10px;
+  /* "Fecha actual" en el layout de grid: la etiqueta va vertical (texto de
+     arriba a abajo) pegada al borde izquierdo de la tarjeta del próximo
+     evento, con líneas de acento arriba y abajo. La celda que contiene la
+     línea se vuelve un flex horizontal donde la barra vertical vive a la
+     izquierda de la tarjeta. */
+  .cal-hoy-linea{
+    flex-direction:column!important;
+    position:absolute; left:-22px; top:0; bottom:0;
+    width:18px; margin:0!important; gap:6px!important;
   }
+  .cal-hoy-linea .cal-hoy-l1,
+  .cal-hoy-linea .cal-hoy-l2{
+    width:1px!important; height:auto!important; flex:1!important;
+  }
+  .cal-hoy-linea .cal-hoy-l1{ background:linear-gradient(180deg,transparent,rgba(200,169,126,.5))!important; }
+  .cal-hoy-linea .cal-hoy-l2{ background:linear-gradient(0deg,transparent,rgba(200,169,126,.5))!important; }
+  .cal-hoy-linea>span{
+    writing-mode:vertical-rl; text-orientation:mixed;
+    transform:rotate(180deg); white-space:nowrap;
+  }
+  /* La celda de la tarjeta próxima necesita posición relativa y espacio a
+     la izquierda para alojar la barra vertical. */
+  .cal-grid>div:has(.cal-hoy-linea){ position:relative; margin-left:26px; }
 
   /* ── INICIO: bloques en grid ancho ──
      Grid de 6 columnas (mínimo común de 2 y 3) para poder mezclar filas
@@ -570,33 +583,38 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
    JS: anchoFijoAbierto) y con altura pareja por fila. Activo en cualquier
    pantalla ancha en landscape ≥768px (tablet horizontal incluida). */
 @media(min-width:1024px), (min-width:768px) and (orientation:landscape){
+  /* Accesos rápidos ARRIBA en fila horizontal, hero DEBAJO. */
   .inicio-top{
-    display:grid;
-    grid-template-columns:1fr auto;
+    display:flex;
+    flex-direction:column-reverse;
     gap:var(--gap);
-    align-items:stretch;
     padding:0 var(--pw-x,var(--sp-md));
   }
   .inicio-hero{ border-radius:var(--rad-lg); min-height:0!important; }
   .inicio-accesos{
-    display:flex!important;
-    flex-direction:column!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
     gap:var(--gap)!important;
-    align-content:stretch;
-    min-width:230px;
   }
-  .inicio-accesos>button{ flex:1; min-height:0!important; flex-direction:row!important;
-    justify-content:flex-start!important; gap:12px!important; padding:0 16px!important; }
+  .inicio-accesos>button{ min-height:88px; }
 
   /* Altura pareja por fila en Inicio (igual que Próx Fecha). */
   .inicio-blocks{ align-items:stretch; }
   .inicio-blocks .inicio-row>*{ height:100%; }
+
+  /* "Tu Resumen": sus 6 tarjetas internas llenan el alto del bloque cuando
+     éste queda más alto que su contenido (por emparejarse con Notificaciones
+     en la misma fila). La cadena Card→contenido→grid se estira. */
+  .inicio-row-equipo .block-entry{ display:flex; flex-direction:column; }
+  .inicio-row-equipo .resumen-grid{ flex:1; grid-auto-rows:1fr; }
 }
 
 /* ── TABLET VERTICAL (768-1023px en vertical): filas de 2 en Inicio,
-     Backstage y Calendario. Los bloques de Inicio siguen colapsables. ── */
+     Backstage y Calendario. Los bloques quedan abiertos (por JS) con
+     altura pareja por fila. ── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
-  .inicio-blocks{ grid-template-columns:repeat(2,1fr); }
+  .inicio-blocks{ grid-template-columns:repeat(2,1fr); align-items:stretch; }
+  .inicio-blocks .inicio-row>*{ height:100%; }
   .inicio-row-notificaciones,
   .inicio-row-equipo,
   .inicio-row-comofunciona,
@@ -604,6 +622,8 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .inicio-row-faqs,
   .inicio-row-planes,
   .inicio-row-marketing{ grid-column:span 1; }
+  .inicio-row-equipo .block-entry{ display:flex; flex-direction:column; }
+  .inicio-row-equipo .resumen-grid{ flex:1; grid-auto-rows:1fr; }
   .bs-menu-grid{ grid-template-columns:repeat(2,1fr)!important; }
   .ms-blocks{ grid-template-columns:1fr 1fr; }
   .cal-grid{ grid-template-columns:repeat(2,1fr)!important; }
