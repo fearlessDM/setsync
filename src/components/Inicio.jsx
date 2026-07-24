@@ -536,7 +536,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const toggleFaq = i => setFaqsOpen(v=>({...v,[i]:!v[i]}));
 
   // Renderizar cada bloque por key
-  const renderBlock = (key, i=0) => {
+  const renderBlock = (key, i=0, collapsed=false, onToggle=null) => {
     switch(key) {
 
       case 'proximo': return (
@@ -595,8 +595,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'comofunciona': return (
-        <Card cols={2} i={i} key="comofunciona">
+        <Card cols={2} i={i} key="comofunciona" collapsed={collapsed} onToggle={onToggle}>
           <Lbl>Cómo funciona</Lbl>
+          <CC collapsed={collapsed}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
             {COMO_FUNCIONA_STEPS.slice(0,4).map((s,si)=>(
               <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)'}}>
@@ -627,6 +628,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                 color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
             </div>
           ))}
+          </CC>
         </Card>
       );
 
@@ -655,9 +657,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'notificaciones': return (
-        <Card cols={2} i={i} key="notificaciones">
+        <Card cols={2} i={i} key="notificaciones" collapsed={collapsed} onToggle={onToggle}>
+          <Lbl>Notificaciones</Lbl>
+          <CC collapsed={collapsed}>
           <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:notifOpen?8:0,cursor:'pointer'}}
-            onClick={()=>setNotifOpen(v=>!v)}>
+            onClick={e=>{e.stopPropagation();setNotifOpen(v=>!v);}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="1.8">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
@@ -696,6 +700,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               ))}
             </div>
           ))}
+          </CC>
         </Card>
       );
 
@@ -706,9 +711,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       );
 
       case 'tutoriales': return (
-        <Card cols={2} i={i} key="tutoriales">
+        <Card cols={2} i={i} key="tutoriales" collapsed={collapsed} onToggle={onToggle}>
+          <Lbl>Tutoriales</Lbl>
+          <CC collapsed={collapsed}>
           <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
-            onClick={()=>setTutSectionOpen(v=>!v)}>
+            onClick={e=>{e.stopPropagation();setTutSectionOpen(v=>!v);}}>
             <div style={{flex:1}}><Lbl>{tx.tutorialsLbl}</Lbl></div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
               style={{transform:tutSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
@@ -735,13 +742,16 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               ))}
             </div>
           )}
+          </CC>
         </Card>
       );
 
       case 'faqs': return (
-        <Card cols={2} i={i} key="faqs">
+        <Card cols={2} i={i} key="faqs" collapsed={collapsed} onToggle={onToggle}>
+          <Lbl>Preguntas frecuentes</Lbl>
+          <CC collapsed={collapsed}>
           <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
-            onClick={()=>setFaqSectionOpen(v=>!v)}>
+            onClick={e=>{e.stopPropagation();setFaqSectionOpen(v=>!v);}}>
             <div style={{flex:1}}><Lbl>{tx.faqLbl}</Lbl></div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
               style={{transform:faqSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
@@ -771,13 +781,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               ))}
             </div>
           )}
+          </CC>
         </Card>
       );
 
       case 'planes': return (
-        <Card cols={2} i={i} key="planes">
+        <Card cols={2} i={i} key="planes" collapsed={collapsed} onToggle={onToggle}>
           <Lbl>{tx.plansSetSyncLbl}</Lbl>
-
+          <CC collapsed={collapsed}>
           <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:6,marginTop:4}}>
             <div style={{fontSize:'11px',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
               letterSpacing:'1px',fontFamily:"var(--font-body)"}}>SetSync Solo</div>
@@ -842,6 +853,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',marginTop:8,fontFamily:"var(--font-body)",textAlign:'center'}}>
             Sobre 35 personas: mismo precio del tramo 26–35, +$1 por cada persona adicional.
           </div>
+          </CC>
         </Card>
       );
 
@@ -889,109 +901,51 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         </div>
       </div>
 
-      {/* Grid con bloques arrastrables */}
-      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)'}}>
+      {/* Bloques colapsables — los Cards se colapsan a sí mismos */}
+      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:10}}>
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
-          const firstKey = keys[0];
-          const label = BLOCK_ROW_LABELS[firstKey] || firstKey;
           const isCollapsed = !!collapsedRows[rowIdx];
           return (
-            <div key={rowIdx} style={{marginBottom:8,borderRadius:12,
-              background:'var(--s1)',border:'1px solid var(--bd)',overflow:'hidden'}}>
-              {/* Header — card colapsada con fondo visible */}
-              <div
-                onClick={()=>toggleRow(rowIdx)}
-                style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                  padding:'12px 14px',cursor:'pointer',userSelect:'none'}}>
-                <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx2)',
-                  textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
-                  {label}
-                </span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
-                  style={{flexShrink:0,transform:isCollapsed?'rotate(0deg)':'rotate(180deg)',
-                    transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </div>
-              {/* Contenido animado */}
-              <div style={{
-                display:'grid',
-                gridTemplateRows:isCollapsed?'0fr':'1fr',
-                transition:'grid-template-rows 400ms cubic-bezier(0.4,0,0.2,1)',
-              }}>
-                <div style={{overflow:'hidden'}}>
-                  <div
-                    draggable
-                    onDragStart={()=>onDragStart(dragIdx)}
-                    onDragEnter={()=>onDragEnter(dragIdx)}
-                    onDragEnd={onDragEnd}
-                    style={{padding:'4px 10px 12px',cursor:'grab'}}>
-                    <div style={{
-                      display:'grid',
-                      gridTemplateColumns:'1fr 1fr',
-                      gap:'var(--gap,10px)',
-                    }}>
-                      {keys.map(key=>renderBlock(key,dragIdx))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div key={rowIdx}
+              draggable
+              onDragStart={e=>{e.stopPropagation();onDragStart(dragIdx);}}
+              onDragEnter={()=>onDragEnter(dragIdx)}
+              onDragEnd={onDragEnd}>
+              {keys.map(key=>renderBlock(key,dragIdx,isCollapsed,()=>toggleRow(rowIdx)))}
             </div>
           );
         })}
 
-        {/* ── Bloque marketero — colapsable, igual que el resto ── */}
-        <div style={{marginTop:0,borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',overflow:'hidden'}}>
-          {/* Header colapsable */}
-          <div onClick={()=>setMktCollapsed(v=>!v)}
-            style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-              padding:'12px 14px',cursor:'pointer',userSelect:'none'}}>
-            <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx2)',
-              textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
-              Por qué SetSync es el mejor
-            </span>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
-              style={{flexShrink:0,transform:mktCollapsed?'rotate(0deg)':'rotate(180deg)',
-                transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-          {/* Contenido animado */}
-          <div style={{
-            display:'grid',
-            gridTemplateRows:mktCollapsed?'0fr':'1fr',
-            transition:'grid-template-rows 400ms cubic-bezier(0.4,0,0.2,1)',
-          }}>
-            <div style={{overflow:'hidden'}}>
-              <div style={{padding:'0 var(--sp-md) var(--sp-md)'}}>
-                <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
-                  color:'var(--tx2)',marginBottom:12,lineHeight:1.5}}>
-                  La única pantalla que un músico necesita en el escenario.
-                </div>
-                <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                  {FEATURES_MKT.map(f=>(
-                    <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                      <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
-                        display:'flex',alignItems:'center',justifyContent:'center',
-                        background:'rgba(var(--gn-rgb),.1)'}}>
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="1.8">
-                          {FEATURES_MKT_ICONS[f.icon]}
-                        </svg>
-                      </div>
-                      <div style={{flex:1,paddingTop:2}}>
-                        <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',
-                          fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
-                        <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
-                          fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                        <Card cols={2} i={0} collapsed={mktCollapsed} onToggle={()=>setMktCollapsed(v=>!v)}>
+          <Lbl>Por qué SetSync es el mejor</Lbl>
+          <CC collapsed={mktCollapsed}>
+            <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
+              color:'var(--tx2)',marginBottom:12,lineHeight:1.5,marginTop:4}}>
+              La única pantalla que un músico necesita en el escenario.
             </div>
-          </div>
-        </div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {FEATURES_MKT.map(f=>(
+                <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                  <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    background:'rgba(var(--gn-rgb),.1)'}}>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="1.8">
+                      {FEATURES_MKT_ICONS[f.icon]}
+                    </svg>
+                  </div>
+                  <div style={{flex:1,paddingTop:2}}>
+                    <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',
+                      fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
+                    <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
+                      fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CC>
+        </Card>
+
       </div>
     </div>
   );

@@ -96,7 +96,7 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
    las mismas fuentes (Special Gothic Expanded One + Lexend Giga) — son
    temas 100% color-only, no cambian tipografía. */
 [data-theme=brasa]{
---bg:#161616;--s1:rgba(255,231,208,.06);--s2:rgba(255,231,208,.03);--s3:rgba(255,231,208,.1);
+--bg:#000000;--s1:rgba(255,231,208,.06);--s2:rgba(255,231,208,.03);--s3:rgba(255,231,208,.1);
 --bd:rgba(255,231,208,.12);--bd2:rgba(255,231,208,.2);
 --div:rgba(255,231,208,.22);--em:rgba(255,231,208,.32);
 --ac:#FAF8F5;--tx:#FAF8F5;--tx2:rgba(250,248,245,.68);--tx3:#c9bcaa;

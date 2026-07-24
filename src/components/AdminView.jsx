@@ -728,13 +728,13 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
           </div>
           {equiposAMostrar.map(eq=>(
-            <div key={eq.id} style={{borderBottom:'1px solid var(--s1)'}}>
-              <div style={{padding:'8px var(--sp-md)',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
+            <div key={eq.id} style={{borderBottom:'1px solid var(--bd)'}}>
+              <div style={{padding:'12px var(--sp-md) 6px',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
                 <span style={{fontWeight:900,fontSize:'14px',color:'var(--tx)',flex:1}}>{eq.name}</span>
                 <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
               </div>
-              <div style={{padding:'0 var(--sp-md) var(--sp-xs)',display:'flex',flexWrap:'wrap',gap:5}}>
+              <div style={{padding:'0 var(--sp-md) 12px',display:'flex',flexWrap:'wrap',gap:6}}>
                 {(eq.miembros||[]).map(m=>(
                   <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'var(--s1)',}}>
                     {m.foto&&<img src={m.foto} alt={m.name} style={{width:16,height:16,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
