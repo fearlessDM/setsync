@@ -504,6 +504,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const [tutSectionOpen, setTutSectionOpen] = useState(false);
   const [faqSectionOpen, setFaqSectionOpen] = useState(false);
   const [collapsedRows, setCollapsedRows] = useState({0:true,1:true,2:true,3:true,4:true,5:true}); // todos colapsados por defecto
+  const [mktCollapsed, setMktCollapsed] = useState(true); // bloque marketero también colapsado
   const toggleRow = rowIdx => setCollapsedRows(v=>({...v,[rowIdx]:!v[rowIdx]}));
 
   const hoy = new Date();
@@ -916,47 +917,77 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
-              {/* Contenido — oculto si colapsado */}
-              {!isCollapsed&&(
-                <div style={{
-                  display:'grid',
-                  gridTemplateColumns:'1fr 1fr',
-                  gap:'var(--gap,10px)',
-                }}>
-                  {keys.map(key=>renderBlock(key,dragIdx))}
+              {/* Contenido — animación suave grid-template-rows */}
+              <div style={{
+                display:'grid',
+                gridTemplateRows:isCollapsed?'0fr':'1fr',
+                transition:'grid-template-rows 320ms cubic-bezier(0.4,0,0.2,1)',
+                overflow:'hidden',
+              }}>
+                <div style={{overflow:'hidden'}}>
+                  <div style={{
+                    display:'grid',
+                    gridTemplateColumns:'1fr 1fr',
+                    gap:'var(--gap,10px)',
+                    paddingTop:isCollapsed?0:4,
+                    transition:'padding-top 320ms cubic-bezier(0.4,0,0.2,1)',
+                  }}>
+                    {keys.map(key=>renderBlock(key,dragIdx))}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
 
-        {/* ── Bloque marketero — fijo al final, fuera del reordenamiento ── */}
-        <div style={{marginTop:4,padding:'var(--sp-md)',borderRadius:'var(--rad-lg)',
-          background:'var(--s1)',}}>
-          <div style={{fontFamily:"var(--font-display)",fontWeight:400,
-            fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>Por qué SetSync es el mejor</div>
-          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
-            color:'var(--tx2)',marginBottom:12,lineHeight:1.5}}>
-            La única pantalla que un músico necesita en el escenario.
+        {/* ── Bloque marketero — colapsable, igual que el resto ── */}
+        <div style={{marginTop:4,borderRadius:'var(--rad-lg)',background:'var(--s1)',overflow:'hidden'}}>
+          {/* Header colapsable */}
+          <div onClick={()=>setMktCollapsed(v=>!v)}
+            style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+              padding:'7px var(--sp-md)',cursor:'pointer',userSelect:'none'}}>
+            <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',
+              textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
+              Por qué SetSync es el mejor
+            </span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
+              style={{flexShrink:0,transform:mktCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform 280ms cubic-bezier(0.4,0,0.2,1)'}}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {FEATURES_MKT.map(f=>(
-              <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
-                  display:'flex',alignItems:'center',justifyContent:'center',
-                  background:'rgba(var(--gn-rgb),.1)'}}>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="1.8">
-                    {FEATURES_MKT_ICONS[f.icon]}
-                  </svg>
+          {/* Contenido animado */}
+          <div style={{
+            display:'grid',
+            gridTemplateRows:mktCollapsed?'0fr':'1fr',
+            transition:'grid-template-rows 320ms cubic-bezier(0.4,0,0.2,1)',
+          }}>
+            <div style={{overflow:'hidden'}}>
+              <div style={{padding:'0 var(--sp-md) var(--sp-md)'}}>
+                <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
+                  color:'var(--tx2)',marginBottom:12,lineHeight:1.5}}>
+                  La única pantalla que un músico necesita en el escenario.
                 </div>
-                <div style={{flex:1,paddingTop:2}}>
-                  <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',
-                    fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
-                  <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
-                    fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  {FEATURES_MKT.map(f=>(
+                    <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                      <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
+                        display:'flex',alignItems:'center',justifyContent:'center',
+                        background:'rgba(var(--gn-rgb),.1)'}}>
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="1.8">
+                          {FEATURES_MKT_ICONS[f.icon]}
+                        </svg>
+                      </div>
+                      <div style={{flex:1,paddingTop:2}}>
+                        <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',
+                          fontFamily:"var(--font-body)",marginBottom:1}}>{f.title}</div>
+                        <div style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx3)',
+                          fontFamily:"var(--font-body)",lineHeight:1.4}}>{f.desc}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
