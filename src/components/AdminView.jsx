@@ -685,8 +685,8 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
 
   return(
     <div style={{padding:'var(--sp-sm) var(--pw-x,16px)',paddingBottom:90}}>
-      <div style={{marginBottom:'var(--sp-md)'}}>
-        <div style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
+      <div className="ms-head" style={{marginBottom:'var(--sp-md)'}}>
+        <div className="ms-head-top" style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
           <div style={{flex:1}}>
             <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
               {f.nombre}
@@ -698,7 +698,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
               porque no son eventos reales y no hay nada que sincronizar. */}
           {f.origen==='evento'&&(
-            <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+            <button className="ms-live-btn" onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
               <div style={{display:'flex',alignItems:'center',gap:5}}>
                 <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
                 <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
@@ -707,17 +707,40 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             </button>
           )}
         </div>
-        {/* Lugar y hora */}
-        <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
-          <div style={{display:'flex',alignItems:'center',gap:6,flex:1}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
+        {/* Lugar / Fecha / Hora */}
+        <div className="ms-locbar" style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
+          {/* Ubicación · Fecha · Hora — proporciones 4/2/1 (la ubicación
+              siempre lleva más ancho). fechaStr viene como YYYY-MM-DD. */}
+          <div style={{display:'flex',alignItems:'center',gap:6,flex:4,minWidth:0}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
-            <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300}}>{f.lugar||tx.noPlaceAssignedLbl}</span>
+            <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,
+              overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.lugar||tx.noPlaceAssignedLbl}</span>
           </div>
+          {(()=>{
+            const fs=f.fechaStr;
+            if(!fs) return null;
+            let txt=fs;
+            const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(fs);
+            if(m){
+              const dia=Number(m[3]), mes=Number(m[2])-1, anio=m[1];
+              const mesLbl=(tx.monthsFull?.[mes]||'').slice(0,3);
+              txt=mesLbl?`${dia} ${mesLbl} ${anio}`:`${dia}/${m[2]}/${anio}`;
+            }
+            return(
+              <div style={{display:'flex',alignItems:'center',gap:6,flex:2,minWidth:0,justifyContent:'center'}}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+                <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,
+                  overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{txt}</span>
+              </div>
+            );
+          })()}
           {f.hora&&(
-            <div style={{display:'flex',alignItems:'center',gap:6}}>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2">
+            <div style={{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0,justifyContent:'flex-end'}}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
               <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:700}}>{f.hora}</span>
@@ -726,13 +749,13 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
         </div>
       </div>
 
+      {/* Wrapper de bloques — en desktop/tablet horizontal pasa a grid 2-col
+          (ver .ms-blocks en theme.css). En mobile es columna única. */}
+      <div className="ms-blocks">
       {/* Canciones */}
       <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
         <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.setlistLbl}</span>
-          <span style={{padding:'2px 8px',borderRadius:'var(--rad-full)',background:'rgba(94,206,160,.08)',color:'var(--gn)',fontSize:'var(--fs-xs)',fontWeight:700,display:'flex',alignItems:'center',gap:4}}>
-            <div style={{width:5,height:5,borderRadius:'50%',background:'var(--gn)'}}/>Publicado
-          </span>
         </div>
         {sl.length===0
           ?<div style={{textAlign:'center',padding:24,color:'var(--tx3)',fontSize:'var(--fs-lg)'}}>{tx.noSetlistForDateLbl}</div>
@@ -740,7 +763,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             const r=resolverItem(item);
             return(
             <div key={i} onClick={()=>onOpenSong(i)} style={{display:'flex',alignItems:'center',gap:'var(--sp-sm)',padding:'13px var(--sp-md)',borderBottom:i<sl.length-1?'1px solid var(--s1)':'none',cursor:'pointer'}}>
-              <span style={{fontSize:'var(--fs-lg)',fontWeight:900,color:'var(--tx3)',minWidth:16,textAlign:'right'}}>{i+1}</span>
+              <span style={{fontSize:'var(--fs-lg)',fontWeight:900,color:'var(--gn)',minWidth:16,textAlign:'right'}}>{i+1}</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:'var(--fs-base)',color:'var(--tx)'}}>{r.nombre}</div>
                 <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',marginTop:2}}>
@@ -764,8 +787,8 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:6,
               padding:'11px var(--sp-md)',background:'transparent',cursor:'pointer',
               borderTop:sl.length>0?'1px solid var(--s1)':'none',
-              color:'var(--gn)',fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              color:'var(--tx3)',fontSize:'var(--fs-sm)',fontWeight:400,fontFamily:"var(--font-body)"}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             {sl.length>0?'Agregar canción / editar setlist':'Crear el setlist de esta fecha'}
@@ -1026,6 +1049,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1863,7 +1863,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+      <div className="bs-menu-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {ITEMS.map(it=>(
           <button key={it.id} onClick={()=>setBsView(it.id)}
             style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',

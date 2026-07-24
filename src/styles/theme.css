@@ -469,6 +469,44 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 .sv-tab-bar{
   padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
 }
+
+/* ── Layout ancho (tablet horizontal / desktop): grids multi-columna ──
+   Desde 768px los bloques dejan de apilarse en una sola columna.
+   Próx Fecha → 2 columnas · Backstage → 4 columnas. En mobile (<768px)
+   todo sigue en columna única / grid original. */
+@media(min-width:768px){
+  /* Próx Fecha — bloques de nivel superior en 2 columnas.
+     El gap del grid reemplaza el marginBottom de cada bloque para que
+     el espaciado quede parejo en ambos ejes. */
+  .ms-blocks{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:var(--gap);
+    align-items:start;
+  }
+  .ms-blocks>*{ margin-bottom:0!important; }
+
+  /* Encabezado de Próx Fecha en desktop: el título arriba, y la barra de
+     ubicación en línea con el botón "En vivo" debajo — barra a la
+     izquierda ocupando el ancho, botón a la derecha. */
+  .ms-head{
+    display:grid;
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "titulo  titulo"
+      "locbar  live";
+    column-gap:var(--sp-md);
+    row-gap:var(--sp-sm);
+    align-items:center;
+  }
+  .ms-head-top{ display:contents; }
+  .ms-head-top>div:first-child{ grid-area:titulo; }
+  .ms-head .ms-live-btn{ grid-area:live; align-self:stretch; }
+  .ms-head .ms-locbar{ grid-area:locbar; margin-top:0; }
+
+  /* Backstage — menú principal en 4 columnas. */
+  .bs-menu-grid{ grid-template-columns:repeat(4,1fr)!important; }
+}
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{
   position:relative;
