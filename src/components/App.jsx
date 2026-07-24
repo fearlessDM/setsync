@@ -872,7 +872,12 @@ Tuya es la gloria, Por siempre amén.
             // La fecha abierta es una foto tomada al navegar. Para eventos
             // reales la re-hidratamos desde `eventos` en cada render, así el
             // override de equipos por fecha se ve al instante al editarlo.
-            const base=fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Domingo ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]};
+            // Fecha por defecto (entrar a Próx Fecha sin tocar una tarjeta):
+            // se resuelve al evento real sembrado para ese domingo, si existe.
+            const semilla=eventos.find(e=>Number(e.diaDomingo)===Number(activeSunday));
+            const base=fechaAbierta||(semilla
+              ?{origen:'evento',id:semilla.id,nombre:semilla.nombre||`Domingo ${activeSunday}`,fechaStr:semilla.fecha||null,lugar:semilla.lugar||'Iglesia Central',hora:semilla.hora||'10:00',setlist:semilla.setlist||[],equiposConvocados:semilla.equiposConvocados||null,itinerario:semilla.itinerario||null}
+              :{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Domingo ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]});
             const evVivo=base.origen==='evento'?eventos.find(e=>String(e.id)===String(base.id)):null;
             const fechaViva=evVivo?{...base,
               nombre:evVivo.nombre??base.nombre,

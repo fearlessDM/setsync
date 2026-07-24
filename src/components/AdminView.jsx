@@ -364,7 +364,17 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   isLeader={isLeader}
                   tx={tx}
                   onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);
-                    onAbrirFecha&&onAbrirFecha({origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
+                    // Los domingos del calendario YA existen como eventos
+                    // reales (migrarSetlistsIglesia los siembra con id
+                    // determinístico `iglesia-domingo-N`). Antes se abrían
+                    // como 'legacy' sintético y por eso quedaban en solo
+                    // lectura aunque tuvieran respaldo real. v93: se
+                    // resuelve el evento y solo se cae a 'legacy' si de
+                    // verdad no hay nada detrás.
+                    const real=(eventos||[]).find(e=>Number(e.diaDomingo)===Number(day));
+                    onAbrirFecha&&onAbrirFecha(real
+                      ?{origen:'evento',id:real.id,nombre:real.nombre||`${tx.sunday} ${day}`,fechaStr:real.fecha||null,lugar:real.lugar||'Iglesia Central',hora:real.hora||'10:00',setlist:real.setlist||sl,equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
+                      :{origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
                   onGoToProxFecha={onGoToProxFecha}
                 />
@@ -432,7 +442,12 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 isLeader={isLeader}
                 tx={tx}
                 onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);
-                  onAbrirFecha&&onAbrirFecha({origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
+                  // Mismo caso que los domingos: los especiales ya existen
+                  // como evento real (`iglesia-especial-mes-dia-i`).
+                  const real=(eventos||[]).find(e=>e.mes===ev.mes&&e.dia===ev.dia&&e.nombre===ev.label);
+                  onAbrirFecha&&onAbrirFecha(real
+                    ?{origen:'evento',id:real.id,nombre:real.nombre,fechaStr:real.fecha||null,lugar:real.lugar||ev.lugar||'',hora:real.hora||ev.hora||'',setlist:real.setlist||ev.setlist||[],equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
+                    :{origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                 onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                 onGoToProxFecha={onGoToProxFecha}
               />
@@ -792,6 +807,18 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                       color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',
                       whiteSpace:'nowrap'}}>{eq.name}</span>
                     <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{miembros.length}</span>
+                    {editable&&(
+                      <span title="Editar solo para esta fecha"
+                        style={{width:20,height:20,borderRadius:6,flexShrink:0,display:'flex',
+                          alignItems:'center',justifyContent:'center',
+                          background:abierto?eq.color+'26':'var(--s3)'}}>
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
+                          stroke={abierto?eq.color:'var(--tx3)'} strokeWidth="2"
+                          strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                        </svg>
+                      </span>
+                    )}
                   </div>
                   <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
                     {miembros.slice(0,4).map(m=>(
@@ -818,9 +845,9 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         fontFamily:"var(--font-body)"}}>Ajustado para esta fecha</span>
                     </div>
                   )}
-                  {editable&&!abierto&&(
+                  {editable&&!abierto&&!eq.editadoParaEvento&&(
                     <div style={{padding:'0 10px 10px',fontSize:'var(--fs-2xs)',color:'var(--tx3)',
-                      fontFamily:"var(--font-body)"}}>Tocar para editar →</div>
+                      fontFamily:"var(--font-body)"}}>Editar para esta fecha</div>
                   )}
                 </div>
               );
@@ -850,10 +877,26 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                       fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
                 </div>
 
-                {editable&&(
-                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
-                    lineHeight:1.5,marginBottom:10}}>
-                    Los cambios valen solo para esta fecha. El equipo original no se toca.
+                {editable?(
+                  <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'9px 10px',
+                    borderRadius:10,background:'rgba(200,169,126,.08)',marginBottom:12}}>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)"
+                      strokeWidth="2" strokeLinecap="round" style={{flexShrink:0,marginTop:1}}>
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
+                      <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <div style={{fontSize:'var(--fs-xs)',color:'var(--tx2)',fontFamily:"var(--font-body)",
+                      fontWeight:300,lineHeight:1.5}}>
+                      Estos cambios se guardan <strong style={{color:'var(--ac)',fontWeight:700}}>solo para esta fecha</strong>.
+                      El equipo original en Gestión de equipos no se modifica.
+                    </div>
+                  </div>
+                ):(
+                  <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
+                    fontWeight:300,lineHeight:1.5,marginBottom:10}}>
+                    {f.origen==='evento'
+                      ?'Solo el admin o el líder de este equipo pueden ajustarlo para esta fecha.'
+                      :'Esta fecha no tiene un evento real detrás, así que su convocatoria es solo de lectura.'}
                   </div>
                 )}
 
