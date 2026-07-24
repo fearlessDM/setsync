@@ -666,30 +666,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {showChords?tx.lyricsOnly:tx.withChords}
           </button>
         )}
-        {isAdmin&&(
-          <>
-          {/* ── Botón "Editar" ─────────────────────────────────────────────
-              Antes activaba editMode (drag-to-reposition interno de acordes,
-              que Danny reportó como poco confiable). Ahora navega de vuelta
-              al editor de Cancionero con la canción precargada — mismo lugar
-              donde se creó la canción, con acceso al editor de acordes nuevo
-              (songview/EditorAcordes.jsx) además de letra/estructura/mapa.
-              onEditInCancionero es opcional: si SongView se usa en un
-              contexto sin esa navegación disponible, el botón simplemente
-              no se muestra (ver condición abajo) en vez de fallar en silencio. */}
-          {onEditInCancionero&&(
-            <button onClick={()=>onEditInCancionero(songs[idx]?.name)} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,background:'rgba(200,169,126,.07)',color:'var(--ac)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              {tx.edit}
-            </button>
-          )}
-          {editMode&&editedSongs[songs[idx]?.name]&&(
-            <button onClick={handleSaveEdit} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,background:'rgba(94,206,160,.15)',color:'var(--gn)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              Publicar
-            </button>
-          )}
-          </>
+        {/* Botón Publicar (guardar edición) — solo cuando hay cambios pendientes */}
+        {isAdmin&&editMode&&editedSongs[songs[idx]?.name]&&(
+          <button onClick={handleSaveEdit} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,background:'rgba(94,206,160,.15)',color:'var(--gn)',cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"'Outfit',sans-serif",flexShrink:0}}>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Publicar
+          </button>
         )}
         
       </div>
@@ -3361,14 +3343,24 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
               </span>
             </button>
-            <div style={{display:'flex',gap:4,alignItems:'center',flexShrink:0}}>
-              {songs.map((_,i)=>(<div key={i} style={{width:i===idx?14:6,height:4,borderRadius:2,background:i===idx?'var(--ac)':'var(--div)',transition:'all .3s'}}/>))}
-            </div>
-            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-              <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
-            </div>
+            {isAdmin&&onEditInCancionero&&(
+              <button onClick={()=>onEditInCancionero(songs[idx]?.name)}
+                title="Editar canción"
+                style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+                  background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
+                <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+                  background:'rgba(200,169,126,.08)'}}>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </div>
+                <span style={{fontSize:'var(--fs-2xs)',fontWeight:700,color:'var(--ac)'}}>{tx.edit}</span>
+              </button>
+            )}
+
           </div>
-          {/* AnnoBar (tono, notación, Solo letra, Editar) — en tablet comparte fila con el título en vez de quedar debajo */}
+          {/* AnnoBar (tono, notación, Solo letra) */}
           <div style={{flex:isTablet?'1 1 auto':undefined,minWidth:0,borderBottom:isTablet?`1px solid ${svBd}`:'none'}}>{AnnoBar()}</div>
         </div>
         {ContentArea()}
@@ -3531,9 +3523,21 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {1+(variacionesDB[baseName]||[]).length+(carpetaActual.secuencia||[]).length+(carpetaActual.trackReferencia?1:0)}
           </span>
         </button>
-        <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-          <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontWeight:700}}>{idx+1}/{songs.length}</div>
-        </div>
+        {isAdmin&&onEditInCancionero&&(
+          <button onClick={()=>onEditInCancionero(songs[idx]?.name)}
+            title="Editar canción"
+            style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
+              background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
+            <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
+              background:'rgba(200,169,126,.08)'}}>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </div>
+            <span style={{fontSize:'var(--fs-2xs)',fontWeight:700,color:'var(--ac)'}}>{tx.edit}</span>
+          </button>
+        )}
       </div>
       {AnnoBar()}
       {ContentArea()}
@@ -3541,6 +3545,22 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         {ReferenciaPanel()}
         {SecuenciaPanel()}
         {CarpetaModal()}
+      {/* Indicador de posición — puntos/línea pegado encima del BottomTabBar */}
+      {songs.length>1&&(
+        <div style={{position:'fixed',bottom:'calc(54px + env(safe-area-inset-bottom,0px))',
+          left:0,right:0,display:'flex',alignItems:'center',justifyContent:'center',
+          gap:5,padding:'5px 0',background:svBg,zIndex:99,pointerEvents:'none'}}>
+          {songs.map((_,i)=>(
+            <div key={i} style={{
+              width: i===idx ? 22 : 6,
+              height: 4,
+              borderRadius: 2,
+              background: i===idx ? 'var(--ac)' : 'var(--div)',
+              transition:'all .3s cubic-bezier(.4,0,.2,1)',
+            }}/>
+          ))}
+        </div>
+      )}
       {BottomTabBar()}
     </div>
   );
