@@ -611,9 +611,10 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
 }
 
 // ── Mi Setlist ─────────────────────────────────────────────────────────────
-export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[],currentUser=null,onActualizarEvento=null}){
+export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[],currentUser=null,onActualizarEvento=null,onEditarSetlist=null}){
   const tx=getT(lang);
   const [eqAbierto,setEqAbierto]=useState(null);
+  const [editandoEq,setEditandoEq]=useState(false); // panel abre en solo-lectura; el lápiz activa edición
   const [agregarEnEq,setAgregarEnEq]=useState(null);
   // fecha: {origen:'evento'|'legacy'|'especial', id, nombre, fechaStr, lugar, hora, setlist}
   // setlist puede traer 3 formatos (compatibilidad, ver App.jsx abrirSongDesdeEvento):
@@ -762,6 +763,21 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             </div>
             );
           })}
+        {/* Editar el setlist de ESTE evento — salta a Crear setlist en
+            Backstage con el evento ya preseleccionado y sus canciones
+            precargadas. Solo en eventos reales y con permiso de edición. */}
+        {f.origen==='evento'&&typeof onEditarSetlist==='function'&&(userRole==='superadmin'||userRole==='leader')&&(
+          <button onClick={()=>onEditarSetlist(f.id)}
+            style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+              padding:'11px var(--sp-md)',background:'transparent',cursor:'pointer',
+              borderTop:sl.length>0?'1px solid var(--s1)':'none',
+              color:'var(--gn)',fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {sl.length>0?'Agregar canción / editar setlist':'Crear el setlist de esta fecha'}
+          </button>
+        )}
       </div>
 
       {/* Ensayos de este evento */}
@@ -797,7 +813,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               const abierto=eqAbierto===eq.id;
               return(
                 <div key={eq.id}
-                  onClick={()=>{setEqAbierto(abierto?null:eq.id);setAgregarEnEq(null);}}
+                  onClick={()=>{const next=abierto?null:eq.id;setEqAbierto(next);setEditandoEq(false);setAgregarEnEq(null);}}
                   style={{borderRadius:14,background:'var(--s2)',overflow:'hidden',
                     cursor:'pointer',outline:abierto?`2px solid ${eq.color}60`:'none'}}>
                   <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
@@ -807,18 +823,6 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                       color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',
                       whiteSpace:'nowrap'}}>{eq.name}</span>
                     <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{miembros.length}</span>
-                    {editable&&(
-                      <span title="Editar solo para esta fecha"
-                        style={{width:20,height:20,borderRadius:6,flexShrink:0,display:'flex',
-                          alignItems:'center',justifyContent:'center',
-                          background:abierto?eq.color+'26':'var(--s3)'}}>
-                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-                          stroke={abierto?eq.color:'var(--tx3)'} strokeWidth="2"
-                          strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
-                        </svg>
-                      </span>
-                    )}
                   </div>
                   <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
                     {miembros.slice(0,4).map(m=>(
@@ -845,10 +849,6 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         fontFamily:"var(--font-body)"}}>Ajustado para esta fecha</span>
                     </div>
                   )}
-                  {editable&&!abierto&&!eq.editadoParaEvento&&(
-                    <div style={{padding:'0 10px 10px',fontSize:'var(--fs-2xs)',color:'var(--tx3)',
-                      fontFamily:"var(--font-body)"}}>Editar para esta fecha</div>
-                  )}
                 </div>
               );
             })}
@@ -861,23 +861,40 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             if(!eq) return null;
             const miembros=eq.miembros||[];
             const editable=puedeEditarEquipo(eq);
+            const enEdicion=editable&&editandoEq; // solo-lectura por defecto
             const roles=eq.roles&&eq.roles.length?eq.roles:['General'];
             const disponibles=personas.filter(p=>!miembros.some(m=>String(m.id)===String(p.id)));
             const setMiembros=nuevos=>guardarMiembros(eq.id,nuevos);
             return(
               <div style={{margin:'0 var(--sp-md) 14px',borderRadius:14,background:'var(--s2)',
                 padding:14,outline:`1px solid ${eq.color}40`}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:enEdicion?12:10}}>
                   <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,
                     boxShadow:`0 0 8px ${eq.color}80`}}/>
                   <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',
                     color:'var(--tx)',flex:1}}>{eq.name}</span>
-                  <button onClick={()=>{setEqAbierto(null);setAgregarEnEq(null);}}
+                  {/* Lápiz — vive SOLO dentro del panel. Alterna edición. */}
+                  {editable&&(
+                    <button onClick={()=>{setEditandoEq(v=>!v);setAgregarEnEq(null);}}
+                      title={enEdicion?'Salir de edición':'Editar para esta fecha'}
+                      style={{display:'flex',alignItems:'center',gap:5,padding:'5px 10px',borderRadius:100,
+                        background:enEdicion?eq.color+'22':'var(--s3)',
+                        color:enEdicion?eq.color:'var(--tx2)',cursor:'pointer',
+                        fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                      </svg>
+                      {enEdicion?'Listo':'Editar'}
+                    </button>
+                  )}
+                  <button onClick={()=>{setEqAbierto(null);setEditandoEq(false);setAgregarEnEq(null);}}
                     style={{background:'none',color:'var(--tx3)',cursor:'pointer',
                       fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
                 </div>
 
-                {editable?(
+                {/* El aviso de alcance solo aparece en modo edición. */}
+                {enEdicion&&(
                   <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'9px 10px',
                     borderRadius:10,background:'rgba(200,169,126,.08)',marginBottom:12}}>
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--ac)"
@@ -890,13 +907,6 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                       Estos cambios se guardan <strong style={{color:'var(--ac)',fontWeight:700}}>solo para esta fecha</strong>.
                       El equipo original en Gestión de equipos no se modifica.
                     </div>
-                  </div>
-                ):(
-                  <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
-                    fontWeight:300,lineHeight:1.5,marginBottom:10}}>
-                    {f.origen==='evento'
-                      ?'Solo el admin o el líder de este equipo pueden ajustarlo para esta fecha.'
-                      :'Esta fecha no tiene un evento real detrás, así que su convocatoria es solo de lectura.'}
                   </div>
                 )}
 
@@ -916,7 +926,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         flexShrink:0}}>{initials(m.name)}</div>}
                     <span style={{flex:1,minWidth:0,fontSize:'var(--fs-md)',fontWeight:300,color:'var(--tx)',
                       overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</span>
-                    {editable?(
+                    {enEdicion?(
                       <CustomSelect value={m.role} onChange={v=>setMiembros(miembros.map(x=>x.id===m.id?{...x,role:v}:x))}
                         style={{fontSize:'var(--fs-xs)',color:eq.color,background:eq.color+'12',
                           padding:'3px 10px',borderRadius:100,fontWeight:400,width:'auto'}}
@@ -924,7 +934,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                     ):(
                       <span style={{fontSize:'var(--fs-xs)',color:eq.color,fontWeight:300,flexShrink:0}}>{m.role}</span>
                     )}
-                    {editable&&(
+                    {enEdicion&&(
                       <button onClick={()=>setMiembros(miembros.filter(x=>x.id!==m.id))}
                         title="Quitar de esta fecha"
                         style={{width:22,height:22,borderRadius:6,background:'rgba(var(--rd-rgb),.08)',
@@ -938,7 +948,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                   </div>
                 ))}
 
-                {editable&&(
+                {enEdicion&&(
                   <div style={{marginTop:10,display:'flex',flexDirection:'column',gap:8}}>
                     {agregarEnEq===eq.id?(
                       <CustomSelect value="" placeholder="Elige a quién sumar…"

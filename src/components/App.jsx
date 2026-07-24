@@ -895,6 +895,7 @@ Tuya es la gloria, Por siempre amén.
               onLive={()=>{const sl=fechaViva.setlist||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
               userRole={userRole} onToast={showToast} lang={lang}
               currentUser={currentUser} onActualizarEvento={actualizarEvento}
+              onEditarSetlist={evId=>goToView('backstage',{page:'setlist',eventoId:evId})}
               equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>;
           })()}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)} deepLink={deepLink&&deepLink.view==='repertorio'?deepLink:null}/>}

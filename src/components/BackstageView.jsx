@@ -44,10 +44,19 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // estuvieras adentro de una subpágina — no solo con la flecha atrás.
   useEffect(()=>{ if(navResetKey>0) setBsView(null); },[navResetKey]);
   // deepLink — llegada directa a una subpágina desde otra vista (accesos
-  // rápidos de Inicio, botones de "Cómo funciona"). Se declara DESPUÉS del
-  // efecto de navResetKey a propósito: ambos disparan en el mismo commit y
-  // el orden de declaración define quién escribe último.
-  useEffect(()=>{ if(deepLink?.sub) setBsView(deepLink.sub); },[deepLink?.key]);
+  // rápidos de Inicio, botones de "Cómo funciona", "editar setlist" desde
+  // Próx Fecha). `sub` puede ser un string ('evento') o un objeto
+  // {page,eventoId} cuando además hay que preseleccionar algo.
+  const [deepLinkSetlistEvento,setDeepLinkSetlistEvento]=useState('');
+  useEffect(()=>{
+    if(!deepLink?.sub) return;
+    const s=deepLink.sub;
+    if(typeof s==='string'){ setBsView(s); return; }
+    if(s.page){
+      setBsView(s.page);
+      if(s.page==='setlist'&&s.eventoId!=null) setDeepLinkSetlistEvento(String(s.eventoId));
+    }
+  },[deepLink?.key]);
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;
@@ -485,6 +494,23 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       {helpOpen==='evento'&&<HelpModal/>}
     </div>
   );
+
+  // Al llegar por deep-link "editar setlist" desde Próx Fecha: preselecciona
+  // el evento y precarga sus canciones actuales para editarlas en sitio.
+  useEffect(()=>{
+    if(!deepLinkSetlistEvento) return;
+    const ev=eventos.find(e=>String(e.id)===String(deepLinkSetlistEvento));
+    setSlEventoId(deepLinkSetlistEvento);
+    setSlSearch('');
+    if(ev){
+      setSlNombre(prev=>prev||`Setlist · ${ev.nombre}`);
+      setSlCanciones((ev.setlist||[]).map((it,i)=>{
+        if(typeof it==='string') return {cancion:it,asignaciones:[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
+        return {cancion:it.cancion||it.name||it.n||'',asignaciones:it.asignaciones||[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
+      }));
+    }
+    setDeepLinkSetlistEvento(''); // consumido
+  },[deepLinkSetlistEvento]);
 
     // VISTA: CREAR SETLIST
     if(bsView==='setlist'){
