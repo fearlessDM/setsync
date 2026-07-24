@@ -468,8 +468,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         const otroLabel=nueva.__otroLabel??false;
         return(
           <div>
-            {/* Volver — si se llegó desde el botón "Editar" de SongView, vuelve a esa canción en vez de a la lista */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,cursor:'pointer'}}
+            {/* Volver — breadcrumb pequeño; título siempre "Editor" */}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6,cursor:'pointer'}}
               onClick={()=>{
                 const nombrePrevio=volverASongViewRef.current;
                 setCrearModo(null);
@@ -479,12 +479,16 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   onOpenSong(nombrePrevio);
                 }
               }}>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-pagehead)',textTransform:'uppercase',fontWeight:400,color:'var(--tx)'}}>
-                {volverASongViewRef.current?'Volver a la canción':'Editor de canciones'}
+              <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx3)'}}>
+                {volverASongViewRef.current?'Volver':'Canciones'}
               </span>
+            </div>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',
+              textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:14}}>
+              Editor
             </div>
             {/* Punto 3 de la spec de revisión: si esta canción vino de un import
                 sin revisar, sus avisos van arriba del editor, antes que nada más. */}
@@ -615,147 +619,6 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
             )}
 
-            {/* Estructura de interpretación */}
-            {nueva.bloques.length>0&&(
-              <div style={{marginBottom:20}}>
-                <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',
-                  color:'var(--tx)',marginBottom:4}}>
-                  Estructura en vivo
-                </div>
-                <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:14,lineHeight:1.5}}>
-                  El orden real de interpretación. Toca un chip para agregarlo — así
-                  se verá en el mapa de SetSync.
-                </div>
-
-                {/* Preview del mapa — igual visual que MapaMaestro en SongView */}
-                {nueva.estructura.length>0&&(
-                  <div style={{
-                    display:'flex',alignItems:'stretch',height:32,
-                    borderRadius:8,overflow:'hidden',
-                    marginBottom:12,
-                  }}>
-                    {nueva.estructura.map((sec,si)=>{
-                      const pct=100/nueva.estructura.length;
-                      return(
-                        <div key={sec.id} style={{
-                          flex:`0 0 ${pct}%`,
-                          background:`${sec.color}30`,
-                          borderRight:si<nueva.estructura.length-1?`1px solid ${sec.color}50`:'none',
-                          display:'flex',alignItems:'center',justifyContent:'center',
-                          fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',fontWeight:900,
-                          color:sec.color,overflow:'hidden',whiteSpace:'nowrap',
-                          letterSpacing:'.5px',
-                        }}>
-                          {sec.abrev||abrevBloque(sec.label)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Lista de chips de estructura — desplazables y duplicables */}
-                {nueva.estructura.length>0&&(
-                  <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
-                    {nueva.estructura.map((sec,si)=>(
-                      <div key={sec.id} style={{
-                        display:'flex',alignItems:'center',gap:0,
-                        borderRadius:100,overflow:'hidden',
-                        }}>
-                        {/* Chip principal con abreviación */}
-                        <div style={{
-                          padding:'5px 10px',
-                          background:`${sec.color}20`,
-                          fontFamily:"var(--font-body)",
-                          fontSize:'var(--fs-base)',fontWeight:900,color:sec.color,
-                          letterSpacing:'.5px',minWidth:28,textAlign:'center',
-                        }}>
-                          {sec.abrev||abrevBloque(sec.label)}
-                        </div>
-                        {/* Acciones: mover izq, duplicar, mover der, eliminar */}
-                        {si>0&&(
-                          <button onClick={()=>moverEstructura(si,-1)}
-                            title="Mover izquierda"
-                            style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
-                              background:`${sec.color}10`,color:sec.color,
-                              cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
-                              stroke="currentColor" strokeWidth="2.5">
-                              <polyline points="15 18 9 12 15 6"/>
-                            </svg>
-                          </button>
-                        )}
-                        <button onClick={()=>{
-                          const id=`e${++bloqueIdRef.current}`;
-                          setNueva(v=>{
-                            const arr=[...v.estructura];
-                            arr.splice(si+1,0,{id,label:sec.label,abrev:sec.abrev,color:sec.color});
-                            return{...v,estructura:arr};
-                          });
-                        }} title="Duplicar"
-                          style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
-                            background:`${sec.color}10`,color:sec.color,
-                            cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
-                            stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                          </svg>
-                        </button>
-                        {si<nueva.estructura.length-1&&(
-                          <button onClick={()=>moverEstructura(si,1)}
-                            title="Mover derecha"
-                            style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
-                              background:`${sec.color}10`,color:sec.color,
-                              cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                            <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
-                              stroke="currentColor" strokeWidth="2.5">
-                              <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                          </button>
-                        )}
-                        <button onClick={()=>setNueva(v=>({...v,
-                          estructura:v.estructura.filter((_,i)=>i!==si)}))}
-                          title="Quitar"
-                          style={{width:22,height:'100%',borderLeft:`1px solid ${sec.color}40`,
-                            background:`${sec.color}10`,color:sec.color,
-                            cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <svg viewBox="0 0 24 24" width="9" height="9" fill="none"
-                            stroke="currentColor" strokeWidth="2.5">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Chips para agregar a la estructura */}
-                <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:8,
-                  fontFamily:"var(--font-body)"}}>
-                  Tocar para agregar:
-                </div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {nueva.bloques.map(b=>{
-                    const abrev=b.abrev||abrevBloque(b.label);
-                    return(
-                      <button key={b.id}
-                        onClick={()=>{
-                          const id=`e${++bloqueIdRef.current}`;
-                          setNueva(v=>({...v,estructura:[...v.estructura,
-                            {id,label:b.label,abrev,color:b.color}]}));
-                        }}
-                        style={{padding:'5px 12px',borderRadius:100,
-                          background:`${b.color}18`,
-                          color:b.color,fontFamily:"var(--font-body)",
-                          fontSize:'var(--fs-base)',fontWeight:900,cursor:'pointer',letterSpacing:'.5px'}}>
-                        {abrev}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Botones finales */}
             <div style={{display:'flex',gap:8}}>

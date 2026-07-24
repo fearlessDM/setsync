@@ -277,7 +277,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
     <div style={{ background: 'var(--s1)', padding: '10px 12px' }}>
       {pairs.map((pair, pairIdx) => {
         const chords = parseStackedLine(pair.notas);
-        const fontSizePx = 15; // debe coincidir con el fontSize real del input de letra (mismo valor usado abajo), para que la posición horizontal de cada chip caiga justo sobre el carácter correspondiente
+        const fontSizePx = 14; // debe coincidir con el fontSize real del input de letra — bajado 1px (era 15)
         return (
           <div key={pairIdx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden' }}>
             {/* Franja NOTAS — el label es placeholder: solo se ve si la franja está vacía, no resta ancho al contenido */}
@@ -332,12 +332,38 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
               </div>
             </div>
             {/* Franja LETRA — pegada a NOTAS, sin gap entre ambas. Label también como placeholder nativo del input */}
-            <div style={{ display: 'flex', alignItems: 'stretch', background: 'var(--s2)' }}>
+            <div style={{ display: 'flex', alignItems: 'stretch', background: 'var(--s2)', position: 'relative' }}>
+              {/* Highlight morado sobre la letra cuando hay un chip siendo arrastrado */}
+              {dragVisual && dragVisual.pairIdx === pairIdx && (() => {
+                const anchoCar = fontSizePx * 0.58;
+                const { pairIdx: dp, chordIdx: dc, dxPx } = dragVisual;
+                const origPos = parseStackedLine(pairs[dp].notas)[dc]?.pos ?? 0;
+                const targetPos = Math.max(0, Math.min(
+                  pair.letra.length - 1,
+                  origPos + Math.round((dxPx || 0) / anchoCar)
+                ));
+                const padLeft = 6; // mismo que el input
+                const leftPx = padLeft + targetPos * anchoCar;
+                return (
+                  <span style={{
+                    position: 'absolute',
+                    left: leftPx,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: anchoCar,
+                    height: '70%',
+                    background: 'rgba(144,130,230,0.35)',
+                    borderRadius: 2,
+                    pointerEvents: 'none',
+                    zIndex: 1,
+                  }}/>
+                );
+              })()}
               <input
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
                 placeholder={pairIdx === 0 ? placeholderLetra : 'Letra...'}
-                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize:'var(--fs-emph)', fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none' }}
+                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize:'calc(var(--fs-emph) - 1px)', fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none', position: 'relative', zIndex: 2 }}
               />
             </div>
           </div>
