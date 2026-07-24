@@ -4,7 +4,7 @@ export const T = {
     // ── Nav / general ────────────────────────────────────────────────────────
     home:       'Inicio',
     admin:      'Resumen',
-    fechas:     'Fechas',
+    fechas:     'Calendario',
     nextDate:   'Próxima Fecha',
     songbook:   'Cancionero',
     backstage:  'Backstage',
@@ -455,7 +455,7 @@ export const T = {
     // ── Argentina — voseo rioplatense ──────────────────────────────────────
     home:       'Inicio',
     admin:      'Resumen',
-    fechas:     'Fechas',
+    fechas:     'Calendario',
     nextDate:   'Próxima Fecha',
     songbook:   'Cancionero',
     backstage:  'Backstage',
@@ -894,7 +894,7 @@ export const T = {
     // ── Português (Brasil) ──────────────────────────────────────────────────
     home:       'Início',
     admin:      'Resumo',
-    fechas:     'Datas',
+    fechas:     'Calendário',
     nextDate:   'Próxima Data',
     songbook:   'Repertório',
     backstage:  'Backstage',
@@ -1333,7 +1333,7 @@ export const T = {
     // ── Nav / general ────────────────────────────────────────────────────────
     home:       'Home',
     admin:      'Summary',
-    fechas:     'Events',
+    fechas:     'Calendar',
     nextDate:   'Next Date',
     songbook:   'Songbook',
     backstage:  'Backstage',

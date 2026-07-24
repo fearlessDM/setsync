@@ -897,64 +897,63 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           const label = BLOCK_ROW_LABELS[firstKey] || firstKey;
           const isCollapsed = !!collapsedRows[rowIdx];
           return (
-            <div key={rowIdx} style={{marginBottom:'var(--gap,10px)'}}>
-              {/* Header clicable — separado del área draggable para que el toggle siempre funcione */}
+            <div key={rowIdx} style={{marginBottom:8,borderRadius:12,
+              background:'var(--s1)',border:'1px solid var(--bd)',overflow:'hidden'}}>
+              {/* Header — card colapsada con fondo visible */}
               <div
                 onClick={()=>toggleRow(rowIdx)}
                 style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-                  padding:'7px 4px',cursor:'pointer',userSelect:'none'}}>
-                <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',
+                  padding:'12px 14px',cursor:'pointer',userSelect:'none'}}>
+                <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx2)',
                   textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
                   {label}
                 </span>
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
-                  style={{flexShrink:0,transform:isCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform 280ms cubic-bezier(0.4,0,0.2,1)'}}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+                  style={{flexShrink:0,transform:isCollapsed?'rotate(0deg)':'rotate(180deg)',
+                    transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
-              {/* Contenido draggable — solo el grid, no el header */}
-              <div
-                draggable
-                onDragStart={()=>onDragStart(dragIdx)}
-                onDragEnter={()=>onDragEnter(dragIdx)}
-                onDragEnd={onDragEnd}
-                style={{cursor:'grab'}}>
-              {/* Contenido — animación suave grid-template-rows */}
+              {/* Contenido animado */}
               <div style={{
                 display:'grid',
                 gridTemplateRows:isCollapsed?'0fr':'1fr',
-                transition:'grid-template-rows 320ms cubic-bezier(0.4,0,0.2,1)',
-                overflow:'hidden',
+                transition:'grid-template-rows 400ms cubic-bezier(0.4,0,0.2,1)',
               }}>
                 <div style={{overflow:'hidden'}}>
-                  <div style={{
-                    display:'grid',
-                    gridTemplateColumns:'1fr 1fr',
-                    gap:'var(--gap,10px)',
-                    paddingTop:isCollapsed?0:4,
-                    transition:'padding-top 320ms cubic-bezier(0.4,0,0.2,1)',
-                  }}>
-                    {keys.map(key=>renderBlock(key,dragIdx))}
+                  <div
+                    draggable
+                    onDragStart={()=>onDragStart(dragIdx)}
+                    onDragEnter={()=>onDragEnter(dragIdx)}
+                    onDragEnd={onDragEnd}
+                    style={{padding:'4px 10px 12px',cursor:'grab'}}>
+                    <div style={{
+                      display:'grid',
+                      gridTemplateColumns:'1fr 1fr',
+                      gap:'var(--gap,10px)',
+                    }}>
+                      {keys.map(key=>renderBlock(key,dragIdx))}
+                    </div>
                   </div>
                 </div>
               </div>
-              </div>{/* cierre div draggable */}
             </div>
           );
         })}
 
         {/* ── Bloque marketero — colapsable, igual que el resto ── */}
-        <div style={{marginTop:4,borderRadius:'var(--rad-lg)',background:'var(--s1)',overflow:'hidden'}}>
+        <div style={{marginTop:0,borderRadius:12,background:'var(--s1)',border:'1px solid var(--bd)',overflow:'hidden'}}>
           {/* Header colapsable */}
           <div onClick={()=>setMktCollapsed(v=>!v)}
             style={{display:'flex',alignItems:'center',justifyContent:'space-between',
-              padding:'7px var(--sp-md)',cursor:'pointer',userSelect:'none'}}>
-            <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',
+              padding:'12px 14px',cursor:'pointer',userSelect:'none'}}>
+            <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx2)',
               textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
               Por qué SetSync es el mejor
             </span>
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
-              style={{flexShrink:0,transform:mktCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform 280ms cubic-bezier(0.4,0,0.2,1)'}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+              style={{flexShrink:0,transform:mktCollapsed?'rotate(0deg)':'rotate(180deg)',
+                transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </div>
@@ -962,7 +961,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <div style={{
             display:'grid',
             gridTemplateRows:mktCollapsed?'0fr':'1fr',
-            transition:'grid-template-rows 320ms cubic-bezier(0.4,0,0.2,1)',
+            transition:'grid-template-rows 400ms cubic-bezier(0.4,0,0.2,1)',
           }}>
             <div style={{overflow:'hidden'}}>
               <div style={{padding:'0 var(--sp-md) var(--sp-md)'}}>

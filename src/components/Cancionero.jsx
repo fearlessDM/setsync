@@ -268,8 +268,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   // MODAL CREAR CANCIÓN
   if(showCrear)return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      {/* Header — se oculta cuando el editor se abrió desde SongView (ya tiene su propio breadcrumb "< Volver") */}
-      {!volverASongViewRef.current&&(
+      {/* Header externo — solo visible en pantalla de selección (crearModo===null), no en el editor */}
+      {crearModo===null&&(
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}}
           onClick={()=>{setShowCrear(false);setCrearModo(null);}}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
@@ -470,27 +470,26 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
         const otroLabel=nueva.__otroLabel??false;
         return(
           <div>
-            {/* Volver — breadcrumb pequeño; título siempre "Editor" */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6,cursor:'pointer'}}
-              onClick={()=>{
-                const nombrePrevio=volverASongViewRef.current;
-                setCrearModo(null);
-                setAvisosImportEdicion(null);
-                if(nombrePrevio){
-                  volverASongViewRef.current=null;
-                  onOpenSong(nombrePrevio);
-                }
-              }}>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-              <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx3)'}}>
-                {volverASongViewRef.current?'Volver':'Canciones'}
-              </span>
-            </div>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',
-              textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:14}}>
-              Editor
+            {/* Solo flecha de volver — sin texto */}
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <div style={{cursor:'pointer',padding:'4px',margin:'-4px'}}
+                onClick={()=>{
+                  const nombrePrevio=volverASongViewRef.current;
+                  setCrearModo(null);
+                  setAvisosImportEdicion(null);
+                  if(nombrePrevio){
+                    volverASongViewRef.current=null;
+                    onOpenSong(nombrePrevio);
+                  }
+                }}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--tx2)" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </div>
+              <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-2xl)',
+                textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05}}>
+                {volverASongViewRef.current?'Editor':'Ingresar canción'}
+              </div>
             </div>
             {/* Punto 3 de la spec de revisión: si esta canción vino de un import
                 sin revisar, sus avisos van arriba del editor, antes que nada más. */}
@@ -523,21 +522,19 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
             {/* Info */}
             <div className="card" style={{paddingTop:16,paddingBottom:20,paddingLeft:16,paddingRight:16,marginBottom:20}}>
-              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Título</div>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Título</div>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
-                placeholder="Nombre de la canción"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:12,boxSizing:'border-box'}}/>
-              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Compositor</div>
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:10,boxSizing:'border-box'}}/>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Compositor</div>
               <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
-                placeholder="Artista / compositor"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:12,boxSizing:'border-box'}}/>
-              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Tonalidad y tempo</div>
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:10,boxSizing:'border-box'}}/>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Tonalidad y tempo</div>
               <div style={{display:'flex',gap:8}}>
                 <CustomSelect value={nueva.key} onChange={v=>{keyTocadaManualRef.current=true;setNueva(vv=>({...vv,key:v}));}}
                   style={{flex:1,fontSize:'var(--fs-lg)'}}
                   options={['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].map(k=>({value:k,label:k}))}/>
                 <input value={nueva.bpm} onChange={e=>setNueva(v=>({...v,bpm:e.target.value}))}
-                  placeholder="BPM" type="number"
+                  type="number"
                   style={{flex:1,padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)'}}/>
                 <button type="button" onClick={handleTap}
                   style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
