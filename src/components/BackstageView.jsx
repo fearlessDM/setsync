@@ -57,6 +57,23 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       if(s.page==='setlist'&&s.eventoId!=null) setDeepLinkSetlistEvento(String(s.eventoId));
     }
   },[deepLink?.key]);
+  // Al llegar por deep-link "editar setlist" desde Próx Fecha: preselecciona
+  // el evento y precarga sus canciones. Va aquí arriba (antes de cualquier
+  // return condicional) para no romper el orden de hooks de React.
+  useEffect(()=>{
+    if(!deepLinkSetlistEvento) return;
+    const ev=eventos.find(e=>String(e.id)===String(deepLinkSetlistEvento));
+    setSlEventoId(deepLinkSetlistEvento);
+    setSlSearch('');
+    if(ev){
+      setSlNombre(prev=>prev||`Setlist · ${ev.nombre}`);
+      setSlCanciones((ev.setlist||[]).map((it,i)=>{
+        if(typeof it==='string') return {cancion:it,asignaciones:[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
+        return {cancion:it.cancion||it.name||it.n||'',asignaciones:it.asignaciones||[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
+      }));
+    }
+    setDeepLinkSetlistEvento(''); // consumido
+  },[deepLinkSetlistEvento]);
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;
@@ -495,22 +512,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     </div>
   );
 
-  // Al llegar por deep-link "editar setlist" desde Próx Fecha: preselecciona
-  // el evento y precarga sus canciones actuales para editarlas en sitio.
-  useEffect(()=>{
-    if(!deepLinkSetlistEvento) return;
-    const ev=eventos.find(e=>String(e.id)===String(deepLinkSetlistEvento));
-    setSlEventoId(deepLinkSetlistEvento);
-    setSlSearch('');
-    if(ev){
-      setSlNombre(prev=>prev||`Setlist · ${ev.nombre}`);
-      setSlCanciones((ev.setlist||[]).map((it,i)=>{
-        if(typeof it==='string') return {cancion:it,asignaciones:[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
-        return {cancion:it.cancion||it.name||it.n||'',asignaciones:it.asignaciones||[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
-      }));
-    }
-    setDeepLinkSetlistEvento(''); // consumido
-  },[deepLinkSetlistEvento]);
 
     // VISTA: CREAR SETLIST
     if(bsView==='setlist'){

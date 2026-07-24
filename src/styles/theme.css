@@ -395,7 +395,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     --pw-y:var(--sp-md);
   }
   .sb{display:none;}
-  .main{margin-left:0!important;}
+  .main{margin-left:0!important;padding-top:env(safe-area-inset-top,0px);}
   .bot{display:flex;}
   .sg{grid-template-columns:repeat(3,1fr);}
   .sc-n{font-size:38px;}
@@ -446,7 +446,14 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     --pw-y:var(--sp-sm);
   }
   .sb{display:none;}
-  .main{margin-left:0!important;}
+  .main{
+    margin-left:0!important;
+    /* Compensa la barra de estado / notch / Dynamic Island en pantallas
+       full-bleed. Sin esto el encabezado queda pegado arriba (o tapado
+       cuando la PWA usa status-bar-style black-translucent). Requiere
+       viewport-fit=cover en el <meta viewport> para que env() no sea 0. */
+    padding-top:env(safe-area-inset-top,0px);
+  }
   .bot{display:flex;}
 }
 

@@ -237,26 +237,19 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
               ))}
             </div>
           )}
-          {/* Acciones */}
+          {/* Acciones — v93: un solo botón, sin "En vivo" (eso vive en Próx
+              Fecha). Verde acento, ancho completo. */}
           <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8}}>
             <button onClick={e=>{e.stopPropagation();onOpen&&onOpen();}}
-              style={{flex:1,padding:'8px 0',borderRadius:'var(--rad-sm)',
-                background:'var(--s2)',cursor:'pointer',
-                fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--tx2)'}}>
-              Ver detalles →
+              style={{flex:1,padding:'9px 0',borderRadius:'var(--rad-sm)',
+                background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',
+                display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+                fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--gn)'}}>
+              Ver todo el detalle del evento
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
             </button>
-            {isLeader&&setlist.length>0&&(
-              <button onClick={e=>{e.stopPropagation();onLive&&onLive();}}
-                style={{padding:'8px 14px',borderRadius:'var(--rad-sm)',
-                  background:'rgba(94,206,160,.1)',cursor:'pointer',
-                  display:'flex',alignItems:'center',gap:5,flexShrink:0,
-                  fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--gn)'}}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
-                </svg>
-                {tx.live}
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -560,7 +553,7 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </div>
           <div style={{flex:1,textAlign:'left'}}>
-            <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--ac)',marginTop:3}}>{tx.sendReminderBtn}</div>
+            <div style={{fontWeight:900,fontSize:'calc(var(--fs-emph) - 2px)',color:'var(--ac)',marginTop:3}}>{tx.sendReminderBtn}</div>
             <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',marginTop:2}}>Aviso 1 y 2 · Info del evento + ánimo al equipo</div>
           </div>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
@@ -602,8 +595,8 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       <div style={{display:'flex',gap:'var(--sp-xs)'}}>
         <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>{tx.cancel}</button>
         <button onClick={()=>{onToast({text:tx.messageSentToast,sub:`Aviso ${avisoActivo} · correo y notificación`});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
-          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Enviar al equipo
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Programar
         </button>
       </div>
     </div>
@@ -699,7 +692,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               {f.nombre}
             </div>
             <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4}}>
-              Tu setlist para esta fecha. Repasa con tiempo.
+              Detalle completo para este evento.
             </div>
           </div>
           {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
@@ -750,7 +743,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               <span style={{fontSize:'var(--fs-lg)',fontWeight:900,color:'var(--tx3)',minWidth:16,textAlign:'right'}}>{i+1}</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:'var(--fs-base)',color:'var(--tx)'}}>{r.nombre}</div>
-                <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>
+                <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',marginTop:2}}>
                   {r.key?`${r.key} · ${r.bpm} BPM`:''}
                   {r.asignaciones.length>0&&r.asignaciones.map((a,ai)=>(
                     <span key={ai} style={{color:'var(--ac)',marginLeft:r.key?6:0,background:'rgba(200,169,126,.12)',padding:'1px 6px',borderRadius:100,marginRight:4}}>
