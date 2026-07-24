@@ -2126,7 +2126,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             que mover esto es lo mismo que moverlo allá. Solo aparece si
             alguna pista fue marcada como Click o Guía en Secuencia. */}
         {(()=>{
-          const tracks=multitracksLocal||seqData.multitracks||[];
+          const tracks=multitracksLocal||seqData?.multitracks||[];
           const pistaClick=tracks.map((t,i)=>({...t,i})).find(t=>t.rol==='click');
           const pistaGuia=tracks.map((t,i)=>({...t,i})).find(t=>t.rol==='guia');
           if(!pistaClick&&!pistaGuia) return null;
@@ -3127,7 +3127,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               transporte maestro funcione desde cualquier pantalla. */}
           {(multitracksLocal||seqData?.multitracks)?(
             <div style={{display:'flex',gap:2,overflowX:'auto',paddingBottom:4}}>
-              {(multitracksLocal||seqData.multitracks).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
+              {(multitracksLocal||seqData?.multitracks||[]).slice(0,MAX_MULTITRACKS).map((tr,i)=>{
                 const vol = trackVols[i]??80;
                 const muted = trackMutes[i]??false;
                 const esReal=!!multitracksLocal;
