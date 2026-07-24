@@ -36,10 +36,11 @@ import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, gu
 // futuro no detectado en revisión de código queda contenido: se muestra un
 // aviso recuperable con botón para volver, en vez de tumbar la app entera.
 class ErrorBoundary extends Component {
-  constructor(props){ super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError(){ return { hasError: true }; }
+  constructor(props){ super(props); this.state = { hasError:false, errorMsg:'' }; }
+  static getDerivedStateFromError(e){ return { hasError:true, errorMsg:e?.message||String(e) }; }
   componentDidCatch(error, info){
-    console.error('SetSync — error capturado por ErrorBoundary:', error, info);
+    console.error('SetSync ErrorBoundary:', error, info);
+    this.setState({ errorMsg: (error?.message||String(error)) + '\n' + (error?.stack||'').split('\n').slice(0,4).join('\n') });
   }
   render(){
     if(this.state.hasError){
@@ -51,9 +52,15 @@ class ErrorBoundary extends Component {
             Algo no cargó bien
           </div>
           <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',maxWidth:340}}>
-            Hubo un problema mostrando esta canción. Volvé atrás e intentá de nuevo — si sigue pasando, avisa qué canción y desde dónde la abriste.
+            Hubo un problema mostrando esta canción. Volvé atrás e intentá de nuevo.
           </div>
-          <button onClick={()=>{this.setState({hasError:false});this.props.onReset&&this.props.onReset();}}
+          {this.state.errorMsg&&(
+            <div style={{fontSize:'11px',color:'#ff6b6b',fontFamily:'monospace',maxWidth:340,
+              background:'rgba(255,0,0,.08)',padding:'8px 12px',borderRadius:8,wordBreak:'break-all'}}>
+              {this.state.errorMsg}
+            </div>
+          )}
+          <button onClick={()=>{this.setState({hasError:false,errorMsg:''});this.props.onReset&&this.props.onReset();}}
             style={{padding:'10px 20px',borderRadius:100,background:'var(--gn)',color:'var(--btn-c)',
               fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
             Volver
