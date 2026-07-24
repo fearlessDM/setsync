@@ -460,25 +460,38 @@ function AnimatedNumber({value,duration=600}){
   return display;
 }
 
-const Card = ({children, cols=1, onClick, style={}, i=0}) => (
-  <div onClick={onClick} className="press-glow block-entry" style={{
-    position:'relative',
-    background:'var(--s1)',borderRadius:'var(--rad-lg)',
-    padding:'var(--sp-md)',cursor:onClick?'pointer':'default',
-    gridColumn:`span ${cols}`,transition:'background .15s','--i':i,...style,
-  }}
-  onPointerEnter={onClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
-  onPointerLeave={onClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
-  >
-    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
-      style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
-      <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
-      <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-      <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
-    </svg>
-    {children}
-  </div>
-);
+const Card = ({children, cols=1, onClick, style={}, i=0, collapsed, onToggle}) => {
+  const isCol = collapsed !== undefined;
+  const handleClick = isCol ? onToggle : onClick;
+  return (
+    <div onClick={handleClick} className="press-glow block-entry" style={{
+      position:'relative',
+      background:'var(--s1)',borderRadius:'var(--rad-lg)',
+      padding:'var(--sp-md)',cursor:handleClick?'pointer':'default',
+      gridColumn:`span ${cols}`,'--i':i,...style,overflow:'hidden',
+    }}
+    onPointerEnter={handleClick?e=>e.currentTarget.style.background='var(--s3)':undefined}
+    onPointerLeave={handleClick?e=>e.currentTarget.style.background='var(--s1)':undefined}
+    >
+      {isCol ? (
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+          style={{position:'absolute',top:14,right:14,pointerEvents:'none',
+            transform:collapsed?'rotate(0deg)':'rotate(180deg)',
+            transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
+          style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
+          <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
+          <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
+          <circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>
+        </svg>
+      )}
+      {children}
+    </div>
+  );
+};
 
 const Lbl = ({children}) => (
   <div style={{fontFamily:"var(--font-display)",fontWeight:400,

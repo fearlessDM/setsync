@@ -254,10 +254,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('evento')} aria-label="Ayuda">i</button>
-        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.createDateSub}</div>
@@ -515,10 +512,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
 
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
@@ -697,10 +691,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
           <button className="help-btn" onClick={()=>setHelpOpen('equipos')} aria-label="Ayuda">i</button>
-          <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-  
-          </div>
+
         </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
           Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
@@ -964,10 +955,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:20}}>
         <button className="help-btn" onClick={()=>setHelpOpen('permisos')} aria-label="Ayuda">i</button>
-        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
         Delegar <span style={{color:'var(--ac)'}}>permisos</span>
@@ -1071,10 +1059,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('notif')} aria-label="Ayuda">i</button>
-        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.notificationsTitleLbl}</div>
       <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
@@ -1130,10 +1115,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // ── PERSONALIZACIÓN ──
   if(bsView==='personalizar')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-      </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.navPersonalizationLbl}</div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.personalizationSubLbl}</div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
@@ -1234,10 +1216,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // ── PALABRA DEL PASTOR ──
   if(bsView==='pastor')return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-      </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
         Palabra del <span style={{color:'var(--ac)'}}>{tx.pastorScreenTitleLbl}</span>
       </div>
@@ -1346,10 +1325,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     );
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           {tx.plansAndPricesTitle}
         </div>
@@ -1458,10 +1434,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     );
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Cuenta <span style={{color:'var(--gn)'}}>Equipo</span>
         </div>
@@ -1628,10 +1601,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   if(bsView==='ultraadmin'){
     if(!esDueñoPlataforma)return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
         <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)'}}>No autorizado.</div>
       </div>
     );
@@ -1639,10 +1609,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     const valorEdicion=(org,campo)=> uaEdicion[org.id]?.[campo] ?? org[campo] ?? '';
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Ultra <span style={{color:'var(--ac)'}}>Admin</span>
         </div>
@@ -1730,10 +1697,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     <div style={{position:'relative',padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18}}>
         <button className="help-btn" onClick={()=>setHelpOpen('ensayo')} aria-label="Ayuda">i</button>
-        <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>setBsView(null)}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx2)" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 
-        </div>
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
         Crear <span style={{color:'var(--ac)'}}>ensayo</span>

@@ -163,14 +163,9 @@ function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
 function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], isNext=false,
   isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false, onGoToProxFecha}){
   const [expanded, setExpanded] = useState(false);
-  const handleClick = () => {
-    if(!expanded){ setExpanded(true); return; }
-    // segundo click → ir a Próxima Fecha
-    onGoToProxFecha ? onGoToProxFecha() : (onOpen && onOpen());
-  };
   return(
     <div
-      onClick={handleClick}
+      onClick={()=>setExpanded(v=>!v)}
       style={{
         position:'relative',
         paddingTop:14,paddingBottom:14,paddingLeft:18,paddingRight:18,
@@ -242,16 +237,19 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
               ))}
             </div>
           )}
-          {/* Acciones — Live y hint de segundo tap */}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:4}}>
-            <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontStyle:'italic'}}>
-              Toca de nuevo → Próxima Fecha
-            </span>
+          {/* Acciones */}
+          <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8}}>
+            <button onClick={e=>{e.stopPropagation();onOpen&&onOpen();}}
+              style={{flex:1,padding:'8px 0',borderRadius:'var(--rad-sm)',
+                background:'var(--s2)',cursor:'pointer',
+                fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--tx2)'}}>
+              Ver detalles →
+            </button>
             {isLeader&&setlist.length>0&&(
               <button onClick={e=>{e.stopPropagation();onLive&&onLive();}}
-                style={{padding:'6px 12px',borderRadius:'var(--rad-sm)',
+                style={{padding:'8px 14px',borderRadius:'var(--rad-sm)',
                   background:'rgba(94,206,160,.1)',cursor:'pointer',
-                  display:'flex',alignItems:'center',gap:5,
+                  display:'flex',alignItems:'center',gap:5,flexShrink:0,
                   fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--gn)'}}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
