@@ -1,5 +1,24 @@
 import { useState, useRef, useMemo } from 'react';
 
+// ── Medición real de ancho de carácter — idéntica a vistaLineal.jsx ─────────
+// Usa Canvas 2D para medir el ancho promedio de las mayúsculas con la fuente
+// y tamaño exactos que se usan en el input de letra. Cacheado por clave.
+// Esto garantiza que la posición del chip en el editor coincida exactamente
+// con la que renderiza vistaLineal en SongView — ambos usan el mismo cálculo.
+const _anchoCarCache = {};
+function medirAnchoCarEditor(fontSizePx, fontFamily) {
+  const key = `${fontSizePx}_${fontFamily}`;
+  if (_anchoCarCache[key]) return _anchoCarCache[key];
+  if (typeof document === 'undefined') return fontSizePx * 0.6;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.font = `700 ${fontSizePx}px ${fontFamily}`;
+  const muestra = 'ABCDEFGHIJ';
+  const ancho = ctx.measureText(muestra).width / muestra.length;
+  _anchoCarCache[key] = ancho;
+  return ancho;
+}
+
 // ── Editor de acordes — formato SETSYNC stacked ─────────────────────────────
 // Reemplaza el formato inline "[G]texto" por notas posicionadas explícitamente
 // sobre la letra: "{G:0}{Em:8}" en una línea + "Tu fidelidad es grande" en la
@@ -237,7 +256,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
   const finishDrag = () => {
     if (!dragState.current) return;
     const { pairIdx, chordIdx, dxPx, fontSizePx, origPos } = dragState.current;
-    const anchoCar = fontSizePx * 0.58;
+    const anchoCar = medirAnchoCarEditor(fontSizePx, "'Outfit',sans-serif");
     const deltaChars = Math.round((dxPx || 0) / anchoCar);
     if (deltaChars !== 0) setChordPos(pairIdx, chordIdx, origPos + deltaChars);
     dragState.current = null;
@@ -278,6 +297,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
       {pairs.map((pair, pairIdx) => {
         const chords = parseStackedLine(pair.notas);
         const fontSizePx = 14; // debe coincidir con el fontSize real del input de letra — bajado 1px (era 15)
+        const anchoCar = medirAnchoCarEditor(fontSizePx, "'Outfit',sans-serif"); // medición real con canvas, igual que vistaLineal
         return (
           <div key={pairIdx} style={{ marginBottom: 8, borderRadius: 6, overflow: 'hidden' }}>
             {/* Franja NOTAS — el label es placeholder: solo se ve si la franja está vacía, no resta ancho al contenido */}
@@ -288,7 +308,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 )}
                 {chords.map((c, chordIdx) => {
                   const isDraggingThis = dragVisual && dragVisual.pairIdx === pairIdx && dragVisual.chordIdx === chordIdx;
-                  const leftPx = c.pos * (fontSizePx * 0.58) + (isDraggingThis ? dragVisual.dxPx : 0);
+                  const leftPx = c.pos * anchoCar + (isDraggingThis ? dragVisual.dxPx : 0);
                   const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
                   const dragHandlers = attachDragHandlers(pairIdx, chordIdx, fontSizePx);
                   return (
@@ -335,7 +355,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
             <div style={{ display: 'flex', alignItems: 'stretch', background: 'var(--s2)', position: 'relative' }}>
               {/* Highlight morado sobre la letra cuando hay un chip siendo arrastrado */}
               {dragVisual && dragVisual.pairIdx === pairIdx && (() => {
-                const anchoCar = fontSizePx * 0.58;
+                const anchoCar = medirAnchoCarEditor(fontSizePx, "'Outfit',sans-serif");
                 const { pairIdx: dp, chordIdx: dc, dxPx } = dragVisual;
                 const origPos = parseStackedLine(pairs[dp].notas)[dc]?.pos ?? 0;
                 const targetPos = Math.max(0, Math.min(
@@ -363,7 +383,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
                 value={pair.letra}
                 onChange={(e) => updatePairLetra(pairIdx, e.target.value)}
                 placeholder={pairIdx === 0 ? placeholderLetra : 'Letra...'}
-                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize:'calc(var(--fs-emph) - 1px)', fontFamily: "'Outfit',sans-serif", fontWeight: 600, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none', position: 'relative', zIndex: 2 }}
+                style={{ width: '100%', padding: '5px 6px', background: 'transparent', border: 'none', color: 'var(--tx)', fontSize:'calc(var(--fs-emph) - 1px)', fontFamily: "'Outfit',sans-serif", fontWeight: 700, textTransform: 'uppercase', boxSizing: 'border-box', outline: 'none', position: 'relative', zIndex: 2 }}
               />
             </div>
           </div>
@@ -466,7 +486,7 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
     const { fontSizePx } = dragState.current;
     const dx = clientX - dragState.current.x0;
     dragState.current.dx = dx;
-    dragState.current.anchoCar = fontSizePx * 0.58; // aproximación consistente con Outfit bold
+    dragState.current.anchoCar = medirAnchoCarEditor(fontSizePx, "'Outfit',sans-serif");
   };
   const endDrag = () => {
     if (!dragState.current) return;
@@ -510,7 +530,7 @@ export function EditorAcordes({ label, contenido, onCancel, onSave }) {
               {/* Franja de notas */}
               <div style={{ background: '#1c1c1c', borderRadius: '6px 6px 0 0', padding: '5px 8px', position: 'relative', height: 26 }}>
                 {chords.map((c, chordIdx) => {
-                  const leftPx = c.pos * (fontSizePx * 0.58);
+                  const leftPx = c.pos * medirAnchoCarEditor(fontSizePx, "'Outfit',sans-serif");
                   const isEditing = editingChip && editingChip.pairIdx === pairIdx && editingChip.chordIdx === chordIdx;
                   return (
                     <div
