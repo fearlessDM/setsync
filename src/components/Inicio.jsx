@@ -897,15 +897,10 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           const label = BLOCK_ROW_LABELS[firstKey] || firstKey;
           const isCollapsed = !!collapsedRows[rowIdx];
           return (
-            <div key={rowIdx}
-              draggable
-              onDragStart={()=>onDragStart(dragIdx)}
-              onDragEnter={()=>onDragEnter(dragIdx)}
-              onDragEnd={onDragEnd}
-              style={{marginBottom:'var(--gap,10px)',cursor:'grab'}}>
-              {/* Header colapsable de fila */}
+            <div key={rowIdx} style={{marginBottom:'var(--gap,10px)'}}>
+              {/* Header clicable — separado del área draggable para que el toggle siempre funcione */}
               <div
-                onClick={e=>{e.stopPropagation();toggleRow(rowIdx);}}
+                onClick={()=>toggleRow(rowIdx)}
                 style={{display:'flex',alignItems:'center',justifyContent:'space-between',
                   padding:'7px 4px',cursor:'pointer',userSelect:'none'}}>
                 <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',
@@ -913,10 +908,17 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   {label}
                 </span>
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
-                  style={{flexShrink:0,transform:isCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform .2s'}}>
+                  style={{flexShrink:0,transform:isCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform 280ms cubic-bezier(0.4,0,0.2,1)'}}>
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
+              {/* Contenido draggable — solo el grid, no el header */}
+              <div
+                draggable
+                onDragStart={()=>onDragStart(dragIdx)}
+                onDragEnter={()=>onDragEnter(dragIdx)}
+                onDragEnd={onDragEnd}
+                style={{cursor:'grab'}}>
               {/* Contenido — animación suave grid-template-rows */}
               <div style={{
                 display:'grid',
@@ -936,6 +938,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                   </div>
                 </div>
               </div>
+              </div>{/* cierre div draggable */}
             </div>
           );
         })}
