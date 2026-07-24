@@ -635,13 +635,7 @@ Tuya es la gloria, Por siempre amén.
   if(appMode===null){
     const T={
       es:{ choose:'¿Cómo usas SetSync?', sub:'Dos interfaces diseñadas para distintos equipos.', canChange:'Puedes cambiarlo en cualquier momento desde Backstage → Configuración.',
-        iglesia:{title:'Iglesia', tag:'ADORACIÓN & WORSHIP',
-          lines:['Setlists y letras para el equipo','Gestión de equipos de alabanza','Monitoreo en vivo con tu mesa digital']},
-        banda:{title:'Banda', tag:'ESCENARIO & SHOWS',
-          lines:['Repertorio, setlists y rider técnico','Fechas, gigs y producción','Monitor personal y secuencias de show']},
-      },
-      ar:{ choose:'¿Cómo usás SetSync?', sub:'Dos interfaces diseñadas para distintos equipos.', canChange:'Podés cambiarlo desde Backstage en cualquier momento.',
-        iglesia:{title:'Iglesia', tag:'ADORACIÓN & WORSHIP',
+        iglesia:{title:'Iglesia', tag:'MINISTERIOS / EQUIPOS DE ADORACIÓN',
           lines:['Setlists y letras para el equipo','Gestión de equipos de alabanza','Monitoreo en vivo con tu mesa digital']},
         banda:{title:'Banda', tag:'ESCENARIO & SHOWS',
           lines:['Repertorio, setlists y rider técnico','Fechas, gigs y producción','Monitor personal y secuencias de show']},
@@ -753,7 +747,7 @@ Tuya es la gloria, Por siempre amén.
 
           {/* Título */}
           <div style={{textAlign:'center',marginBottom:10,padding:'0 8px'}}>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'calc(var(--fs-display) * 0.95 + 4px)',color:'#ffffff',marginBottom:10,lineHeight:1.1}}>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:200,fontSize:'calc(var(--fs-display) * 0.95 + 2px)',color:'#ffffff',marginBottom:10,lineHeight:1.1}}>
               {tl.choose}
             </div>
           </div>
