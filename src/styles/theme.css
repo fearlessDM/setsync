@@ -84,7 +84,7 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 --rad-full:100px;
 
 /* ── Gap estándar entre cards ── */
---gap:14px;
+--gap:20px;
 
 /* ── Padding de página (sobrescritos en breakpoints) ── */
 --pw-x:8px;
@@ -406,7 +406,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   :root{
     --pw-x:16px;
     --pw-y:var(--sp-lg);
-    --gap:16px;
+    --gap:22px;
   }
   .sb{display:flex;width:220px;}
   .sb.col{width:60px;}
@@ -428,7 +428,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   :root{
     --pw-x:20px;
     --pw-y:var(--sp-xl);
-    --gap:18px;
+    --gap:24px;
   }
   .sb{width:200px;}
   .sb.col{width:60px;}
@@ -525,6 +525,17 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   }
   .cal-grid>*{ min-width:0; }
 
+  /* Línea "fecha actual": en el layout de grid una línea horizontal
+     full-width entre celdas no aplica. Se oculta y en su lugar la tarjeta
+     del próximo evento (la que sigue a la línea) se marca con una barra
+     de acento vertical a su izquierda vía .cal-grid > div:has(.cal-hoy-linea). */
+  .cal-hoy-linea{ display:none!important; }
+  .cal-grid>div:has(.cal-hoy-linea){
+    border-left:3px solid var(--ac);
+    border-radius:var(--rad-md);
+    padding-left:10px;
+  }
+
   /* ── INICIO: bloques en grid ancho ──
      Grid de 6 columnas (mínimo común de 2 y 3) para poder mezclar filas
      de 2 (span 3 c/u) y filas de 3 (span 2 c/u). Los 3 accesos rápidos
@@ -538,8 +549,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .inicio-blocks{
     display:grid;
     grid-template-columns:repeat(6,1fr);
-    gap:10px;
-    align-items:start;
+    gap:var(--gap);
   }
   .inicio-row{ min-width:0; }
   .inicio-row>*{ height:100%; box-sizing:border-box; }
@@ -554,9 +564,37 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .inicio-row .block-entry{ grid-column:auto!important; width:100%; }
 }
 
+/* ── INICIO — zona superior en PC / tablet horizontal ──
+   Hero a la izquierda, 3 accesos rápidos a la derecha, misma fila. Debajo
+   de eso, los bloques quedan SIEMPRE abiertos (el chevron se oculta por
+   JS: anchoFijoAbierto) y con altura pareja por fila. Activo en cualquier
+   pantalla ancha en landscape ≥768px (tablet horizontal incluida). */
+@media(min-width:1024px), (min-width:768px) and (orientation:landscape){
+  .inicio-top{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:var(--gap);
+    align-items:stretch;
+    padding:0 var(--pw-x,var(--sp-md));
+  }
+  .inicio-hero{ border-radius:var(--rad-lg); min-height:0!important; }
+  .inicio-accesos{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:var(--gap)!important;
+    align-content:stretch;
+    min-width:230px;
+  }
+  .inicio-accesos>button{ flex:1; min-height:0!important; flex-direction:row!important;
+    justify-content:flex-start!important; gap:12px!important; padding:0 16px!important; }
+
+  /* Altura pareja por fila en Inicio (igual que Próx Fecha). */
+  .inicio-blocks{ align-items:stretch; }
+  .inicio-blocks .inicio-row>*{ height:100%; }
+}
+
 /* ── TABLET VERTICAL (768-1023px en vertical): filas de 2 en Inicio,
-     Backstage y Próx Fecha ya cubierto arriba; aquí forzamos que Inicio
-     y Backstage usen exactamente 2 columnas en vez de 3/4. ── */
+     Backstage y Calendario. Los bloques de Inicio siguen colapsables. ── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
   .inicio-blocks{ grid-template-columns:repeat(2,1fr); }
   .inicio-row-notificaciones,
@@ -569,6 +607,17 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .bs-menu-grid{ grid-template-columns:repeat(2,1fr)!important; }
   .ms-blocks{ grid-template-columns:1fr 1fr; }
   .cal-grid{ grid-template-columns:repeat(2,1fr)!important; }
+}
+
+/* ── CALENDARIO: línea "fecha actual" ──
+   En móvil manda la línea horizontal (cal-hoy-linea) y se oculta el acento
+   vertical. En vista grid (≥768px) se invierte: el separador horizontal
+   estorba entre columnas, así que se oculta y aparece el acento vertical
+   en la tarjeta próxima. */
+.tarjeta-fecha-vbar{ display:none; }
+@media(min-width:768px){
+  .cal-hoy-linea{ display:none!important; }
+  .tarjeta-fecha-vbar{ display:block; }
 }
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{

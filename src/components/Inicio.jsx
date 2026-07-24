@@ -495,6 +495,7 @@ const Card = ({children, cols=1, onClick, style={}, i=0, collapsed, onToggle}) =
     >
       {isCol ? (
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
+          className="card-chevron"
           style={{position:'absolute',top:14,right:14,pointerEvents:'none',
             transform:collapsed?'rotate(0deg)':'rotate(180deg)',
             transition:'transform 350ms cubic-bezier(0.4,0,0.2,1)'}}>
@@ -502,6 +503,7 @@ const Card = ({children, cols=1, onClick, style={}, i=0, collapsed, onToggle}) =
         </svg>
       ) : (
         <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--tx3)" strokeWidth="2"
+          className="card-drag-handle"
           style={{position:'absolute',top:8,right:8,opacity:.3,pointerEvents:'none'}}>
           <circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/>
           <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
@@ -547,6 +549,21 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const [collapsedRows, setCollapsedRows] = useState({0:true,1:true,2:true,3:true,4:true,5:true}); // todos colapsados por defecto
   const [mktCollapsed, setMktCollapsed] = useState(true); // bloque marketero también colapsado
   const toggleRow = rowIdx => setCollapsedRows(v=>({...v,[rowIdx]:!v[rowIdx]}));
+  // En PC / tablet horizontal (≥1024px) los bloques van SIEMPRE abiertos y
+  // no se colapsan (el chevron se oculta por CSS). En tablet vertical y
+  // móvil siguen colapsables como hasta ahora.
+  // Fijo-abierto en PC y tablet horizontal (cualquier pantalla ancha en
+  // landscape ≥768px). En tablet vertical y móvil siguen colapsables.
+  const MQ_FIJO='(min-width:1024px), (min-width:768px) and (orientation:landscape)';
+  const [anchoFijoAbierto,setAnchoFijoAbierto]=useState(
+    typeof window!=='undefined' && window.matchMedia(MQ_FIJO).matches);
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    const mq=window.matchMedia(MQ_FIJO);
+    const on=e=>setAnchoFijoAbierto(e.matches);
+    mq.addEventListener?.('change',on);
+    return ()=>mq.removeEventListener?.('change',on);
+  },[]);
 
   const hoy = new Date();
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
@@ -907,15 +924,20 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <TutorialPage tut={tutorialActivo} onClose={()=>setTutorialActivo(null)}/>
       )}
 
+      {/* Zona superior: en PC/tablet-horizontal el hero (izq) y los 3
+          accesos rápidos (der) van en la misma fila. En móvil/tablet
+          vertical se apilan. */}
+      <div className="inicio-top">
       {/* Hero */}
-      <div style={{position:'relative',minHeight:230,overflow:'hidden'}}>
+      <div className="inicio-hero" style={{position:'relative',minHeight:230,overflow:'hidden'}}>
         <img src={BG_IMGS[bgIdx%BG_IMGS.length]} alt=""
+          className="inicio-hero-bg"
           style={{width:'100%',height:'100%',objectFit:'cover',filter:'brightness(.28) saturate(.6)',
             position:'absolute',inset:0}}
           loading="lazy"/>
-        <div style={{position:'absolute',inset:0,
+        <div className="inicio-hero-fade" style={{position:'absolute',inset:0,
           background:'linear-gradient(180deg,transparent 15%,var(--bg) 100%)'}}/>
-        <div style={{position:'relative',padding:'var(--sp-md) var(--sp-md) 4px',paddingTop:36,
+        <div className="inicio-hero-inner" style={{position:'relative',padding:'var(--sp-md) var(--sp-md) 4px',paddingTop:36,
           display:'flex',flexDirection:'column'}}>
           <div style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-xs)',
             color:'var(--gn)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
@@ -940,40 +962,41 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         </div>
       </div>
 
-      {/* Bloques colapsables — los Cards se colapsan a sí mismos */}
-      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:10}}>
+      {/* Accesos rápidos — bloque FIJO (fuera del sistema de drag). En PC va
+          a la derecha del hero; en móvil, apilado debajo. Deep-link directo
+          a la subpágina. */}
+      <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:11}}>
+        {ACCESOS_RAPIDOS.map(a=>(
+          <button key={a.id} className="press-glow"
+            onClick={()=>onNavigate(a.view,a.sub)}
+            style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',
+              padding:'14px 8px',cursor:'pointer',display:'flex',flexDirection:'column',
+              alignItems:'center',justifyContent:'center',gap:8,minHeight:88,
+              transition:'background .15s'}}
+            onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
+            onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
+            <div style={{width:32,height:32,borderRadius:10,flexShrink:0,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              background:'rgba(var(--gn-rgb),.12)'}}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)"
+                strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                {ACCESOS_RAPIDOS_ICONS[a.icon]}
+              </svg>
+            </div>
+            <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
+              color:'var(--tx)',lineHeight:1.25,textAlign:'center'}}>{a.label}</span>
+          </button>
+        ))}
+      </div>
+      </div>
 
-        {/* Accesos rápidos — bloque FIJO (fuera del sistema de drag), siempre
-            arriba de Notificaciones. Deep-link directo a la subpágina, sin
-            pasar por el home de Backstage ni por el selector de Canciones. */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
-          {ACCESOS_RAPIDOS.map(a=>(
-            <button key={a.id} className="press-glow"
-              onClick={()=>onNavigate(a.view,a.sub)}
-              style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',
-                padding:'14px 8px',cursor:'pointer',display:'flex',flexDirection:'column',
-                alignItems:'center',justifyContent:'flex-start',gap:8,minHeight:88,
-                transition:'background .15s'}}
-              onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
-              onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
-              <div style={{width:32,height:32,borderRadius:10,flexShrink:0,
-                display:'flex',alignItems:'center',justifyContent:'center',
-                background:'rgba(var(--gn-rgb),.12)'}}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)"
-                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  {ACCESOS_RAPIDOS_ICONS[a.icon]}
-                </svg>
-              </div>
-              <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
-                color:'var(--tx)',lineHeight:1.25,textAlign:'center'}}>{a.label}</span>
-            </button>
-          ))}
-        </div>
+      {/* Bloques colapsables — los Cards se colapsan a sí mismos */}
+      <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:13}}>
 
         <div className="inicio-blocks">
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
-          const isCollapsed = !!collapsedRows[rowIdx];
+          const isCollapsed = anchoFijoAbierto ? false : !!collapsedRows[rowIdx];
           return (
             <div key={rowIdx} className={`inicio-row inicio-row-${keys[0]}`}
               draggable
@@ -986,9 +1009,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         })}
 
         <div className="inicio-row inicio-row-marketing">
-        <Card cols={2} i={0} collapsed={mktCollapsed} onToggle={()=>setMktCollapsed(v=>!v)}>
+        <Card cols={2} i={0} collapsed={anchoFijoAbierto?false:mktCollapsed} onToggle={()=>setMktCollapsed(v=>!v)}>
           <Lbl>Por qué SetSync es el mejor</Lbl>
-          <CC collapsed={mktCollapsed}>
+          <CC collapsed={anchoFijoAbierto?false:mktCollapsed}>
             <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
               color:'var(--tx2)',marginBottom:12,lineHeight:1.5,marginTop:4}}>
               La única pantalla que un músico necesita en el escenario.

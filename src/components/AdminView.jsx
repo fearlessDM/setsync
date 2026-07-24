@@ -161,11 +161,13 @@ function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
 
 // ── Tarjeta de fecha ───────────────────────────────────────────────────────
 function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], isNext=false,
-  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false, onGoToProxFecha}){
-  const [expanded, setExpanded] = useState(false);
+  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false, onGoToProxFecha, forceOpen=false}){
+  const [expandedState, setExpanded] = useState(false);
+  const expanded = forceOpen || expandedState;
   return(
     <div
       onClick={()=>setExpanded(v=>!v)}
+      className={isNext?'tarjeta-fecha tarjeta-fecha-next':'tarjeta-fecha'}
       style={{
         position:'relative',
         paddingTop:14,paddingBottom:14,paddingLeft:18,paddingRight:18,
@@ -176,6 +178,14 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
         opacity: isPast ? 0.75 : 1,
       }}
     >
+      {/* Acento vertical "fecha actual" — solo visible en vista grid (PC /
+          tablet horizontal), donde la línea separadora horizontal no aplica.
+          En móvil se oculta y manda la línea horizontal de arriba. */}
+      {isNext&&(
+        <div className="tarjeta-fecha-vbar" aria-hidden="true"
+          style={{position:'absolute',left:0,top:10,bottom:10,width:3,borderRadius:3,
+            background:'var(--ac)'}}/>
+      )}
       {/* ── Fila siempre visible: título + chevron ── */}
       <div style={{display:'flex',alignItems:'center',gap:12}}>
         <div style={{flex:1,minWidth:0}}>
@@ -262,6 +272,17 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
   onSelectDay, onOpenFecha, onAbrirFecha, onGoToProxFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], personas=[], ensayos=[]}){
   const tx = getT(lang);
   const [selDay, setSelDay] = useState(null);
+  // Pantalla ancha (PC / tablet horizontal): en Calendario las tarjetas de
+  // fecha van fijas-abiertas y en grid. Mismo criterio que Inicio.
+  const [anchoFijo,setAnchoFijo]=useState(
+    typeof window!=='undefined' && window.matchMedia('(min-width:1024px), (min-width:768px) and (orientation:landscape)').matches);
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    const mq=window.matchMedia('(min-width:1024px), (min-width:768px) and (orientation:landscape)');
+    const on=e=>setAnchoFijo(e.matches);
+    mq.addEventListener?.('change',on);
+    return ()=>mq.removeEventListener?.('change',on);
+  },[]);
   const [showPicker, setShowPicker] = useState(false);
   const [pFilter, setPFilter] = useState('');
   const [sel, setSel] = useState(new Set());
@@ -335,12 +356,12 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             return(
               <div key={day}>
                 {isNext && day>today && (
-                  <div style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
+                  <div className="cal-hoy-linea" style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
                     margin:'4px 0 var(--sp-xs)'}}>
-                    <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(200,169,126,.4))'}}/>
+                    <div className="cal-hoy-l1" style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(200,169,126,.4))'}}/>
                     <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--ac)',
                       textTransform:'uppercase',letterSpacing:'1.5px',flexShrink:0}}>{tx.currentDateLbl}</span>
-                    <div style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
+                    <div className="cal-hoy-l2" style={{flex:1,height:1,background:'linear-gradient(270deg,transparent,rgba(200,169,126,.4))'}}/>
                   </div>
                 )}
                 <TarjetaFecha
@@ -370,6 +391,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                       :{origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
                   onGoToProxFecha={onGoToProxFecha}
+                forceOpen={anchoFijo}
                 />
               </div>
             );
@@ -404,6 +426,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                   tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
                   onGoToProxFecha={onGoToProxFecha}
+                forceOpen={anchoFijo}
                 />
               );
             })}
@@ -443,6 +466,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                     :{origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                 onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                 onGoToProxFecha={onGoToProxFecha}
+              forceOpen={anchoFijo}
               />
             ))}
           </div>
