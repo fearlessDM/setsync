@@ -485,6 +485,18 @@ const Lbl = ({children}) => (
     fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:2}}>{children}</div>
 );
 
+// Contenido colapsable — anima grid-template-rows de 0fr a 1fr
+const CC = ({collapsed, children}) => (
+  <div style={{
+    display:'grid',
+    gridTemplateRows:collapsed?'0fr':'1fr',
+    transition:'grid-template-rows 400ms cubic-bezier(0.4,0,0.2,1)',
+    marginTop:collapsed?0:4,
+  }}>
+    <div style={{overflow:'hidden'}}>{children}</div>
+  </div>
+);
+
 export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={} }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
