@@ -304,7 +304,7 @@ export function BloqueFranjas({ contenido, onChange, placeholderLetra }) {
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,.04)', height: 24 }}>
               <div style={{ position: 'relative', height: '100%', flex: 1 }}>
                 {chords.length === 0 && (
-                  <span style={{ position: 'absolute', left: 6, top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize:'var(--fs-sm)', color: 'var(--tx3)', letterSpacing: '.3px', userSelect: 'none', pointerEvents: 'none' }}>Notas...</span>
+                  <span style={{ position: 'absolute', left: 6, top: 0, height: '100%', display: 'flex', alignItems: 'center', fontSize:'var(--fs-xs)', color: 'var(--tx3)', fontStyle: 'italic', opacity: 0.5, userSelect: 'none', pointerEvents: 'none' }}>notas</span>
                 )}
                 {chords.map((c, chordIdx) => {
                   const isDraggingThis = dragVisual && dragVisual.pairIdx === pairIdx && dragVisual.chordIdx === chordIdx;

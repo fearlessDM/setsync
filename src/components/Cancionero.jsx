@@ -268,15 +268,17 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   // MODAL CREAR CANCIÓN
   if(showCrear)return(
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
-      {/* Header */}
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}}
-        onClick={()=>{setShowCrear(false);setCrearModo(null);}}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-          stroke="var(--tx2)" strokeWidth="2">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>Canciones</span>
-      </div>
+      {/* Header — se oculta cuando el editor se abrió desde SongView (ya tiene su propio breadcrumb "< Volver") */}
+      {!volverASongViewRef.current&&(
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,cursor:'pointer'}}
+          onClick={()=>{setShowCrear(false);setCrearModo(null);}}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+            stroke="var(--tx2)" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>Canciones</span>
+        </div>
+      )}
 
       {/* Selector de modo si no hay uno elegido */}
       {crearModo===null&&(
@@ -518,18 +520,18 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 </div>
               </div>
             )}
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:16,lineHeight:1.6}}>
-              En SetSync hacemos que tus letras sean lo más claras posibles y tenemos un formato por secciones. Carga una sección y llénala con letra y posiciona las notas.
-            </div>
 
             {/* Info */}
-            <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:20}}>
+            <div className="card" style={{paddingTop:16,paddingBottom:20,paddingLeft:16,paddingRight:16,marginBottom:20}}>
+              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Título</div>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
-                placeholder="Título canción"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
+                placeholder="Nombre de la canción"
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:12,boxSizing:'border-box'}}/>
+              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Compositor</div>
               <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
-                placeholder="Compositor / detalles"
-                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:8,boxSizing:'border-box'}}/>
+                placeholder="Artista / compositor"
+                style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:12,boxSizing:'border-box'}}/>
+              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:5}}>Tonalidad y tempo</div>
               <div style={{display:'flex',gap:8}}>
                 <CustomSelect value={nueva.key} onChange={v=>{keyTocadaManualRef.current=true;setNueva(vv=>({...vv,key:v}));}}
                   style={{flex:1,fontSize:'var(--fs-lg)'}}
@@ -546,7 +548,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
             </div>
 
-            {/* Secciones — chips (sin encabezado "Secciones", el subtítulo de arriba ya lo explica) */}
+            {/* Secciones */}
+            <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Secciones</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
               {BLOQUES_CHIPS.map(chip=>(
                 <button key={chip.label} onClick={()=>agregarBloque(chip.label)}
@@ -578,6 +581,12 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </div>
 
             {/* Bloques creados */}
+            {nueva.bloques.length>0&&(
+              <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
+                letterSpacing:'1.5px',marginBottom:8}}>
+                Escribe y desplaza las notas sobre las letras
+              </div>
+            )}
             {nueva.bloques.length===0?(
               <div style={{textAlign:'center',padding:'24px 0',color:'var(--tx2)',fontSize:'var(--fs-subtitle)',
                 fontFamily:"var(--font-body)",borderRadius:12,marginBottom:20}}>
