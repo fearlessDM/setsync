@@ -843,6 +843,7 @@ Tuya es la gloria, Por siempre amén.
             onSelectDay={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);}}
             onOpenFecha={(day,mes)=>{setActiveSunday(day);if(mes!==undefined)setMesNav(mes);setView('misetlist');}}
             onAbrirFecha={abrirFecha}
+            onGoToProxFecha={()=>setView('misetlist')}
             mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} personas={personas} ensayos={ensayos}/>}
           {view==='misetlist'&&<MiSetlist

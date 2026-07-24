@@ -503,6 +503,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const [tutOpen, setTutOpen] = useState({});
   const [tutSectionOpen, setTutSectionOpen] = useState(false);
   const [faqSectionOpen, setFaqSectionOpen] = useState(false);
+  const [collapsedRows, setCollapsedRows] = useState({0:true,1:true,2:true,3:true,4:true,5:true}); // todos colapsados por defecto
+  const toggleRow = rowIdx => setCollapsedRows(v=>({...v,[rowIdx]:!v[rowIdx]}));
 
   const hoy = new Date();
   const proximoEvento = eventos.filter(e=>e.fecha&&new Date(e.fecha)>=hoy)
@@ -520,6 +522,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     ['faqs'],
     ['planes'],
   ];
+  const BLOCK_ROW_LABELS = {
+    notificaciones: 'Notificaciones',
+    equipo:         'Mi equipo',
+    comofunciona:   'Cómo funciona',
+    tutoriales:     'Tutoriales',
+    faqs:           'Preguntas frecuentes',
+    planes:         'Planes',
+  };
   const { order, onDragStart, onDragEnter, onDragEnd } = useDragRows(BLOCK_ROWS.map((_,i)=>i));
 
   const toggleFaq = i => setFaqsOpen(v=>({...v,[i]:!v[i]}));
@@ -882,20 +892,40 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)'}}>
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
+          const firstKey = keys[0];
+          const label = BLOCK_ROW_LABELS[firstKey] || firstKey;
+          const isCollapsed = !!collapsedRows[rowIdx];
           return (
             <div key={rowIdx}
               draggable
               onDragStart={()=>onDragStart(dragIdx)}
               onDragEnter={()=>onDragEnter(dragIdx)}
               onDragEnd={onDragEnd}
-              style={{
-                display:'grid',
-                gridTemplateColumns:'1fr 1fr',
-                gap:'var(--gap,10px)',
-                marginBottom:'var(--gap,10px)',
-                cursor:'grab',
-              }}>
-              {keys.map(key=>renderBlock(key,dragIdx))}
+              style={{marginBottom:'var(--gap,10px)',cursor:'grab'}}>
+              {/* Header colapsable de fila */}
+              <div
+                onClick={e=>{e.stopPropagation();toggleRow(rowIdx);}}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',
+                  padding:'7px 4px',cursor:'pointer',userSelect:'none'}}>
+                <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',
+                  textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>
+                  {label}
+                </span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
+                  style={{flexShrink:0,transform:isCollapsed?'rotate(-90deg)':'rotate(0deg)',transition:'transform .2s'}}>
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+              {/* Contenido — oculto si colapsado */}
+              {!isCollapsed&&(
+                <div style={{
+                  display:'grid',
+                  gridTemplateColumns:'1fr 1fr',
+                  gap:'var(--gap,10px)',
+                }}>
+                  {keys.map(key=>renderBlock(key,dragIdx))}
+                </div>
+              )}
             </div>
           );
         })}

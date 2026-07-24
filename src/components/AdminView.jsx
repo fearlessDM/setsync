@@ -161,124 +161,105 @@ function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
 
 // ── Tarjeta de fecha ───────────────────────────────────────────────────────
 function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], isNext=false,
-  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false}){
+  isPast=false, pub=true, isLeader=false, tx, onOpen, onLive, badge, tieneEnsayo=false, onGoToProxFecha}){
+  const [expanded, setExpanded] = useState(false);
+  const handleClick = () => {
+    if(!expanded){ setExpanded(true); return; }
+    // segundo click → ir a Próxima Fecha
+    onGoToProxFecha ? onGoToProxFecha() : (onOpen && onOpen());
+  };
   return(
     <div
-      onClick={onOpen}
+      onClick={handleClick}
       style={{
         position:'relative',
-        paddingTop:28,paddingBottom:28,paddingLeft:18,paddingRight:18,
+        paddingTop:14,paddingBottom:14,paddingLeft:18,paddingRight:18,
         borderRadius:'var(--rad-lg)',
-        background: isNext ? 'var(--s1)' : 'var(--s1)',
-        cursor: onOpen ? 'pointer' : 'default',
-        transition:'all .2s',
-        opacity: isPast ? 0.85 : 1,
+        background:'var(--s1)',
+        cursor:'pointer',
+        transition:'all .25s',
+        opacity: isPast ? 0.75 : 1,
       }}
     >
-      {isLeader&&onOpen&&(
-        <button onClick={e=>{e.stopPropagation();onOpen();}}
-          style={{position:'absolute',bottom:8,right:8,width:24,height:24,borderRadius:7,
-            background:'var(--s3)',color:'var(--tx3)',display:'flex',alignItems:'center',
-            justifyContent:'center',cursor:'pointer',zIndex:2}}
-          aria-label="Editar">
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-          </svg>
-        </button>
-      )}
-      {/* ── Fila superior: título + badge + botón live ── */}
-      <div style={{display:'flex', alignItems:'flex-start', gap:12, marginBottom: isPast?0:10}}>
-        <div style={{flex:1}}>
+      {/* ── Fila siempre visible: título + chevron ── */}
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        <div style={{flex:1,minWidth:0}}>
           <div style={{
-            fontFamily:"var(--font-display)", fontWeight:400,
-            color:'var(--tx)', lineHeight:1.1, fontSize:'var(--fs-xl)', marginBottom: isPast?0:4,
+            fontFamily:"var(--font-display)",fontWeight:400,
+            color:'var(--tx)',lineHeight:1.1,fontSize:'var(--fs-xl)',
           }}>{titulo}</div>
-          {!isPast && subtitulo && (
-            <div style={{fontFamily:"var(--font-body)", fontWeight:300,
-              fontSize:'var(--fs-base)', color:'var(--tx3)', lineHeight:1.5}}>{subtitulo}</div>
+          {!expanded&&subtitulo&&(
+            <div style={{fontFamily:"var(--font-body)",fontWeight:300,
+              fontSize:'var(--fs-sm)',color:'var(--tx3)',marginTop:2}}>{subtitulo}</div>
           )}
-          {!isPast && tieneEnsayo && (
-            <div style={{display:'flex',alignItems:'center',gap:4,marginTop:4}}>
+        </div>
+        {/* Indicador expandido/colapsado */}
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tx3)" strokeWidth="2"
+          style={{flexShrink:0,transform:expanded?'rotate(180deg)':'rotate(0deg)',transition:'transform .2s'}}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      {/* ── Contenido expandido ── */}
+      {expanded&&(
+        <div style={{marginTop:12}}>
+          {tieneEnsayo&&(
+            <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:8}}>
               <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="var(--gn)" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--gn)',fontFamily:"var(--font-body)"}}>{tx.rehearsalAssigned}</span>
             </div>
           )}
-        </div>
-        {!isPast && badge && (
-          <span style={{
-            padding:'4px 11px', borderRadius:'var(--rad-full)', fontSize:'var(--fs-3xs)', fontWeight:700,
-            background: pub ? 'rgba(94,206,160,.08)' : 'rgba(255,200,100,.06)',
-            color: pub ? 'var(--gn)' : 'rgba(255,200,100,.8)',
-            flexShrink:0, whiteSpace:'nowrap',
-          }}>{badge}</span>
-        )}
-        {!isPast && isLeader && setlist.length > 0 && (
-          <button
-            onClick={e=>{e.stopPropagation(); onLive && onLive();}}
-            style={{
-              padding:'8px 13px', borderRadius:'var(--rad-sm)',
-              background:'rgba(94,206,160,.1)',
-              cursor:'pointer', display:'flex', alignItems:'center', gap:5, flexShrink:0,
-              fontFamily:"var(--font-body)", fontWeight:700, fontSize:'var(--fs-base)', color:'var(--gn)',
-            }}
-          >
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
-            </svg>
-            {tx.live}
-          </button>
-        )}
-      </div>
-
-      {/* ── Lugar y hora ── */}
-      {!isPast && (lugar || hora) && (
-        <div style={{
-          display:'flex', alignItems:'center', gap:12,
-          marginBottom: equipos.length > 0 ? 12 : 0,
-          padding:'7px 10px',
-          borderRadius:'var(--rad-xs)',
-          background:'var(--s1)',
-          }}>
-          {lugar && (
-            <div style={{display:'flex', alignItems:'center', gap:5, flex:1, minWidth:0}}>
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
-              <span style={{fontSize:'var(--fs-base)', color:'var(--tx2)', fontFamily:"var(--font-body)",
-                fontWeight:300, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{lugar}</span>
+          {(lugar||hora)&&(
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:10,
+              padding:'7px 10px',borderRadius:'var(--rad-xs)',background:'var(--s2)'}}>
+              {lugar&&(
+                <div style={{display:'flex',alignItems:'center',gap:5,flex:1,minWidth:0}}>
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",
+                    fontWeight:300,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{lugar}</span>
+                </div>
+              )}
+              {hora&&(
+                <div style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:700}}>{hora}</span>
+                </div>
+              )}
             </div>
           )}
-          {hora && (
-            <div style={{display:'flex', alignItems:'center', gap:5, flexShrink:0}}>
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <span style={{fontSize:'var(--fs-base)', color:'var(--tx2)', fontFamily:"var(--font-body)",
-                fontWeight:700}}>{hora}</span>
+          {equipos.length>0&&(
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:10}}>
+              {equipos.map(eq=>(
+                <div key={eq.id} style={{display:'flex',alignItems:'center',gap:5,
+                  padding:'3px 10px',borderRadius:'var(--rad-full)',background:eq.color+'12'}}>
+                  <div style={{width:6,height:6,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
+                  <span style={{fontSize:'var(--fs-sm)',fontWeight:300,color:'var(--tx)',fontFamily:"var(--font-body)"}}>{eq.name}</span>
+                </div>
+              ))}
             </div>
           )}
-        </div>
-      )}
-
-      {/* ── Chips de equipos ── */}
-      {!isPast && equipos.length > 0 && (
-        <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
-          {equipos.map(eq=>(
-            <div key={eq.id} style={{
-              display:'flex', alignItems:'center', gap:5,
-              padding:'3px 10px', borderRadius:'var(--rad-full)',
-              background: eq.color+'12',
-            }}>
-              <div style={{width:6, height:6, borderRadius:'50%', background:eq.color, flexShrink:0}}/>
-              <span style={{fontSize:'var(--fs-sm)', fontWeight:300, color:'var(--tx)', fontFamily:"var(--font-body)"}}>{eq.name}</span>
-              <span style={{fontSize:'var(--fs-xs)', fontWeight:900, color:eq.color, display:'flex', alignItems:'center', gap:1}}>
-                {(eq.miembros||[]).length}
-                <svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke={eq.color} strokeWidth="2.5">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          {/* Acciones — Live y hint de segundo tap */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:4}}>
+            <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontStyle:'italic'}}>
+              Toca de nuevo → Próxima Fecha
+            </span>
+            {isLeader&&setlist.length>0&&(
+              <button onClick={e=>{e.stopPropagation();onLive&&onLive();}}
+                style={{padding:'6px 12px',borderRadius:'var(--rad-sm)',
+                  background:'rgba(94,206,160,.1)',cursor:'pointer',
+                  display:'flex',alignItems:'center',gap:5,
+                  fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--gn)'}}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--gn)" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
                 </svg>
-              </span>
-            </div>
-          ))}
+                {tx.live}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -287,7 +268,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
 
 // ── Vista principal ────────────────────────────────────────────────────────
 export function AdminView({mode, activeSunday, userRole, onLive, onToast,
-  onSelectDay, onOpenFecha, onAbrirFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], personas=[], ensayos=[]}){
+  onSelectDay, onOpenFecha, onAbrirFecha, onGoToProxFecha, mesNav=new Date().getMonth(), lang='es', eventos=[], onOpenSong, equipos=[], personas=[], ensayos=[]}){
   const tx = getT(lang);
   const [selDay, setSelDay] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -387,6 +368,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   onOpen={()=>{setSelDay(day);if(onSelectDay)onSelectDay(day);
                     onAbrirFecha&&onAbrirFecha({origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
+                  onGoToProxFecha={onGoToProxFecha}
                 />
               </div>
             );
@@ -420,6 +402,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[],equiposConvocados:ev.equiposConvocados||null,itinerario:ev.itinerario||null});}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                   tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
+                  onGoToProxFecha={onGoToProxFecha}
                 />
               );
             })}
@@ -453,6 +436,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);
                   onAbrirFecha&&onAbrirFecha({origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                 onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
+                onGoToProxFecha={onGoToProxFecha}
               />
             ))}
           </div>
