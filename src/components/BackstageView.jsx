@@ -33,7 +33,7 @@ const FAQS_PLANES = [
   {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
 ];
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -43,6 +43,11 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   // Volver a Backstage home al re-tocar el botón del nav, aunque ya
   // estuvieras adentro de una subpágina — no solo con la flecha atrás.
   useEffect(()=>{ if(navResetKey>0) setBsView(null); },[navResetKey]);
+  // deepLink — llegada directa a una subpágina desde otra vista (accesos
+  // rápidos de Inicio, botones de "Cómo funciona"). Se declara DESPUÉS del
+  // efecto de navResetKey a propósito: ambos disparan en el mismo commit y
+  // el orden de declaración define quién escribe último.
+  useEffect(()=>{ if(deepLink?.sub) setBsView(deepLink.sub); },[deepLink?.key]);
   const isAdmin=userRole==='superadmin';
   const isPastor=isAdmin; // Pastor eliminado como rol separado — Admin absorbe sus funciones
   const isLeader=userRole==='leader'||isAdmin;

@@ -14,13 +14,20 @@ const BG_IMGS_BANDA = [
   'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&q=80',
   'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=800&q=80',
 ];
+// `cta` — destino navegable del paso. label literal del destino; `view` y
+// `sub` se pasan a onNavigate(view, sub). Los pasos sin `cta` (Toca en vivo,
+// Monitoreo WiFi) quedan sin botón a propósito: no tienen un lugar único
+// al que mandar al usuario.
 const COMO_FUNCIONA_STEPS = [
   {titulo:'Ingresa tu gente',
-    desc:'Arma tu banda y equipos de trabajo o producción, delega líderes por equipo, cada uno con un rol. Sin recargar tu tiempo.'},
+    desc:'Arma tu banda y equipos de trabajo o producción, delega líderes por equipo, cada uno con un rol. Sin recargar tu tiempo.',
+    cta:{label:'Gestión de equipos',view:'backstage',sub:'equipos'}},
   {titulo:'Ingresa tu repertorio',
-    desc:'Importa o escribe canciones — PDF, Word, DOCX, MP3, incluso partituras por instrumento.'},
+    desc:'Importa o escribe canciones — PDF, Word, DOCX, MP3, incluso partituras por instrumento.',
+    cta:{label:'Canciones',view:'repertorio'}},
   {titulo:'Crea un evento',
-    desc:'Carga el calendario con todo el detalle de tus próximas fechas y convoca a tus equipos.'},
+    desc:'Carga el calendario con todo el detalle de tus próximas fechas y convoca a tus equipos.',
+    cta:{label:'Crear evento',view:'backstage',sub:'evento'}},
   {titulo:'Toca en vivo',
     desc:'Ve tus letras, cambia notación, auto scroll, haz anotaciones para ti o para todos, sincronizando pantallas con tu equipo.'},
   {titulo:'Monitoreo WiFi',
@@ -68,6 +75,19 @@ const FEATURES_MKT_ICONS = {
   copy:   <><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>,
   mic:    <><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>,
   calendar:<><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></>,
+};
+
+// Accesos rápidos de Inicio — grilla fija de 3, siempre arriba de
+// Notificaciones y fuera del orden arrastrable de bloques.
+const ACCESOS_RAPIDOS = [
+  {id:'ev',  label:'Crear evento',   icon:'calendar', view:'backstage',  sub:'evento'},
+  {id:'sl',  label:'Crear setlist',  icon:'music',    view:'backstage',  sub:'setlist'},
+  {id:'cn',  label:'Agregar canción',icon:'plus',     view:'repertorio', sub:'crear'},
+];
+const ACCESOS_RAPIDOS_ICONS = {
+  calendar: <><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></>,
+  music:    <><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
+  plus:     <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
 };
 
 const FAQS = [
@@ -519,15 +539,11 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const nombre = 'Daniel';
   const [tutorialActivo, setTutorialActivo] = useState(null);
   const [faqsOpen, setFaqsOpen] = useState({});
-  const [notifOpen, setNotifOpen] = useState(false);
   const [chipIdx, setChipIdx] = useState(0);
   useEffect(()=>{
     const t=setInterval(()=>setChipIdx(i=>(i+1)%HERO_CHIPS.length),2000);
     return()=>clearInterval(t);
   },[]);
-  const [tutOpen, setTutOpen] = useState({});
-  const [tutSectionOpen, setTutSectionOpen] = useState(false);
-  const [faqSectionOpen, setFaqSectionOpen] = useState(false);
   const [collapsedRows, setCollapsedRows] = useState({0:true,1:true,2:true,3:true,4:true,5:true}); // todos colapsados por defecto
   const [mktCollapsed, setMktCollapsed] = useState(true); // bloque marketero también colapsado
   const toggleRow = rowIdx => setCollapsedRows(v=>({...v,[rowIdx]:!v[rowIdx]}));
@@ -625,7 +641,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <CC collapsed={collapsed}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
             {COMO_FUNCIONA_STEPS.slice(0,4).map((s,si)=>(
-              <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)'}}>
+              <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)',
+                display:'flex',flexDirection:'column'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                   <div style={{color:'var(--gn)',fontFamily:"var(--font-display)",fontSize:'var(--fs-lg)',fontWeight:400,
                     flexShrink:0}}>{si+1}</div>
@@ -633,7 +650,19 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
                     color:'var(--tx)',textTransform:'uppercase',letterSpacing:'.3px'}}>{s.titulo}</div>
                 </div>
                 <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',fontWeight:300,
-                  color:'var(--tx3)',lineHeight:1.5}}>{s.desc}</div>
+                  color:'var(--tx3)',lineHeight:1.5,flex:1}}>{s.desc}</div>
+                {s.cta&&(
+                  <button onClick={e=>{e.stopPropagation();onNavigate(s.cta.view,s.cta.sub);}}
+                    style={{marginTop:10,width:'100%',padding:'7px 10px',borderRadius:100,
+                      background:'rgba(var(--gn-rgb),.12)',color:'var(--gn)',cursor:'pointer',
+                      fontFamily:"var(--font-body)",fontSize:'var(--fs-xs)',fontWeight:700,
+                      display:'flex',alignItems:'center',justifyContent:'center',gap:5}}>
+                    <span>{s.cta.label}</span>
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -685,19 +714,16 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} i={i} key="notificaciones" collapsed={collapsed} onToggle={onToggle}>
           <Lbl>Notificaciones</Lbl>
           <CC collapsed={collapsed}>
-          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:notifOpen?8:0,cursor:'pointer'}}
-            onClick={e=>{e.stopPropagation();setNotifOpen(v=>!v);}}>
+          {/* Header informativo, ya no colapsable — el Card exterior es el
+              único nivel de despliegue (v93: se eliminó la capa doble). */}
+          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="1.8">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
               letterSpacing:'1.5px',fontFamily:"var(--font-body)",flex:1}}>{tx.lastNotifications}</span>
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
-              style={{transform:notifOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          {notifOpen&&(NOTIFICACIONES_DEMO.length===0?(
+          {(NOTIFICACIONES_DEMO.length===0?(
             <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
               {tx.noNotificationsYet}
@@ -739,15 +765,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} i={i} key="tutoriales" collapsed={collapsed} onToggle={onToggle}>
           <Lbl>Tutoriales</Lbl>
           <CC collapsed={collapsed}>
-          <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
-            onClick={e=>{e.stopPropagation();setTutSectionOpen(v=>!v);}}>
-            <div style={{flex:1}}><Lbl>{tx.tutorialsLbl}</Lbl></div>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
-              style={{transform:tutSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-          {tutSectionOpen&&(
+          {/* v93: sin sub-cabecera colapsable — al abrir el Card se ve
+              directo la grilla de tutoriales. */}
+          {(
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:10}}>
               {TUTORIALES.map(tut=>(
                 <div key={tut.slug}
@@ -775,15 +795,9 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
         <Card cols={2} i={i} key="faqs" collapsed={collapsed} onToggle={onToggle}>
           <Lbl>Preguntas frecuentes</Lbl>
           <CC collapsed={collapsed}>
-          <div style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}
-            onClick={e=>{e.stopPropagation();setFaqSectionOpen(v=>!v);}}>
-            <div style={{flex:1}}><Lbl>{tx.faqLbl}</Lbl></div>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"
-              style={{transform:faqSectionOpen?'rotate(180deg)':'none',transition:'transform .2s'}}>
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-          {faqSectionOpen&&(
+          {/* v93: sin sub-cabecera colapsable — cada pregunta sigue siendo
+              su propio acordeón, pero la lista se ve directo. */}
+          {(
             <div style={{display:'flex',flexDirection:'column',gap:0,marginTop:8}}>
               {FAQS.map((faq,i)=>(
                 <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
@@ -928,6 +942,34 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       {/* Bloques colapsables — los Cards se colapsan a sí mismos */}
       <div style={{padding:'6px var(--pw-x,var(--sp-md)) var(--sp-md)',display:'flex',flexDirection:'column',gap:10}}>
+
+        {/* Accesos rápidos — bloque FIJO (fuera del sistema de drag), siempre
+            arriba de Notificaciones. Deep-link directo a la subpágina, sin
+            pasar por el home de Backstage ni por el selector de Canciones. */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+          {ACCESOS_RAPIDOS.map(a=>(
+            <button key={a.id} className="press-glow"
+              onClick={()=>onNavigate(a.view,a.sub)}
+              style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',
+                padding:'14px 8px',cursor:'pointer',display:'flex',flexDirection:'column',
+                alignItems:'center',justifyContent:'flex-start',gap:8,minHeight:88,
+                transition:'background .15s'}}
+              onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
+              onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
+              <div style={{width:32,height:32,borderRadius:10,flexShrink:0,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                background:'rgba(var(--gn-rgb),.12)'}}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gn)"
+                  strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  {ACCESOS_RAPIDOS_ICONS[a.icon]}
+                </svg>
+              </div>
+              <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
+                color:'var(--tx)',lineHeight:1.25,textAlign:'center'}}>{a.label}</span>
+            </button>
+          ))}
+        </div>
+
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
           const isCollapsed = !!collapsedRows[rowIdx];

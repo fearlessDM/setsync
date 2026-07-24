@@ -12,7 +12,7 @@ import { detectarTonalidad } from '../utils/music';
 import { extraerTextoDeArchivo } from '../utils/fileExtract';
 import { parseCancionDesdeTexto } from '../utils/importParser';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},importDB={},setImportDB=()=>{},songParaEditar=null,onSongParaEditarConsumido=()=>{}}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},importDB={},setImportDB=()=>{},songParaEditar=null,onSongParaEditarConsumido=()=>{},deepLink=null}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -20,6 +20,9 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const [bv,setBv]=useState(false); // false=lista, true=BPM
   const [tab,setTab]=useState('mi'); // 'mi' | 'universal'
   const [showCrear,setShowCrear]=useState(false);
+  // deepLink — "Agregar canción" desde los accesos rápidos de Inicio entra
+  // directo al selector de creación, sin pasar por la lista.
+  useEffect(()=>{ if(deepLink?.sub==='crear'){ setShowCrear(true); setCrearModo(null); } },[deepLink?.key]);
   const [nueva,setNueva]=useState({nombre:'',autor:'',key:'G',bpm:'',bloques:[],estructura:[]});
   const keyTocadaManualRef=useRef(false); // true apenas el usuario toca el selector de tonalidad — a partir de ahí, la auto-detección deja de proponer cambios
   const volverASongViewRef=useRef(null); // nombre de la canción si el editor se abrió desde el botón "Editar" de SongView — al volver, reabre esa canción en vez de ir a la lista

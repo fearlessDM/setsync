@@ -596,8 +596,10 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
 }
 
 // ── Mi Setlist ─────────────────────────────────────────────────────────────
-export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[]}){
+export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[],currentUser=null,onActualizarEvento=null}){
   const tx=getT(lang);
+  const [eqAbierto,setEqAbierto]=useState(null);
+  const [agregarEnEq,setAgregarEnEq]=useState(null);
   // fecha: {origen:'evento'|'legacy'|'especial', id, nombre, fechaStr, lugar, hora, setlist}
   // setlist puede traer 3 formatos (compatibilidad, ver App.jsx abrirSongDesdeEvento):
   //   string (legacy) | {name,key,bpm} ya resuelto | {cancion,asignaciones} (v36, nuevo)
@@ -612,7 +614,50 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
   const equipoIdsConvocados = f.equiposConvocados
     ? new Set(f.equiposConvocados)
     : new Set(ensayosDelEvento.flatMap(en=>en.equipos||[]));
-  const equiposAMostrar = equipoIdsConvocados.size>0 ? equipos.filter(eq=>equipoIdsConvocados.has(eq.id)) : equipos;
+  const equiposBase = equipoIdsConvocados.size>0 ? equipos.filter(eq=>equipoIdsConvocados.has(eq.id)) : equipos;
+
+  // ── Equipos por evento (v93) ────────────────────────────────────────────
+  // `evento.equiposOverride[equipoId] = {miembros:[...]}` permite ajustar la
+  // dotación SOLO para esta fecha: quitar, agregar y cambiar roles sin
+  // tocar el roster global ni tener que duplicar el equipo. Si no hay
+  // override para un equipo se usa su roster global tal cual. El nombre y
+  // el color del equipo NUNCA se sobrescriben — eso vive en Gestión de
+  // equipos y es global por diseño.
+  const esEventoReal = f.origen==='evento' && typeof onActualizarEvento==='function';
+  const overrides = f.equiposOverride||{};
+  const equiposAMostrar = equiposBase.map(eq=>{
+    const ov = overrides[eq.id];
+    return ov ? {...eq, miembros:ov.miembros||[], editadoParaEvento:true}
+              : {...eq, editadoParaEvento:false};
+  });
+
+  // Puede editar: admin siempre; líder solo del equipo donde ES líder.
+  // Se compara contra eq.lider (id | nombre | correo, según cómo se haya
+  // guardado) y contra el rol del propio miembro dentro del equipo.
+  const idUser=(currentUser?.email||'').toLowerCase().trim();
+  const puedeEditarEquipo=(eq)=>{
+    if(!esEventoReal) return false;
+    if(userRole==='superadmin') return true;
+    if(userRole!=='leader') return false;
+    if(!idUser) return false;
+    const lider=String(eq.lider??'').toLowerCase().trim();
+    if(lider&&lider===idUser) return true;
+    return (eq.miembros||[]).some(m=>
+      (m.email||'').toLowerCase().trim()===idUser && /l[ií]der/i.test(m.role||''));
+  };
+
+  const guardarMiembros=(eqId,miembros)=>{
+    onActualizarEvento(f.id, ev=>({...ev,
+      equiposOverride:{...(ev.equiposOverride||{}), [eqId]:{miembros}}}));
+  };
+  const restaurarEquipo=(eqId)=>{
+    onActualizarEvento(f.id, ev=>{
+      const o={...(ev.equiposOverride||{})};
+      delete o[eqId];
+      return {...ev, equiposOverride:o};
+    });
+    onToast&&onToast({text:'Equipo restaurado',sub:'Vuelve a su dotación original'});
+  };
 
   // Resuelve nombre + asignaciones (variación/persona) por ítem del setlist,
   // sin importar el formato en que venga
@@ -641,13 +686,17 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               Tu setlist para esta fecha. Repasa con tiempo.
             </div>
           </div>
-          <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
-            <div style={{display:'flex',alignItems:'center',gap:5}}>
-              <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
-              <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
-            </div>
-            <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
-          </button>
+          {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
+              porque no son eventos reales y no hay nada que sincronizar. */}
+          {f.origen==='evento'&&(
+            <button onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+              <div style={{display:'flex',alignItems:'center',gap:5}}>
+                <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
+                <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
+              </div>
+              <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
+            </button>
+          )}
         </div>
         {/* Lugar y hora */}
         <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
@@ -725,24 +774,167 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.teamsCalledLbl}</span>
             <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
           </div>
-          {equiposAMostrar.map(eq=>(
-            <div key={eq.id} style={{borderBottom:'1px solid var(--bd)'}}>
-              <div style={{padding:'12px var(--sp-md) 6px',display:'flex',alignItems:'center',gap:'var(--sp-xs)'}}>
-                <div style={{width:7,height:7,borderRadius:'50%',background:eq.color,flexShrink:0}}/>
-                <span style={{fontWeight:900,fontSize:'14px',color:'var(--tx)',flex:1}}>{eq.name}</span>
-                <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700}}>{(eq.miembros||[]).length}</span>
-              </div>
-              <div style={{padding:'0 var(--sp-md) 12px',display:'flex',flexWrap:'wrap',gap:6}}>
-                {(eq.miembros||[]).map(m=>(
-                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:'var(--rad-full)',background:'var(--s1)',}}>
-                    {m.foto&&<img src={m.foto} alt={m.name} style={{width:16,height:16,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
-                    <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)'}}>{m.name.split(' ')[0]}</span>
-                    <span style={{fontSize:'var(--fs-xs)',color:eq.color,fontWeight:300}}>{m.role}</span>
+          {/* Grid 2 columnas — mismo lenguaje visual que Gestión de equipos */}
+          <div style={{padding:'12px var(--sp-md)',display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            {equiposAMostrar.map(eq=>{
+              const miembros=eq.miembros||[];
+              const editable=puedeEditarEquipo(eq);
+              const abierto=eqAbierto===eq.id;
+              return(
+                <div key={eq.id}
+                  onClick={()=>{setEqAbierto(abierto?null:eq.id);setAgregarEnEq(null);}}
+                  style={{borderRadius:14,background:'var(--s2)',overflow:'hidden',
+                    cursor:'pointer',outline:abierto?`2px solid ${eq.color}60`:'none'}}>
+                  <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
+                    <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,
+                      boxShadow:`0 0 8px ${eq.color}80`}}/>
+                    <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',
+                      color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',
+                      whiteSpace:'nowrap'}}>{eq.name}</span>
+                    <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{miembros.length}</span>
+                  </div>
+                  <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
+                    {miembros.slice(0,4).map(m=>(
+                      <div key={m.id} style={{fontSize:'var(--fs-2xs)',fontWeight:700,padding:'2px 7px',
+                        borderRadius:100,background:eq.color+'18',color:eq.color,
+                        fontFamily:"var(--font-body)",whiteSpace:'nowrap'}}>
+                        {String(m.name||'').split(' ')[0]}
+                      </div>
+                    ))}
+                    {miembros.length>4&&(
+                      <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',padding:'2px 6px',
+                        fontFamily:"var(--font-body)"}}>+{miembros.length-4}</div>
+                    )}
+                    {miembros.length===0&&(
+                      <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontStyle:'italic',
+                        fontFamily:"var(--font-body)"}}>Sin miembros</div>
+                    )}
+                  </div>
+                  {eq.editadoParaEvento&&(
+                    <div style={{padding:'0 10px 10px'}}>
+                      <span style={{fontSize:'8px',fontWeight:900,color:'var(--ac)',
+                        textTransform:'uppercase',letterSpacing:'.5px',padding:'2px 7px',
+                        borderRadius:100,background:'rgba(200,169,126,.12)',
+                        fontFamily:"var(--font-body)"}}>Ajustado para esta fecha</span>
+                    </div>
+                  )}
+                  {editable&&!abierto&&(
+                    <div style={{padding:'0 10px 10px',fontSize:'var(--fs-2xs)',color:'var(--tx3)',
+                      fontFamily:"var(--font-body)"}}>Tocar para editar →</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Detalle / editor del equipo abierto — la dotación que se toca acá
+              vale SOLO para esta fecha (no altera Gestión de equipos). */}
+          {eqAbierto&&(()=>{
+            const eq=equiposAMostrar.find(e=>e.id===eqAbierto);
+            if(!eq) return null;
+            const miembros=eq.miembros||[];
+            const editable=puedeEditarEquipo(eq);
+            const roles=eq.roles&&eq.roles.length?eq.roles:['General'];
+            const disponibles=personas.filter(p=>!miembros.some(m=>String(m.id)===String(p.id)));
+            const setMiembros=nuevos=>guardarMiembros(eq.id,nuevos);
+            return(
+              <div style={{margin:'0 var(--sp-md) 14px',borderRadius:14,background:'var(--s2)',
+                padding:14,outline:`1px solid ${eq.color}40`}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                  <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,
+                    boxShadow:`0 0 8px ${eq.color}80`}}/>
+                  <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',
+                    color:'var(--tx)',flex:1}}>{eq.name}</span>
+                  <button onClick={()=>{setEqAbierto(null);setAgregarEnEq(null);}}
+                    style={{background:'none',color:'var(--tx3)',cursor:'pointer',
+                      fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
+                </div>
+
+                {editable&&(
+                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
+                    lineHeight:1.5,marginBottom:10}}>
+                    Los cambios valen solo para esta fecha. El equipo original no se toca.
+                  </div>
+                )}
+
+                {miembros.length===0&&(
+                  <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',
+                    padding:'6px 0 10px'}}>Nadie asignado a este equipo para esta fecha.</div>
+                )}
+
+                {miembros.map(m=>(
+                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0'}}>
+                    {m.foto
+                      ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',
+                        objectFit:'cover',flexShrink:0}}/>
+                      :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s3)',
+                        display:'flex',alignItems:'center',justifyContent:'center',
+                        fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx2)',
+                        flexShrink:0}}>{initials(m.name)}</div>}
+                    <span style={{flex:1,minWidth:0,fontSize:'var(--fs-md)',fontWeight:300,color:'var(--tx)',
+                      overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</span>
+                    {editable?(
+                      <CustomSelect value={m.role} onChange={v=>setMiembros(miembros.map(x=>x.id===m.id?{...x,role:v}:x))}
+                        style={{fontSize:'var(--fs-xs)',color:eq.color,background:eq.color+'12',
+                          padding:'3px 10px',borderRadius:100,fontWeight:400,width:'auto'}}
+                        options={roles.map(r=>({value:r,label:r}))}/>
+                    ):(
+                      <span style={{fontSize:'var(--fs-xs)',color:eq.color,fontWeight:300,flexShrink:0}}>{m.role}</span>
+                    )}
+                    {editable&&(
+                      <button onClick={()=>setMiembros(miembros.filter(x=>x.id!==m.id))}
+                        title="Quitar de esta fecha"
+                        style={{width:22,height:22,borderRadius:6,background:'rgba(var(--rd-rgb),.08)',
+                          color:'var(--rd)',cursor:'pointer',display:'flex',alignItems:'center',
+                          justifyContent:'center',flexShrink:0}}>
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ))}
+
+                {editable&&(
+                  <div style={{marginTop:10,display:'flex',flexDirection:'column',gap:8}}>
+                    {agregarEnEq===eq.id?(
+                      <CustomSelect value="" placeholder="Elige a quién sumar…"
+                        onChange={v=>{
+                          const p=personas.find(x=>String(x.id)===String(v));
+                          if(!p)return;
+                          setMiembros([...miembros,{id:p.id,name:p.name,email:p.email||'',
+                            role:roles[0],foto:p.foto||null}]);
+                          setAgregarEnEq(null);
+                          onToast&&onToast({text:'Sumado a esta fecha',sub:`${p.name} · ${eq.name}`});
+                        }}
+                        options={disponibles.map(p=>({value:p.id,label:p.name}))}/>
+                    ):(
+                      <button onClick={()=>setAgregarEnEq(eq.id)}
+                        disabled={disponibles.length===0}
+                        style={{alignSelf:'flex-start',display:'flex',alignItems:'center',gap:6,
+                          padding:'6px 12px',borderRadius:100,background:'rgba(var(--gn-rgb),.1)',
+                          color:disponibles.length?'var(--gn)':'var(--tx3)',
+                          cursor:disponibles.length?'pointer':'not-allowed',
+                          fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+                        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3">
+                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        {disponibles.length?'Agregar a esta fecha':'No queda gente por sumar'}
+                      </button>
+                    )}
+                    {eq.editadoParaEvento&&(
+                      <button onClick={()=>{restaurarEquipo(eq.id);setAgregarEnEq(null);}}
+                        style={{alignSelf:'flex-start',padding:'6px 12px',borderRadius:100,
+                          background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',
+                          fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+                        Restaurar equipo original
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })()}
         </div>
       )}
 

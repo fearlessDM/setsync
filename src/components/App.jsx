@@ -131,7 +131,18 @@ export default function App(){
   // incluso si ya estabas ahí adentro de una subpágina. BackstageView escucha
   // este valor y se resetea a su home (bsView=null) cuando cambia.
   const [backstageKey,setBackstageKey]=useState(0);
-  const goToView=id=>{setView(id);if(id==='backstage')setBackstageKey(k=>k+1);};
+  // deepLink — permite navegar directo a una SUBPÁGINA de otra vista, no
+  // solo a su home. Ej: onNavigate('backstage','evento') abre Backstage ya
+  // parado en "Crear evento". El `key` fuerza el efecto en el hijo aunque
+  // se pida dos veces seguidas el mismo destino. Lo consume BackstageView
+  // (bsView) y Cancionero (showCrear); si sub es null no hace nada y el
+  // comportamiento es el de siempre.
+  const [deepLink,setDeepLink]=useState(null); // {view,sub,key} | null
+  const goToView=(id,sub=null)=>{
+    setView(id);
+    if(id==='backstage')setBackstageKey(k=>k+1);
+    setDeepLink(sub?{view:id,sub,key:Date.now()}:null);
+  };
   const [sbCol,setSbCol]=useState(false);
   const [toast,setToast]=useState(null);
   const [theme,setTheme]=useState('grafite');
@@ -419,6 +430,17 @@ export default function App(){
   // misma forma antes de navegar, así Mi Setlist siempre muestra lo real.
   const [fechaAbierta,setFechaAbierta]=useState(null);
   const abrirFecha=(fecha)=>{ setFechaAbierta(fecha); setView('misetlist'); };
+  // actualizarEvento — mutación puntual de un evento real por id. Se usa
+  // para el override de equipos por fecha (v93). El updater recibe el
+  // evento actual y devuelve el nuevo; persiste fuera del setState para
+  // no meter efectos dentro del updater de React.
+  const actualizarEvento=(id,updater)=>{
+    const actual=eventos.find(ev=>String(ev.id)===String(id));
+    if(!actual) return;
+    const upd=updater(actual);
+    setEventos(prev=>prev.map(ev=>String(ev.id)===String(id)?upd:ev));
+    persistirEvento(upd);
+  };
 
   // Demo: contenido propio para las variaciones de letra "Bajo" y "Piano"
   // de YESHUA. Antes mutaba contentDB directo (objeto estático); ahora
@@ -835,7 +857,7 @@ Tuya es la gloria, Por siempre amén.
               equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
               planActivo={planActivo} planId={planId} viaEquipo={viaEquipo} orgPrincipal={orgPrincipal}
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo} archivosDB={archivosDB}
-              onNavigate={setView}/>
+              onNavigate={goToView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
             onLive={()=>{const sl=SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
@@ -846,13 +868,31 @@ Tuya es la gloria, Por siempre amén.
             onGoToProxFecha={()=>setView('misetlist')}
             mesNav={mesNav} lang={lang}
             eventos={eventos} onOpenSong={abrirSongDesdeEvento} equipos={equipos} personas={personas} ensayos={ensayos}/>}
-          {view==='misetlist'&&<MiSetlist
-            fecha={fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Domingo ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]}}
-            onOpenSong={i=>abrirSongDesdeEvento(i,(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[])}
-            onLive={()=>{const sl=(fechaAbierta||{}).setlist||SETLISTS[activeSunday]||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
-            userRole={userRole} onToast={showToast} lang={lang}
-            equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)}/>}
+          {view==='misetlist'&&(()=>{
+            // La fecha abierta es una foto tomada al navegar. Para eventos
+            // reales la re-hidratamos desde `eventos` en cada render, así el
+            // override de equipos por fecha se ve al instante al editarlo.
+            const base=fechaAbierta||{origen:'legacy',id:`legacy-${activeSunday}`,nombre:`Domingo ${activeSunday}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:SETLISTS[activeSunday]||[]};
+            const evVivo=base.origen==='evento'?eventos.find(e=>String(e.id)===String(base.id)):null;
+            const fechaViva=evVivo?{...base,
+              nombre:evVivo.nombre??base.nombre,
+              lugar:evVivo.lugar??base.lugar,
+              hora:evVivo.hora??base.hora,
+              setlist:evVivo.setlist||base.setlist,
+              equiposConvocados:evVivo.equiposConvocados??base.equiposConvocados,
+              itinerario:evVivo.itinerario??base.itinerario,
+              notas:evVivo.notas??base.notas,
+              archivo:evVivo.archivo??base.archivo,
+              equiposOverride:evVivo.equiposOverride||null}:base;
+            return <MiSetlist
+              fecha={fechaViva}
+              onOpenSong={i=>abrirSongDesdeEvento(i,fechaViva.setlist||[])}
+              onLive={()=>{const sl=fechaViva.setlist||[];if(sl.length>0)abrirSongDesdeEvento(0,sl);}}
+              userRole={userRole} onToast={showToast} lang={lang}
+              currentUser={currentUser} onActualizarEvento={actualizarEvento}
+              equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>;
+          })()}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)} deepLink={deepLink&&deepLink.view==='repertorio'?deepLink:null}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
@@ -867,7 +907,8 @@ Tuya es la gloria, Por siempre amén.
             currentUser={currentUser} onCerrarSesion={()=>{limpiarAccountIdOverride();cerrarSesion();}}
             persistirEnsayo={persistirEnsayo}
             navResetKey={backstageKey}
-            onNavigate={setView}/>}
+            deepLink={deepLink&&deepLink.view==='backstage'?deepLink:null}
+            onNavigate={goToView}/>}
           <Footer/>
         </div>
       </main>
