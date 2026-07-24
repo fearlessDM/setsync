@@ -336,12 +336,15 @@ export default function App(){
     const unsubContent = subscribeContentDB(accountId, data=>{
       if(data===null){
         // Primera vez que esta cuenta se conecta: siembra Firestore con el
-        // contentDB local actual (fábrica + lo que ya se haya cargado antes
-        // de tener conexión), igual que el resto de las colecciones.
+        // contentDB local (fábrica) completo, igual que el resto de colecciones.
         guardarContentDB(accountId, contentDB);
       } else {
+        // Merge: las letras de fábrica (songs-iglesia / songs-banda) nunca
+        // se pierden aunque Firestore tenga un snapshot anterior incompleto.
+        // Las ediciones del usuario (data) tienen prioridad sobre la fábrica.
         skipContentSaveRef.current = true;
-        setContentDB(data);
+        const base=appMode==='banda'?SONG_CONTENT_BANDA:SONG_CONTENT_IGLESIA;
+        setContentDB({...base,...data});
       }
     });
     const unsubImport = subscribeImportDB(accountId, data=>{
@@ -518,10 +521,7 @@ Tuya es la gloria, Por siempre amén.
       setSongView(0);
       return;
     }
-    // Solo incluir en el array de navegación las canciones con letra
-    // disponible — evita que SIG/ANT lleven a pantallas negras.
-    const todas=fuente.map(c=>({...c,name:c.n,key:c.key,bpm:c.bpm}));
-    const songs=todas.filter(s=>!!(contentDB[s.name]||contentDB[s.n]));
+    const songs=fuente.map(c=>({...c,name:c.n,key:c.key,bpm:c.bpm}));
     const idx=songs.findIndex(s=>s.name===name);
     if(idx>=0){setSongViewSongs(songs);setSongView(idx);}
   };
@@ -560,20 +560,10 @@ Tuya es la gloria, Por siempre amén.
       }
       return null;
     }).filter(Boolean); // eliminar cualquier item inválido que quedó null
-    // Filtrar canciones sin letra (contentDB vacío y sin partitura) para
-    // no abrir SongView con pantalla negra. Solo se muestran las que
-    // tienen contenido disponible en este momento.
-    const songsConContenido=songs.filter(s=>{
-      const k=s.name||s.n||'';
-      return !!(s.partitura || s.docId || contentDB[k]);
-    });
-    if(!songsConContenido.length){
-      showToast({text:'Sin letra disponible',sub:'Agrega la letra desde el Cancionero'});
-      return;
-    }
-    // Ajustar idx: si la canción elegida no tiene letra, ir a la primera disponible
-    const safeIdx=Math.min(Math.max(0,idx),songsConContenido.length-1);
-    setSongViewSongs(songsConContenido);setSongView(safeIdx);
+    if(!songs.length)return;
+    // Ajustar idx si quedó fuera de rango tras el filtrado
+    const safeIdx=Math.min(Math.max(0,idx),songs.length-1);
+    setSongViewSongs(songs);setSongView(safeIdx);
   };
   const handleSaveChords=(name,content)=>{setContentDB(prev=>({...prev,[name]:content}));showToast('✓ Acordes guardados');};
 
