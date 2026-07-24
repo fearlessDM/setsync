@@ -312,7 +312,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
 
       {/* ── Setlists (julio) ── */}
       {setlistsDelMes.length>0 && (
-        <div style={{display:'flex',flexDirection:'column',gap:'var(--gap)',
+        <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)',
           padding:'0 var(--pw-x,16px) var(--sp-md)'}}>
           {setlistsDelMes.map(([dayStr,sl])=>{
             const day = parseInt(dayStr);
@@ -386,7 +386,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.eventsCreatedLbl}</span>
             <div style={{flex:1,height:1,background:'var(--s3)'}}/></>}
           </div>
-          <div style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
+          <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
             {eventosDelMes.map(ev=>{
               const d=new Date(ev.fecha);
               return(
@@ -422,7 +422,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
               <div style={{flex:1,height:1,background:'var(--s3)'}}/>
             </div>
           )}
-          <div style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
+          <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
             {especialesDelMes.map((ev,i)=>(
               <TarjetaFecha
                 key={i}
@@ -685,28 +685,26 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
 
   return(
     <div style={{padding:'var(--sp-sm) var(--pw-x,16px)',paddingBottom:90}}>
-      <div className="ms-head" style={{marginBottom:'var(--sp-md)'}}>
-        <div className="ms-head-top" style={{display:'flex',alignItems:'flex-start',gap:'var(--sp-sm)',marginBottom:'var(--sp-sm)'}}>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
-              {f.nombre}
-            </div>
-            <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4}}>
-              Detalle completo para este evento.
-            </div>
+      <div className="ms-head">
+        <div className="ms-head-title">
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>
+            {f.nombre}
           </div>
-          {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
-              porque no son eventos reales y no hay nada que sincronizar. */}
-          {f.origen==='evento'&&(
-            <button className="ms-live-btn" onClick={onLive} style={{flexShrink:0,padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
-              <div style={{display:'flex',alignItems:'center',gap:5}}>
-                <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
-                <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
-              </div>
-              <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
-            </button>
-          )}
+          <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4}}>
+            Detalle completo para este evento.
+          </div>
         </div>
+        {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
+            porque no son eventos reales y no hay nada que sincronizar. */}
+        {f.origen==='evento'&&(
+          <button className="ms-live-btn" onClick={onLive} style={{padding:'9px 14px',borderRadius:'var(--rad-sm)',background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:3}}>
+            <div style={{display:'flex',alignItems:'center',gap:5}}>
+              <div style={{width:7,height:7,borderRadius:'50%',background:'var(--rd)',animation:'rp 1.2s infinite'}}/>
+              <span style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',textTransform:'uppercase',letterSpacing:'.5px'}}>{tx.live}</span>
+            </div>
+            <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
+          </button>
+        )}
         {/* Lugar / Fecha / Hora */}
         <div className="ms-locbar" style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
           {/* Ubicación · Fecha · Hora — proporciones 4/2/1 (la ubicación

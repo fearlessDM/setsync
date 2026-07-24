@@ -970,11 +970,12 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           ))}
         </div>
 
+        <div className="inicio-blocks">
         {order.map((rowIdx,dragIdx)=>{
           const keys = BLOCK_ROWS[rowIdx];
           const isCollapsed = !!collapsedRows[rowIdx];
           return (
-            <div key={rowIdx}
+            <div key={rowIdx} className={`inicio-row inicio-row-${keys[0]}`}
               draggable
               onDragStart={e=>{e.stopPropagation();onDragStart(dragIdx);}}
               onDragEnter={()=>onDragEnter(dragIdx)}
@@ -984,7 +985,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           );
         })}
 
-                        <Card cols={2} i={0} collapsed={mktCollapsed} onToggle={()=>setMktCollapsed(v=>!v)}>
+        <div className="inicio-row inicio-row-marketing">
+        <Card cols={2} i={0} collapsed={mktCollapsed} onToggle={()=>setMktCollapsed(v=>!v)}>
           <Lbl>Por qué SetSync es el mejor</Lbl>
           <CC collapsed={mktCollapsed}>
             <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
@@ -1012,6 +1014,8 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             </div>
           </CC>
         </Card>
+        </div>
+        </div>
 
       </div>
     </div>

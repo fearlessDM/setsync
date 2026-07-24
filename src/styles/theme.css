@@ -470,42 +470,105 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
 }
 
+/* ── Encabezado de Próx Fecha ──
+   Móvil: apilado — título, (botón), barra, cada uno en su fila.
+   Desktop (≥768px): título a lo ancho arriba; barra de ubicación y botón
+   "En vivo" en la MISMA fila abajo (barra ocupa el ancho, botón a la
+   derecha). Ver la media query más abajo. */
+.ms-head{ display:flex; flex-direction:column; gap:var(--sp-sm); margin-bottom:var(--sp-md); }
+.ms-head-title{ flex:1; min-width:0; }
+.ms-live-btn{ align-self:flex-start; }
+
 /* ── Layout ancho (tablet horizontal / desktop): grids multi-columna ──
    Desde 768px los bloques dejan de apilarse en una sola columna.
    Próx Fecha → 2 columnas · Backstage → 4 columnas. En mobile (<768px)
    todo sigue en columna única / grid original. */
 @media(min-width:768px){
-  /* Próx Fecha — bloques de nivel superior en 2 columnas.
-     El gap del grid reemplaza el marginBottom de cada bloque para que
-     el espaciado quede parejo en ambos ejes. */
+  /* Próx Fecha — bloques de nivel superior en 2 columnas. El gap del grid
+     reemplaza el marginBottom. Sin align-items:start, cada FILA del grid
+     iguala su altura a la del bloque más alto de esa fila (comportamiento
+     nativo de grid). height:100% en los hijos hace que el contenido llene
+     esa altura para que las tarjetas queden parejas. */
   .ms-blocks{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:var(--gap);
-    align-items:start;
   }
-  .ms-blocks>*{ margin-bottom:0!important; }
+  .ms-blocks>*{ margin-bottom:0!important; height:100%; box-sizing:border-box; }
 
-  /* Encabezado de Próx Fecha en desktop: el título arriba, y la barra de
-     ubicación en línea con el botón "En vivo" debajo — barra a la
-     izquierda ocupando el ancho, botón a la derecha. */
+  /* Encabezado — grid de 2 columnas: título ocupa ambas arriba; barra y
+     botón comparten la fila de abajo. */
   .ms-head{
     display:grid;
     grid-template-columns:1fr auto;
     grid-template-areas:
-      "titulo  titulo"
-      "locbar  live";
+      "titulo titulo"
+      "locbar live";
     column-gap:var(--sp-md);
     row-gap:var(--sp-sm);
-    align-items:center;
+    align-items:stretch;
   }
-  .ms-head-top{ display:contents; }
-  .ms-head-top>div:first-child{ grid-area:titulo; }
+  .ms-head-title{ grid-area:titulo; }
   .ms-head .ms-live-btn{ grid-area:live; align-self:stretch; }
-  .ms-head .ms-locbar{ grid-area:locbar; margin-top:0; }
+  .ms-head .ms-locbar{ grid-area:locbar; }
 
   /* Backstage — menú principal en 4 columnas. */
   .bs-menu-grid{ grid-template-columns:repeat(4,1fr)!important; }
+
+  /* ── CALENDARIO: tarjetas de fecha en filas de 3 ──
+     El contenedor es flex-column en móvil; acá pasa a grid de 3. */
+  .cal-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr);
+    gap:var(--gap);
+    align-items:start;
+  }
+  .cal-grid>*{ min-width:0; }
+
+  /* ── INICIO: bloques en grid ancho ──
+     Grid de 6 columnas (mínimo común de 2 y 3) para poder mezclar filas
+     de 2 (span 3 c/u) y filas de 3 (span 2 c/u). Los 3 accesos rápidos
+     de arriba NO entran acá (son un grid aparte y no cambian).
+     Distribución pedida:
+       notificaciones + Tu Resumen        → 50% / 50%
+       Cómo funciona   + Tutoriales        → 50% / 50%
+       Preguntas + Planes + Por qué SetSync → 33% / 33% / 33%
+     Cada .inicio-row lleva un span fijo por su tipo de bloque, así el
+     ancho se mantiene aunque se reordenen arrastrando. */
+  .inicio-blocks{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+    align-items:start;
+  }
+  .inicio-row{ min-width:0; }
+  .inicio-row>*{ height:100%; box-sizing:border-box; }
+  .inicio-row-notificaciones,
+  .inicio-row-equipo,
+  .inicio-row-comofunciona,
+  .inicio-row-tutoriales{ grid-column:span 3; }
+  .inicio-row-faqs,
+  .inicio-row-planes,
+  .inicio-row-marketing{ grid-column:span 2; }
+  /* El Card interno ya no debe forzar su propio span dentro de la fila. */
+  .inicio-row .block-entry{ grid-column:auto!important; width:100%; }
+}
+
+/* ── TABLET VERTICAL (768-1023px en vertical): filas de 2 en Inicio,
+     Backstage y Próx Fecha ya cubierto arriba; aquí forzamos que Inicio
+     y Backstage usen exactamente 2 columnas en vez de 3/4. ── */
+@media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
+  .inicio-blocks{ grid-template-columns:repeat(2,1fr); }
+  .inicio-row-notificaciones,
+  .inicio-row-equipo,
+  .inicio-row-comofunciona,
+  .inicio-row-tutoriales,
+  .inicio-row-faqs,
+  .inicio-row-planes,
+  .inicio-row-marketing{ grid-column:span 1; }
+  .bs-menu-grid{ grid-template-columns:repeat(2,1fr)!important; }
+  .ms-blocks{ grid-template-columns:1fr 1fr; }
+  .cal-grid{ grid-template-columns:repeat(2,1fr)!important; }
 }
 /* ── Fader track X32-style: vertical, ancho, thumb grande ── */
 .fader-track{
