@@ -475,9 +475,22 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
    Desktop (≥768px): título a lo ancho arriba; barra de ubicación y botón
    "En vivo" en la MISMA fila abajo (barra ocupa el ancho, botón a la
    derecha). Ver la media query más abajo. */
-.ms-head{ display:flex; flex-direction:column; gap:var(--sp-sm); margin-bottom:var(--sp-md); }
-.ms-head-title{ flex:1; min-width:0; }
-.ms-live-btn{ align-self:flex-start; }
+/* Móvil: título a la izquierda y botón "En vivo" arriba a la derecha en la
+   misma fila; barra de ubicación debajo, al ancho. */
+.ms-head{
+  display:grid;
+  grid-template-columns:1fr auto;
+  grid-template-areas:
+    "titulo live"
+    "locbar locbar";
+  column-gap:var(--sp-sm);
+  row-gap:var(--sp-sm);
+  align-items:start;
+  margin-bottom:var(--sp-md);
+}
+.ms-head-title{ grid-area:titulo; min-width:0; }
+.ms-live-btn{ grid-area:live; align-self:start; }
+.ms-locbar{ grid-area:locbar; }
 
 /* ── Layout ancho (tablet horizontal / desktop): grids multi-columna ──
    Desde 768px los bloques dejan de apilarse en una sola columna.
@@ -566,22 +579,22 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
    JS: anchoFijoAbierto) y con altura pareja por fila. Activo en cualquier
    pantalla ancha en landscape ≥768px (tablet horizontal incluida). */
 @media(min-width:1024px), (min-width:768px) and (orientation:landscape){
-  /* Hero a la izquierda, 3 accesos rápidos a la derecha (columna). */
+  /* Accesos rápidos ARRIBA en fila horizontal de 3; hero DEBAJO al ancho. */
   .inicio-top{
-    display:grid;
-    grid-template-columns:1fr auto;
+    display:flex;
+    flex-direction:column-reverse;
     gap:var(--gap);
-    align-items:stretch;
     padding:0 var(--pw-x,var(--sp-md));
   }
-  .inicio-hero{ border-radius:var(--rad-lg); min-height:0!important; }
+  .inicio-hero{ border-radius:var(--rad-lg); min-height:0!important; width:100%; }
   .inicio-accesos{
-    display:flex!important;
-    flex-direction:column!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
     gap:var(--gap)!important;
-    min-width:230px;
+    width:100%;
   }
-  .inicio-accesos>button{ flex:1; min-height:0!important; }
+  .inicio-accesos>button{ min-height:88px; flex-direction:column!important;
+    justify-content:center!important; }
 
   /* Altura pareja por fila en Inicio (igual que Próx Fecha). */
   .inicio-blocks{ align-items:stretch; }
