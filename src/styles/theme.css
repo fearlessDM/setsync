@@ -496,20 +496,19 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   }
   .ms-blocks>*{ margin-bottom:0!important; height:100%; box-sizing:border-box; }
 
-  /* Encabezado — grid de 2 columnas: título ocupa ambas arriba; barra y
-     botón comparten la fila de abajo. */
+  /* Encabezado — todo en UNA fila: título a la izquierda, luego la barra
+     de ubicación (ocupa el espacio flexible) y el botón "En vivo" a la
+     derecha, alineados con el título. */
   .ms-head{
     display:grid;
-    grid-template-columns:1fr auto;
-    grid-template-areas:
-      "titulo titulo"
-      "locbar live";
+    grid-template-columns:auto 1fr auto;
+    grid-template-areas:"titulo locbar live";
     column-gap:var(--sp-md);
     row-gap:var(--sp-sm);
-    align-items:stretch;
+    align-items:center;
   }
   .ms-head-title{ grid-area:titulo; }
-  .ms-head .ms-live-btn{ grid-area:live; align-self:stretch; }
+  .ms-head .ms-live-btn{ grid-area:live; align-self:center; }
   .ms-head .ms-locbar{ grid-area:locbar; }
 
   /* Backstage — menú principal en 4 columnas. */
@@ -525,29 +524,13 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   }
   .cal-grid>*{ min-width:0; }
 
-  /* "Fecha actual" en el layout de grid: la etiqueta va vertical (texto de
-     arriba a abajo) pegada al borde izquierdo de la tarjeta del próximo
-     evento, con líneas de acento arriba y abajo. La celda que contiene la
-     línea se vuelve un flex horizontal donde la barra vertical vive a la
-     izquierda de la tarjeta. */
-  .cal-hoy-linea{
-    flex-direction:column!important;
-    position:absolute; left:-22px; top:0; bottom:0;
-    width:18px; margin:0!important; gap:6px!important;
-  }
-  .cal-hoy-linea .cal-hoy-l1,
-  .cal-hoy-linea .cal-hoy-l2{
-    width:1px!important; height:auto!important; flex:1!important;
-  }
-  .cal-hoy-linea .cal-hoy-l1{ background:linear-gradient(180deg,transparent,rgba(200,169,126,.5))!important; }
-  .cal-hoy-linea .cal-hoy-l2{ background:linear-gradient(0deg,transparent,rgba(200,169,126,.5))!important; }
-  .cal-hoy-linea>span{
-    writing-mode:vertical-rl; text-orientation:mixed;
-    transform:rotate(180deg); white-space:nowrap;
-  }
-  /* La celda de la tarjeta próxima necesita posición relativa y espacio a
-     la izquierda para alojar la barra vertical. */
-  .cal-grid>div:has(.cal-hoy-linea){ position:relative; margin-left:26px; }
+  /* "Fecha actual": línea horizontal delgada color gold con el texto
+     centrado entre las líneas. El wrapper del día que contiene la línea
+     usa display:contents para que la línea y la tarjeta entren directo al
+     grid: la línea abarca todo el ancho (separador de fila) y la tarjeta
+     ocupa su columna normal. */
+  .cal-grid>div:has(.cal-hoy-linea){ display:contents; }
+  .cal-hoy-linea{ grid-column:1 / -1; flex-direction:row!important; margin:2px 0 6px!important; }
 
   /* ── INICIO: bloques en grid ancho ──
      Grid de 6 columnas (mínimo común de 2 y 3) para poder mezclar filas
@@ -583,20 +566,22 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
    JS: anchoFijoAbierto) y con altura pareja por fila. Activo en cualquier
    pantalla ancha en landscape ≥768px (tablet horizontal incluida). */
 @media(min-width:1024px), (min-width:768px) and (orientation:landscape){
-  /* Accesos rápidos ARRIBA en fila horizontal, hero DEBAJO. */
+  /* Hero a la izquierda, 3 accesos rápidos a la derecha (columna). */
   .inicio-top{
-    display:flex;
-    flex-direction:column-reverse;
+    display:grid;
+    grid-template-columns:1fr auto;
     gap:var(--gap);
+    align-items:stretch;
     padding:0 var(--pw-x,var(--sp-md));
   }
   .inicio-hero{ border-radius:var(--rad-lg); min-height:0!important; }
   .inicio-accesos{
-    display:grid!important;
-    grid-template-columns:repeat(3,1fr)!important;
+    display:flex!important;
+    flex-direction:column!important;
     gap:var(--gap)!important;
+    min-width:230px;
   }
-  .inicio-accesos>button{ min-height:88px; }
+  .inicio-accesos>button{ flex:1; min-height:0!important; }
 
   /* Altura pareja por fila en Inicio (igual que Próx Fecha). */
   .inicio-blocks{ align-items:stretch; }
