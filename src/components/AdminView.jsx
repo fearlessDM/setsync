@@ -255,7 +255,7 @@ function TarjetaFecha({titulo, subtitulo, lugar, hora, setlist=[], equipos=[], i
                 background:'rgba(var(--gn-rgb),.1)',cursor:'pointer',
                 display:'flex',alignItems:'center',justifyContent:'center',gap:6,
                 fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--gn)'}}>
-              Ver todo el detalle del evento
+              {tx.seeFullEventDetail}
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -324,7 +324,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.monthsFull[mesNav]}</div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',
             color:'var(--tx2)',lineHeight:1.4}}>
-            {sinEventos ? 'Sin eventos este mes — navega por los meses para revisar tu agenda' : tx.navMonthsHint}
+            {sinEventos ? tx.noEventsThisMonth : tx.navMonthsHint}
           </div>
         </div>
         <MiniCalEvento mes={mesNav} eventos={eventos} lang={lang}
@@ -486,7 +486,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
               {tx.noEvents||tx.noEventsThisMonth}
             </div>
             <div style={{fontSize:'var(--fs-md)',color:'var(--ac)',fontWeight:600}}>
-              {tx.noEventsSub||'Crea un evento desde Backstage'}
+              {tx.noEventsSub||tx.createEventFromBackstage}
             </div>
           </div>
         </div>
@@ -684,7 +684,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
       delete o[eqId];
       return {...ev, equiposOverride:o};
     });
-    onToast&&onToast({text:'Equipo restaurado',sub:'Vuelve a su dotación original'});
+    onToast&&onToast({text:tx.teamRestoredToast,sub:tx.teamRestoredSub});
   };
 
   // Resuelve nombre + asignaciones (variación/persona) por ítem del setlist,
@@ -710,7 +710,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             {f.nombre}
           </div>
           <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.4}}>
-            Detalle completo para este evento.
+            {tx.fullEventDetailSub}
           </div>
         </div>
         {/* v93: las fechas legacy/especiales son solo lectura — sin "En vivo",
@@ -808,7 +808,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            {sl.length>0?'Agregar canción / editar setlist':'Crear el setlist de esta fecha'}
+            {sl.length>0?tx.addSongEditSetlist:tx.createSetlistForDate}
           </button>
         )}
       </div>
@@ -871,7 +871,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                     )}
                     {miembros.length===0&&(
                       <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontStyle:'italic',
-                        fontFamily:"var(--font-body)"}}>Sin miembros</div>
+                        fontFamily:"var(--font-body)"}}>{tx.noMembersShort}</div>
                     )}
                   </div>
                   {eq.editadoParaEvento&&(
@@ -879,7 +879,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                       <span style={{fontSize:'8px',fontWeight:900,color:'var(--ac)',
                         textTransform:'uppercase',letterSpacing:'.5px',padding:'2px 7px',
                         borderRadius:100,background:'rgba(200,169,126,.12)',
-                        fontFamily:"var(--font-body)"}}>Ajustado para esta fecha</span>
+                        fontFamily:"var(--font-body)"}}>{tx.adjustedForDate}</span>
                     </div>
                   )}
                 </div>
@@ -909,7 +909,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                   {/* Lápiz — vive SOLO dentro del panel. Alterna edición. */}
                   {editable&&(
                     <button onClick={()=>{setEditandoEq(v=>!v);setAgregarEnEq(null);}}
-                      title={enEdicion?'Salir de edición':'Editar para esta fecha'}
+                      title={enEdicion?tx.exitEditing:tx.editForDate}
                       style={{display:'flex',alignItems:'center',gap:5,padding:'5px 10px',borderRadius:100,
                         background:enEdicion?eq.color+'22':'var(--s3)',
                         color:enEdicion?eq.color:'var(--tx2)',cursor:'pointer',
@@ -918,7 +918,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
                       </svg>
-                      {enEdicion?'Listo':'Editar'}
+                      {enEdicion?tx.doneLbl:tx.edit}
                     </button>
                   )}
                   <button onClick={()=>{setEqAbierto(null);setEditandoEq(false);setAgregarEnEq(null);}}
@@ -937,15 +937,15 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                     </svg>
                     <div style={{fontSize:'var(--fs-xs)',color:'var(--tx2)',fontFamily:"var(--font-body)",
                       fontWeight:300,lineHeight:1.5}}>
-                      Estos cambios se guardan <strong style={{color:'var(--ac)',fontWeight:700}}>solo para esta fecha</strong>.
-                      El equipo original en Gestión de equipos no se modifica.
+                      {tx.scopeNoticePrefix} <strong style={{color:'var(--ac)',fontWeight:700}}>{tx.scopeNoticeStrong}</strong>.
+                      {' '}{tx.scopeNoticeSuffix}
                     </div>
                   </div>
                 )}
 
                 {miembros.length===0&&(
                   <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',
-                    padding:'6px 0 10px'}}>Nadie asignado a este equipo para esta fecha.</div>
+                    padding:'6px 0 10px'}}>{tx.noOneAssignedForDate}</div>
                 )}
 
                 {miembros.map(m=>(
@@ -984,14 +984,14 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                 {enEdicion&&(
                   <div style={{marginTop:10,display:'flex',flexDirection:'column',gap:8}}>
                     {agregarEnEq===eq.id?(
-                      <CustomSelect value="" placeholder="Elige a quién sumar…"
+                      <CustomSelect value="" placeholder={tx.chooseWhoToAdd}
                         onChange={v=>{
                           const p=personas.find(x=>String(x.id)===String(v));
                           if(!p)return;
                           setMiembros([...miembros,{id:p.id,name:p.name,email:p.email||'',
                             role:roles[0],foto:p.foto||null}]);
                           setAgregarEnEq(null);
-                          onToast&&onToast({text:'Sumado a esta fecha',sub:`${p.name} · ${eq.name}`});
+                          onToast&&onToast({text:tx.addedToDateToast,sub:`${p.name} · ${eq.name}`});
                         }}
                         options={disponibles.map(p=>({value:p.id,label:p.name}))}/>
                     ):(
@@ -1005,7 +1005,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3">
                           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                         </svg>
-                        {disponibles.length?'Agregar a esta fecha':'No queda gente por sumar'}
+                        {disponibles.length?tx.addToDate:tx.noOneLeftToAdd}
                       </button>
                     )}
                     {eq.editadoParaEvento&&(
@@ -1013,7 +1013,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                         style={{alignSelf:'flex-start',padding:'6px 12px',borderRadius:100,
                           background:'var(--s3)',color:'var(--tx2)',cursor:'pointer',
                           fontSize:'var(--fs-xs)',fontWeight:700,fontFamily:"var(--font-body)"}}>
-                        Restaurar equipo original
+                        {tx.restoreOriginalTeam}
                       </button>
                     )}
                   </div>

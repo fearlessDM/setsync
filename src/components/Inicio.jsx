@@ -80,9 +80,9 @@ const FEATURES_MKT_ICONS = {
 // Accesos rápidos de Inicio — grilla fija de 3, siempre arriba de
 // Notificaciones y fuera del orden arrastrable de bloques.
 const ACCESOS_RAPIDOS = [
-  {id:'ev',  label:'Crear evento',   icon:'calendar', view:'backstage',  sub:'evento'},
-  {id:'sl',  label:'Crear setlist',  icon:'music',    view:'backstage',  sub:'setlist'},
-  {id:'cn',  label:'Agregar canción',icon:'plus',     view:'repertorio', sub:'crear'},
+  {id:'ev',  labelKey:'quickCreateEvent',   icon:'calendar', view:'backstage',  sub:'evento'},
+  {id:'sl',  labelKey:'quickCreateSetlist', icon:'music',    view:'backstage',  sub:'setlist'},
+  {id:'cn',  labelKey:'quickAddSong',       icon:'plus',     view:'repertorio', sub:'crear'},
 ];
 const ACCESOS_RAPIDOS_ICONS = {
   calendar: <><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></>,
@@ -985,7 +985,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               </svg>
             </div>
             <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-sm)',fontWeight:700,
-              color:'var(--tx)',lineHeight:1.25,textAlign:'center'}}>{a.label}</span>
+              color:'var(--tx)',lineHeight:1.25,textAlign:'center'}}>{tx[a.labelKey]}</span>
           </button>
         ))}
       </div>
