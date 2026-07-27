@@ -16,10 +16,20 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
   const [open,setOpen]=useState(false);
   const [pos,setPos]=useState(null);
   const btnRef=useRef(null);
+  const menuRef=useRef(null);
 
   useEffect(()=>{
     if(!open)return;
-    const close=()=>setOpen(false);
+    // Cierra el menú si la PÁGINA se mueve (así no queda flotando lejos
+    // del botón), pero no si el scroll viene de la propia lista de
+    // opciones — el listener usa capture:true y por eso también recibía
+    // el scroll interno del menú (portal a document.body), cerrando el
+    // selector apenas se intentaba desplazar la lista larga (ej. Día,
+    // 31 opciones).
+    const close=(e)=>{
+      if(menuRef.current&&menuRef.current.contains(e.target))return;
+      setOpen(false);
+    };
     window.addEventListener('scroll',close,true);
     window.addEventListener('resize',close);
     return()=>{window.removeEventListener('scroll',close,true);window.removeEventListener('resize',close);};
@@ -62,7 +72,7 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
       {open&&pos&&createPortal(
         <>
           <div onClick={()=>setOpen(false)} style={{position:'fixed',inset:0,zIndex:998}}/>
-          <div style={{position:'fixed',left:pos.left,width:pos.width,
+          <div ref={menuRef} style={{position:'fixed',left:pos.left,width:pos.width,
             top:pos.top??undefined,bottom:pos.bottom??undefined,
             maxHeight:pos.maxHeight,overflowY:'auto',zIndex:999,
             background:'#17171b',borderRadius:10,
