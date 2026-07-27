@@ -26,7 +26,7 @@ import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
 
 // ── ErrorBoundary ──────────────────────────────────────────────────────
 // Red de seguridad: si algo dentro de SongView (o cualquier hijo envuelto)
@@ -201,6 +201,8 @@ export default function App(){
   );
   const [repertorio,setRepertorio]=useState(()=>appMode==='banda'?SEED_BANDA_REPERTORIO:CANCIONES.map(c=>({...c})));
   const [colecciones,setColecciones]=useState([]);
+  const [lideres,setLideres]=useState([]);
+  const [pastorData,setPastorData]=useState({versiculo:'',texto:'',notas:''});
   const [ensayos,setEnsayos]=useState([]); // sesión local — no persiste a Firestore aún
   const [variacionesDB,setVariacionesDB]=useState(()=>({
     // Demo para probar el flujo de asignación variación→persona en el
@@ -278,7 +280,15 @@ export default function App(){
         setColecciones(data);
       }
     });
-    return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); };
+    const unsubLi = subscribeLideres(accountId, data=>{
+      if(data.length===0 && lideres.length>0){
+        guardarLideres(accountId, lideres);
+      } else {
+        setLideres(data);
+      }
+    });
+    const unsubPa = subscribePastor(accountId, data=>{ setPastorData(data); });
+    return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); unsubLi(); unsubPa(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online, currentUser]);
 
@@ -287,6 +297,8 @@ export default function App(){
   const persistirEquipo = (equipo) => { if(firebaseListo && online) guardarEquipo(accountId, equipo); };
   const persistirEnsayo = (ensayo) => { if(firebaseListo && online) guardarEnsayo(accountId, ensayo); };
   const persistirColeccion = (coleccion) => { if(firebaseListo && online) guardarColeccion(accountId, coleccion); };
+  const persistirLideres = (lista) => { setLideres(lista); if(firebaseListo && online) guardarLideres(accountId, lista); };
+  const persistirPastor = (data) => { setPastorData(data); if(firebaseListo && online) guardarPastor(accountId, data); };
 
   // ── variacionesDB / archivosDB (v44-ampliación) — a diferencia de arriba,
   // estos son mapas que se editan desde muchos lugares distintos (Cancionero,
@@ -912,6 +924,8 @@ Tuya es la gloria, Por siempre amén.
             variacionesDB={variacionesDB}
             currentUser={currentUser} onCerrarSesion={()=>{limpiarAccountIdOverride();cerrarSesion();}}
             persistirEnsayo={persistirEnsayo}
+            lideres={lideres} persistirLideres={persistirLideres}
+            pastorData={pastorData} persistirPastor={persistirPastor}
             navResetKey={backstageKey}
             deepLink={deepLink&&deepLink.view==='backstage'?deepLink:null}
             onNavigate={goToView}/>}

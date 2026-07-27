@@ -334,6 +334,37 @@ export async function guardarImportDB(accountId, db_){
   await setDoc(doc(db, 'accounts', accountId, 'data', 'importDB'), {db: db_});
 }
 
+// ── Líderes delegados (Backstage → Delegar permisos) — antes vivían solo
+// en state local de BackstageView.jsx (lideresActuales, sembrado con datos
+// de ejemplo hardcodeados) y se perdían al recargar. Un solo documento con
+// la lista completa, mismo patrón que variacionesDB/contentDB.
+export function subscribeLideres(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'lideres');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? (snap.data().lista||[]) : []);
+  });
+}
+export async function guardarLideres(accountId, lista){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'lideres'), {lista});
+}
+
+// ── Palabra del Pastor — versículo/notas/mensaje de la semana en curso.
+// Antes el botón "Guardar" solo mostraba un toast; el texto nunca se
+// persistía en ningún lado. Documento único, mismo patrón.
+export function subscribePastor(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'pastor');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? snap.data() : {versiculo:'',texto:'',notas:''});
+  });
+}
+export async function guardarPastor(accountId, data){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'pastor'), data);
+}
+
 // ── Cuenta Equipo (v90) — un admin paga y sus miembros, CADA UNO con su
 // propia cuenta/login independiente, quedan en Premium completo. Ojo:
 // esto NO es lo mismo que `equipos` más arriba (roster de integrantes

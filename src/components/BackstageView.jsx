@@ -33,7 +33,7 @@ const FAQS_PLANES = [
   {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
 ];
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{}}){
   const tx=getT(lang);
   const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
@@ -170,13 +170,31 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [pastorVersiculo,setPastorVersiculo]=useState('');
   const [pastorTexto,setPastorTexto]=useState('');
   const [pastorNotas,setPastorNotas]=useState('');
+  // Antes esto nunca se guardaba en ningún lado (ni local ni Firestore) —
+  // el botón "Guardar" solo mostraba un toast falso. Ahora se hidrata una
+  // sola vez desde Firestore (pastorData) apenas llega, sin pisar lo que
+  // el usuario esté tipeando si la suscripción refresca después.
+  const pastorCargadoRef=useRef(false);
+  useEffect(()=>{
+    if(pastorCargadoRef.current) return;
+    if(pastorData&&(pastorData.versiculo||pastorData.texto||pastorData.notas)){
+      setPastorVersiculo(pastorData.versiculo||'');
+      setPastorTexto(pastorData.texto||'');
+      setPastorNotas(pastorData.notas||'');
+    }
+    pastorCargadoRef.current=true;
+  },[pastorData]);
   const [selectedPermisos,setSelectedPermisos]=useState([]);
   const [orgPais,setOrgPais]=useState('Chile');
   const [selectedIntegrante,setSelectedIntegrante]=useState('');
-  const [lideresActuales,setLideresActuales]=useState([
-    {name:'Cony Saavedra',av:'CS',rol:'Líder Banda',permisos:['editar setlist','convocar equipo']},
-    {name:'Mauro Pizarro',av:'MP',rol:'Líder Proyecciones',permisos:['gestionar equipo']},
-  ]);
+  // Líderes delegados — vienen de Firestore (prop `lideres`), ya no se
+  // siembran acá con datos de ejemplo. `setLideresActuales` queda como un
+  // pequeño helper que actualiza local + persiste en el mismo paso.
+  const lideresActuales=lideres;
+  const setLideresActuales=updater=>{
+    const next=typeof updater==='function'?updater(lideresActuales):updater;
+    persistirLideres(next);
+  };
   const personas=equipos.flatMap(eq=>(eq.miembros||[]));
   // Paleta de acento (misma familia que usa el resto de la app: mint/gold/
   // rojo) para dar variedad de color a avatares sin usar gradientes —
@@ -533,11 +551,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         fecha:new Date().toLocaleDateString('es-CL'),
       };
       setSlGuardados(prev=>[...prev,nuevo]);
-      // Si hay evento asignado, actualizar eventos
+      // Si hay evento asignado, persistir el setlist en Firestore de una vez
+      // (antes solo actualizaba el state local y se perdía al recargar o no
+      // se veía desde otro dispositivo del equipo). guardarSetlistEnEvento ya
+      // muestra su propio toast de confirmación, así que solo avisamos acá
+      // cuando queda como borrador sin evento.
       if(slEventoId){
-        setEventos(prev=>prev.map(ev=>ev.id===parseInt(slEventoId)?{...ev,setlist:slCanciones}:ev));
+        guardarSetlistEnEvento(parseInt(slEventoId), slCanciones);
+      } else {
+        onToast({text:tx.setlistSavedToast,sub:`${slCanciones.length} canciones`});
       }
-      onToast({text:tx.setlistSavedToast,sub:`${slCanciones.length} canciones${slEventoId?' · Asignado al evento':''}`});
       setSlCanciones([]);setSlNombre('');setSlEventoId('');setSlSearch('');
       setBsView(null);
     };
@@ -1304,7 +1327,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div style={{display:'flex',gap:8,marginTop:4}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
-        <button className="btn btn-p" style={{flex:2}} onClick={()=>{onToast({text:tx.savedToast,sub:tx.pastorWordUpdatedToast});setBsView(null);}}>
+        <button className="btn btn-p" style={{flex:2}} onClick={()=>{
+          persistirPastor({versiculo:pastorVersiculo,texto:pastorTexto,notas:pastorNotas});
+          onToast({text:tx.savedToast,sub:tx.pastorWordUpdatedToast});setBsView(null);}}>
           Guardar
         </button>
       </div>
@@ -1896,13 +1921,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           }}>
           <div>
             <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',fontFamily:"var(--font-body)"}}>
-              Daniel Miranda
+              {currentUser?.displayName||currentUser?.email||tx.noNameLbl}
             </div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",marginTop:2}}>
-              dmiranda@fearless.cl · Super Admin
+              {currentUser?.email?`${currentUser.email} · `:''}{isAdmin?tx.superAdminLbl:tx.leaderLbl}
             </div>
           </div>
-          <button onClick={()=>onToast({text:tx.closingSessionLbl,sub:tx.seeYouSoonLbl})}
+          <button onClick={()=>{onToast({text:tx.closingSessionLbl,sub:tx.seeYouSoonLbl});onCerrarSesion();}}
             style={{padding:'6px 12px',borderRadius:8,background:'rgba(var(--rd-rgb),.06)',color:'var(--rd)',cursor:'pointer',
               fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)",
               display:'flex',alignItems:'center',gap:5}}>
@@ -1925,7 +1950,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             <div style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--ac)',fontFamily:"var(--font-body)",
               textTransform:'capitalize'}}>{viaEquipo?'Premium':planId}</div>
           </div>
-          <button onClick={()=>{}}
+          <button onClick={()=>setBsView('planes')}
             style={{padding:'6px 12px',borderRadius:8,background:'rgba(var(--gn-rgb),.07)',color:'var(--gn)',cursor:'pointer',
               fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>
             Mejorar plan
