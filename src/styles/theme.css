@@ -421,6 +421,23 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .sc-n{font-size:40px;}
   .title{font-size:34px;}
   .sg{grid-template-columns:repeat(4,1fr);}
+
+  /* ── Backstage: formularios en grid 2x2 (Crear evento/setlist/ensayo) ──
+     Bloques cortos (nombre, fecha, lugar/hora, equipos...) se acomodan
+     de a 2 por fila; los bloques largos (canciones, itinerario) llevan
+     .card-full y ocupan el ancho completo. grid-auto-flow:dense deja que
+     los bloques cortos que vienen después rellenen el hueco que deja un
+     .card-full a su lado, sin tener que reordenar el JSX ni afectar el
+     orden de apilado en mobile (que sigue siendo flujo normal). */
+  .bs-form-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:var(--gap);align-items:start;grid-auto-flow:dense;
+  }
+  .bs-form-grid>.card{margin-bottom:0!important;}
+  .bs-form-grid>.card-full{grid-column:1/-1;}
+
+  /* ── Backstage: selector de canciones a 6 columnas en desktop ── */
+  .sg-6{grid-template-columns:repeat(6,1fr);}
 }
 
 /* ── DESKTOP GRANDE (>=1440px) ── */

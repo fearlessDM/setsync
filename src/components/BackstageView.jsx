@@ -307,6 +307,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.createDateSub}</div>
+      <div className="bs-form-grid">
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
@@ -345,7 +346,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             value={evHora} onChange={e=>setEvHora(e.target.value)}/>
         </div>
       </div>
-      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
+      <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:2}}>{tx.selectSongsLbl}</div>
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,marginBottom:10}}>
           También puedes asignar diferentes variaciones de la canción a cada persona
@@ -414,7 +415,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         )}
         <input className="inp" placeholder={tx.searchSongPlaceholder} value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
-        <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
+        <div className="sg sg-6" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
           {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.some(x=>x.cancion===s.n)).map(s=>(
             <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,{cancion:s.n,asignaciones:[{id:`ea${Date.now()}`,variacionId:'original',personaId:null}]}])}>
               <span className="scard-n">{s.n}</span>
@@ -461,7 +462,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </div>
         </div>
       </div>
-      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
+      <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.itineraryLbl}</div>
         <ItinerarioEditor items={evItinerario} onChange={setEvItinerario} lang={lang}/>
       </div>
@@ -501,7 +502,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           </label>
         )}
       </div>
-
+      </div>
 
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
