@@ -10,7 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // equipos ya no se importa directo — llega por props (equipos/setEquipos)
 // para poder sincronizar con Firestore.
 import { initials } from '../utils/music';
-import { CustomSelect } from './common';
+import { CustomSelect, EquipoCard, EquipoDetallePanel } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
@@ -135,7 +135,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [evSearch,setEvSearch]=useState('');
   const [evEquipos,setEvEquipos]=useState(null); // null=todavía no inicializado; se llena con todos los equipos al entrar
   const [evItinerario,setEvItinerario]=useState(getItinerarioDefault(lang));
-  const [evNuevoEquipo,setEvNuevoEquipo]=useState('');
+  const [evActiveEq,setEvActiveEq]=useState(null); // equipo con panel de edición abierto en Crear evento
   // Por defecto, todos los equipos están convocados — el admin puede
   // destildar los que no correspondan. Se inicializa una sola vez (o
   // cuando aparece un equipo nuevo que evEquipos todavía no conoce).
@@ -322,7 +322,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.dateFieldLbl}</div>
-        <div style={{display:'flex',gap:8}}>
+        <div style={{display:'flex',gap:8,marginBottom:16}}>
           <CustomSelect style={{flex:1}} placeholder={tx.dayLbl}
             value={Number(evFecha.split('-')[2])||''}
             onChange={d=>setEvFecha(prev=>{const parts=prev.split('-');parts[2]=String(d).padStart(2,'0');return parts.join('-');})}
@@ -336,8 +336,6 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             onChange={y=>setEvFecha(prev=>{const parts=prev.split('-');parts[0]=String(y);return parts.join('-');})}
             options={['2026','2027','2028'].map(y=>({value:y,label:y}))}/>
         </div>
-      </div>
-      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.placeAndTimeLbl}</div>
         <div style={{display:'flex',gap:8}}>
           <input className="inp" placeholder="Lugar (ej: Iglesia Central)" style={{flex:2}}
@@ -426,40 +424,29 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.teamsCalledLbl}</div>
-        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:evActiveEq?10:0}}>
           {equipos.map(eq=>{
             const marcado=(evEquipos||[]).includes(eq.id);
             return(
-            <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,background:'var(--s1)',cursor:'pointer',transition:'all .15s',opacity:marcado?1:.5}}>
-              <input type="checkbox" checked={marcado}
-                onChange={()=>setEvEquipos(prev=>marcado?(prev||[]).filter(id=>id!==eq.id):[...(prev||[]),eq.id])}
-                style={{accentColor:eq.color,width:13,height:13}}/>
-              <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
-              <span style={{fontSize:'var(--fs-base)',fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
-              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{(eq.miembros||[]).length}p</span>
-            </label>
+              <EquipoCard key={eq.id} eq={eq} tx={tx}
+                active={evActiveEq===eq.id}
+                convocado={marcado}
+                onToggleConvocado={()=>setEvEquipos(prev=>marcado?(prev||[]).filter(id=>id!==eq.id):[...(prev||[]),eq.id])}
+                onClick={()=>setEvActiveEq(evActiveEq===eq.id?null:eq.id)}/>
             );
           })}
         </div>
-        <div style={{borderTop:'1px solid var(--bd)',paddingTop:10}}>
-          <div style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)',marginBottom:7}}>¿Necesitas un equipo adicional?</div>
-          <div style={{display:'flex',gap:8}}>
-            <input className="inp" placeholder={tx.customTeamNamePlaceholder} style={{flex:1,fontSize:'var(--fs-md)'}}
-              value={evNuevoEquipo} onChange={e=>setEvNuevoEquipo(e.target.value)}/>
-            <button onClick={()=>{
-              const v=evNuevoEquipo.trim();
-              if(!v)return;
-              const nuevoEquipo={id:Date.now(),name:v,color:'var(--gn)',roles:[],miembros:[]};
-              setEquipos(prev=>[...prev,nuevoEquipo]);
-              persistirEquipo(nuevoEquipo);
-              setEvEquipos(prev=>[...(prev||[]),nuevoEquipo.id]);
-              onToast({text:tx.teamAddedToast,sub:v});
-              setEvNuevoEquipo('');
-            }}
-              style={{padding:'8px 14px',borderRadius:9,background:'rgba(200,169,126,.08)',color:'var(--ac)',fontWeight:700,fontSize:'var(--fs-md)',cursor:'pointer',fontFamily:"var(--font-body)",flexShrink:0}}>
-              + Agregar
-            </button>
-          </div>
+        {evActiveEq&&(()=>{
+          const eq=equipos.find(e=>e.id===evActiveEq);
+          if(!eq)return null;
+          return(
+            <EquipoDetallePanel eq={eq} personas={personas} setEquipos={setEquipos}
+              persistirEquipo={persistirEquipo} onToast={onToast} tx={tx}
+              onClose={()=>setEvActiveEq(null)}/>
+          );
+        })()}
+        <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:evActiveEq?0:10}}>
+          Puedes crear un nuevo equipo en Backstage / Gestión de equipos.
         </div>
       </div>
       <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
@@ -849,34 +836,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
           {equipos.map(eq=>(
-            <div key={eq.id}
-              onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}
-              style={{
-                borderRadius:14,background:'var(--s1)',overflow:'hidden',cursor:'pointer',
-                outline:activeEq===eq.id?`2px solid ${eq.color}60`:'none',
-              }}>
-              {/* Card header */}
-              <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
-                <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,boxShadow:`0 0 8px ${eq.color}80`}}/>
-                <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
-                <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{(eq.miembros||[]).length}</span>
-              </div>
-              {/* Miembros en pills */}
-              <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
-                {(eq.miembros||[]).slice(0,4).map(m=>(
-                  <div key={m.id} style={{fontSize:'var(--fs-2xs)',fontWeight:700,padding:'2px 7px',borderRadius:100,
-                    background:eq.color+'18',color:eq.color,fontFamily:"var(--font-body)",whiteSpace:'nowrap'}}>
-                    {m.name.split(' ')[0]}
-                  </div>
-                ))}
-                {(eq.miembros||[]).length>4&&(
-                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',padding:'2px 6px',fontFamily:"var(--font-body)"}}>+{(eq.miembros||[]).length-4}</div>
-                )}
-                {(eq.miembros||[]).length===0&&(
-                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontStyle:'italic',fontFamily:"var(--font-body)"}}>{tx.noMembersLbl}</div>
-                )}
-              </div>
-            </div>
+            <EquipoCard key={eq.id} eq={eq} tx={tx}
+              active={activeEq===eq.id}
+              onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}/>
           ))}
         </div>
 
@@ -885,95 +847,9 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           const eq=equipos.find(e=>e.id===activeEq);
           if(!eq)return null;
           return(
-            <div style={{borderRadius:14,background:'var(--s1)',padding:14,marginBottom:14}}>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-                <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`}}/>
-                <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flex:1}}>{eq.name}</span>
-                <button onClick={e=>{e.stopPropagation();setActiveEq(null);}} style={{background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
-              </div>
-              {/* Miembros del equipo */}
-              {(eq.miembros||[]).map(m=>(
-                <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--s1)'}}>
-                  {m.foto&&<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
-                  <span style={{flex:1,fontSize:'var(--fs-md)',fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
-                  <CustomSelect value={m.role} onChange={v=>{
-                    const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:v}:mm)};
-                    setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                  }} style={{fontSize:'var(--fs-xs)',color:eq.color,background:eq.color+'12',padding:'3px 10px',borderRadius:100,fontWeight:400,width:'auto'}}
-                    options={(eq.roles||[]).map(r=>({value:r,label:r}))}/>
-                  <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0}}>
-                    <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
-                      const file=e.target.files?.[0];
-                      if(!file)return;
-                      const reader=new FileReader();
-                      reader.onload=ev=>{
-                        const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,foto:ev.target.result}:mm)};
-                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-                      };
-                      reader.readAsDataURL(file);
-                    }}/>
-                    <div style={{width:22,height:22,borderRadius:6,background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--tx3)'}}>
-                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    </div>
-                  </label>
-                  <button onClick={()=>{
-                    const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
-                    setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                    onToast({text:tx.removedToast,sub:m.name});
-                  }} style={{width:22,height:22,borderRadius:6,background:'transparent',color:'var(--rd)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
-              ))}
-              {/* Editar roles del equipo */}
-              <div style={{marginTop:12,padding:'10px 0',borderTop:'1px solid var(--s3)'}}>
-                <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-                  letterSpacing:'1.5px',marginBottom:6,fontFamily:"var(--font-body)"}}>
-                  Roles del equipo
-                </div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:8}}>
-                  {(eq.roles||[tx.generalLbl]).map((r,ri)=>(
-                    <div key={ri} style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px 4px 10px',
-                      borderRadius:100,background:eq.color+'18',}}>
-                      <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:eq.color,
-                        fontFamily:"var(--font-body)"}}>{r}</span>
-                      <button onClick={()=>{
-                        const upd={...eq,roles:(eq.roles||[]).filter((_,j)=>j!==ri)};
-                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                      }} style={{width:14,height:14,borderRadius:'50%',background:'var(--bd)',color:'var(--tx3)',cursor:'pointer',
-                        fontSize:'var(--fs-sm)',display:'flex',alignItems:'center',justifyContent:'center',
-                        lineHeight:1}}>×</button>
-                    </div>
-                  ))}
-                </div>
-                <div style={{display:'flex',gap:6}}>
-                  <input
-                    placeholder={tx.newRolePlaceholder}
-                    onKeyDown={e=>{
-                      if(e.key==='Enter'&&e.target.value.trim()){
-                        const upd={...eq,roles:[...(eq.roles||[]),e.target.value.trim()]};
-                        setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                        e.target.value='';
-                      }
-                    }}
-                    style={{flex:1,padding:'6px 10px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-base)',outline:'none',
-                      fontFamily:"var(--font-body)"}}/>
-                  <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
-                    display:'flex',alignItems:'center'}}>↵ Enter</div>
-                </div>
-              </div>
-              {/* Agregar miembro al equipo */}
-              <CustomSelect style={{marginTop:10,fontSize:'var(--fs-base)'}} value="" placeholder={tx.addMemberToTeamPlaceholder} onChange={v=>{
-                if(!v)return;
-                const persona=personas.find(m=>String(m.id)===String(v));
-                if(!persona)return;
-                const ya=(eq.miembros||[]).find(em=>em.id===persona.id);
-                const upd={...eq,miembros:ya?(eq.miembros||[]):[...(eq.miembros||[]),{id:persona.id,name:persona.name,role:(eq.roles||[])[0]||tx.generalLbl,foto:null}]};
-                setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));persistirEquipo(upd);
-                onToast({text:tx.addedToToast(eq.name),sub:persona.name});
-              }}
-                options={personas.filter(m=>!(eq.miembros||[]).find(em=>em.id===m.id)).map(m=>({value:m.id,label:m.name}))}/>
-            </div>
+            <EquipoDetallePanel eq={eq} personas={personas} setEquipos={setEquipos}
+              persistirEquipo={persistirEquipo} onToast={onToast} tx={tx}
+              onClose={()=>setActiveEq(null)}/>
           );
         })()}
 
@@ -1348,7 +1224,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         desc:tx.premiumPersonalDesc, features:tx.premiumPersonalFeatures},
     ];
     const BloquePlanes=({planes,activo,onElegir})=>(
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      <div className="planes-grid">
         {planes.map(p=>(
           <div key={p.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,
             background:activo===p.id?`${p.color}0c`:'var(--s1)'}}>
@@ -1494,7 +1370,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
 
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
-          Cuenta <span style={{color:'var(--gn)'}}>Equipo</span>
+          Cuenta <span style={{color:'var(--ac)'}}>Equipo</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:18}}>
           {tx.teamAccountDesc}
@@ -1513,13 +1389,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
           // Soy admin de un equipo real (Firestore) — gestión completa.
           <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,background:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--gn)',fontWeight:400}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--ac)',fontWeight:400}}>
                 {TRAMOS_EQUIPO.find(t=>t.id===orgQueAdministro.tramoId)?.label||orgQueAdministro.tramoId}
               </div>
               <span style={{fontSize:'var(--fs-2xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',
                 padding:'3px 9px',borderRadius:100,
-                color:orgQueAdministro.estado==='activa'?'var(--gn)':orgQueAdministro.estado==='gracia'?'#f5a623':'#e5484d',
-                background:orgQueAdministro.estado==='activa'?'rgba(var(--gn-rgb),.12)':orgQueAdministro.estado==='gracia'?'#f5a62320':'#e5484d20'}}>
+                color:orgQueAdministro.estado==='activa'?'var(--ac)':orgQueAdministro.estado==='gracia'?'#f5a623':'#e5484d',
+                background:orgQueAdministro.estado==='activa'?'var(--s3)':orgQueAdministro.estado==='gracia'?'#f5a62320':'#e5484d20'}}>
                 {orgQueAdministro.estado==='activa'?'Activa':orgQueAdministro.estado==='gracia'?'En gracia':'Vencida'}
               </span>
             </div>
@@ -1535,7 +1411,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
               {miembrosOrgAdmin.map(m=>(
                 <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,background:'var(--s2)'}}>
                   <div style={{flex:1,minWidth:0,fontSize:'var(--fs-base)',color:'var(--tx)',fontFamily:"var(--font-body)",overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email}</div>
-                  <span style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:m.estado==='activo'?'var(--gn)':'var(--tx3)',
+                  <span style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:m.estado==='activo'?'var(--ac)':'var(--tx3)',
                     textTransform:'uppercase',letterSpacing:'.5px',flexShrink:0}}>{m.estado==='activo'?'Activo':'Pendiente'}</span>
                   {m.uid!==orgQueAdministro.adminUid&&(
                     <button onClick={()=>quitarMiembroOrg(m.id)}
@@ -1555,7 +1431,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
                   setEmailNuevoMiembro('');
                   onToast({text:'Miembro agregado',sub:email});
                 }}
-                style={{padding:'8px 14px',borderRadius:8,background:'var(--gn)',color:'#04120f',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
+                style={{padding:'8px 14px',borderRadius:8,background:'var(--ac)',color:'var(--btn-c)',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
                 Agregar
               </button>
             </div>

@@ -352,7 +352,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 .sv-content{overscroll-behavior:contain;}
 
 /* ── CANCIONERO — Song chips ── */
-.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap);margin-bottom:var(--sp-xs);}
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:calc(var(--gap) - 3px);margin-bottom:var(--sp-xs);}
 .scard{
   display:flex;flex-direction:column;gap:5px;
   padding:var(--sp-sm) var(--sp-sm);
@@ -438,6 +438,11 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 
   /* ── Backstage: selector de canciones a 6 columnas en desktop ── */
   .sg-6{grid-template-columns:repeat(6,1fr);}
+
+  .planes-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:var(--gap);align-items:start;
+  }
 }
 
 /* ── DESKTOP GRANDE (>=1440px) ── */
@@ -508,6 +513,21 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 .ms-head-title{ grid-area:titulo; min-width:0; }
 .ms-live-btn{ grid-area:live; align-self:start; }
 .ms-locbar{ grid-area:locbar; }
+
+/* ── INICIO: espaciado base entre bloques (mobile) ──
+   Sin esto, .inicio-blocks/.inicio-row no tenían ninguna regla por
+   debajo de 768px (quedaban en display:block por defecto), así que los
+   bloques se apilaban sin gap — se veían pegados. Esta regla base corre
+   en TODOS los anchos; el @media(min-width:768px) de más abajo la pisa
+   con su propio display:grid por orden de cascada, sin afectar mobile. */
+.inicio-blocks{ display:flex; flex-direction:column; gap:var(--gap); }
+.inicio-row{ display:flex; flex-direction:column; gap:var(--gap); }
+
+/* ── Backstage: Planes y precios — columna única en mobile, auto-fit de
+   2 o 3 columnas en desktop según el ancho disponible (sin breakpoints
+   fijos por cantidad: minmax hace que 3 planes cortos quepan en 3 col y
+   contenido más largo baje solo a 2). ── */
+.planes-grid{ display:flex; flex-direction:column; gap:10px; }
 
 /* ── Layout ancho (tablet horizontal / desktop): grids multi-columna ──
    Desde 768px los bloques dejan de apilarse en una sola columna.
