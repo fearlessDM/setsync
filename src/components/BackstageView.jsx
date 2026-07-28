@@ -49,7 +49,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       if(!n) return;
       conteo[n]=(conteo[n]||0)+1;
     });
-    return Object.entries(conteo).filter(([,c])=>c>=2)
+    return Object.entries(conteo).filter(([,c])=>c>3)
       .sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n])=>n);
   })();
   const [bsView,setBsView]=useState(null);
@@ -248,21 +248,23 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     evento:{
       titulo:'Cómo crear un evento',
       pasos:[
-        'Elige el tipo de evento (Domingo, Ensayo, Especial) o escribe un nombre propio.',
+        'Escribe el nombre del evento. Si repites el mismo título más de 3 veces, aparece como chip sugerido bajo "Recurrentes" para no tener que volver a tipearlo.',
         'Selecciona la fecha, lugar y hora.',
         'Agrega las canciones al setlist — puedes asignar variaciones o instrumentos distintos a cada persona.',
         'Marca qué equipos quedan convocados para esta fecha.',
-        'Arma el itinerario con los horarios del día si lo necesitas.',
-        'Agrega notas para el equipo y adjunta un archivo si hace falta (PDF, Word o audio).',
-        'Toca "Crear evento" para publicarlo — tu equipo lo verá automáticamente en Próxima Fecha.',
+        'Agrega notas para el equipo.',
+        'Arma el itinerario con los horarios del día — parte con 6 filas vacías, toca "Editar" para completarlas y "+" para agregar más si hace falta.',
+        'Adjunta un archivo si lo necesitas (PDF, Word o audio) — queda disponible para abrirlo con un clic desde Próxima Fecha.',
+        'Toca "Crear evento" para publicarlo — tu equipo lo ve automáticamente en Próxima Fecha y recibe una notificación simple al instante.',
       ],
     },
     equipos:{
       titulo:'Cómo gestionar equipos, roles y personas',
       pasos:[
+        'Los miembros de todos los equipos aparecen siempre como chips arriba de la lista — toca el avatar de cualquiera para subirle una foto, o la × para eliminarlo del equipo.',
         'Para agregar una persona nueva: botón "Agregar miembro" arriba de la lista, completa nombre y correo (opcional).',
-        'Para crear un equipo nuevo: al final de la pantalla, escribe el nombre y los roles separados por coma (ej: Líder, Músico, Técnico).',
-        'Toca cualquier equipo para ver su detalle — ahí puedes agregar/quitar miembros, cambiar su rol, o subir foto de perfil.',
+        'Para crear un equipo nuevo: al final de la pantalla, escribe el nombre y los roles separados por coma.',
+        'Toca cualquier equipo para ver su detalle — ahí puedes agregar/quitar miembros y cambiar su rol.',
         'Los roles de un equipo se editan en su detalle: escribe uno nuevo y presiona Enter, o toca la × para quitar uno existente.',
         'Una persona puede pertenecer a más de un equipo a la vez — se agrega desde el selector "Agregar miembro al equipo" en cada detalle.',
       ],
@@ -348,16 +350,19 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
         {nombresRecurrentes.length>0&&(
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
-            {nombresRecurrentes.map(op=>(
-              <button key={op} onClick={()=>setEvNombre(op)}
-                style={{padding:'5px 10px',borderRadius:100,background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-sm)',fontWeight:400,cursor:'pointer',fontFamily:"var(--font-body)",transition:'all .15s'}}>
-                {op}
-              </button>
-            ))}
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>Recurrentes</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+              {nombresRecurrentes.map(op=>(
+                <button key={op} onClick={()=>setEvNombre(op)}
+                  style={{padding:'5px 10px',borderRadius:100,background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-sm)',fontWeight:400,cursor:'pointer',fontFamily:"var(--font-body)",transition:'all .15s'}}>
+                  {op}
+                </button>
+              ))}
+            </div>
           </div>
         )}
-        <input className="inp" placeholder={tx.orCustomNamePlaceholder} value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
+        <input className="inp" value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Detalles</div>
@@ -1381,6 +1386,51 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         ))}
       </div>
     );
+    const coloresEquipo={'eq-1-10':'var(--gn)','eq-11-25':'var(--ac)','eq-26-35':'#a78bfa','eq-36+':'var(--tx3)'};
+    const numPersonasEquipo=personas.length||1;
+    const PLANES_EQUIPO_INFO=TRAMOS_EQUIPO.map(t=>({
+      id:t.id,
+      name:t.label,
+      mensual:precioTramoEquipo(t.id,numPersonasEquipo),
+      esDesde:t.id==='eq-36+',
+      color:coloresEquipo[t.id],
+      sub:tx.teamSub,
+      desc:tx.teamAccountDesc,
+      features:t.marcaBlanca?[...tx.teamFeaturesBase,tx.whiteLabelIncluded]:tx.teamFeaturesBase,
+    }));
+    const BloquePlanesEquipoInfo=({planes})=>(
+      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        {planes.map(p=>(
+          <div key={p.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,background:'var(--s1)'}}>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:p.color,fontWeight:400}}>{p.name}</div>
+              <div style={{textAlign:'right'}}>
+                <span style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',color:'var(--tx)'}}>
+                  {p.esDesde?tx.fromLbl+' ':''}${p.mensual}
+                </span>
+                <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}> {tx.perMonthLbl}</span>
+              </div>
+            </div>
+            <div style={{fontSize:'var(--fs-xs)',color:p.color,fontFamily:"var(--font-body)",fontWeight:700,opacity:.75,textTransform:'uppercase',letterSpacing:'1px',marginBottom:8}}>{p.sub}</div>
+            <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',lineHeight:1.6,marginBottom:10,fontFamily:"var(--font-body)",fontWeight:300}}>{p.desc}</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:10}}>
+              {p.features.map(f=>(
+                <div key={f} style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                  <span style={{color:p.color,fontSize:'var(--fs-sm)',marginTop:1,flexShrink:0}}>✓</span>
+                  <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5}}>{f}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>setBsView('cuentaequipo')}
+              style={{width:'100%',padding:'8px 10px',borderRadius:8,cursor:'pointer',
+                background:`${p.color}20`,color:p.color,
+                fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+              {viaEquipo||orgQueAdministro?tx.currentPlanBtn:tx.activateBtn}
+            </button>
+          </div>
+        ))}
+      </div>
+    );
     return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
 
@@ -1429,11 +1479,24 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
           {tx.personalAccountDesc}
         </div>
-        <div>
+        <div style={{marginBottom:28}}>
           <BloquePlanes planes={PLANES_PERSONAL}
             activo={viaEquipo?null:planId}
             onElegir={p=>{setPlanId(p.id);onToast({text:tx.planUpdatedToast,sub:p.name});}}/>
         </div>
+
+        {/* Planes Teams — antes solo vivían en Cuenta Equipo (pantalla de
+            gestión/activación); acá se muestran con el mismo nivel de
+            detalle completo (precio real por tramo, descripción, features)
+            para que Planes y precios sea la fuente completa de información
+            de TODOS los planes, personal y equipo — el botón lleva a
+            Cuenta Equipo para activar o gestionar, sin duplicar la lógica
+            de creación de org acá. */}
+        <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:4}}>{tx.teamAccountLbl}</div>
+        <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.5,marginBottom:12}}>
+          {tx.teamAccountDesc}
+        </div>
+        <BloquePlanesEquipoInfo planes={PLANES_EQUIPO_INFO}/>
       </div>
     );
   }
