@@ -134,7 +134,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
   const [faqPlanesOpen,setFaqPlanesOpen]=useState(false);
   const [faqPlanesAbiertas,setFaqPlanesAbiertas]=useState({});
   const [activeEq,setActiveEq]=useState(null);
-  const [verMiembros,setVerMiembros]=useState(false);
+  const [verMiembros,setVerMiembros]=useState(false); // eslint-disable-line no-unused-vars -- ya no se usa (chips siempre visibles), se deja por si se retoma un modo compacto más adelante
   const [nuevoMiembro,setNuevoMiembro]=useState(null); // {nombre,email,equipoId} — reemplaza prompt()
   const [nuevaBanda,setNuevaBanda]=useState('');
   const [nuevosRoles,setNuevosRoles]=useState('');
@@ -451,7 +451,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
         )}
         <input className="inp" placeholder={tx.searchSongPlaceholder} value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
-        <div className="sg sg-6" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:3}}>
+        <div className="sg sg-6" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:6}}>
           {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.some(x=>x.cancion===s.n)).map(s=>(
             <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,{cancion:s.n,asignaciones:[{id:`ea${Date.now()}`,variacionId:'original',personaId:null}]}])}>
               <span className="scard-n">{s.n}</span>
@@ -491,7 +491,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNotesLbl}</div>
         <textarea className="inp" value={evNotas} onChange={e=>setEvNotas(e.target.value)}
           style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}
-          placeholder={"Ej: Llegar 30 min antes del ensayo. Revisar las canciones con tiempo.\nContactar a Cony para confirmar el equipo de proyecciones.\nFecha límite para cambios en el setlist: jueves en la noche."}/>
+          placeholder="..."/>
       </div>
       <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.itineraryLbl}</div>
@@ -752,7 +752,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             </div>
           )}
           <input className="inp" placeholder={tx.searchSongPlaceholder} value={slSearch} onChange={e=>setSlSearch(e.target.value)} style={{marginBottom:10}}/>
-          <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:3}}>
+          <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:6}}>
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).map(s=>(
               <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,{cancion:s.n,asignaciones:[{id:`a${Date.now()}`,variacionId:'original',personaId:null}]}]);}}>
                 <span className="scard-n">{s.n}</span>
@@ -868,48 +868,54 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
         )}
 
-        {/* Chips de miembros — reemplaza la lista desplegable vertical.
-            Cada chip trae su propio botón de eliminar; como `personas` es
-            un array aplanado (sin equipoId propio), se busca el equipo
-            dueño recién al momento de borrar. */}
-        <button onClick={()=>setVerMiembros(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:8,
-          padding:'10px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',
-          cursor:'pointer',marginBottom:verMiembros?8:20,fontFamily:"var(--font-body)"}}>
-          <span style={{fontSize:'10px',fontWeight:400,color:'var(--tx)',flex:1,textAlign:'left'}}>
-            Ver todos los miembros ({personas.length})
-          </span>
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
-            style={{transform:verMiembros?'rotate(180deg)':'none',transition:'transform .15s'}}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        {verMiembros && (
-          <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
-            {personas.map(m=>(
-              <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 8px 6px 10px',
-                borderRadius:100,background:'var(--s1)'}}>
+        {/* Chips de miembros — siempre visibles, sin desplegable. Cada
+            chip trae su propio avatar clickeable (sube foto directo desde
+            acá, ya no hace falta abrir el equipo) y botón de eliminar.
+            Como `personas` es un array aplanado (sin equipoId propio), se
+            busca el equipo dueño recién al momento de borrar o subir foto. */}
+        <div style={{fontSize:'10px',fontWeight:400,color:'var(--tx2)',marginBottom:8,fontFamily:"var(--font-body)"}}>
+          Miembros ({personas.length})
+        </div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
+          {personas.map(m=>(
+            <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 8px 6px 6px',
+              borderRadius:100,background:'var(--s1)'}}>
+              <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0,display:'flex'}}>
+                <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
+                  const file=e.target.files?.[0];
+                  if(!file)return;
+                  const eq=equipos.find(ex=>(ex.miembros||[]).some(mm=>mm.id===m.id));
+                  if(!eq)return;
+                  const reader=new FileReader();
+                  reader.onload=ev=>{
+                    const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,foto:ev.target.result}:mm)};
+                    setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
+                    persistirEquipo(upd);
+                  };
+                  reader.readAsDataURL(file);
+                }}/>
                 {m.foto
                   ?<img src={m.foto} alt={m.name} style={{width:20,height:20,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
                   :<div style={{width:20,height:20,borderRadius:'50%',background:`${colorForName(m.name)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'8px',fontWeight:900,color:colorForName(m.name),flexShrink:0,fontFamily:"var(--font-body)"}}>{initials(m.name)}</div>
                 }
-                <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)',whiteSpace:'nowrap'}}>{m.name}</span>
-                <button title={tx.removeMemberBtn||'Eliminar miembro'} onClick={()=>{
-                  const eq=equipos.find(e=>(e.miembros||[]).some(mm=>mm.id===m.id));
-                  if(!eq)return;
-                  const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
-                  setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-                  persistirEquipo(upd);
-                  onToast({text:tx.removedToast,sub:m.name});
-                }} style={{width:16,height:16,borderRadius:'50%',background:'var(--bd)',color:'var(--tx3)',
-                  cursor:'pointer',fontSize:'var(--fs-sm)',lineHeight:1,display:'flex',alignItems:'center',
-                  justifyContent:'center',flexShrink:0}}>×</button>
-              </div>
-            ))}
-            {personas.length===0&&(
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'4px 0'}}>Agrega tu primer miembro →</div>
-            )}
-          </div>
-        )}
+              </label>
+              <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)',whiteSpace:'nowrap'}}>{m.name}</span>
+              <button title={tx.removeMemberBtn||'Eliminar miembro'} onClick={()=>{
+                const eq=equipos.find(e=>(e.miembros||[]).some(mm=>mm.id===m.id));
+                if(!eq)return;
+                const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
+                setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
+                persistirEquipo(upd);
+                onToast({text:tx.removedToast,sub:m.name});
+              }} style={{width:16,height:16,borderRadius:'50%',background:'var(--bd)',color:'var(--tx3)',
+                cursor:'pointer',fontSize:'var(--fs-sm)',lineHeight:1,display:'flex',alignItems:'center',
+                justifyContent:'center',flexShrink:0}}>×</button>
+            </div>
+          ))}
+          {personas.length===0&&(
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'4px 0'}}>Agrega tu primer miembro →</div>
+          )}
+        </div>
 
         {/* ── Equipos en grid 2 columnas ── */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
@@ -1791,13 +1797,15 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           {equipos.map(eq=>{
             const activo=ensEquipos.includes(eq.id);
             return(
-              <button key={eq.id} onClick={()=>setEnsEquipos(v=>activo?v.filter(x=>x!==eq.id):[...v,eq.id])}
-                style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,cursor:'pointer',
+              <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,cursor:'pointer',
                   background:activo?`${eq.color}12`:'var(--s1)'}}>
+                <input type="checkbox" checked={activo}
+                  onChange={()=>setEnsEquipos(v=>activo?v.filter(x=>x!==eq.id):[...v,eq.id])}
+                  style={{accentColor:eq.color,width:13,height:13,flexShrink:0}}/>
                 <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
                 <span style={{fontSize:'var(--fs-base)',fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
                 <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{(eq.miembros||[]).length}p</span>
-              </button>
+              </label>
             );
           })}
         </div>
@@ -1884,7 +1892,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
-      <div className="bs-menu-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap)'}}>
+      <div className="bs-menu-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-bs)'}}>
         {ITEMS.map((it,idx)=>(
           <button key={it.id} onClick={()=>setBsView(it.id)} className="block-entry"
             style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',

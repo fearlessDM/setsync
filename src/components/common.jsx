@@ -183,28 +183,13 @@ export function EquipoDetallePanel({eq,personas,setEquipos,persistirEquipo,onToa
       </div>
       {(eq.miembros||[]).map(m=>(
         <div key={m.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--s1)'}}>
-          {/* Avatar + subir foto fusionados en un solo elemento clickeable,
-              antes del nombre — antes el ícono de subir vivía aparte,
-              después del selector de rol, lo que quedaba lejos de la foto
-              real y confundía el orden visual. */}
-          <label title="Cambiar foto" style={{cursor:'pointer',flexShrink:0}}>
-            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
-              const file=e.target.files?.[0];
-              if(!file)return;
-              const reader=new FileReader();
-              reader.onload=ev=>{
-                const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,foto:ev.target.result}:mm)};
-                setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
-              };
-              reader.readAsDataURL(file);
-            }}/>
-            {m.foto
-              ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover'}}/>
-              :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--tx3)'}}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              </div>
-            }
-          </label>
+          {/* Solo lectura acá — subir/cambiar foto ahora se hace desde el
+              listado de chips en Gestión de equipos (siempre visible),
+              no al abrir el detalle de un equipo. */}
+          {m.foto
+            ?<img src={m.foto} alt={m.name} style={{width:28,height:28,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
+            :<div style={{width:28,height:28,borderRadius:'50%',background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx3)',flexShrink:0,fontFamily:"var(--font-body)"}}>{(m.name||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          }
           <span style={{flex:1,fontSize:'var(--fs-md)',fontWeight:300,color:'var(--tx)'}}>{m.name}</span>
           <CustomSelect value={m.role} onChange={v=>{
             const upd={...eq,miembros:(eq.miembros||[]).map(mm=>mm.id===m.id?{...mm,role:v}:mm)};

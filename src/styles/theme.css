@@ -92,6 +92,11 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
    Crear evento → equipos convocados, Próx Fecha → equipos convocados).
    Mismo criterio de reducción que --gap. */
 --gap-sm:6px;
+/* Gap exclusivo del menú principal de Backstage (bs-menu-grid) — pedido
+   de bajarlo 3px más SOLO en móvil, sin tocar --gap (que comparten
+   Inicio, Próx Fecha, etc. y no debían moverse esta vez). En desktop
+   queda igual a --gap (mismo valor, ver breakpoints más abajo). */
+--gap-bs:13px;
 
 /* ── Padding de página (sobrescritos en breakpoints) ── */
 --pw-x:8px;
@@ -384,7 +389,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
 .sv-content{overscroll-behavior:contain;}
 
 /* ── CANCIONERO — Song chips ── */
-.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:calc(var(--gap) - 3px);margin-bottom:var(--sp-xs);}
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:var(--sp-xs);}
 .scard{
   display:flex;flex-direction:column;gap:5px;
   padding:var(--sp-sm) var(--sp-sm);
@@ -440,6 +445,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     --pw-y:var(--sp-lg);
     --gap:19px;
     --gap-sm:7px;
+    --gap-bs:19px;
   }
   .sb{display:flex;width:220px;}
   .sb.col{width:60px;}
@@ -486,6 +492,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     --pw-x:20px;
     --pw-y:var(--sp-xl);
     --gap:21px;
+    --gap-bs:21px;
   }
   .sb{width:200px;}
   .sb.col{width:60px;}

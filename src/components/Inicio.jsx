@@ -998,7 +998,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       {/* Accesos rápidos — bloque FIJO (fuera del sistema de drag). En PC va
           a la derecha del hero; en móvil, apilado debajo. Deep-link directo
           a la subpágina. */}
-      <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'var(--gap)'}}>
+      <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'var(--gap)',marginBottom:4,marginLeft:3,marginRight:3}}>
         {ACCESOS_RAPIDOS.map((a,idx)=>(
           <button key={a.id} className="press-glow block-entry"
             onClick={()=>onNavigate(a.view,a.sub)}
