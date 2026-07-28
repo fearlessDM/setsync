@@ -443,6 +443,8 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
     gap:var(--gap);align-items:start;
   }
+
+  .msg-grid{ grid-template-columns:repeat(3,1fr); }
 }
 
 /* ── DESKTOP GRANDE (>=1440px) ── */
@@ -574,6 +576,11 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   }
   .cal-grid>*{ min-width:0; }
 
+  /* ── Backstage: Mensajes (antes Notificaciones) — 2 columnas desde
+     tablet, 3 en desktop (ver override más abajo). ── */
+  .msg-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:var(--gap); align-items:start; }
+  .msg-grid>.card{ margin-bottom:0!important; }
+
   /* "Fecha actual": línea horizontal delgada color gold con el texto
      centrado entre las líneas. El wrapper del día que contiene la línea
      usa display:contents para que la línea y la tarjeta entren directo al
@@ -616,10 +623,11 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
    JS: anchoFijoAbierto) y con altura pareja por fila. Activo en cualquier
    pantalla ancha en landscape ≥768px (tablet horizontal incluida). */
 @media(min-width:1024px), (min-width:768px) and (orientation:landscape){
-  /* Accesos rápidos ARRIBA en fila horizontal de 3; hero DEBAJO al ancho. */
+  /* Hero arriba (encabezado); accesos rápidos debajo, en fila horizontal
+     de 3 — orden normal del DOM, sin invertir. */
   .inicio-top{
     display:flex;
-    flex-direction:column-reverse;
+    flex-direction:column;
     gap:var(--gap);
     padding:0 var(--pw-x,var(--sp-md));
   }
@@ -662,6 +670,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   .bs-menu-grid{ grid-template-columns:repeat(2,1fr)!important; }
   .ms-blocks{ grid-template-columns:1fr 1fr; }
   .cal-grid{ grid-template-columns:repeat(2,1fr)!important; }
+  .inicio-accesos{ gap:var(--gap)!important; }
 }
 
 /* ── CALENDARIO: línea "fecha actual" ──

@@ -365,6 +365,21 @@ export async function guardarPastor(accountId, data){
   await setDoc(doc(db, 'accounts', accountId, 'data', 'pastor'), data);
 }
 
+// ── Perfil de organización (Backstage/Personalización → Mi organización) ──
+// Documento único por cuenta: nombre, tipo (banda/iglesia/otro) y
+// ubicación — reemplaza la maqueta sin estado que había antes.
+export function subscribePerfilOrg(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = doc(db, 'accounts', accountId, 'data', 'perfilOrg');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.exists() ? snap.data() : {nombre:'',tipo:'iglesia',ubicacion:''});
+  });
+}
+export async function guardarPerfilOrg(accountId, data){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'accounts', accountId, 'data', 'perfilOrg'), data, {merge:true});
+}
+
 // ── Cuenta Equipo (v90) — un admin paga y sus miembros, CADA UNO con su
 // propia cuenta/login independiente, quedan en Premium completo. Ojo:
 // esto NO es lo mismo que `equipos` más arriba (roster de integrantes

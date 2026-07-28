@@ -12,7 +12,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { initials } from '../utils/music';
 import { CustomSelect, EquipoCard, EquipoDetallePanel } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
-import { getModoTexto, getModoFeatures, getTiposEventoDisponibles } from '../data/modo';
+import { getModoFeatures } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
 
 const FAQS_PLANES = [
@@ -33,11 +33,24 @@ const FAQS_PLANES = [
   {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
 ];
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{}}){
+export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{},orgPerfil={nombre:'',tipo:'iglesia',ubicacion:''},persistirOrgPerfil=()=>{}}){
   const tx=getT(lang);
-  const vx=getModoTexto(mode,lang);
   const feat=getModoFeatures(mode);
-  const tipos=getTiposEventoDisponibles(mode,lang);
+  // Antes esto era una lista fija de tipos de evento. Ahora "aprende" de
+  // los nombres que el usuario ya usó: cuenta repeticiones en `eventos`
+  // (viene de Firestore) y sugiere los que más se repiten — así el chip
+  // aparece solo después de que un título se usa 2+ veces, sin lista
+  // hardcodeada que mantener.
+  const nombresRecurrentes=(()=>{
+    const conteo={};
+    eventos.forEach(ev=>{
+      const n=(ev.nombre||'').trim();
+      if(!n) return;
+      conteo[n]=(conteo[n]||0)+1;
+    });
+    return Object.entries(conteo).filter(([,c])=>c>=2)
+      .sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n])=>n);
+  })();
   const [bsView,setBsView]=useState(null);
   const [helpOpen,setHelpOpen]=useState(false);
   // Volver a Backstage home al re-tocar el botón del nav, aunque ya
@@ -151,6 +164,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [notifTipo,setNotifTipo]=useState('recordatorio');
   const [notifMsg,setNotifMsg]=useState('');
   const [notifCorreo,setNotifCorreo]=useState(false);
+  const [notifEventoId,setNotifEventoId]=useState('');
 
   // ── Crear ensayo ──
   const [ensRef,setEnsRef]=useState('');
@@ -185,7 +199,28 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
     pastorCargadoRef.current=true;
   },[pastorData]);
   const [selectedPermisos,setSelectedPermisos]=useState([]);
-  const [orgPais,setOrgPais]=useState('Chile');
+  // ── Mi organización — antes era una maqueta sin estado (ni el nombre
+  // tenía onChange). Ahora se hidrata una sola vez desde Firestore
+  // (orgPerfil) y se guarda al perder foco / al cambiar el tipo.
+  const [orgNombre,setOrgNombre]=useState('');
+  const [orgTipo,setOrgTipo]=useState('iglesia');
+  const [orgUbicacion,setOrgUbicacion]=useState('');
+  const orgPerfilCargadoRef=useRef(false);
+  useEffect(()=>{
+    if(orgPerfilCargadoRef.current) return;
+    if(orgPerfil&&(orgPerfil.nombre||orgPerfil.tipo||orgPerfil.ubicacion)){
+      setOrgNombre(orgPerfil.nombre||'');
+      setOrgTipo(orgPerfil.tipo||'iglesia');
+      setOrgUbicacion(orgPerfil.ubicacion||'');
+    }
+    orgPerfilCargadoRef.current=true;
+  },[orgPerfil]);
+  // Precompleta "Lugar" con la dirección guardada de la organización al
+  // entrar a Crear evento — solo si el campo está vacío, para no pisar
+  // lo que el usuario ya haya escrito.
+  useEffect(()=>{
+    if(bsView==='evento'&&!evLugar&&orgUbicacion) setEvLugar(orgUbicacion);
+  },[bsView]);
   const [selectedIntegrante,setSelectedIntegrante]=useState('');
   // Líderes delegados — vienen de Firestore (prop `lideres`), ya no se
   // siembran acá con datos de ejemplo. `setLideresActuales` queda como un
@@ -310,14 +345,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div className="bs-form-grid">
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
-          {tipos.map(t=>t.label).map(op=>(
-            <button key={op} onClick={()=>setEvNombre(op)}
-              style={{padding:'5px 10px',borderRadius:100,background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-sm)',fontWeight:400,cursor:'pointer',fontFamily:"var(--font-body)",transition:'all .15s'}}>
-              {op}
-            </button>
-          ))}
-        </div>
+        {nombresRecurrentes.length>0&&(
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
+            {nombresRecurrentes.map(op=>(
+              <button key={op} onClick={()=>setEvNombre(op)}
+                style={{padding:'5px 10px',borderRadius:100,background:evNombre===op?'rgba(200,169,126,.12)':'var(--s2)',color:evNombre===op?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-sm)',fontWeight:400,cursor:'pointer',fontFamily:"var(--font-body)",transition:'all .15s'}}>
+                {op}
+              </button>
+            ))}
+          </div>
+        )}
         <input className="inp" placeholder={tx.orCustomNamePlaceholder} value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
@@ -995,6 +1032,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.notificationsTitleLbl}</div>
       <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
+      <div className="msg-grid">
       <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
@@ -1004,22 +1042,36 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         </div>
       </div>
       <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
-        <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>{tx.alertTypeLbl}</div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+        <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:10}}>{tx.alertTypeLbl}</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
           {[{id:'recordatorio',label:tx.reminderLbl,color:'#c8a97e',icon:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>},
             {id:'cambio',label:tx.setlistChangeLbl,color:'var(--gn)',icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>},
             {id:'urgente',label:tx.urgentLbl,color:'var(--rd)',icon:<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>},
             {id:'general',label:tx.generalLbl,color:'#7dd3c0',icon:<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>}].map(t=>(
-            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'10px',borderRadius:10,cursor:'pointer',textAlign:'left',background:notifTipo===t.id?`${t.color}14`:'var(--s1)',fontFamily:"var(--font-body)"}}>
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={t.color} strokeWidth="1.8" style={{marginBottom:6,display:'block'}}>{t.icon}</svg>
-              <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:notifTipo===t.id?t.color:'var(--tx)'}}>{t.label}</div>
+            <button key={t.id} onClick={()=>setNotifTipo(t.id)} style={{padding:'7px 8px',borderRadius:8,cursor:'pointer',textAlign:'left',background:notifTipo===t.id?`${t.color}14`:'var(--s1)',fontFamily:"var(--font-body)"}}>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke={t.color} strokeWidth="1.8" style={{marginBottom:4,display:'block'}}>{t.icon}</svg>
+              <div style={{fontSize:'var(--fs-sm)',fontWeight:700,color:notifTipo===t.id?t.color:'var(--tx)'}}>{t.label}</div>
             </button>
           ))}
         </div>
       </div>
+      <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
+        <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:10}}>
+          Asignar a evento
+          <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:'var(--fs-subtitle)',marginLeft:6}}>· opcional</span>
+        </div>
+        {eventos.length===0?(
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{tx.noEventsYetLbl}</div>
+        ):(
+          <CustomSelect value={notifEventoId} onChange={setNotifEventoId}
+            placeholder="Sin asignar"
+            options={eventos.map(ev=>({value:ev.id,label:`${ev.nombre}${ev.fecha?' · '+ev.fecha:''}`}))}/>
+        )}
+      </div>
       <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:16}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:10}}>{tx.messageLbl}</div>
         <textarea className="inp" placeholder="Ej: Hola equipo, este domingo llegamos a las 9:00am. ¡Los esperamos!" value={notifMsg} onChange={e=>setNotifMsg(e.target.value)} style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}/>
+      </div>
       </div>
       <button onClick={()=>setNotifCorreo(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,marginBottom:16,cursor:'pointer',background:notifCorreo?'rgba(200,169,126,.08)':'var(--s1)'}}>
         <div style={{width:18,height:18,borderRadius:5,background:notifCorreo?'var(--ac)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1033,7 +1085,13 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <button className="btn btn-p" style={{flex:2}} onClick={()=>{
           if(!notifDest.length){onToast({text:'Elige al menos un destinatario'});return;}
           if(!notifMsg.trim()){onToast({text:'Escribe un mensaje antes de enviar'});return;}
+          // ⚠ NO operativo todavía — no hay colección de mensajes en
+          // Firestore, no hay push real ni envío de correo. Solo confirma
+          // con un toast y limpia el formulario. Pendiente: diseñar
+          // accounts/{accountId}/mensajes (o similar) + integración de
+          // envío real, en una sesión dedicada.
           onToast({text:tx.notifSentToast,sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});
+          setNotifEventoId('');
           setBsView(null);
         }}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -1052,11 +1110,26 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.personalizationSubLbl}</div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.myOrgLbl}</div>
-        <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}} defaultValue="Iglesia"/>
-        <div style={{display:'flex',gap:8,marginBottom:8}}>
-          <input className="inp" placeholder={tx.cityPlaceholder} style={{flex:1}}/>
-          <CustomSelect value={orgPais} onChange={setOrgPais} style={{flex:1}}
-            options={tx.countriesList.map(p=>({value:p,label:p}))}/>
+        <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}}
+          value={orgNombre} onChange={e=>setOrgNombre(e.target.value)}
+          onBlur={()=>persistirOrgPerfil({nombre:orgNombre})}/>
+        <div style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',marginBottom:6}}>Tipo de organización</div>
+        <div style={{display:'flex',gap:6,marginBottom:8}}>
+          {[{id:'banda',label:'Banda'},{id:'iglesia',label:'Iglesia'},{id:'otro',label:'Otro'}].map(op=>(
+            <button key={op.id} onClick={()=>{setOrgTipo(op.id);persistirOrgPerfil({tipo:op.id});}}
+              style={{flex:1,padding:'8px 6px',borderRadius:8,cursor:'pointer',
+                background:orgTipo===op.id?'rgba(200,169,126,.12)':'var(--s2)',
+                color:orgTipo===op.id?'var(--ac)':'var(--tx3)',
+                fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>
+              {op.label}
+            </button>
+          ))}
+        </div>
+        <input className="inp" placeholder="Ubicación (ej: Ñuñoa, Santiago)" style={{marginBottom:8}}
+          value={orgUbicacion} onChange={e=>setOrgUbicacion(e.target.value)}
+          onBlur={()=>persistirOrgPerfil({ubicacion:orgUbicacion})}/>
+        <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>
+          Guardamos esta dirección para completarla sola cuando indiques el lugar de un evento.
         </div>
         <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8,marginTop:4}}>{tx.logoFieldLbl}</div>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -1734,7 +1807,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   }
 
   const ITEMS=[
-    {id:'evento',label:`Crear ${vx.evento.singular.toLowerCase()}`,sub:tx.navCreateEventSub,icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
+    {id:'evento',label:'Crear evento',sub:tx.navCreateEventSub,icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
     {id:'setlist',label:tx.navCreateSetlistLbl,sub:tx.navCreateSetlistSub,icon:'music',color:'var(--gn)',adminOnly:false,img:'/backstage/setlist.jpg'},
     {id:'ensayo',label:tx.navCreateRehearsalLbl,sub:tx.navCreateRehearsalSub,icon:'mic',color:'var(--rd)',adminOnly:false,img:'/backstage/ensayo.jpg'},
     {id:'equipos',label:tx.navTeamManagementLbl,sub:tx.navTeamManagementSub,icon:'team',color:'var(--gn)',adminOnly:true,img:'/backstage/equipos.jpg'},

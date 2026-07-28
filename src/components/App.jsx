@@ -26,7 +26,7 @@ import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, subscribePerfilOrg, guardarPerfilOrg, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
 
 // ── ErrorBoundary ──────────────────────────────────────────────────────
 // Red de seguridad: si algo dentro de SongView (o cualquier hijo envuelto)
@@ -203,6 +203,7 @@ export default function App(){
   const [colecciones,setColecciones]=useState([]);
   const [lideres,setLideres]=useState([]);
   const [pastorData,setPastorData]=useState({versiculo:'',texto:'',notas:''});
+  const [orgPerfil,setOrgPerfil]=useState({nombre:'',tipo:'iglesia',ubicacion:''});
   const [ensayos,setEnsayos]=useState([]); // sesión local — no persiste a Firestore aún
   const [variacionesDB,setVariacionesDB]=useState(()=>({
     // Demo para probar el flujo de asignación variación→persona en el
@@ -288,7 +289,8 @@ export default function App(){
       }
     });
     const unsubPa = subscribePastor(accountId, data=>{ setPastorData(data); });
-    return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); unsubLi(); unsubPa(); };
+    const unsubOp = subscribePerfilOrg(accountId, data=>{ setOrgPerfil(data); });
+    return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); unsubLi(); unsubPa(); unsubOp(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online, currentUser]);
 
@@ -299,6 +301,7 @@ export default function App(){
   const persistirColeccion = (coleccion) => { if(firebaseListo && online) guardarColeccion(accountId, coleccion); };
   const persistirLideres = (lista) => { setLideres(lista); if(firebaseListo && online) guardarLideres(accountId, lista); };
   const persistirPastor = (data) => { setPastorData(data); if(firebaseListo && online) guardarPastor(accountId, data); };
+  const persistirOrgPerfil = (data) => { setOrgPerfil(prev=>({...prev,...data})); if(firebaseListo && online) guardarPerfilOrg(accountId, data); };
 
   // ── variacionesDB / archivosDB (v44-ampliación) — a diferencia de arriba,
   // estos son mapas que se editan desde muchos lugares distintos (Cancionero,
@@ -926,6 +929,7 @@ Tuya es la gloria, Por siempre amén.
             persistirEnsayo={persistirEnsayo}
             lideres={lideres} persistirLideres={persistirLideres}
             pastorData={pastorData} persistirPastor={persistirPastor}
+            orgPerfil={orgPerfil} persistirOrgPerfil={persistirOrgPerfil}
             navResetKey={backstageKey}
             deepLink={deepLink&&deepLink.view==='backstage'?deepLink:null}
             onNavigate={goToView}/>}
