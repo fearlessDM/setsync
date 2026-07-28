@@ -14,6 +14,7 @@ import { CustomSelect, EquipoCard, EquipoDetallePanel, TimePicker } from './comm
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoFeatures } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
+import { subirArchivo } from '../firebase/storage';
 
 const FAQS_PLANES = [
   {q:'¿Cuál es la diferencia entre Cuenta Unitaria y Cuenta Equipo?', a:'Cuenta Unitaria da acceso solo a la persona que inició sesión (Lite, Pro o Premium). Cuenta Equipo es un solo pago del admin que deja a TODOS los miembros con acceso Premium completo, automático — no hace falta que cada uno pague su propio plan.'},
@@ -33,7 +34,7 @@ const FAQS_PLANES = [
   {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
 ];
 
-export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{},orgPerfil={nombre:'',tipo:'iglesia',ubicacion:''},persistirOrgPerfil=()=>{}}){
+export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{},orgPerfil={nombre:'',tipo:'iglesia',ubicacion:''},persistirOrgPerfil=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   // Antes esto era una lista fija de tipos de evento. Ahora "aprende" de
@@ -145,6 +146,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
   const [evNotas,setEvNotas]=useState('');
   const [evSetlist,setEvSetlist]=useState([]); // {cancion,asignaciones:[{id,variacionId,personaId}]}[] — v40, antes strings planos
   const [evArchivo,setEvArchivo]=useState(null);
+  const [subiendoArchivo,setSubiendoArchivo]=useState(false);
   const [evSearch,setEvSearch]=useState('');
   const [evEquipos,setEvEquipos]=useState(null); // null=todavía no inicializado; se llena con todos los equipos al entrar
   const [evItinerario,setEvItinerario]=useState(getItinerarioDefault(lang));
@@ -530,18 +532,40 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
         <button className="btn btn-p" style={{flex:2,justifyContent:'center'}}
-          disabled={!evNombre.trim()&&!evFecha}
-          onClick={()=>{
+          disabled={(!evNombre.trim()&&!evFecha)||subiendoArchivo}
+          onClick={async ()=>{
             const label=`${evNombre||tx.newEventDefault}`;
-            const nuevoEv={id:Date.now(),tipo:evTipo||'culto',nombre:label,fecha:evFecha,
+            const eventoId=Date.now();
+            // Si hay archivo adjunto y tenemos cómo subirlo, se sube a
+            // Storage ANTES de crear el evento — así queda con una url
+            // real y se puede abrir con un clic en Próx Fecha, en vez de
+            // solo mostrar el nombre como etiqueta muerta (como pasaba
+            // antes: solo se guardaba {name}, el binario se descartaba).
+            // Si falla la subida o no hay accountId, el evento se crea
+            // igual (sin url) para no bloquear al usuario por esto.
+            let archivoData=evArchivo?{name:evArchivo.name}:null;
+            let archivoFallo=false;
+            if(evArchivo&&accountId&&firebaseListo){
+              setSubiendoArchivo(true);
+              try{
+                const subida=await subirArchivo(accountId,eventoId,'eventos',evArchivo);
+                archivoData={name:subida.nombre,url:subida.url,path:subida.path};
+              }catch(err){
+                archivoFallo=true;
+                console.error('[SetSync] error subiendo archivo de evento:',err);
+              }
+              setSubiendoArchivo(false);
+            }
+            const nuevoEv={id:eventoId,tipo:evTipo||'culto',nombre:label,fecha:evFecha,
               lugar:evLugar,hora:evHora,setlist:[...evSetlist],
               equiposConvocados:evEquipos||equipos.map(e=>e.id),
               itinerario:[...evItinerario],
               notas:evNotas||null,
-              archivo:evArchivo?{name:evArchivo.name}:null};
+              archivo:archivoData};
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
-            onToast({text:tx.eventCreatedToast,sub:`${label} · ${evSetlist.length} canciones`});
+            onToast({text:tx.eventCreatedToast,
+              sub:archivoFallo?`${label} · el archivo no se pudo subir, probá adjuntarlo de nuevo`:`${label} · ${evSetlist.length} canciones`});
             // Notificación simple automática al equipo convocado — aparte
             // de los avisos manuales (Aviso 1/2) que el líder puede enviar
             // después desde Próx Fecha. Va con un pequeño delay porque solo
@@ -557,7 +581,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             setBsView(null);
           }}>
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Crear evento
+          {subiendoArchivo?'Subiendo archivo…':'Crear evento'}
         </button>
       </div>
       {helpOpen==='evento'&&<HelpModal/>}

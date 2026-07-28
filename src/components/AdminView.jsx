@@ -397,7 +397,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                     // resuelve el evento y solo se cae a 'legacy' si de
                     // verdad no hay nada detrás. (real ya calculado arriba)
                     onAbrirFecha&&onAbrirFecha(real
-                      ?{origen:'evento',id:real.id,nombre:real.nombre||`${tx.sunday} ${day}`,fechaStr:real.fecha||null,lugar:real.lugar||'Iglesia Central',hora:real.hora||'10:00',setlist:real.setlist||sl,equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
+                      ?{origen:'evento',id:real.id,nombre:real.nombre||`${tx.sunday} ${day}`,fechaStr:real.fecha||null,lugar:real.lugar||'Iglesia Central',hora:real.hora||'10:00',setlist:real.setlist||sl,equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null,archivo:real.archivo||null}
                       :{origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
                   onLive={()=>onOpenSong&&onOpenSong(0,sl)}
                   onGoToProxFecha={onGoToProxFecha}
@@ -434,7 +434,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   isLeader={isLeader}
                   isPast={evPast}
                   tx={tx}
-                  onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[],equiposConvocados:ev.equiposConvocados||null,itinerario:ev.itinerario||null});}}
+                  onOpen={()=>{onAbrirFecha&&onAbrirFecha({origen:'evento',id:ev.id,nombre:ev.nombre,fechaStr:ev.fecha,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[],equiposConvocados:ev.equiposConvocados||null,itinerario:ev.itinerario||null,archivo:ev.archivo||null});}}
                   onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                   tieneEnsayo={ensayos.some(en=>en.ref===`evento:${ev.id}`)}
                   onGoToProxFecha={onGoToProxFecha}
@@ -470,7 +470,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 tx={tx}
                 onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);
                   onAbrirFecha&&onAbrirFecha(real
-                    ?{origen:'evento',id:real.id,nombre:real.nombre,fechaStr:real.fecha||null,lugar:real.lugar||ev.lugar||'',hora:real.hora||ev.hora||'',setlist:real.setlist||ev.setlist||[],equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
+                    ?{origen:'evento',id:real.id,nombre:real.nombre,fechaStr:real.fecha||null,lugar:real.lugar||ev.lugar||'',hora:real.hora||ev.hora||'',setlist:real.setlist||ev.setlist||[],equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null,archivo:real.archivo||null}
                     :{origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
                 onLive={()=>onOpenSong&&(ev.setlist||[]).length>0&&onOpenSong(0,ev.setlist)}
                 onGoToProxFecha={onGoToProxFecha}
@@ -1051,16 +1051,29 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
         </div>
       )}
 
-      {/* Archivo adjunto */}
+      {/* Archivo adjunto — clickeable si tiene url real (subido a Storage).
+          Eventos viejos, creados antes de que el adjunto se subiera de
+          verdad, solo guardaron el nombre como etiqueta — esos se ven
+          igual pero sin poder abrirse, para no romper nada retroactivo. */}
       {f.archivo&&(
         <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',marginBottom:'var(--gap)',overflow:'hidden'}}>
           <div style={{padding:'10px var(--sp-md)',borderBottom:'1px solid var(--bd)'}}>
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>Archivo adjunto</span>
           </div>
-          <div style={{padding:'19px var(--sp-md)',display:'flex',alignItems:'center',gap:8}}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.archivo.name}</span>
-          </div>
+          {f.archivo.url?(
+            <a href={f.archivo.url} target="_blank" rel="noopener noreferrer"
+              style={{padding:'19px var(--sp-md)',display:'flex',alignItems:'center',gap:8,cursor:'pointer',textDecoration:'none'}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gn)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span style={{fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.archivo.name}</span>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--gn)" strokeWidth="2" style={{flexShrink:0}}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          ):(
+            <div style={{padding:'19px var(--sp-md)',display:'flex',alignItems:'center',gap:8,opacity:.6}}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.archivo.name}</span>
+              <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',flexShrink:0}}>sin vista previa</span>
+            </div>
+          )}
         </div>
       )}
 

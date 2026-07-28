@@ -84,15 +84,14 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 --rad-full:100px;
 
 /* ── Gap estándar entre cards ── */
-/* v94: -2px en móvil a pedido — antes 20px. Los breakpoints desktop
-   (1024px/1440px, más abajo) mantienen su valor propio sin cambios. */
---gap:18px;
+/* v94: -2px en móvil. v95: -2px más en móvil (16px), -3px en desktop
+   (breakpoints más abajo) — pedido explícito de aplicar también a
+   escritorio esta vez, cosa que v94 no había tocado. */
+--gap:16px;
 /* Gap de los grids de tarjetas de equipo (Backstage → Gestión de equipos,
-   Crear evento → equipos convocados, Próx Fecha → equipos convocados) —
-   antes hardcodeado a 10px en cada lugar; ahora centralizado acá para
-   poder ajustar los 3 a la vez. Mismo -2px en móvil, valor original
-   (10px) se mantiene en desktop. */
---gap-sm:8px;
+   Crear evento → equipos convocados, Próx Fecha → equipos convocados).
+   Mismo criterio de reducción que --gap. */
+--gap-sm:6px;
 
 /* ── Padding de página (sobrescritos en breakpoints) ── */
 --pw-x:8px;
@@ -104,7 +103,7 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
    las mismas fuentes (Special Gothic Expanded One + Lexend Giga) — son
    temas 100% color-only, no cambian tipografía. */
 [data-theme=brasa]{
---bg:#000000;--s1:rgba(255,231,208,.06);--s2:rgba(255,231,208,.03);--s3:rgba(255,231,208,.1);
+--bg:#000000;--s1:rgba(255,231,208,.1);--s2:rgba(255,231,208,.05);--s3:rgba(255,231,208,.16);
 --bd:rgba(255,231,208,.12);--bd2:rgba(255,231,208,.2);
 --div:rgba(255,231,208,.22);--em:rgba(255,231,208,.32);
 --ac:#FAF8F5;--tx:#FAF8F5;--tx2:rgba(250,248,245,.68);--tx3:#c9bcaa;
@@ -190,6 +189,31 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   display:flex;align-items:center;justify-content:space-between;
 }
 .card-body{padding:var(--sp-sm) var(--sp-md);}
+
+/* ── ANIMACIÓN DE BLOQUES (v93, recuperada en v95 — se había perdido del
+   CSS en algún punto del camino) — entrada + touch ──
+   Entrada: fade + subir + escala combinados. --i escalona el delay entre
+   bloques de una misma grilla (setear `style={{'--i':indice}}` en el JSX).
+   Solo se usa en pantallas fijas (menús, dashboard) — NO en grillas que
+   se re-renderizan al escribir en un buscador (ahí "parpadearía" en
+   cada tecla), como la grilla de Cancionero: ahí se aplica solo en el
+   primer montaje, ver Cancionero.jsx.
+   Touch: escala + glow del acento — usa --gn/--gn-rgb (la variable de
+   acento REAL en los 5 temas; --ac es el blanco/crema de texto, no el
+   acento, ojo con esa confusión). Depende de :active, que ahora funciona
+   en iOS gracias al listener en App.jsx. */
+@keyframes blockEntry{
+  from{opacity:0;transform:translateY(14px) scale(.9);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.block-entry{
+  opacity:0;
+  animation:blockEntry .5s cubic-bezier(.16,.84,.32,1) forwards;
+  animation-delay:calc(var(--i,0) * 45ms);
+}
+.press-glow{transition:transform .1s ease, box-shadow .1s ease;}
+.press-glow:active{transform:scale(.96);box-shadow:0 0 0 2px rgba(var(--gn-rgb),.6) inset;}
+
 
 /* ── BOTONES ── */
 .btn{
@@ -414,8 +438,8 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   :root{
     --pw-x:16px;
     --pw-y:var(--sp-lg);
-    --gap:22px;
-    --gap-sm:10px;
+    --gap:19px;
+    --gap-sm:7px;
   }
   .sb{display:flex;width:220px;}
   .sb.col{width:60px;}
@@ -461,7 +485,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
   :root{
     --pw-x:20px;
     --pw-y:var(--sp-xl);
-    --gap:24px;
+    --gap:21px;
   }
   .sb{width:200px;}
   .sb.col{width:60px;}

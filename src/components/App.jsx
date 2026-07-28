@@ -917,6 +917,7 @@ Tuya es la gloria, Por siempre amén.
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}
+            accountId={accountId}
             onSetTheme={setTheme} onGetTheme={()=>theme} eventos={eventos} setEventos={setEventos} lang={lang} ensayos={ensayos} setEnsayos={setEnsayos}
             equipos={equipos} setEquipos={setEquipos} persistirEquipo={persistirEquipo} persistirEvento={persistirEvento}
             guardarSetlistEnEvento={guardarSetlistEnEvento} onLangChange={setLang}

@@ -462,7 +462,7 @@ const NOTIFICACIONES_DEMO = [
 ];
 
 // Número que corre desde 0 hasta su valor final al montar/cambiar (Resumen de Inicio)
-function AnimatedNumber({value,duration=600}){
+function AnimatedNumber({value,duration=1400}){
   const [display,setDisplay]=useState(0);
   useEffect(()=>{
     let raf,start;
@@ -966,7 +966,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
       {/* Accesos rápidos — bloque FIJO (fuera del sistema de drag). En PC va
           a la derecha del hero; en móvil, apilado debajo. Deep-link directo
           a la subpágina. */}
-      <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:11}}>
+      <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'var(--gap)'}}>
         {ACCESOS_RAPIDOS.map(a=>(
           <button key={a.id} className="press-glow"
             onClick={()=>onNavigate(a.view,a.sub)}

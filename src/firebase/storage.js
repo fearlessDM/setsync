@@ -101,6 +101,37 @@ export async function subirAudiosMultiples(accountId, baseName, carpeta, files, 
 }
 
 /**
+ * Sube un archivo genérico (PDF, Word, imagen — ej. el adjunto de un
+ * evento) a Storage y devuelve su URL pública. Hermano de subirAudio pero
+ * sin las validaciones específicas de audio (tipo/tamaño), pensado para
+ * documentos que el equipo necesita poder ABRIR con un clic, no solo ver
+ * el nombre como etiqueta.
+ * @param {string} accountId
+ * @param {string} carpetaId - id del recurso dueño del archivo (ej. evento.id)
+ * @param {'eventos'|'ensayos'} tipo
+ * @param {File} file
+ * @returns {Promise<{url:string, path:string, size:number, nombre:string}>}
+ */
+export async function subirArchivo(accountId, carpetaId, tipo, file) {
+  if (!firebaseListo || !storage) {
+    throw new Error('Firebase no está configurado — no se puede subir el archivo. Ver src/firebase/config.js');
+  }
+  if (file.size > MAX_SIZE_BYTES) {
+    throw new Error(`"${file.name}" pesa ${(file.size / 1024 / 1024).toFixed(1)}MB — el máximo es 25MB.`);
+  }
+  const path = `accounts/${accountId}/${tipo}/${encodeURIComponent(String(carpetaId))}/${Date.now()}-${sanitizeFileName(file.name)}`;
+  const storageRef = ref(storage, path);
+  await Promise.race([
+    uploadBytesResumable(storageRef, file).then(()=>{}),
+    new Promise((_, reject) => setTimeout(() => {
+      reject(new Error(`Subida de "${file.name}" cancelada por timeout (90s) — revisá tu conexión o el tamaño del archivo.`));
+    }, 90000)),
+  ]);
+  const url = await getDownloadURL(storageRef);
+  return { url, path, size: file.size, nombre: file.name };
+}
+
+/**
  * Borra un archivo de Storage por su path (el campo `path` que devolvió
  * subirAudio). No truena si el archivo ya no existe — borrar algo que no
  * está no es un error real para el usuario.
