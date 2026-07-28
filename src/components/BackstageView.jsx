@@ -451,7 +451,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
         )}
         <input className="inp" placeholder={tx.searchSongPlaceholder} value={evSearch} onChange={e=>setEvSearch(e.target.value)} style={{marginBottom:10}}/>
-        <div className="sg sg-6" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
+        <div className="sg sg-6" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:3}}>
           {CANCIONES.filter(s=>s.n.toLowerCase().includes(evSearch.toLowerCase())&&!evSetlist.some(x=>x.cancion===s.n)).map(s=>(
             <div key={s.n} className="scard" onClick={()=>setEvSetlist(l=>[...l,{cancion:s.n,asignaciones:[{id:`ea${Date.now()}`,variacionId:'original',personaId:null}]}])}>
               <span className="scard-n">{s.n}</span>
@@ -487,16 +487,17 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           Puedes crear un nuevo equipo en Backstage / Gestión de equipos.
         </div>
       </div>
-      <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
-        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.itineraryLbl}</div>
-        <ItinerarioEditor items={evItinerario} onChange={setEvItinerario} lang={lang}/>
-      </div>
-      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>
+      <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNotesLbl}</div>
         <textarea className="inp" value={evNotas} onChange={e=>setEvNotas(e.target.value)}
           style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}
           placeholder={"Ej: Llegar 30 min antes del ensayo. Revisar las canciones con tiempo.\nContactar a Cony para confirmar el equipo de proyecciones.\nFecha límite para cambios en el setlist: jueves en la noche."}/>
       </div>
+      <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>
+        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.itineraryLbl}</div>
+        <ItinerarioEditor items={evItinerario} onChange={setEvItinerario} lang={lang}/>
+      </div>
+
 
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.attachedFileLbl}</div>
@@ -751,7 +752,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             </div>
           )}
           <input className="inp" placeholder={tx.searchSongPlaceholder} value={slSearch} onChange={e=>setSlSearch(e.target.value)} style={{marginBottom:10}}/>
-          <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0}}>
+          <div className="sg" style={{maxHeight:340,overflowY:'auto',marginBottom:0,gap:3}}>
             {CANCIONES.filter(s=>s.n.toLowerCase().includes(slSearch.toLowerCase())&&!slCanciones.some(x=>x.cancion===s.n)).map(s=>(
               <div key={s.n} className="scard" onClick={()=>{setSlCanciones(prev=>[...prev,{cancion:s.n,asignaciones:[{id:`a${Date.now()}`,variacionId:'original',personaId:null}]}]);}}>
                 <span className="scard-n">{s.n}</span>
@@ -867,7 +868,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
         )}
 
-        {/* Lista desplegable de miembros con nombre completo y correo */}
+        {/* Chips de miembros — reemplaza la lista desplegable vertical.
+            Cada chip trae su propio botón de eliminar; como `personas` es
+            un array aplanado (sin equipoId propio), se busca el equipo
+            dueño recién al momento de borrar. */}
         <button onClick={()=>setVerMiembros(v=>!v)} style={{width:'100%',display:'flex',alignItems:'center',gap:8,
           padding:'10px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',
           cursor:'pointer',marginBottom:verMiembros?8:20,fontFamily:"var(--font-body)"}}>
@@ -880,20 +884,29 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </svg>
         </button>
         {verMiembros && (
-          <div style={{display:'flex',flexDirection:'column',marginBottom:20,borderRadius:'var(--rad-md)',
-            overflow:'hidden'}}>
-            {personas.map((m,i)=>(
-              <div key={m.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',
-                borderBottom:i<personas.length-1?'1px solid var(--s1)':'none',background:'var(--s1)'}}>
-                {m.foto&&<img src={m.foto} alt={m.name} style={{width:26,height:26,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>}
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:'var(--fs-md)',fontWeight:400,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.name}</div>
-                  <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.email?.trim()?m.email:tx.noEmailRegistered}</div>
-                </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
+            {personas.map(m=>(
+              <div key={m.id} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 8px 6px 10px',
+                borderRadius:100,background:'var(--s1)'}}>
+                {m.foto
+                  ?<img src={m.foto} alt={m.name} style={{width:20,height:20,borderRadius:'50%',objectFit:'cover',flexShrink:0}}/>
+                  :<div style={{width:20,height:20,borderRadius:'50%',background:`${colorForName(m.name)}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'8px',fontWeight:900,color:colorForName(m.name),flexShrink:0,fontFamily:"var(--font-body)"}}>{initials(m.name)}</div>
+                }
+                <span style={{fontSize:'var(--fs-sm)',fontWeight:400,color:'var(--tx)',whiteSpace:'nowrap'}}>{m.name}</span>
+                <button title={tx.removeMemberBtn||'Eliminar miembro'} onClick={()=>{
+                  const eq=equipos.find(e=>(e.miembros||[]).some(mm=>mm.id===m.id));
+                  if(!eq)return;
+                  const upd={...eq,miembros:(eq.miembros||[]).filter(mm=>mm.id!==m.id)};
+                  setEquipos(prev=>prev.map(x=>x.id===eq.id?upd:x));
+                  persistirEquipo(upd);
+                  onToast({text:tx.removedToast,sub:m.name});
+                }} style={{width:16,height:16,borderRadius:'50%',background:'var(--bd)',color:'var(--tx3)',
+                  cursor:'pointer',fontSize:'var(--fs-sm)',lineHeight:1,display:'flex',alignItems:'center',
+                  justifyContent:'center',flexShrink:0}}>×</button>
               </div>
             ))}
             {personas.length===0&&(
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'12px'}}>Agrega tu primer miembro →</div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'4px 0'}}>Agrega tu primer miembro →</div>
             )}
           </div>
         )}
@@ -926,8 +939,8 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         {/* ── Crear nuevo equipo ── */}
         <div style={{padding:14,borderRadius:14,background:'var(--s1)',}}>
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:10}}>{tx.createNewTeamLbl}</div>
-          <input className="inp" placeholder={tx.teamNamePlaceholder} value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8}}/>
-          <input className="inp" placeholder="Roles separados por coma (ej: Líder, Músico, Técnico)" value={nuevosRoles} onChange={e=>setNuevosRoles(e.target.value)} style={{marginBottom:8}}/>
+          <input className="inp" placeholder={tx.teamNamePlaceholder} value={nuevaBanda} onChange={e=>setNuevaBanda(e.target.value)} style={{marginBottom:8,fontSize:'var(--fs-sm)'}}/>
+          <input className="inp" placeholder="Agrega Roles dentro del equipo (separados por coma )" value={nuevosRoles} onChange={e=>setNuevosRoles(e.target.value)} style={{marginBottom:8,fontSize:'var(--fs-sm)'}}/>
           <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginBottom:8}}>
             Los roles se asignan a cada miembro del equipo. Se pueden editar después.
           </div>
