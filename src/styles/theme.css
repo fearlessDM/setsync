@@ -84,7 +84,15 @@ button,input,textarea,select{border:none;background:none;font:inherit;color:inhe
 --rad-full:100px;
 
 /* ── Gap estándar entre cards ── */
---gap:20px;
+/* v94: -2px en móvil a pedido — antes 20px. Los breakpoints desktop
+   (1024px/1440px, más abajo) mantienen su valor propio sin cambios. */
+--gap:18px;
+/* Gap de los grids de tarjetas de equipo (Backstage → Gestión de equipos,
+   Crear evento → equipos convocados, Próx Fecha → equipos convocados) —
+   antes hardcodeado a 10px en cada lugar; ahora centralizado acá para
+   poder ajustar los 3 a la vez. Mismo -2px en móvil, valor original
+   (10px) se mantiene en desktop. */
+--gap-sm:8px;
 
 /* ── Padding de página (sobrescritos en breakpoints) ── */
 --pw-x:8px;
@@ -407,6 +415,7 @@ h1,h2,.title-lg{font-family:var(--font-display);font-weight:400;}
     --pw-x:16px;
     --pw-y:var(--sp-lg);
     --gap:22px;
+    --gap-sm:10px;
   }
   .sb{display:flex;width:220px;}
   .sb.col{width:60px;}

@@ -306,6 +306,16 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
 
   const sinEventos = setlistsDelMes.length===0 && eventosDelMes.length===0 && especialesDelMes.length===0;
 
+  // Equipos convocados de UNA fecha — mismo criterio que MiSetlist (App.jsx):
+  // si el evento trae equiposConvocados, se filtra a esos; si no (legacy,
+  // fecha sin ese campo), se cae a mostrar todos como antes. Se usa en las
+  // 3 tarjetas del calendario (domingos, eventos reales, especiales) para
+  // que colapsado y descolapsado muestren siempre lo mismo.
+  const filtrarEquiposConvocados = (ids) => {
+    const set = ids && ids.length ? new Set(ids) : null;
+    return set ? equipos.filter(eq=>set.has(eq.id)) : equipos;
+  };
+
   return(
     <div style={{paddingBottom:90}}>
 
@@ -353,6 +363,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             const isNext = day===nextDay && todayMonth===new Date().getMonth()+1;
             const isPast = day < today && !isNext;
             const pub    = day <= 12;
+            const real = (eventos||[]).find(e=>Number(e.diaDomingo)===Number(day));
             return(
               <div key={day}>
                 {isNext && day>today && (
@@ -370,7 +381,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   lugar="Iglesia Central"
                   hora="10:00"
                   setlist={sl}
-                  equipos={equipos}
+                  equipos={filtrarEquiposConvocados(real?.equiposConvocados)}
                   isNext={isNext}
                   isPast={isPast}
                   pub={pub}
@@ -384,8 +395,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                     // como 'legacy' sintético y por eso quedaban en solo
                     // lectura aunque tuvieran respaldo real. v93: se
                     // resuelve el evento y solo se cae a 'legacy' si de
-                    // verdad no hay nada detrás.
-                    const real=(eventos||[]).find(e=>Number(e.diaDomingo)===Number(day));
+                    // verdad no hay nada detrás. (real ya calculado arriba)
                     onAbrirFecha&&onAbrirFecha(real
                       ?{origen:'evento',id:real.id,nombre:real.nombre||`${tx.sunday} ${day}`,fechaStr:real.fecha||null,lugar:real.lugar||'Iglesia Central',hora:real.hora||'10:00',setlist:real.setlist||sl,equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
                       :{origen:'legacy',id:`legacy-${day}`,nombre:`${tx.sunday} ${day}`,fechaStr:null,lugar:'Iglesia Central',hora:'10:00',setlist:sl});}}
@@ -420,7 +430,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   lugar={ev.lugar||''}
                   hora={ev.hora||''}
                   setlist={ev.setlist||[]}
-                  equipos={equipos}
+                  equipos={filtrarEquiposConvocados(ev.equiposConvocados)}
                   isLeader={isLeader}
                   isPast={evPast}
                   tx={tx}
@@ -441,7 +451,13 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       {especialesDelMes.length>0 && (
         <div style={{padding:'0 var(--pw-x,16px) var(--sp-md)'}}>
           <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
-            {especialesDelMes.map((ev,i)=>(
+            {especialesDelMes.map((ev,i)=>{
+              // Mismo caso que los domingos: los especiales ya existen
+              // como evento real (`iglesia-especial-mes-dia-i`), se calcula
+              // antes del return para poder filtrar equipos convocados y
+              // reusarlo en onOpen sin recalcular.
+              const real=(eventos||[]).find(e=>e.mes===ev.mes&&e.dia===ev.dia&&e.nombre===ev.label);
+              return(
               <TarjetaFecha
                 key={i}
                 titulo={ev.label}
@@ -449,13 +465,10 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 lugar={ev.lugar||''}
                 hora={ev.hora||''}
                 setlist={ev.setlist||[]}
-                equipos={equipos}
+                equipos={filtrarEquiposConvocados(real?.equiposConvocados)}
                 isLeader={isLeader}
                 tx={tx}
                 onOpen={()=>{if(onSelectDay)onSelectDay(ev.dia);
-                  // Mismo caso que los domingos: los especiales ya existen
-                  // como evento real (`iglesia-especial-mes-dia-i`).
-                  const real=(eventos||[]).find(e=>e.mes===ev.mes&&e.dia===ev.dia&&e.nombre===ev.label);
                   onAbrirFecha&&onAbrirFecha(real
                     ?{origen:'evento',id:real.id,nombre:real.nombre,fechaStr:real.fecha||null,lugar:real.lugar||ev.lugar||'',hora:real.hora||ev.hora||'',setlist:real.setlist||ev.setlist||[],equiposConvocados:real.equiposConvocados||null,itinerario:real.itinerario||null}
                     :{origen:'especial',id:`especial-${i}`,nombre:ev.label,fechaStr:null,lugar:ev.lugar||'',hora:ev.hora||'',setlist:ev.setlist||[]});}}
@@ -463,7 +476,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 onGoToProxFecha={onGoToProxFecha}
               forceOpen={anchoFijo}
               />
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -724,17 +738,11 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700}}>{tx.performBtn}</span>
           </button>
         )}
-        {/* Lugar / Fecha / Hora */}
+        {/* Fecha / Hora / Dirección — orden v94: fecha pegada a la
+            izquierda, hora al centro, dirección pegada a la derecha,
+            los 3 con el mismo peso para llenar el ancho disponible.
+            fechaStr viene como YYYY-MM-DD. */}
         <div className="ms-locbar" style={{display:'flex',alignItems:'center',gap:12,padding:'8px 12px',borderRadius:'var(--rad-sm)',background:'var(--s1)',}}>
-          {/* Ubicación · Fecha · Hora — proporciones 4/2/1 (la ubicación
-              siempre lleva más ancho). fechaStr viene como YYYY-MM-DD. */}
-          <div style={{display:'flex',alignItems:'center',gap:6,flex:4,minWidth:0}}>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,
-              overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.lugar||tx.noPlaceAssignedLbl}</span>
-          </div>
           {(()=>{
             const fs=f.fechaStr;
             if(!fs) return null;
@@ -746,7 +754,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
               txt=mesLbl?`${dia} ${mesLbl} ${anio}`:`${dia}/${m[2]}/${anio}`;
             }
             return(
-              <div style={{display:'flex',alignItems:'center',gap:6,flex:2,minWidth:0,justifyContent:'center'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0,justifyContent:'flex-start'}}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
                   <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
                 </svg>
@@ -756,13 +764,20 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             );
           })()}
           {f.hora&&(
-            <div style={{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0,justifyContent:'flex-end'}}>
+            <div style={{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0,justifyContent:'center'}}>
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
               <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:700}}>{f.hora}</span>
             </div>
           )}
+          <div style={{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0,justifyContent:'flex-end'}}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--tx3)" strokeWidth="2" style={{flexShrink:0}}>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontWeight:300,
+              overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.lugar||tx.noPlaceAssignedLbl}</span>
+          </div>
         </div>
       </div>
 
@@ -839,7 +854,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
             <span style={{fontSize:'var(--fs-sm)',fontWeight:700,color:'var(--tx3)'}}>{equiposAMostrar.reduce((a,e)=>a+(e.miembros||[]).length,0)} personas</span>
           </div>
           {/* Grid 2 columnas — mismo lenguaje visual que Gestión de equipos */}
-          <div style={{padding:'12px var(--sp-md)',display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          <div style={{padding:'12px var(--sp-md)',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)'}}>
             {equiposAMostrar.map(eq=>{
               const miembros=eq.miembros||[];
               const editable=puedeEditarEquipo(eq);

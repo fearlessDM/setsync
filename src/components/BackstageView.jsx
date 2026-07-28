@@ -10,7 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // equipos ya no se importa directo — llega por props (equipos/setEquipos)
 // para poder sincronizar con Firestore.
 import { initials } from '../utils/music';
-import { CustomSelect, EquipoCard, EquipoDetallePanel } from './common';
+import { CustomSelect, EquipoCard, EquipoDetallePanel, TimePicker } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoFeatures } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
@@ -377,8 +377,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
         <div style={{display:'flex',gap:8}}>
           <input className="inp" placeholder="Lugar (ej: Iglesia Central)" style={{flex:2}}
             value={evLugar} onChange={e=>setEvLugar(e.target.value)}/>
-          <input className="inp" type="time" style={{flex:1,cursor:'pointer'}}
-            value={evHora} onChange={e=>setEvHora(e.target.value)}/>
+          <TimePicker style={{flex:1}} value={evHora} onChange={setEvHora}/>
         </div>
       </div>
       <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
@@ -461,7 +460,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.teamsCalledLbl}</div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:evActiveEq?10:0}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)',marginBottom:evActiveEq?10:0}}>
           {equipos.map(eq=>{
             const marcado=(evEquipos||[]).includes(eq.id);
             return(
@@ -543,6 +542,16 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             setEventos(prev=>[...prev,nuevoEv]);
             persistirEvento(nuevoEv);
             onToast({text:tx.eventCreatedToast,sub:`${label} · ${evSetlist.length} canciones`});
+            // Notificación simple automática al equipo convocado — aparte
+            // de los avisos manuales (Aviso 1/2) que el líder puede enviar
+            // después desde Próx Fecha. Va con un pequeño delay porque solo
+            // hay un toast visible a la vez en toda la app — así no pisa el
+            // de "Evento creado" y el usuario ve ambos en secuencia.
+            const idsConvocados=nuevoEv.equiposConvocados||[];
+            const nombresConvocados=idsConvocados.map(id=>equipos.find(e=>e.id===id)?.name).filter(Boolean);
+            setTimeout(()=>{
+              onToast({text:tx.teamNotifiedToast,sub:nombresConvocados.length?nombresConvocados.join(', '):undefined});
+            },2600);
             setEvNombre('');setEvSetlist([]);setEvNotas('');setEvFecha('');setEvArchivo(null);
             setEvLugar('');setEvHora('');setEvEquipos(equipos.map(e=>e.id));setEvItinerario(getItinerarioDefault(lang));
             setBsView(null);
@@ -871,7 +880,7 @@ export function BackstageView({userRole,onToast,mode,onSetTheme,onGetTheme,onLan
             Equipos · {equipos.length}
           </div>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)',marginBottom:14}}>
           {equipos.map(eq=>(
             <EquipoCard key={eq.id} eq={eq} tx={tx}
               active={activeEq===eq.id}

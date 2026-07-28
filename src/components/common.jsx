@@ -94,6 +94,30 @@ export function CustomSelect({value,onChange,options,placeholder='',style={},dis
   );
 }
 
+// ── TimePicker ───────────────────────────────────────────────────────────
+// Reemplazo del <input type="time"> nativo (que en iOS/Android dispara el
+// picker del sistema operativo, sin poder restylearlo). Dos CustomSelect
+// lado a lado (Hora 00-23 / Minutos en pasos de 5) — mismo patrón visual
+// ya usado para el selector de Día/Mes/Año en Crear evento. value/onChange
+// trabajan con string "HH:MM" (mismo formato que ya usaba el input nativo,
+// así no hay que tocar nada río abajo — eventos, ensayos, tarjetas, etc.)
+export function TimePicker({value='',onChange,style={}}){
+  const [hh,mm]=value.split(':');
+  const horaVal=hh!==undefined&&hh!==''?Number(hh):'';
+  const minVal=mm!==undefined&&mm!==''?Number(mm):'';
+  const horas=Array.from({length:24},(_,i)=>({value:i,label:String(i).padStart(2,'0')}));
+  const minutos=[0,5,10,15,20,25,30,35,40,45,50,55].map(m=>({value:m,label:String(m).padStart(2,'0')}));
+  const setHora=h=>onChange(`${String(h).padStart(2,'0')}:${mm||'00'}`);
+  const setMin=m=>onChange(`${hh||'00'}:${String(m).padStart(2,'0')}`);
+  return(
+    <div style={{display:'flex',alignItems:'center',gap:6,...style}}>
+      <CustomSelect style={{flex:1}} placeholder="Hora" value={horaVal} onChange={setHora} options={horas}/>
+      <span style={{color:'var(--tx3)',fontWeight:900,fontSize:'var(--fs-lg)',flexShrink:0}}>:</span>
+      <CustomSelect style={{flex:1}} placeholder="Min" value={minVal} onChange={setMin} options={minutos}/>
+    </div>
+  );
+}
+
 // ── EquipoCard / EquipoDetallePanel ─────────────────────────────────────
 // Extraídos de Backstage/Gestión de equipos para reusar EXACTAMENTE el
 // mismo diseño en cualquier otro lugar donde haya que elegir/editar
