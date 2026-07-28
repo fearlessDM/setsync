@@ -279,7 +279,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             stroke="var(--tx2)" strokeWidth="2">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>Canciones</span>
+          <span style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--tx2)'}}>{tx.songsCardLbl}</span>
         </div>
       )}
 
@@ -291,7 +291,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             Subir canción/carpeta
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:24,lineHeight:1.4}}>
-            En Setsync una canción es una carpeta. Dentro podrás agregar variaciones, partituras por instrumento y audios de referencia.
+            {tx.enSetsyncCarpetaDescLbl}
           </div>
           {/* Opción 1: Manual */}
           <div onClick={()=>{setCrearModo('manual');setAvisosImportEdicion(null);}}
@@ -309,11 +309,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{flex:1}}>
               <div style={{fontSize:'var(--fs-emph)',fontWeight:800,color:'var(--tx)',
                 fontFamily:"var(--font-body)",marginBottom:3}}>
-                Ingresar letra y acordes
+                {tx.ingresarLetraAcordesLbl}
               </div>
               <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4}}>
-                Escribe la letra con acordes en formato ChordPro. 
-                Soporta transposición automática.
+                {tx.chordProDescLbl}
               </div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -339,10 +338,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{flex:1}}>
               <div style={{fontSize:'var(--fs-emph)',fontWeight:800,color:'var(--tx)',
                 fontFamily:"var(--font-body)",marginBottom:3}}>
-                Importar archivos
+                {tx.importarArchivosLbl}
               </div>
               <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4}}>
-                Sube varios archivos <strong style={{color:'var(--gn)'}}>.txt, .docx o .pdf</strong> desde tu dispositivo y se convierten automáticamente. Cada canción queda marcada para revisar.
+                {tx.importarArchivosDescPre} <strong style={{color:'var(--gn)'}}>.txt, .docx o .pdf</strong> {tx.importarArchivosDescPost}
               </div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -366,11 +365,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{flex:1}}>
               <div style={{fontSize:'var(--fs-emph)',fontWeight:800,color:'var(--tx)',
                 fontFamily:"var(--font-body)",marginBottom:3}}>
-                Subir por Drive
+                {tx.subirPorDriveLbl}
               </div>
               <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4}}>
-                Conecta una carpeta de Google Drive con archivos .txt o .xml 
-                y carga todo el repertorio de una vez.
+                {tx.driveCardDescLbl}
               </div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -396,11 +394,11 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{flex:1}}>
               <div style={{fontSize:'var(--fs-emph)',fontWeight:800,color:'var(--tx)',
                 fontFamily:"var(--font-body)",marginBottom:3}}>
-                Subir partitura
+                {tx.subirPartituraLbl}
               </div>
               <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4}}>
-                <strong style={{color:'var(--gn)'}}>MusicXML</strong> — transposición + reproducción MIDI.{' '}
-                <strong style={{color:'var(--rd)'}}>PDF</strong> — visualización directa.
+                <strong style={{color:'var(--gn)'}}>MusicXML</strong> — {tx.musicXmlDescLbl}{' '}
+                <strong style={{color:'var(--rd)'}}>PDF</strong> — {tx.pdfDescLbl}
               </div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -518,20 +516,20 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   </div>
                 )}
                 <div style={{fontSize:'var(--fs-sm)',color:'var(--tx3)',marginTop:8,fontFamily:"var(--font-body)"}}>
-                  Al guardar, esta canción queda marcada como revisada.
+                  {tx.guardarRevisadaNote}
                 </div>
               </div>
             )}
 
             {/* Info */}
             <div className="card" style={{paddingTop:16,paddingBottom:20,paddingLeft:16,paddingRight:16,marginBottom:20}}>
-              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Título</div>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>{tx.tituloFieldLbl}</div>
               <input value={nueva.nombre} onChange={e=>setNueva(v=>({...v,nombre:e.target.value}))}
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:10,boxSizing:'border-box'}}/>
-              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Compositor</div>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>{tx.compositorFieldLbl}</div>
               <input value={nueva.autor} onChange={e=>setNueva(v=>({...v,autor:e.target.value}))}
                 style={{width:'100%',padding:'9px 12px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-lg)',marginBottom:10,boxSizing:'border-box'}}/>
-              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>Tonalidad y tempo</div>
+              <div style={{fontSize:'10px',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4,opacity:.7}}>{tx.tonalidadTempoFieldLbl}</div>
               <div style={{display:'flex',gap:8}}>
                 <CustomSelect value={nueva.key} onChange={v=>{keyTocadaManualRef.current=true;setNueva(vv=>({...vv,key:v}));}}
                   style={{flex:1,fontSize:'var(--fs-lg)'}}
@@ -549,7 +547,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </div>
 
             {/* Secciones */}
-            <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Secciones</div>
+            <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.seccionesFieldLbl}</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:16}}>
               {BLOQUES_CHIPS.map(chip=>(
                 <button key={chip.label} onClick={()=>agregarBloque(chip.label)}
@@ -562,7 +560,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 <button onClick={()=>setNueva(p=>({...p,__otroLabel:''}))}
                   style={{padding:'6px 14px',borderRadius:100,background:'transparent',
                     color:'var(--tx3)',fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer'}}>
-                  + Otro
+                  + {tx.otroBtnLbl}
                 </button>
               ):(
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
@@ -572,7 +570,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                       if(e.key==='Enter'&&otroLabel.trim()){agregarBloque(otroLabel.trim());setNueva(p=>({...p,__otroLabel:false}));}
                       if(e.key==='Escape')setNueva(p=>({...p,__otroLabel:false}));
                     }}
-                    placeholder="Nombre de la sección"
+                    placeholder={tx.nombreSeccionPlaceholder}
                     style={{padding:'5px 10px',borderRadius:8,background:'var(--s2)',color:'var(--tx)',fontSize:'var(--fs-md)',width:160}}/>
                   <button onClick={()=>{if(otroLabel.trim())agregarBloque(otroLabel.trim());setNueva(p=>({...p,__otroLabel:false}));}}
                     style={{padding:'5px 10px',borderRadius:8,background:'var(--gn)',color:'#000',cursor:'pointer',fontSize:'var(--fs-md)',fontWeight:700}}>+</button>
@@ -661,21 +659,21 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',
-              fontFamily:"var(--font-body)"}}>Subir canción</span>
+              fontFamily:"var(--font-body)"}}>{tx.subirCancionLbl}</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
             fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
-            Subir partitura
+            {tx.subirPartituraLbl}
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
-            Selecciona el formato según lo que necesites hacer con la partitura.
+            {tx.seleccionaFormatoPartituraDescLbl}
           </div>
           {/* Explicación formatos */}
           {[
             {fmt:'MusicXML',ext:'.xml .mxl .musicxml',color:'var(--gn)',
-             desc:'Partitura digital editable. Permite transposición automática, reproducción MIDI y visualización de notas. Exporta desde MuseScore, Sibelius o Finale.'},
+             desc:tx.musicXmlFullDescLbl},
             {fmt:'PDF',ext:'.pdf',color:'var(--rd)',
-             desc:'Partitura escaneada o exportada. Solo visualización directa, sin edición ni transposición. Útil para partituras antiguas o de editores externos.'},
+             desc:tx.pdfFullDescLbl},
           ].map(f=>(
             <div key={f.fmt} style={{padding:'14px',borderRadius:12,
               background:`${f.color}08`,
@@ -716,7 +714,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             </svg>
             <div style={{fontSize:'var(--fs-lg)',fontWeight:700,color:'var(--ac)',
               fontFamily:"var(--font-body)"}}>
-              Tocar para seleccionar archivo
+              {tx.tocarSeleccionarArchivoLbl}
             </div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>
               MusicXML o PDF
@@ -735,22 +733,22 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',
-              fontFamily:"var(--font-body)"}}>Subir canción</span>
+              fontFamily:"var(--font-body)"}}>{tx.subirCancionLbl}</span>
           </div>
           <div style={{fontFamily:"var(--font-display)",fontWeight:400,
             fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
-            Subir por Drive
+            {tx.subirPorDriveLbl}
           </div>
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
-            Conecta una carpeta de Google Drive que contenga tus canciones y carga todo el repertorio de una vez.
+            {tx.driveDescLbl}
           </div>
           <div style={{padding:'16px',borderRadius:12,background:'var(--s1)',marginBottom:12}}>
             <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx)',
-              fontFamily:"var(--font-body)",marginBottom:8}}>Formatos soportados</div>
+              fontFamily:"var(--font-body)",marginBottom:8}}>{tx.formatosSoportadosLbl}</div>
             {[
-              {ext:'.txt',desc:'Canciones en formato ChordPro (una por archivo)'},
-              {ext:'.xml / .mxl',desc:'Partituras MusicXML'},
-              {ext:'.pdf',desc:'Partituras PDF'},
+              {ext:'.txt',desc:tx.formatoChordProDesc},
+              {ext:'.xml / .mxl',desc:tx.formatoMusicXMLDesc},
+              {ext:'.pdf',desc:tx.formatoPDFDesc},
             ].map(f=>(
               <div key={f.ext} style={{display:'flex',gap:8,marginBottom:6}}>
                 <code style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--ac)',
@@ -846,7 +844,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           });
           setImportResumen({total:incluidas.length,conAvisos});
           setArchivosImport([]);
-          onToast(`✓ ${incluidas.length} canción${incluidas.length===1?'':'es'} importada${incluidas.length===1?'':'s'}`);
+          onToast(`✓ ${tx.importadasCountLbl(incluidas.length)}`);
         };
 
         if(importResumen)return(
@@ -860,17 +858,17 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
               <div style={{fontFamily:"var(--font-display)",fontWeight:400,
                 fontSize:'var(--fs-xl)',color:'var(--tx)',marginBottom:8}}>
-                {importResumen.total} canción{importResumen.total===1?'':'es'} importada{importResumen.total===1?'':'s'}
+                {tx.importadasCountLbl(importResumen.total)}
               </div>
               <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6,maxWidth:280,margin:'0 auto 20px'}}>
-                Todas quedaron marcadas <strong style={{color:'var(--rd)'}}>Por revisar</strong> en tu repertorio
-                {importResumen.conAvisos>0?<> — {importResumen.conAvisos} con avisos puntuales del parser para chequear.</>:<>, aunque el parser no reportó avisos.</>}
-                {' '}El import es por reglas, no por IA: siempre vale la pena abrir cada una una vez antes de tocarla en vivo.
+                {tx.allMarkedPrefixLbl} <strong style={{color:'var(--rd)'}}>{tx.toReviewLbl}</strong> {tx.allMarkedSuffixLbl}
+                {importResumen.conAvisos>0?tx.importResumenConAvisos(importResumen.conAvisos):tx.importResumenSinAvisos}
+                {' '}{tx.importReglasNote}
               </div>
               <button onClick={()=>{setShowCrear(false);setCrearModo(null);setImportResumen(null);}}
                 className="btn-p" style={{padding:'10px 24px',borderRadius:10,fontSize:'var(--fs-lg)',fontWeight:700,
                 fontFamily:"var(--font-body)"}}>
-                Ir al repertorio
+                {tx.irAlRepertorioLbl}
               </button>
             </div>
           </div>
@@ -883,14 +881,14 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--tx3)" strokeWidth="2">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>Subir canción</span>
+              <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontFamily:"var(--font-body)"}}>{tx.subirCancionLbl}</span>
             </div>
             <div style={{fontFamily:"var(--font-display)",fontWeight:400,
               fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',marginBottom:6}}>
-              Importar archivos
+              {tx.importarArchivosLbl}
             </div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:18,lineHeight:1.5}}>
-              El parser convierte automáticamente cada archivo, pero es por reglas — no por IA. Todas las canciones quedan marcadas <strong style={{color:'var(--rd)'}}>Por revisar</strong> hasta que las abras y guardes una vez.
+              {tx.parserReglasDescPre} <strong style={{color:'var(--rd)'}}>{tx.toReviewLbl}</strong> {tx.parserReglasDescPost}
             </div>
 
             {archivosImport.length===0&&(
@@ -971,10 +969,10 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
     <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
       <div className="ph" style={{marginBottom:16,alignItems:'flex-start',justifyContent:'space-between'}}>
         <div>
-          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>Canciones</div>
+          <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:5}}>{tx.songsCardLbl}</div>
           <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',fontWeight:200,fontFamily:"var(--font-body)",lineHeight:1.6}}>
-            Las canciones son carpetas, no archivos.<br/>
-            Letras y acordes, partituras por instrumento, secuencias y audios de referencia — todo vive junto, dentro de la canción.
+            {tx.cancionesSonCarpetasLbl}<br/>
+            {tx.cancionesSonCarpetasDesc}
           </div>
         </div>
         <button onClick={()=>{setShowCrear(true);setCrearModo(null);}}
@@ -985,7 +983,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Subir canción/carpeta
+          {tx.subirCancionCarpetaLbl}
         </button>
       </div>
       <div style={{display:'flex',gap:5,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
@@ -1020,7 +1018,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
       </div>
 
       <div style={{display:'flex',gap:8,marginBottom:14}}>
-        <input className="inp" placeholder="Buscar canción..." style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
+        <input className="inp" placeholder={tx.searchSongPlaceholder} style={{flex:1}} value={filter} onChange={e=>setFilter(e.target.value)}/>
         <button onClick={()=>setBv(v=>!v)} style={{flexShrink:0,padding:'0 13px',borderRadius:9,background:bv?'rgba(200,169,126,.08)':'var(--s1)',color:bv?'var(--ac)':'var(--tx3)',fontSize:'var(--fs-base)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",height:42,display:'flex',alignItems:'center',gap:5}}>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           {bv?tx.byList:tx.byBpm}
@@ -1048,15 +1046,15 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               + Subir canción/carpeta
             </button>
           </div>
-        ):bv&&!filter?(<><Sec title="Rápidas" range="120+ BPM" type="fast" songs={fast}/><Sec title="Medias" range="80–119 BPM" type="mid" songs={mid}/><Sec title="Lentas" range="–80 BPM" type="slow" songs={slow}/></>)
+        ):bv&&!filter?(<><Sec title={tx.rapidasLbl} range="120+ BPM" type="fast" songs={fast}/><Sec title={tx.mediasLbl} range="80–119 BPM" type="mid" songs={mid}/><Sec title={tx.lentasLbl} range="–80 BPM" type="slow" songs={slow}/></>)
         :(<div className="sg">{fl.sort((a,b)=>b.bpm-a.bpm).map((s,i)=><SongCard key={s.n} s={s} i={i}/>)}</div>)
       )}
 
       {tab==='universal'&&(
         <div>
           <div style={{padding:'10px 12px',borderRadius:12,background:'rgba(94,206,160,.06)',marginBottom:14}}>
-            <div style={{fontSize:'var(--fs-base)',color:'var(--gn)',fontWeight:700,marginBottom:2}}>Cancionero Universal</div>
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>Canciones compartidas por iglesias de la comunidad Setlist. Solo disponible en Modo Iglesia.</div>
+            <div style={{fontSize:'var(--fs-base)',color:'var(--gn)',fontWeight:700,marginBottom:2}}>{tx.cancioneroUniversalHeadingLbl}</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>{tx.cancioneroUniversalDescLbl}</div>
           </div>
           <div className="sg">
             {UNIVERSAL.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase())).map((s,i)=>(
@@ -1158,13 +1156,13 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 style={{background:'var(--bg)',borderRadius:16,padding:20,maxWidth:360,width:'100%',
                   maxHeight:'80vh',overflowY:'auto'}}>
                 <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',
-                  fontWeight:400,color:'var(--tx)',marginBottom:14}}>Nueva colección</div>
-                <input className="inp" placeholder="Nombre de la colección..."
+                  fontWeight:400,color:'var(--tx)',marginBottom:14}}>{tx.nuevaColeccionLbl}</div>
+                <input className="inp" placeholder={tx.nombreColeccionPlaceholder}
                   value={nuevaColeccion.nombre}
                   onChange={e=>setNuevaColeccion(v=>({...v,nombre:e.target.value}))}
                   style={{marginBottom:10}}/>
                 <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-                  letterSpacing:'1.5px',marginBottom:6}}>Color</div>
+                  letterSpacing:'1.5px',marginBottom:6}}>{tx.colorFieldLbl}</div>
                 <div style={{display:'flex',gap:6,marginBottom:14}}>
                   {['#c8a97e','#30C0B7','#e07820','#a78bfa','#FD8083','#5ecea0'].map(col=>(
                     <button key={col} onClick={()=>setNuevaColeccion(v=>({...v,color:col}))}
@@ -1172,7 +1170,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   ))}
                 </div>
                 <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
-                  letterSpacing:'1.5px',marginBottom:6}}>Canciones ({nuevaColeccion.canciones.length})</div>
+                  letterSpacing:'1.5px',marginBottom:6}}>{tx.songsCardLbl} ({nuevaColeccion.canciones.length})</div>
                 <div style={{maxHeight:180,overflowY:'auto',marginBottom:14,display:'flex',flexDirection:'column',gap:4}}>
                   {CANCIONES.map(s=>{
                     const sel=nuevaColeccion.canciones.includes(s.n);
@@ -1191,7 +1189,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={()=>setShowCrearColeccion(false)}
                     style={{flex:1,padding:'10px',borderRadius:9,background:'transparent',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-md)',
-                      fontWeight:700,fontFamily:"var(--font-body)"}}>Cancelar</button>
+                      fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.cancel}</button>
                   <button disabled={!nuevaColeccion.nombre.trim()}
                     onClick={()=>{
                       const nueva={id:Date.now(),...nuevaColeccion};
@@ -1204,7 +1202,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                     style={{flex:2,padding:'10px',borderRadius:9,background:nuevaColeccion.nombre.trim()?'#e07820':'var(--s3)',
                       color:nuevaColeccion.nombre.trim()?'#000':'var(--tx3)',
                       cursor:nuevaColeccion.nombre.trim()?'pointer':'not-allowed',fontSize:'var(--fs-md)',
-                      fontWeight:700,fontFamily:"var(--font-body)"}}>Crear colección</button>
+                      fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.crearColeccionLbl}</button>
                 </div>
               </div>
             </div>
@@ -1215,7 +1213,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
 
       {tab==='partituras'&&(
         <div>
-          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>Partituras disponibles</div>
+          <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'2px',marginBottom:14}}>{tx.partiturasDisponiblesLbl}</div>
           {/* Demo partituras */}
           {[
             {title:'YESHUA',autor:'Maverick City Music',tipo:'PDF',paginas:4,tonalidad:'D',desc:'Partitura completa para piano, guitarra, bajo y batería. Incluye lead sheet.'},
@@ -1244,7 +1242,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               </div>
               <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:6,flexShrink:0}}>
                 <button style={{padding:'5px 10px',borderRadius:8,background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
-                  Ver
+                  {tx.verLbl}
                 </button>
                 <button style={{padding:'5px 10px',borderRadius:8,background:'var(--s2)',color:'var(--tx3)',fontSize:'var(--fs-xs)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>
                   ↓ PDF
@@ -1262,7 +1260,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
               <div>
-                <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:'#a78bfa'}}>Subir partitura</div>
+                <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:'#a78bfa'}}>{tx.subirPartituraLbl}</div>
                 <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginTop:1}}>PDF · MusicXML · .mxl</div>
               </div>
             </label>
@@ -1294,8 +1292,8 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                 </svg>
               </div>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--ac)',fontFamily:"var(--font-body)"}}>Ver letra y acordes</div>
-                <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:1}}>Versión original</div>
+                <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--ac)',fontFamily:"var(--font-body)"}}>{tx.verLetraAcordesLbl}</div>
+                <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:1}}>{tx.versionOriginalLbl}</div>
               </div>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="2" opacity=".5">
                 <polyline points="9 18 15 12 9 6"/>
@@ -1307,7 +1305,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
               <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:8}}>
                 <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
                   letterSpacing:'1.5px',fontFamily:"var(--font-body)",marginBottom:2,paddingLeft:2}}>
-                  Otras versiones
+                  {tx.otrasVersionesLbl}
                 </div>
                 {(variacionesDB[songParaVariar]||[]).map(v=>(
                   <button key={v.id} onClick={()=>{onOpenSong&&onOpenSong(songParaVariar,v.id);setSongParaVariar(null);}}
@@ -1325,7 +1323,7 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                     {v.tipo==='partitura'&&(
                       <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",
                         textTransform:'uppercase',letterSpacing:'.5px',background:'var(--s2)',
-                        padding:'2px 6px',borderRadius:4}}>Partitura</span>
+                        padding:'2px 6px',borderRadius:4}}>{tx.partituraBadgeLbl}</span>
                     )}
                   </button>
                 ))}
@@ -1339,16 +1337,16 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                   <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'letra'}))}
                     style={{flex:1,padding:'7px 0',borderRadius:8,cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
                       fontFamily:"var(--font-body)",background:nuevaVariacion.tipo==='letra'?'rgba(200,169,126,.18)':'var(--s1)',
-                      color:nuevaVariacion.tipo==='letra'?'var(--ac)':'var(--tx3)'}}>Letra/acordes</button>
+                      color:nuevaVariacion.tipo==='letra'?'var(--ac)':'var(--tx3)'}}>{tx.letraAcordesTabLbl}</button>
                   <button onClick={()=>setNuevaVariacion(v=>({...v,tipo:'partitura'}))}
                     style={{flex:1,padding:'7px 0',borderRadius:8,cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,
                       fontFamily:"var(--font-body)",background:nuevaVariacion.tipo==='partitura'?'rgba(200,169,126,.18)':'var(--s1)',
-                      color:nuevaVariacion.tipo==='partitura'?'var(--ac)':'var(--tx3)'}}>Partitura (archivo)</button>
+                      color:nuevaVariacion.tipo==='partitura'?'var(--ac)':'var(--tx3)'}}>{tx.partituraArchivoTabLbl}</button>
                 </div>
-                <input className="inp" placeholder="Nombre (ej: Piano, Trombón, Voz guía)" value={nuevaVariacion.label}
+                <input className="inp" placeholder={tx.nombreVariacionPlaceholder} value={nuevaVariacion.label}
                   onChange={e=>setNuevaVariacion(v=>({...v,label:e.target.value}))} style={{marginBottom:8}}/>
                 {nuevaVariacion.tipo==='letra'?(
-                  <textarea className="inp" placeholder="Letra y acordes de esta variación (formato [Acorde]letra)..."
+                  <textarea className="inp" placeholder={tx.letraAcordesPlaceholder}
                     value={nuevaVariacion.contenido} onChange={e=>setNuevaVariacion(v=>({...v,contenido:e.target.value}))}
                     style={{minHeight:100,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-base)',marginBottom:8}}/>
                 ):(
@@ -1357,16 +1355,16 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
                     <input type="file" accept="image/*,.pdf" style={{display:'none'}}
                       onChange={e=>setNuevaVariacion(v=>({...v,archivo:e.target.files[0]||null}))}/>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)'}}>{nuevaVariacion.archivo?nuevaVariacion.archivo.name:'Elegir imagen o PDF'}</span>
+                    <span style={{fontSize:'var(--fs-base)',color:'var(--tx2)'}}>{nuevaVariacion.archivo?nuevaVariacion.archivo.name:tx.elegirImagenPdfLbl}</span>
                   </label>
                 )}
                 <div style={{display:'flex',gap:6}}>
                   <button onClick={()=>setNuevaVariacion(null)}
                     style={{flex:1,padding:'8px 0',borderRadius:8,background:'transparent',
-                      color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>Cancelar</button>
+                      color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.cancel}</button>
                   <button onClick={guardarNuevaVariacion}
                     style={{flex:2,padding:'8px 0',borderRadius:8,background:'var(--ac)',
-                      color:'#000',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:900,fontFamily:"var(--font-body)"}}>Guardar variación</button>
+                      color:'#000',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:900,fontFamily:"var(--font-body)"}}>{tx.guardarVariacionLbl}</button>
                 </div>
               </div>
             ):(
