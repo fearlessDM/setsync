@@ -128,9 +128,15 @@ export function TimePicker({value='',onChange,style={}}){
 // Tile de equipo para el grid 2 columnas. `convocado`/`onToggleConvocado`
 // son opcionales — si vienen, se agrega un checkbox de convocatoria que
 // no interfiere con el click de abrir/cerrar el panel de detalle.
-export function EquipoCard({eq,active,onClick,tx,convocado,onToggleConvocado}){
+export function EquipoCard({eq,active,onClick,tx,convocado,onToggleConvocado,i=0}){
   const hasConvocatoria=typeof convocado==='boolean';
+  // Envuelto en un div externo para la animación de entrada — si el fade
+  // fuera directo en el mismo elemento que la opacidad condicional de
+  // "no convocado" (línea de abajo), la animación (con fill-mode forwards)
+  // terminaría pisando esa opacidad para siempre después del primer
+  // render. Con el wrapper, cada una controla su propia opacidad sin pisarse.
   return(
+    <div className="block-entry" style={{'--i':i}}>
     <div onClick={onClick}
       style={{borderRadius:14,background:'var(--s1)',overflow:'hidden',cursor:'pointer',
         outline:active?`2px solid ${eq.color}60`:'none',
@@ -160,6 +166,7 @@ export function EquipoCard({eq,active,onClick,tx,convocado,onToggleConvocado}){
           <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontStyle:'italic',fontFamily:"var(--font-body)"}}>{tx.noMembersLbl}</div>
         )}
       </div>
+    </div>
     </div>
   );
 }

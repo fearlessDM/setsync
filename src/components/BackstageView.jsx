@@ -463,10 +463,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.teamsCalledLbl}</div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)',marginBottom:evActiveEq?10:0}}>
-          {equipos.map(eq=>{
+          {equipos.map((eq,idx)=>{
             const marcado=(evEquipos||[]).includes(eq.id);
             return(
-              <EquipoCard key={eq.id} eq={eq} tx={tx}
+              <EquipoCard key={eq.id} eq={eq} tx={tx} i={idx}
                 active={evActiveEq===eq.id}
                 convocado={marcado}
                 onToggleConvocado={()=>setEvEquipos(prev=>marcado?(prev||[]).filter(id=>id!==eq.id):[...(prev||[]),eq.id])}
@@ -905,8 +905,8 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)',marginBottom:14}}>
-          {equipos.map(eq=>(
-            <EquipoCard key={eq.id} eq={eq} tx={tx}
+          {equipos.map((eq,idx)=>(
+            <EquipoCard key={eq.id} eq={eq} tx={tx} i={idx}
               active={activeEq===eq.id}
               onClick={()=>setActiveEq(activeEq===eq.id?null:eq.id)}/>
           ))}
@@ -1192,9 +1192,9 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             {id:'blue-lava', label:tx.themeBlueLavaLbl, sub:tx.themeBlueLavaSub,
               bg:'linear-gradient(135deg,#EEE9DF 0%,#e2ddd1 100%)',
               preview:['#EEE9DF','#2C3B4D','#F56E0F']},
-          ].map(th=>(
+          ].map((th,idx)=>(
             <div key={th.id} onClick={()=>{onSetTheme(th.id);onToast({text:tx.themeAppliedToast,sub:th.label});}}
-              style={{borderRadius:12,cursor:'pointer',overflow:'hidden',transition:'all .2s',
+              className="block-entry" style={{borderRadius:12,cursor:'pointer',overflow:'hidden',transition:'all .2s','--i':idx,
                       boxShadow:onGetTheme()===th.id?'0 0 0 2px var(--ac),0 4px 20px rgba(0,0,0,.4)':'none'}}>
               <div style={{height:64,background:th.bg,position:'relative',display:'flex',alignItems:'flex-end',padding:'0 8px 8px'}}>
                 <div style={{display:'flex',gap:4}}>
@@ -1872,10 +1872,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:4}}>{tx.teamControlPanelLbl}</div>
       </div>
       <div className="bs-menu-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap)'}}>
-        {ITEMS.map(it=>(
-          <button key={it.id} onClick={()=>setBsView(it.id)}
+        {ITEMS.map((it,idx)=>(
+          <button key={it.id} onClick={()=>setBsView(it.id)} className="block-entry"
             style={{position:'relative',overflow:'hidden',background:it.bg||'var(--s1)',
-              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104}}>
+              borderRadius:14,padding:'18px 16px',cursor:'pointer',textAlign:'left',transition:'all .18s',display:'flex',flexDirection:'column',gap:10,minHeight:104,'--i':idx}}>
             {/* Imagen de fondo del bloque — sube el archivo con este mismo
                 nombre a /public/backstage/ y aparece sola; hasta entonces
                 el bloque queda plano y limpio sin romper nada. */}

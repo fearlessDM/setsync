@@ -546,8 +546,40 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
     const t=setInterval(()=>setChipIdx(i=>(i+1)%HERO_CHIPS.length),2000);
     return()=>clearInterval(t);
   },[]);
-  const [collapsedRows, setCollapsedRows] = useState({0:true,1:true,2:true,3:true,4:true,5:true}); // todos colapsados por defecto
-  const [mktCollapsed, setMktCollapsed] = useState(true); // bloque marketero también colapsado
+  // v96: "Cómo funciona" y "Por qué SetSync es el mejor" ahora arrancan
+  // ABIERTOS por defecto (antes colapsados como el resto). Si el usuario
+  // los cierra a mano, esa preferencia se recuerda en localStorage — de
+  // ahí en adelante arrancan cerrados para esa persona/dispositivo, hasta
+  // que los vuelva a abrir. El resto de los bloques (notificaciones,
+  // equipo, tutoriales, faqs, planes) sigue arrancando colapsado como
+  // siempre, sin persistencia — no era parte de este pedido.
+  const LS_COMOFUNCIONA='ss_inicio_comofunciona_collapsed';
+  const LS_MARKETING='ss_inicio_marketing_collapsed';
+  const leerColapsoGuardado=(key,defaultVal)=>{
+    if(typeof window==='undefined') return defaultVal;
+    try{
+      const v=window.localStorage.getItem(key);
+      return v===null?defaultVal:v==='1';
+    }catch(err){
+      console.warn('[SetSync] localStorage no disponible:',err);
+      return defaultVal;
+    }
+  };
+  const [collapsedRows, setCollapsedRows] = useState(()=>({
+    0:true,1:true,2:leerColapsoGuardado(LS_COMOFUNCIONA,false),3:true,4:true,5:true,
+  }));
+  const [mktCollapsed, setMktCollapsed] = useState(()=>leerColapsoGuardado(LS_MARKETING,false));
+  const comofuncionaCollapsed = collapsedRows[2];
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    try{ window.localStorage.setItem(LS_COMOFUNCIONA, comofuncionaCollapsed?'1':'0'); }
+    catch(err){ console.warn('[SetSync] no se pudo guardar preferencia:',err); }
+  },[comofuncionaCollapsed]);
+  useEffect(()=>{
+    if(typeof window==='undefined') return;
+    try{ window.localStorage.setItem(LS_MARKETING, mktCollapsed?'1':'0'); }
+    catch(err){ console.warn('[SetSync] no se pudo guardar preferencia:',err); }
+  },[mktCollapsed]);
   const toggleRow = rowIdx => setCollapsedRows(v=>({...v,[rowIdx]:!v[rowIdx]}));
   // En PC / tablet horizontal (≥1024px) los bloques van SIEMPRE abiertos y
   // no se colapsan (el chevron se oculta por CSS). En tablet vertical y
@@ -967,13 +999,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           a la derecha del hero; en móvil, apilado debajo. Deep-link directo
           a la subpágina. */}
       <div className="inicio-accesos" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'var(--gap)'}}>
-        {ACCESOS_RAPIDOS.map(a=>(
-          <button key={a.id} className="press-glow"
+        {ACCESOS_RAPIDOS.map((a,idx)=>(
+          <button key={a.id} className="press-glow block-entry"
             onClick={()=>onNavigate(a.view,a.sub)}
             style={{background:'var(--s1)',borderRadius:'var(--rad-lg)',
-              padding:'14px 8px',cursor:'pointer',display:'flex',flexDirection:'column',
+              padding:'var(--sp-md)',cursor:'pointer',display:'flex',flexDirection:'column',
               alignItems:'center',justifyContent:'center',gap:8,minHeight:88,
-              transition:'background .15s'}}
+              transition:'background .15s','--i':idx}}
             onPointerEnter={e=>e.currentTarget.style.background='var(--s3)'}
             onPointerLeave={e=>e.currentTarget.style.background='var(--s1)'}>
             <div style={{width:32,height:32,borderRadius:10,flexShrink:0,

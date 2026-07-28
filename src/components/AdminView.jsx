@@ -345,11 +345,11 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
       {setlistsDelMes.length>0 && (
         <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)',
           padding:'0 var(--pw-x,16px) var(--sp-md)'}}>
-          {setlistsDelMes.map(([dayStr,sl])=>{
+          {setlistsDelMes.map(([dayStr,sl],idx)=>{
             const day = parseInt(dayStr);
             if(sl===null) return(
-              <div key={day} style={{paddingTop:28,paddingBottom:28,paddingLeft:18,paddingRight:18,borderRadius:'var(--rad-lg)',
-                background:'rgba(255,82,82,.08)',display:'flex',alignItems:'center',gap:'var(--sp-sm)'}}>
+              <div key={day} className="block-entry" style={{paddingTop:28,paddingBottom:28,paddingLeft:18,paddingRight:18,borderRadius:'var(--rad-lg)',
+                background:'rgba(255,82,82,.08)',display:'flex',alignItems:'center',gap:'var(--sp-sm)','--i':idx}}>
                 <div style={{width:42,height:42,borderRadius:11,background:'rgba(255,82,82,.15)',
                   display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <span style={{fontSize:'var(--fs-xl)',fontWeight:900,color:'var(--rd)'}}>–</span>
@@ -365,7 +365,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             const pub    = day <= 12;
             const real = (eventos||[]).find(e=>Number(e.diaDomingo)===Number(day));
             return(
-              <div key={day}>
+              <div key={day} className="block-entry" style={{'--i':idx}}>
                 {isNext && day>today && (
                   <div className="cal-hoy-linea" style={{display:'flex',alignItems:'center',gap:'var(--sp-xs)',
                     margin:'4px 0 var(--sp-xs)'}}>
@@ -419,12 +419,12 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
             <div style={{flex:1,height:1,background:'var(--s3)'}}/></>}
           </div>
           <div className="cal-grid" style={{display:'flex',flexDirection:'column',gap:'var(--gap)'}}>
-            {eventosDelMes.map(ev=>{
+            {eventosDelMes.map((ev,idx)=>{
               const d=new Date(ev.fecha);
               const evPast = ev.fecha && d < new Date(new Date().setHours(0,0,0,0));
               return(
+                <div key={ev.id} className="block-entry" style={{'--i':idx}}>
                 <TarjetaFecha
-                  key={ev.id}
                   titulo={ev.nombre}
                   subtitulo={`Setlist · ${(ev.setlist||[]).length} canciones`}
                   lugar={ev.lugar||''}
@@ -440,6 +440,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                   onGoToProxFecha={onGoToProxFecha}
                 forceOpen={anchoFijo}
                 />
+                </div>
               );
             })}
           </div>
@@ -458,8 +459,8 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
               // reusarlo en onOpen sin recalcular.
               const real=(eventos||[]).find(e=>e.mes===ev.mes&&e.dia===ev.dia&&e.nombre===ev.label);
               return(
+              <div key={i} className="block-entry" style={{'--i':i}}>
               <TarjetaFecha
-                key={i}
                 titulo={ev.label}
                 subtitulo={`Setlist · ${(ev.setlist||[]).length} canciones`}
                 lugar={ev.lugar||''}
@@ -476,6 +477,7 @@ export function AdminView({mode, activeSunday, userRole, onLive, onToast,
                 onGoToProxFecha={onGoToProxFecha}
               forceOpen={anchoFijo}
               />
+              </div>
               );
             })}
           </div>
@@ -855,14 +857,14 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
           </div>
           {/* Grid 2 columnas — mismo lenguaje visual que Gestión de equipos */}
           <div style={{padding:'12px var(--sp-md)',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'var(--gap-sm)'}}>
-            {equiposAMostrar.map(eq=>{
+            {equiposAMostrar.map((eq,idx)=>{
               const miembros=eq.miembros||[];
               const editable=puedeEditarEquipo(eq);
               const abierto=eqAbierto===eq.id;
               return(
                 <div key={eq.id}
                   onClick={()=>{const next=abierto?null:eq.id;setEqAbierto(next);setEditandoEq(false);setAgregarEnEq(null);}}
-                  style={{borderRadius:14,background:'var(--s2)',overflow:'hidden',
+                  className="block-entry" style={{borderRadius:14,background:'var(--s2)',overflow:'hidden','--i':idx,
                     cursor:'pointer',outline:abierto?`2px solid ${eq.color}60`:'none'}}>
                   <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
                     <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,
