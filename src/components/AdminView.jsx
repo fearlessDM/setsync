@@ -870,7 +870,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                     <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,
                       boxShadow:`0 0 8px ${eq.color}80`}}/>
                     <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',
-                      color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',
+                      color:'var(--tx)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',
                       whiteSpace:'nowrap'}}>{eq.name}</span>
                     <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{miembros.length}</span>
                   </div>
@@ -922,7 +922,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
                   <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,
                     boxShadow:`0 0 8px ${eq.color}80`}}/>
                   <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',
-                    color:'var(--tx)',flex:1}}>{eq.name}</span>
+                    color:'var(--tx)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
                   {/* Lápiz — vive SOLO dentro del panel. Alterna edición. */}
                   {editable&&(
                     <button onClick={()=>{setEditandoEq(v=>!v);setAgregarEnEq(null);}}

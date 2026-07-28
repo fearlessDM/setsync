@@ -360,24 +360,23 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <input className="inp" placeholder={tx.orCustomNamePlaceholder} value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
-        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.dateFieldLbl}</div>
+        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Detalles</div>
         <div style={{display:'flex',gap:8,marginBottom:16}}>
-          <CustomSelect style={{flex:1}} placeholder={tx.dayLbl}
+          <CustomSelect style={{flex:1,fontWeight:400,color:'#fff'}} placeholder={tx.dayLbl}
             value={Number(evFecha.split('-')[2])||''}
             onChange={d=>setEvFecha(prev=>{const parts=prev.split('-');parts[2]=String(d).padStart(2,'0');return parts.join('-');})}
             options={Array.from({length:31},(_,i)=>i+1).map(d=>({value:d,label:String(d)}))}/>
-          <CustomSelect style={{flex:1.4}} placeholder={tx.monthPlaceholderLbl}
+          <CustomSelect style={{flex:1.4,fontWeight:400,color:'#fff'}} placeholder={tx.monthPlaceholderLbl}
             value={Number(evFecha.split('-')[1])||''}
             onChange={m=>setEvFecha(prev=>{const parts=prev.split('-');parts[1]=String(m).padStart(2,'0');return parts.join('-');})}
             options={tx.monthsFull.map((m,i)=>({value:i+1,label:m}))}/>
-          <CustomSelect style={{flex:1}} placeholder={tx.yearLbl}
+          <CustomSelect style={{flex:1,fontWeight:400,color:'#fff'}} placeholder={tx.yearLbl}
             value={evFecha.split('-')[0]||''}
             onChange={y=>setEvFecha(prev=>{const parts=prev.split('-');parts[0]=String(y);return parts.join('-');})}
             options={['2026','2027','2028'].map(y=>({value:y,label:y}))}/>
         </div>
-        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.placeAndTimeLbl}</div>
         <div style={{display:'flex',gap:8}}>
-          <input className="inp" placeholder="Lugar (ej: Iglesia Central)" style={{flex:2}}
+          <input className="inp" placeholder="Lugar o ubicación" style={{flex:2}}
             value={evLugar} onChange={e=>setEvLugar(e.target.value)}/>
           <TimePicker style={{flex:1}} value={evHora} onChange={setEvHora}/>
         </div>
@@ -490,7 +489,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNotesLbl}</div>
         <textarea className="inp" value={evNotas} onChange={e=>setEvNotas(e.target.value)}
-          style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-md)'}}
+          style={{minHeight:90,resize:'vertical',lineHeight:1.6,fontSize:'var(--fs-sm)'}}
           placeholder="..."/>
       </div>
       <div className="card card-full" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:18}}>

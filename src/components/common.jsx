@@ -111,9 +111,9 @@ export function TimePicker({value='',onChange,style={}}){
   const setMin=m=>onChange(`${hh||'00'}:${String(m).padStart(2,'0')}`);
   return(
     <div style={{display:'flex',alignItems:'center',gap:6,...style}}>
-      <CustomSelect style={{flex:1}} placeholder="Hora" value={horaVal} onChange={setHora} options={horas}/>
+      <CustomSelect style={{flex:1,fontWeight:400,color:'#fff'}} placeholder="Hora" value={horaVal} onChange={setHora} options={horas}/>
       <span style={{color:'var(--tx3)',fontWeight:900,fontSize:'var(--fs-lg)',flexShrink:0}}>:</span>
-      <CustomSelect style={{flex:1}} placeholder="Min" value={minVal} onChange={setMin} options={minutos}/>
+      <CustomSelect style={{flex:1,fontWeight:400,color:'#fff'}} placeholder="Min" value={minVal} onChange={setMin} options={minutos}/>
     </div>
   );
 }
@@ -149,7 +149,7 @@ export function EquipoCard({eq,active,onClick,tx,convocado,onToggleConvocado,i=0
             style={{accentColor:eq.color,width:14,height:14,flexShrink:0}}/>
         )}
         <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,boxShadow:`0 0 8px ${eq.color}80`}}/>
-        <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
+        <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
         <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{(eq.miembros||[]).length}</span>
       </div>
       <div style={{padding:'0 10px 10px',display:'flex',flexWrap:'wrap',gap:4}}>
@@ -178,7 +178,7 @@ export function EquipoDetallePanel({eq,personas,setEquipos,persistirEquipo,onToa
     <div style={{borderRadius:14,background:'var(--s1)',padding:14,marginBottom:14}}>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
         <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,boxShadow:`0 0 8px ${eq.color}80`}}/>
-        <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flex:1}}>{eq.name}</span>
+        <span style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
         <button onClick={e=>{e.stopPropagation();onClose();}} style={{background:'none',color:'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xl)',lineHeight:1}}>×</button>
       </div>
       {(eq.miembros||[]).map(m=>(
