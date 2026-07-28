@@ -17,20 +17,21 @@ export function ItinerarioEditor({items,onChange,lang='es'}){
 
   return(
     <div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',fontFamily:"var(--font-body)"}}>{tx.eventSchedule}</span>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',marginBottom:8}}>
         <button onClick={()=>setEdit(v=>!v)} style={{fontSize:'var(--fs-base)',fontWeight:700,color:edit?'var(--ac)':'var(--tx3)',background:'none',cursor:'pointer',fontFamily:"var(--font-body)"}}>
           {edit?tx.done:tx.edit}
         </button>
       </div>
       {items.map((it,i)=>(
-        <div key={i} style={{display:'flex',gap:8,alignItems:'center',padding:'5px 0',borderBottom:'1px solid var(--bd)'}}>
+        <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',padding:'5px 0',borderBottom:'1px solid var(--bd)'}}>
           {edit
-            ?<input value={it.hora} onChange={e=>update(i,'hora',e.target.value)} style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',background:'rgba(200,169,126,.08)',borderRadius:5,padding:'2px 6px',width:52,outline:'none'}}/>
+            ?<textarea value={it.hora} onChange={e=>update(i,'hora',e.target.value)} rows={1}
+              style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',background:'rgba(200,169,126,.08)',borderRadius:5,padding:'4px 6px',width:52,outline:'none',resize:'none',lineHeight:1.3}}/>
             :<span style={{fontFamily:"var(--font-body)",fontWeight:700,fontSize:'var(--fs-base)',color:'var(--ac)',minWidth:52,flexShrink:0}}>{it.hora}</span>
           }
           {edit
-            ?<input value={it.label} onChange={e=>update(i,'label',e.target.value)} style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)',background:'var(--s2)',borderRadius:5,padding:'2px 8px',outline:'none',fontFamily:"var(--font-body)"}}/>
+            ?<textarea value={it.label} onChange={e=>update(i,'label',e.target.value)} rows={1}
+              style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)',background:'var(--s2)',borderRadius:5,padding:'4px 8px',outline:'none',fontFamily:"var(--font-body)",resize:'vertical',lineHeight:1.4}}/>
             :<span style={{flex:1,fontSize:'var(--fs-base)',color:'var(--tx)'}}>{it.label}</span>
           }
           {edit&&<button onClick={()=>removeItem(i)} style={{background:'none',color:'var(--rd)',cursor:'pointer',fontSize:'var(--fs-emph)',lineHeight:1,flexShrink:0}}>×</button>}

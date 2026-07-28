@@ -1850,10 +1850,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             return(
               <label key={eq.id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 12px',borderRadius:100,cursor:'pointer',
                   background:activo?`${eq.color}12`:'var(--s1)'}}>
+                <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
                 <input type="checkbox" checked={activo}
                   onChange={()=>setEnsEquipos(v=>activo?v.filter(x=>x!==eq.id):[...v,eq.id])}
                   style={{accentColor:eq.color,width:13,height:13,flexShrink:0}}/>
-                <div style={{width:7,height:7,borderRadius:'50%',background:eq.color}}/>
                 <span style={{fontSize:'var(--fs-base)',fontWeight:400,color:'var(--tx)'}}>{eq.name}</span>
                 <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{(eq.miembros||[]).length}p</span>
               </label>

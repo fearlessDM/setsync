@@ -142,13 +142,13 @@ export function EquipoCard({eq,active,onClick,tx,convocado,onToggleConvocado,i=0
         outline:active?`2px solid ${eq.color}60`:'none',
         opacity:hasConvocatoria&&!convocado?.55:1,transition:'opacity .15s'}}>
       <div style={{padding:'12px 12px 10px',display:'flex',alignItems:'center',gap:8}}>
+        <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,boxShadow:`0 0 8px ${eq.color}80`}}/>
         {hasConvocatoria&&(
           <input type="checkbox" checked={convocado}
             onClick={e=>e.stopPropagation()}
             onChange={onToggleConvocado}
             style={{accentColor:eq.color,width:14,height:14,flexShrink:0}}/>
         )}
-        <div style={{width:10,height:10,borderRadius:'50%',background:eq.color,flexShrink:0,boxShadow:`0 0 8px ${eq.color}80`}}/>
         <span style={{fontFamily:"var(--font-body)",fontWeight:900,fontSize:'var(--fs-md)',color:'var(--tx)',flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{eq.name}</span>
         <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',flexShrink:0}}>{(eq.miembros||[]).length}</span>
       </div>
