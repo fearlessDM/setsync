@@ -80,7 +80,6 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     setSlEventoId(deepLinkSetlistEvento);
     setSlSearch('');
     if(ev){
-      setSlNombre(prev=>prev||`Setlist · ${ev.nombre}`);
       setSlCanciones((ev.setlist||[]).map((it,i)=>{
         if(typeof it==='string') return {cancion:it,asignaciones:[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
         return {cancion:it.cancion||it.name||it.n||'',asignaciones:it.asignaciones||[{id:`a${Date.now()}${i}`,variacionId:'original',personaId:null}]};
@@ -177,7 +176,6 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
   // ── Planes y precios ──
 
   // ── Setlist Creator ──
-  const [slNombre,setSlNombre]=useState('');
   const [slCanciones,setSlCanciones]=useState([]);
   const [slSearch,setSlSearch]=useState('');
   const [slEventoId,setSlEventoId]=useState('');
@@ -606,25 +604,22 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
     const guardarSetlist=()=>{
       if(!slCanciones.length){onToast({text:tx.addAtLeastOneSong,sub:tx.setlistEmptyToast});return;}
+      if(!slEventoId){onToast({text:'Selecciona un evento',sub:'El setlist debe estar asignado a una fecha'});return;}
+      const eventoAsignado=eventos.find(e=>String(e.id)===String(slEventoId));
       const nuevo={
         id:Date.now(),
-        nombre:slNombre||`Setlist ${new Date().toLocaleDateString('es-CL')}`,
+        nombre:`Setlist · ${eventoAsignado?.nombre||''}`,
         canciones:[...slCanciones],
-        eventoId:slEventoId||null,
+        eventoId:slEventoId,
         fecha:new Date().toLocaleDateString('es-CL'),
       };
       setSlGuardados(prev=>[...prev,nuevo]);
-      // Si hay evento asignado, persistir el setlist en Firestore de una vez
-      // (antes solo actualizaba el state local y se perdía al recargar o no
-      // se veía desde otro dispositivo del equipo). guardarSetlistEnEvento ya
-      // muestra su propio toast de confirmación, así que solo avisamos acá
-      // cuando queda como borrador sin evento.
-      if(slEventoId){
-        guardarSetlistEnEvento(parseInt(slEventoId), slCanciones);
-      } else {
-        onToast({text:tx.setlistSavedToast,sub:`${slCanciones.length} canciones`});
-      }
-      setSlCanciones([]);setSlNombre('');setSlEventoId('');setSlSearch('');
+      // Persistir el setlist en Firestore de una vez (antes solo actualizaba
+      // el state local y se perdía al recargar o no se veía desde otro
+      // dispositivo del equipo). guardarSetlistEnEvento ya muestra su
+      // propio toast de confirmación.
+      guardarSetlistEnEvento(parseInt(slEventoId), slCanciones);
+      setSlCanciones([]);setSlEventoId('');setSlSearch('');
       setBsView(null);
     };
 
@@ -634,15 +629,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
           Crear <span style={{color:'var(--ac)'}}>setlist</span>
         </div>
-        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>Arma la lista de canciones y asígnala a un evento cuando quieras</div>
-        <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
-          <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.setlistNameLbl}</div>
-          <input className="inp" placeholder="Ej: Setlist 6 de julio · Noche de adoración..." value={slNombre} onChange={e=>setSlNombre(e.target.value)}/>
-        </div>
+        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>Elige el evento y arma el orden de canciones para él</div>
         <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
             Asignar a evento
-            <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:'var(--fs-subtitle)',marginLeft:6}}>· opcional, puedes hacerlo después</span>
           </div>
           {eventos.length===0?(
             <div style={{padding:'12px',borderRadius:10,background:'var(--s1)',textAlign:'center'}}>
@@ -653,7 +643,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             </div>
           ):(
             <CustomSelect value={slEventoId} onChange={setSlEventoId}
-              placeholder="Sin asignar — guardar como borrador"
+              placeholder="Selecciona un evento"
               options={eventos.map(ev=>({value:ev.id,label:`${ev.nombre}${ev.fecha?' · '+ev.fecha:''}`}))}/>
           )}
           {slEventoId&&(
@@ -779,10 +769,9 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
                   <div style={{fontWeight:700,fontSize:'var(--fs-lg)',color:'var(--tx)'}}>{sl.nombre}</div>
                   <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>
                     {sl.canciones.length} canciones · {sl.fecha}
-                    {sl.eventoId&&<span style={{color:'var(--gn)',marginLeft:6}}>· Asignado ✓</span>}
                   </div>
                 </div>
-                <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlNombre(sl.nombre);setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:tx.editingSetlistLbl,sub:sl.nombre});}}
+                <button onClick={()=>{setSlCanciones([...sl.canciones]);setSlEventoId(String(sl.eventoId));setSlGuardados(prev=>prev.filter(x=>x.id!==sl.id));onToast({text:tx.editingSetlistLbl,sub:sl.nombre});}}
                   style={{padding:'4px 10px',borderRadius:8,background:'var(--s1)',color:'var(--tx2)',fontSize:'var(--fs-subtitle)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)",flexShrink:0}}>
                   Editar
                 </button>
@@ -794,9 +783,9 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         )}
         <div style={{display:'flex',gap:9}}>
           <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
-          <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!slCanciones.length} onClick={guardarSetlist}>
+          <button className="btn btn-p" style={{flex:2,justifyContent:'center'}} disabled={!slCanciones.length||!slEventoId} onClick={guardarSetlist}>
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-            {slEventoId?tx.saveAndAssignBtn:tx.saveSetlistBtn}
+            {tx.saveAndAssignBtn}
           </button>
         </div>
       </div>
@@ -1399,7 +1388,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       features:t.marcaBlanca?[...tx.teamFeaturesBase,tx.whiteLabelIncluded]:tx.teamFeaturesBase,
     }));
     const BloquePlanesEquipoInfo=({planes})=>(
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      <div className="planes-grid">
         {planes.map(p=>(
           <div key={p.id} className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,background:'var(--s1)'}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:4}}>
