@@ -117,7 +117,7 @@ export const T = {
     whiteLabelIncluded:'Marca blanca incluida',
     fromLbl:        'Desde',
     // ── Backstage: Planes y precios ─────────────────────────────────────────
-    plansAndPricesTitle:'Planes y precios',
+    plansAndPricesTitle:'Planes SetSync',
     plansIntro:     'SetSync tiene dos formas de pagar: por tu cuenta personal (tú invitas gente con límite) o por equipo (todo el equipo con acceso Premium completo, un solo pago).',
     personalAccountLbl:'Cuenta personal',
     personalAccountDesc:'Tú administras la cuenta y decides a quién invitar, con un tope de invitados que crece según el plan.',
@@ -650,7 +650,7 @@ export const T = {
     whiteLabelIncluded:'Marca blanca incluida',
     fromLbl:        'Desde',
     // ── Backstage: Planes y precios ─────────────────────────────────────────
-    plansAndPricesTitle:'Planes y precios',
+    plansAndPricesTitle:'Planes SetSync',
     plansIntro:     'SetSync tiene dos formas de pagar: por tu cuenta personal (vos invitás gente con límite) o por equipo (todo el equipo con acceso Premium completo, un solo pago).',
     personalAccountLbl:'Cuenta personal',
     personalAccountDesc:'Vos administrás la cuenta y decidís a quién invitar, con un tope de invitados que crece según el plan.',
@@ -1113,7 +1113,7 @@ export const T = {
     whiteLabelIncluded:'Marca branca incluída',
     fromLbl:        'A partir de',
     // ── Backstage: Planos e preços ───────────────────────────────────────────
-    plansAndPricesTitle:'Planos e preços',
+    plansAndPricesTitle:'Planos SetSync',
     plansIntro:     'O SetSync tem duas formas de pagar: conta pessoal (você convida pessoas, com limite) ou conta de equipe (toda a equipe com acesso Premium completo, um único pagamento).',
     personalAccountLbl:'Conta pessoal',
     personalAccountDesc:'Você administra a conta e decide quem convidar, com um limite de convidados que cresce conforme o plano.',
@@ -1648,7 +1648,7 @@ export const T = {
     whiteLabelIncluded:'White label included',
     fromLbl:        'From',
     // ── Backstage: Plans and pricing ─────────────────────────────────────────
-    plansAndPricesTitle:'Plans and pricing',
+    plansAndPricesTitle:'SetSync Plans',
     plansIntro:     'SetSync has two ways to pay: personal account (you invite people, with a cap) or team account (the whole team gets full Premium access, one payment).',
     personalAccountLbl:'Personal account',
     personalAccountDesc:'You manage the account and decide who to invite, with an invite cap that grows with the plan.',

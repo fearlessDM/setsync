@@ -1920,8 +1920,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     {id:'notif',label:tx.navNotificationsLbl,sub:tx.navNotificationsSub,icon:'bell',color:'var(--rd)',adminOnly:false,img:'/backstage/notif.jpg'},
     {id:'personalizar',label:tx.navPersonalizationLbl,sub:tx.navPersonalizationSub,icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:tx.navPastorWordLbl,sub:tx.navPastorWordSub,icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
-    {id:'cuentaequipo',label:'Cuenta Equipo',sub:'Administra tu equipo y pagos',icon:'team',color:'var(--gn)',adminOnly:false,img:'/backstage/cuentaequipo.jpg',
-      bg:'rgba(var(--gn-rgb),.16)',bgGradient:'linear-gradient(115deg,transparent 32%,rgba(var(--gn-rgb),.16) 86%)'},
+    {id:'cuentaequipo',label:'Cuenta Equipo',sub:'Administra tu equipo y pagos',icon:'team',color:'var(--gn)',adminOnly:false,img:'/backstage/cuentaequipo.jpg'},
     {id:'planes',label:tx.navPlansLbl,sub:tx.navPlansSub,icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
     // Ultra Admin (v91): ni siquiera entra al array si no eres el dueño de
     // la plataforma — no es un simple "oculto por CSS", el ítem no existe.
