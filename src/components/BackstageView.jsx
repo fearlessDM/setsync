@@ -16,24 +16,6 @@ import { getModoFeatures } from '../data/modo';
 import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
 import { subirArchivo } from '../firebase/storage';
 
-const FAQS_PLANES = [
-  {q:'¿Cuál es la diferencia entre Cuenta Unitaria y Cuenta Equipo?', a:'Cuenta Unitaria da acceso solo a la persona que inició sesión (Lite, Pro o Premium). Cuenta Equipo es un solo pago del admin que deja a TODOS los miembros con acceso Premium completo, automático — no hace falta que cada uno pague su propio plan.'},
-  {q:'¿Cuánto cuesta cada plan?', a:'Todo es mensual, sin plan anual. Cuenta Unitaria: Lite gratis, Pro $8, Premium $12. Cuenta Equipo: 1–10 personas $18, 11–25 $28, 26–35 $39 (incluye marca blanca), 36+ $39 más $1 por persona sobre 35.'},
-  {q:'¿Por qué elegir Cuenta Equipo en vez de que cada uno pague su plan?', a:'Apenas tienes 2-3 personas que necesitan Premium, sale más barato la Cuenta Equipo que sumar planes individuales — y evita el problema de "quién paga qué". Un solo pago, todo el equipo con acceso completo.'},
-  {q:'¿Cómo se agregan miembros?', a:'El admin los agrega por correo electrónico directo desde esta pantalla. No hace falta código de invitación ni link.'},
-  {q:'Agregué a alguien que todavía no tiene cuenta en SetSync, ¿qué pasa?', a:'Queda como "pendiente". Apenas esa persona se registra o inicia sesión con ese mismo correo, se vincula sola — no hay que hacer nada más.'},
-  {q:'¿Puedo quitar a alguien del equipo?', a:'Sí, desde la misma pantalla. Al quitarlo, esa persona vuelve a su plan individual (Lite, salvo que tenga uno pago aparte).'},
-  {q:'¿El admin también cuenta como miembro del equipo?', a:'Sí, se agrega automáticamente al crear la Cuenta Equipo — no ocupa un cupo aparte del tramo.'},
-  {q:'¿Puedo cambiar de tramo si el equipo crece?', a:'Sí, se ajusta desde esta misma pantalla cuando lo necesites.'},
-  {q:'¿Qué pasa con los miembros si el pago falla?', a:'Hay un período de gracia antes de que baje nadie de plan — el equipo sigue con Premium completo mientras el admin regulariza el pago. Solo después de vencido ese plazo, todos los miembros vuelven a su plan individual.'},
-  {q:'¿Cómo sé si mi equipo está en período de gracia?', a:'Acá mismo, el admin ve el estado del equipo (Activa / En gracia / Vencida) con la fecha límite si corresponde.'},
-  {q:'¿Una persona puede pertenecer a más de un equipo a la vez?', a:'Sí. Si perteneces a dos Cuentas Equipo distintas (por ejemplo, tocas en dos bandas), basta con que una esté vigente para que tengas Premium completo.'},
-  {q:'Soy miembro de un equipo, no el admin — ¿puedo agregar o quitar gente?', a:'No, solo quien contrató la Cuenta Equipo puede gestionar miembros. Vas a ver un aviso de que perteneces al equipo, sin controles de administración.'},
-  {q:'¿La marca blanca viene en todos los tramos de equipo?', a:'No — viene incluida desde el tramo de 26–35 personas hacia arriba. Los tramos más chicos (1–10 y 11–25) no la incluyen.'},
-  {q:'¿"Límite de miembros" en Cuenta Unitaria significa que esas personas tienen acceso?', a:'No — ese límite es solo un tope de roster/lista de contactos que puedes cargar en tu cuenta (nombres, roles). No le da acceso a nadie más a la app. Para eso necesitan su propio plan individual o formar parte de una Cuenta Equipo.'},
-  {q:'¿Hay plan anual con descuento?', a:'No, por ahora todo es mensual únicamente.'},
-];
-
 export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{},orgPerfil={nombre:'',tipo:'iglesia',ubicacion:''},persistirOrgPerfil=()=>{}}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
@@ -240,75 +222,18 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
     return AVATAR_PALETTE[h%AVATAR_PALETTE.length];
   };
-
-  // ── Tutoriales del bot\u00f3n de ayuda "i" ──────────────────────────────────
-  const TUTORIALES_HELP={
-    evento:{
-      titulo:'Cómo crear un evento',
-      pasos:[
-        'Escribe el nombre del evento. Si repites el mismo título más de 3 veces, aparece como chip sugerido bajo "Recurrentes" para no tener que volver a tipearlo.',
-        'Selecciona la fecha, lugar y hora.',
-        'Agrega las canciones al setlist — puedes asignar variaciones o instrumentos distintos a cada persona.',
-        'Marca qué equipos quedan convocados para esta fecha.',
-        'Agrega notas para el equipo.',
-        'Arma el itinerario con los horarios del día — parte con 6 filas vacías, toca "Editar" para completarlas y "+" para agregar más si hace falta.',
-        'Adjunta un archivo si lo necesitas (PDF, Word o audio) — queda disponible para abrirlo con un clic desde Próxima Fecha.',
-        'Toca "Crear evento" para publicarlo — tu equipo lo ve automáticamente en Próxima Fecha y recibe una notificación simple al instante.',
-      ],
-    },
-    equipos:{
-      titulo:'Cómo gestionar equipos, roles y personas',
-      pasos:[
-        'Los miembros de todos los equipos aparecen siempre como chips arriba de la lista — toca el avatar de cualquiera para subirle una foto, o la × para eliminarlo del equipo.',
-        'Para agregar una persona nueva: botón "Agregar miembro" arriba de la lista, completa nombre y correo (opcional).',
-        'Para crear un equipo nuevo: al final de la pantalla, escribe el nombre y los roles separados por coma.',
-        'Toca cualquier equipo para ver su detalle — ahí puedes agregar/quitar miembros y cambiar su rol.',
-        'Los roles de un equipo se editan en su detalle: escribe uno nuevo y presiona Enter, o toca la × para quitar uno existente.',
-        'Una persona puede pertenecer a más de un equipo a la vez — se agrega desde el selector "Agregar miembro al equipo" en cada detalle.',
-      ],
-    },
-    notif:{
-      titulo:'Cómo enviar notificaciones',
-      pasos:[
-        'Elige a quién va dirigida: todo el equipo, o un equipo específico.',
-        'Selecciona el tipo de alerta: recordatorio, cambio de setlist, urgente o general — esto define el color e ícono que verán.',
-        'Escribe el mensaje.',
-        'Si quieres que también llegue por correo electrónico (no solo dentro de la app), activa esa opción antes de enviar.',
-        'Toca "Enviar" — el equipo lo recibe al instante.',
-      ],
-    },
-    ensayo:{
-      titulo:'Cómo crear un ensayo',
-      pasos:[
-        'Opcional: asigna el ensayo a un evento existente para tenerlos vinculados.',
-        'Elige qué setlist vas a repasar (de los que ya guardaste desde Crear setlist).',
-        'Marca qué equipos quedan convocados a este ensayo.',
-        'Agrega notas de foco (ej: "repasar transiciones del bloque de adoración") y adjunta un archivo si lo necesitas.',
-        'Toca "Crear ensayo" — si ya había ensayos para el mismo evento, puedes duplicar uno existente en vez de partir de cero.',
-      ],
-    },
-    permisos:{
-      titulo:'Cómo delegar permisos',
-      pasos:[
-        'Selecciona a la persona del equipo que va a recibir permisos de líder.',
-        'Marca los permisos específicos que va a tener: editar setlist, convocar equipo, enviar notificaciones, editar itinerario, gestionar equipos, palabra del pastor, o ver Backstage.',
-        'Toca "Guardar líder" — la persona queda con acceso solo a lo que marcaste, sin necesitar tu aprobación cada vez.',
-        'Puedes quitarle el acceso en cualquier momento desde la lista de "Líderes actuales", tocando la × junto a su nombre.',
-      ],
-    },
-    backstage:{
-      titulo:'Qué es Backstage',
-      pasos:[
-        'Backstage es el panel de control de tu equipo — desde acá administras todo lo que no ve el resto de los músicos.',
-        'Crear fecha/setlist/ensayo: arma los eventos y el contenido que tu equipo va a usar.',
-        'Gestión de equipos: quiénes son, en qué equipo están, y qué rol cumplen.',
-        'Delegar permisos: da acceso de líder a otras personas sin que dependan de ti para todo.',
-        'Notificaciones: avisa a tu equipo directo desde la app.',
-        'Personalización: logo, tema visual e idioma de tu cuenta.',
-        'Cada pantalla tiene su propio botón de ayuda "i" con instrucciones específicas.',
-      ],
-    },
+  // Separa la última palabra de un título traducido para pintarla con el
+  // color de acento (ej: "Crear setlist" -> "Crear " + "setlist"). Antes
+  // estos títulos venían con el texto partido a mano y hardcodeado en
+  // español; ahora se arman desde cualquier frase de tx.
+  const splitAccent=(str='')=>{
+    const parts=str.trim().split(' ');
+    const accent=parts.pop();
+    return {prefix:parts.length?parts.join(' ')+' ':'', accent};
   };
+
+  // ── Tutoriales del botón de ayuda "i" ──────────────────────────────────
+  const TUTORIALES_HELP=tx.tutorialesHelp;
   const HelpBtn=()=>(
     <button className="help-btn" onClick={()=>setHelpOpen(true)} aria-label="Ayuda">i</button>
   );
@@ -342,14 +267,14 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <button className="help-btn" onClick={()=>setHelpOpen('evento')} aria-label="Ayuda">i</button>
 
       </div>
-      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>o evento</span></div>
+      <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.1,marginBottom:3}}>{tx.createDateLbl} <span style={{color:'var(--ac)'}}>{tx.orEventLbl}</span></div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:16}}>{tx.createDateSub}</div>
       <div className="bs-form-grid">
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
         <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.eventNameLbl}</div>
         {nombresRecurrentes.length>0&&(
           <div style={{marginBottom:10}}>
-            <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>Recurrentes</div>
+            <div style={{fontSize:'var(--fs-3xs)',fontWeight:700,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>{tx.recurrentesLbl}</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
               {nombresRecurrentes.map(op=>(
                 <button key={op} onClick={()=>setEvNombre(op)}
@@ -363,7 +288,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <input className="inp" value={evNombre} onChange={e=>setEvNombre(e.target.value)}/>
       </div>
       <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:14}}>
-        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>Detalles</div>
+        <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>{tx.detallesLbl}</div>
         <div style={{display:'flex',gap:8,marginBottom:16}}>
           <CustomSelect style={{flex:1,fontWeight:400,color:'#fff'}} placeholder={tx.dayLbl}
             value={Number(evFecha.split('-')[2])||''}
@@ -627,9 +552,9 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
 
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
-          Crear <span style={{color:'var(--ac)'}}>setlist</span>
+          {splitAccent(tx.navCreateSetlistLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.navCreateSetlistLbl).accent}</span>
         </div>
-        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>Elige el evento y arma el orden de canciones para él</div>
+        <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>{tx.setlistSubLbl}</div>
         <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:12}}>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:8}}>
             Asignar a evento
@@ -801,7 +726,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
         </div>
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
-          Gestión de <span style={{color:'var(--ac)'}}>equipos</span>
+          {splitAccent(tx.navTeamManagementLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.navTeamManagementLbl).accent}</span>
         </div>
         <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginBottom:20,lineHeight:1.5}}>
           Organiza tu gente en equipos de trabajo. Agrega miembros, asigna roles y gestiona la convocatoria de cada fecha.
@@ -906,7 +831,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             </div>
           ))}
           {personas.length===0&&(
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'4px 0'}}>Agrega tu primer miembro →</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontStyle:'italic',padding:'4px 0'}}>{tx.addFirstMemberLbl}</div>
           )}
         </div>
 
@@ -972,7 +897,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:2}}>
-        Delegar <span style={{color:'var(--ac)'}}>permisos</span>
+        {splitAccent(tx.navDelegatePermissionsLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.navDelegatePermissionsLbl).accent}</span>
       </div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5,marginBottom:20}}>
         Asigna líderes para que gestionen su área sin necesitar tu aprobación.
@@ -1076,10 +1001,10 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:4}}>{tx.notificationsTitleLbl}</div>
-      <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. </div>
+      <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)',lineHeight:1.5,marginBottom:18}}>{tx.notifScreenSubLbl}</div>
       <div className="msg-grid">
       <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
-        <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>¿A quién?</div>
+        <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>{tx.toWhomLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
           {[tx.wholeTeamLbl,...equipos.map(e=>e.name)].map(dest=>(
             <button key={dest} onClick={()=>setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest])} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
@@ -1102,8 +1027,8 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       </div>
       <div className="card" style={{paddingTop:28,paddingBottom:28,paddingLeft:24,paddingRight:24,marginBottom:12}}>
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:10}}>
-          Asignar a evento
-          <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:'var(--fs-subtitle)',marginLeft:6}}>· opcional</span>
+          {tx.asignarAEventoLbl}
+          <span style={{fontWeight:400,textTransform:'none',letterSpacing:0,color:'var(--tx2)',fontSize:'var(--fs-subtitle)',marginLeft:6}}>{tx.opcionalTagLbl}</span>
         </div>
         {eventos.length===0?(
           <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)'}}>{tx.noEventsYetLbl}</div>
@@ -1158,7 +1083,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <input className="inp" placeholder={tx.orgNamePlaceholder} style={{marginBottom:8}}
           value={orgNombre} onChange={e=>setOrgNombre(e.target.value)}
           onBlur={()=>persistirOrgPerfil({nombre:orgNombre})}/>
-        <div style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',marginBottom:6}}>Tipo de organización</div>
+        <div style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx3)',marginBottom:6}}>{tx.orgTypeLbl}</div>
         <div style={{display:'flex',gap:6,marginBottom:8}}>
           {[{id:'banda',label:'Banda'},{id:'iglesia',label:'Iglesia'},{id:'otro',label:'Otro'}].map(op=>(
             <button key={op.id} onClick={()=>{setOrgTipo(op.id);persistirOrgPerfil({tipo:op.id});}}
@@ -1183,7 +1108,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             <span style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',fontWeight:700}}>{tx.logoFieldLbl}</span>
           </div>
           <div>
-            <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6}}>PNG o SVG · 512×512px recomendado</div>
+            <div style={{fontSize:'var(--fs-md)',color:'var(--tx2)',lineHeight:1.6}}>{tx.logoFormatHintLbl}</div>
             <button style={{marginTop:6,padding:'4px 10px',borderRadius:7,background:'var(--s1)',color:'var(--tx2)',fontSize:'var(--fs-subtitle)',fontWeight:700,cursor:'pointer',fontFamily:"var(--font-body)"}}>{tx.selectFileBtn}</button>
           </div>
         </div>
@@ -1302,7 +1227,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </div>
           <div style={{fontSize:'var(--fs-sm)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px'}}>{tx.mediaFilesLbl}</div>
         </div>
-        <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',marginBottom:12,lineHeight:1.6}}>PPT, imágenes o PDF que el equipo de proyecciones necesita para el servicio.</div>
+        <div style={{fontSize:'var(--fs-base)',color:'var(--tx2)',marginBottom:12,lineHeight:1.6}}>{tx.pastorMediaHintLbl}</div>
         <label style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderRadius:10,background:'rgba(var(--rd-rgb),.04)',cursor:'pointer',transition:'all .2s'}}
           onMouseEnter={e=>e.currentTarget.style.background='rgba(var(--rd-rgb),.08)'}
           onMouseLeave={e=>e.currentTarget.style.background='rgba(var(--rd-rgb),.04)'}>
@@ -1316,7 +1241,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           </svg>
           <div>
             <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--rd)'}}>{tx.uploadFilesLbl}</div>
-            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>PPT · PDF · Imágenes</div>
+            <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>{tx.pastorMediaFormatsLbl}</div>
           </div>
         </label>
       </div>
@@ -1433,7 +1358,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
           style={{display:'flex',alignItems:'center',gap:6,padding:'7px 12px',borderRadius:100,
             background:faqPlanesOpen?'var(--s2)':'var(--s1)',cursor:'pointer',marginBottom:22}}>
           <span style={{fontSize:'var(--fs-base)'}}>❓</span>
-          <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)'}}>Preguntas frecuentes</span>
+          <span style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)'}}>{tx.faqLbl}</span>
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--tx3)" strokeWidth="2"
             style={{transform:faqPlanesOpen?'rotate(180deg)':'rotate(0)',transition:'transform .2s'}}>
             <polyline points="6 9 12 15 18 9"/>
@@ -1442,8 +1367,8 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
         {faqPlanesOpen && (
           <div className="card" style={{paddingTop:26,paddingBottom:26,paddingLeft:22,paddingRight:22,marginBottom:22,background:'var(--s1)'}}>
-            {FAQS_PLANES.map((faq,i)=>(
-              <div key={i} style={{borderBottom:i<FAQS_PLANES.length-1?'1px solid var(--s2)':'none'}}>
+            {tx.faqsPlanes.map((faq,i)=>(
+              <div key={i} style={{borderBottom:i<tx.faqsPlanes.length-1?'1px solid var(--s2)':'none'}}>
                 <button onClick={()=>setFaqPlanesAbiertas(v=>({...v,[i]:!v[i]}))}
                   style={{width:'100%',background:'none',textAlign:'left',
                     padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
@@ -1546,7 +1471,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
 
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
-          Cuenta <span style={{color:'var(--ac)'}}>Equipo</span>
+          {splitAccent(tx.teamAccountLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.teamAccountLbl).accent}</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:18}}>
           {tx.teamAccountDesc}
@@ -1712,7 +1637,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     if(!esDueñoPlataforma)return(
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90}}>
 
-        <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)'}}>No autorizado.</div>
+        <div style={{fontSize:'var(--fs-lg)',color:'var(--tx2)'}}>{tx.noAutorizadoLbl}</div>
       </div>
     );
     const setEdicion=(orgId,campo,valor)=>setUaEdicion(prev=>({...prev,[orgId]:{...prev[orgId],[campo]:valor}}));
@@ -1721,14 +1646,14 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
       <div style={{padding:'var(--pw-y,10px) var(--pw-x,14px)',paddingBottom:90,background:'var(--bg)',minHeight:'100vh',color:'var(--tx)'}}>
 
         <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
-          Ultra <span style={{color:'var(--ac)'}}>Admin</span>
+          {splitAccent(tx.ultraAdminTitleLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.ultraAdminTitleLbl).accent}</span>
         </div>
         <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:18}}>
-          Todos los equipos de la plataforma ({todosLosOrgs.length}). Mientras no haya pasarela de pago, confirma acá manualmente cuando alguien te transfiera.
+          {tx.ultraAdminDescLbl(todosLosOrgs.length)}
         </div>
 
         {todosLosOrgs.length===0&&(
-          <div style={{padding:20,textAlign:'center',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>Sin equipos creados todavía.</div>
+          <div style={{padding:20,textAlign:'center',color:'var(--tx3)',fontFamily:"var(--font-body)"}}>{tx.sinEquiposCreadosLbl}</div>
         )}
 
         <div style={{display:'flex',flexDirection:'column',gap:10}}>
@@ -1810,7 +1735,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
 
       </div>
       <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-pagehead)',textTransform:'uppercase',color:'var(--tx)',lineHeight:1.05,marginBottom:3}}>
-        Crear <span style={{color:'var(--ac)'}}>ensayo</span>
+        {splitAccent(tx.navCreateRehearsalLbl).prefix}<span style={{color:'var(--ac)'}}>{splitAccent(tx.navCreateRehearsalLbl).accent}</span>
       </div>
       <div style={{fontFamily:"var(--font-body)",fontWeight:300,fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.4,marginBottom:20}}>{tx.rehearsalSubLbl}</div>
 
@@ -1884,7 +1809,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--ac)" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div>
               <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--ac)'}}>{tx.uploadFileLbl}</div>
-              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>PDF, Word o audio para el equipo</div>
+              <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',marginTop:2}}>{tx.ensayoFileHintLbl}</div>
             </div>
           </label>
         )}
@@ -1912,7 +1837,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
   }
 
   const ITEMS=[
-    {id:'evento',label:'Crear evento',sub:tx.navCreateEventSub,icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
+    {id:'evento',label:tx.createEvent,sub:tx.navCreateEventSub,icon:'calendar',color:'#c8a97e',adminOnly:false,img:'/backstage/evento.jpg'},
     {id:'setlist',label:tx.navCreateSetlistLbl,sub:tx.navCreateSetlistSub,icon:'music',color:'var(--gn)',adminOnly:false,img:'/backstage/setlist.jpg'},
     {id:'ensayo',label:tx.navCreateRehearsalLbl,sub:tx.navCreateRehearsalSub,icon:'mic',color:'var(--rd)',adminOnly:false,img:'/backstage/ensayo.jpg'},
     {id:'equipos',label:tx.navTeamManagementLbl,sub:tx.navTeamManagementSub,icon:'team',color:'var(--gn)',adminOnly:true,img:'/backstage/equipos.jpg'},
@@ -1920,11 +1845,11 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     {id:'notif',label:tx.navNotificationsLbl,sub:tx.navNotificationsSub,icon:'bell',color:'var(--rd)',adminOnly:false,img:'/backstage/notif.jpg'},
     {id:'personalizar',label:tx.navPersonalizationLbl,sub:tx.navPersonalizationSub,icon:'settings',color:'#7dd3c0',adminOnly:false,img:'/backstage/personalizar.jpg'},
     ...(feat.cancioneroUniversal?[{id:'pastor',label:tx.navPastorWordLbl,sub:tx.navPastorWordSub,icon:'book',color:'#e0a458',adminOnly:true,img:'/backstage/pastor.jpg'}]:[]),
-    {id:'cuentaequipo',label:'Cuenta Equipo',sub:'Administra tu equipo y pagos',icon:'team',color:'var(--gn)',adminOnly:false,img:'/backstage/cuentaequipo.jpg'},
+    {id:'cuentaequipo',label:tx.teamAccountLbl,sub:tx.cuentaEquipoMenuSubLbl,icon:'team',color:'var(--gn)',adminOnly:false,img:'/backstage/cuentaequipo.jpg'},
     {id:'planes',label:tx.navPlansLbl,sub:tx.navPlansSub,icon:'star',color:'#c8a97e',adminOnly:true,img:'/backstage/planes.jpg'},
     // Ultra Admin (v91): ni siquiera entra al array si no eres el dueño de
     // la plataforma — no es un simple "oculto por CSS", el ítem no existe.
-    ...(esDueñoPlataforma?[{id:'ultraadmin',label:'Ultra Admin',sub:'Todos los equipos de la plataforma',icon:'shield',color:'var(--rd)',adminOnly:false,img:'/backstage/planes.jpg'}]:[]),
+    ...(esDueñoPlataforma?[{id:'ultraadmin',label:tx.ultraAdminTitleLbl,sub:tx.ultraAdminMenuSubLbl,icon:'shield',color:'var(--rd)',adminOnly:false,img:'/backstage/planes.jpg'}]:[]),
   ].filter(it=>{
     if(it.adminOnly&&!isAdmin)return false;
     return true;

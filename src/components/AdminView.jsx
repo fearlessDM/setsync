@@ -4,10 +4,7 @@ import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 import { CustomSelect } from './common';
 
-const MESES_CORTO =['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const DIAS_SEMANA =['D','L','M','M','J','V','S']; // 0=Dom,...,6=Sáb (getDay order)
-// Para cabecera de columnas en grilla lun-dom:
-const HDR = ['L','M','M','J','V','S','D'];
+// Días/meses cortos ahora vienen de tx.weekDaysShort / tx.months (i18n.js)
 
 // ── Mini calendario ────────────────────────────────────────────────────────
 export function MiniCalEvento({mes, eventos=[], onSelectDay=()=>{}, selectedDay=null, lang='es'}){
@@ -46,7 +43,7 @@ export function MiniCalEvento({mes, eventos=[], onSelectDay=()=>{}, selectedDay=
   return(
     <div style={{flexShrink:0, display:'flex', flexDirection:'column', gap:1, minWidth:140}}>
       <div style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:1, marginBottom:2}}>
-        {HDR.map((d,i)=>(
+        {tx.weekDaysShort.map((d,i)=>(
           <div key={i} style={{textAlign:'center', fontSize:'var(--fs-3xs)', fontWeight:900,
             color:'var(--div)', fontFamily:"var(--font-body)"}}>{d}</div>
         ))}
@@ -143,7 +140,7 @@ function BarraMeses({mesActivo, onChange, eventos=[], lang='es'}){
           >
             {/* Nombre completo en desktop, corto en mobile (se hace via JS de width) */}
             <span className="mes-nombre-largo">{m}</span>
-            <span className="mes-nombre-corto">{MESES_CORTO[i]}</span>
+            <span className="mes-nombre-corto">{tx.months[i].charAt(0)+tx.months[i].slice(1).toLowerCase()}</span>
             {count > 0 && (
               <span style={{
                 fontSize:'var(--fs-2xs)', fontWeight:700,

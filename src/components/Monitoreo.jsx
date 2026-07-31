@@ -12,16 +12,11 @@
 import { useState } from 'react';
 import { t as getT } from '../i18n';
 
-const NOMBRES_DEFAULT = [
-  'Voz Líder','Coro 1','Coro 2','Guitarra Ac.','Guitarra El.','Bajo','Batería','Teclado',
-  'Track/Click','Pads','Aux 1','Aux 2','Aux 3','Aux 4','Aux 5','Master',
-];
-
 export function Monitoreo({lang='es', onToast=()=>{}}){
   const tx=getT(lang);
   const [layer,setLayer] = useState('A'); // 'A' = canales 1-8, 'B' = canales 9-16
   const [canales,setCanales] = useState(()=>
-    NOMBRES_DEFAULT.map((nombre,i)=>({id:i+1,nombre,nivel:i===15?0.85:0.6,muted:false}))
+    tx.channelNamesDefaultLbl.map((nombre,i)=>({id:i+1,nombre,nivel:i===15?0.85:0.6,muted:false}))
   );
 
   // ── Placeholder del puente OSC — hoy solo loguea, mañana manda el

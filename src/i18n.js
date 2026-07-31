@@ -140,6 +140,266 @@ export const T = {
     premiumPersonalFeatures:['Todo lo de Pro','100 canciones en tu cancionero','Roster ilimitado','Multi-banda — más de una banda/iglesia en la misma cuenta','Storage ampliado','Export a PDF'],
     teamSub:        'Cuenta equipo',
     teamFeaturesBase:['Premium completo para todos, incluido el súper admin','Cancionero, Vista Escenario, multitracks y partituras','El feature set nunca cambia entre tramos — solo el precio'],
+    faqsPlanes:[
+      {q:'¿Cuál es la diferencia entre Cuenta Unitaria y Cuenta Equipo?',a:'Cuenta Unitaria da acceso solo a la persona que inició sesión (Lite, Pro o Premium). Cuenta Equipo es un solo pago del admin que deja a TODOS los miembros con acceso Premium completo, automático — no hace falta que cada uno pague su propio plan.'},
+      {q:'¿Cuánto cuesta cada plan?',a:'Todo es mensual, sin plan anual. Cuenta Unitaria: Lite gratis, Pro $8, Premium $12. Cuenta Equipo: 1–10 personas $18, 11–25 $28, 26–35 $39 (incluye marca blanca), 36+ $39 más $1 por persona sobre 35.'},
+      {q:'¿Por qué elegir Cuenta Equipo en vez de que cada uno pague su plan?',a:'Apenas tienes 2-3 personas que necesitan Premium, sale más barato la Cuenta Equipo que sumar planes individuales — y evita el problema de "quién paga qué". Un solo pago, todo el equipo con acceso completo.'},
+      {q:'¿Cómo se agregan miembros?',a:'El admin los agrega por correo electrónico directo desde esta pantalla. No hace falta código de invitación ni link.'},
+      {q:'Agregué a alguien que todavía no tiene cuenta en SetSync, ¿qué pasa?',a:'Queda como "pendiente". Apenas esa persona se registra o inicia sesión con ese mismo correo, se vincula sola — no hay que hacer nada más.'},
+      {q:'¿Puedo quitar a alguien del equipo?',a:'Sí, desde la misma pantalla. Al quitarlo, esa persona vuelve a su plan individual (Lite, salvo que tenga uno pago aparte).'},
+      {q:'¿El admin también cuenta como miembro del equipo?',a:'Sí, se agrega automáticamente al crear la Cuenta Equipo — no ocupa un cupo aparte del tramo.'},
+      {q:'¿Puedo cambiar de tramo si el equipo crece?',a:'Sí, se ajusta desde esta misma pantalla cuando lo necesites.'},
+      {q:'¿Qué pasa con los miembros si el pago falla?',a:'Hay un período de gracia antes de que baje nadie de plan — el equipo sigue con Premium completo mientras el admin regulariza el pago. Solo después de vencido ese plazo, todos los miembros vuelven a su plan individual.'},
+      {q:'¿Cómo sé si mi equipo está en período de gracia?',a:'Acá mismo, el admin ve el estado del equipo (Activa / En gracia / Vencida) con la fecha límite si corresponde.'},
+      {q:'¿Una persona puede pertenecer a más de un equipo a la vez?',a:'Sí. Si perteneces a dos Cuentas Equipo distintas (por ejemplo, tocas en dos bandas), basta con que una esté vigente para que tengas Premium completo.'},
+      {q:'Soy miembro de un equipo, no el admin — ¿puedo agregar o quitar gente?',a:'No, solo quien contrató la Cuenta Equipo puede gestionar miembros. Vas a ver un aviso de que perteneces al equipo, sin controles de administración.'},
+      {q:'¿La marca blanca viene en todos los tramos de equipo?',a:'No — viene incluida desde el tramo de 26–35 personas hacia arriba. Los tramos más chicos (1–10 y 11–25) no la incluyen.'},
+      {q:'¿"Límite de miembros" en Cuenta Unitaria significa que esas personas tienen acceso?',a:'No — ese límite es solo un tope de roster/lista de contactos que puedes cargar en tu cuenta (nombres, roles). No le da acceso a nadie más a la app. Para eso necesitan su propio plan individual o formar parte de una Cuenta Equipo.'},
+      {q:'¿Hay plan anual con descuento?',a:'No, por ahora todo es mensual únicamente.'},
+    ],
+    tutorialesHelp:{
+      evento:{
+        titulo:'Cómo crear un evento',
+        pasos:[
+          'Escribe el nombre del evento. Si repites el mismo título más de 3 veces, aparece como chip sugerido bajo "Recurrentes" para no tener que volver a tipearlo.',
+          'Selecciona la fecha, lugar y hora.',
+          'Agrega las canciones al setlist — puedes asignar variaciones o instrumentos distintos a cada persona.',
+          'Marca qué equipos quedan convocados para esta fecha.',
+          'Agrega notas para el equipo.',
+          'Arma el itinerario con los horarios del día — parte con 6 filas vacías, toca "Editar" para completarlas y "+" para agregar más si hace falta.',
+          'Adjunta un archivo si lo necesitas (PDF, Word o audio) — queda disponible para abrirlo con un clic desde Próxima Fecha.',
+          'Toca "Crear evento" para publicarlo — tu equipo lo ve automáticamente en Próxima Fecha y recibe una notificación simple al instante.',
+        ],
+      },
+      equipos:{
+        titulo:'Cómo gestionar equipos, roles y personas',
+        pasos:[
+          'Los miembros de todos los equipos aparecen siempre como chips arriba de la lista — toca el avatar de cualquiera para subirle una foto, o la × para eliminarlo del equipo.',
+          'Para agregar una persona nueva: botón "Agregar miembro" arriba de la lista, completa nombre y correo (opcional).',
+          'Para crear un equipo nuevo: al final de la pantalla, escribe el nombre y los roles separados por coma.',
+          'Toca cualquier equipo para ver su detalle — ahí puedes agregar/quitar miembros y cambiar su rol.',
+          'Los roles de un equipo se editan en su detalle: escribe uno nuevo y presiona Enter, o toca la × para quitar uno existente.',
+          'Una persona puede pertenecer a más de un equipo a la vez — se agrega desde el selector "Agregar miembro al equipo" en cada detalle.',
+        ],
+      },
+      notif:{
+        titulo:'Cómo enviar notificaciones',
+        pasos:[
+          'Elige a quién va dirigida: todo el equipo, o un equipo específico.',
+          'Selecciona el tipo de alerta: recordatorio, cambio de setlist, urgente o general — esto define el color e ícono que verán.',
+          'Escribe el mensaje.',
+          'Si quieres que también llegue por correo electrónico (no solo dentro de la app), activa esa opción antes de enviar.',
+          'Toca "Enviar" — el equipo lo recibe al instante.',
+        ],
+      },
+      ensayo:{
+        titulo:'Cómo crear un ensayo',
+        pasos:[
+          'Opcional: asigna el ensayo a un evento existente para tenerlos vinculados.',
+          'Elige qué setlist vas a repasar (de los que ya guardaste desde Crear setlist).',
+          'Marca qué equipos quedan convocados a este ensayo.',
+          'Agrega notas de foco (ej: "repasar transiciones del bloque de adoración") y adjunta un archivo si lo necesitas.',
+          'Toca "Crear ensayo" — si ya había ensayos para el mismo evento, puedes duplicar uno existente en vez de partir de cero.',
+        ],
+      },
+      permisos:{
+        titulo:'Cómo delegar permisos',
+        pasos:[
+          'Selecciona a la persona del equipo que va a recibir permisos de líder.',
+          'Marca los permisos específicos que va a tener: editar setlist, convocar equipo, enviar notificaciones, editar itinerario, gestionar equipos, palabra del pastor, o ver Backstage.',
+          'Toca "Guardar líder" — la persona queda con acceso solo a lo que marcaste, sin necesitar tu aprobación cada vez.',
+          'Puedes quitarle el acceso en cualquier momento desde la lista de "Líderes actuales", tocando la × junto a su nombre.',
+        ],
+      },
+      backstage:{
+        titulo:'Qué es Backstage',
+        pasos:[
+          'Backstage es el panel de control de tu equipo — desde acá administras todo lo que no ve el resto de los músicos.',
+          'Crear fecha/setlist/ensayo: arma los eventos y el contenido que tu equipo va a usar.',
+          'Gestión de equipos: quiénes son, en qué equipo están, y qué rol cumplen.',
+          'Delegar permisos: da acceso de líder a otras personas sin que dependan de ti para todo.',
+          'Notificaciones: avisa a tu equipo directo desde la app.',
+          'Personalización: logo, tema visual e idioma de tu cuenta.',
+          'Cada pantalla tiene su propio botón de ayuda "i" con instrucciones específicas.',
+        ],
+      },
+    },
+    tutoriales:[
+      {
+        slug:'monitoreo',
+        titulo:'Conexión a Monitoreo Inalámbrico',
+        icon:'🎛️',
+        resumen:'Conecta SetSync a tu mesa Behringer X32, XR18 o Midas M32 para controlar el monitor de cada músico desde su dispositivo.',
+        contenido:`
+# Conexión a Monitoreo Inalámbrico
+SetSync se conecta a tu mesa digital por WiFi, usando el protocolo OSC (Open Sound Control) por debajo — en la práctica, es tu dispositivo hablándole a la mesa por la misma red inalámbrica. El proceso es simple: los dispositivos (tablets, notebooks o cualquier equipo con WiFi) deben estar conectados a la red WiFi que genera la mesa. **Recomendamos usar tablet para la mejor experiencia de usuario** — pantalla más grande, ideal para tener el mapa de estructura y el mixer de monitor visibles a la vez.
+## ¿Qué es un bus?
+Un bus de monitor es tu propia mezcla, independiente de lo que suena en las cornetas o en el in-ear del resto. Cada músico elige cuánto quiere escuchar de cada instrumento o voz — más batería, menos voz, lo que necesite — y arma esa mezcla desde su propio dispositivo, sin tener que pedirle nada al sonidista.
+## Mesas compatibles
+- Behringer X32 / X32 Compact / X32 Rack
+- Behringer XR18 / XR16 / XR12
+- Midas M32 / M32C / MR18
+## Pasos de conexión
+**1. Conectar la mesa al WiFi**
+Conecta un router al puerto Ethernet de la mesa. La mesa creará una red o se unirá a la existente. Anota la IP de la mesa (aparece en el menú Setup → Network).
+**2. Conectar los dispositivos**
+Todos los músicos deben conectar su dispositivo (idealmente una tablet, para mejor experiencia) a la misma red WiFi que genera la mesa.
+**3. Activar en SetSync**
+Abre una canción → pestaña Monitor → ingresa la IP de la mesa → conectar.
+**4. Asignar bus**
+Cada músico selecciona su bus de monitor (Bus 1, 2, 3...) y controla los niveles desde su pantalla, armando su propia mezcla.
+    `
+      },
+      {
+        slug:'secuencias',
+        titulo:'Cómo Lanzar las Secuencias',
+        icon:'▶️',
+        resumen:'Aprende a cargar multitracks, sincronizar el click y navegar la estructura de la canción durante el ensayo o el servicio.',
+        contenido:`
+# Cómo Lanzar las Secuencias
+La pestaña Secuencia en SongView es tu centro de control durante la ejecución de una canción con pistas.
+## Qué encontrarás
+**Mapa de estructura**
+La barra horizontal con las secciones (Intro, V1, Coro...) te muestra exactamente dónde estás. Toca cualquier sección para saltar a ese punto.
+**Waveform general**
+Muestra la forma de onda de la canción completa. Al tocar una sección en el mapa, se ilumina ese segmento en el waveform. Puedes arrastrar el playhead para hacer seek.
+**Controles**
+- ⏮ Sección anterior
+- ▶ / ⏸ Play / Pausa del click
+- ⏭ Sección siguiente
+**BPM y Cifra**
+Ajusta el tempo y el compás. Mantén presionado − o + para cambio rápido.
+**Multitracks**
+8 canales por capa (A y B). Cada fader controla el volumen de una pista. Desliza el knob con el dedo para ajustar.
+## Flujo recomendado
+1. Carga tus archivos de audio en la pestaña Referencia
+2. En Secuencia, ajusta el BPM y la cifra
+3. Usa el mapa de estructura para navegar
+4. Los músicos ven la misma posición en sus pantallas
+    `
+      },
+      {
+        slug:'agregar-cancion',
+        titulo:'Cómo Ingresar una Canción',
+        icon:'🎵',
+        resumen:'Agrega canciones al cancionero con letra, acordes y toda la información necesaria para tu equipo.',
+        contenido:`
+# Cómo Ingresar una Canción
+## Desde el Cancionero
+Ve a Cancionero → botón "+" → Nueva canción.
+## Datos básicos
+- **Nombre**: el título de la canción
+- **Artista / Autor**: quién la compuso
+- **Tonalidad original**: la nota en la que está (Ej: D, Am, G)
+- **BPM**: el tempo en beats por minuto
+- **Compás**: 4/4, 3/4, 6/8, etc.
+## Letra y acordes
+El editor acepta el formato estándar de acordes sobre letra:
+\`\`\`
+G                    D
+Mi orgullo me sacó del jardín
+Em              C
+Su humildad colocó el jardín en mí
+\`\`\`
+Los acordes se ponen en la línea inmediatamente antes de la letra. SetSync los detecta automáticamente.
+## Secciones
+Agrega etiquetas de sección entre corchetes:
+\`\`\`
+[VERSO 1]
+...letra...
+[CORO]
+...letra...
+\`\`\`
+## Transposición automática
+Una vez ingresada la tonalidad original, SetSync puede transponer automáticamente a cualquier otra tonalidad para cualquier músico.
+    `
+      },
+      {
+        slug:'cancionero-universal',
+        titulo:'Cómo Funciona el Cancionero Universal',
+        icon:'📚',
+        resumen:'Accede a miles de canciones de worship con acordes verificados, compartidas por la comunidad SetSync.',
+        contenido:`
+# El Cancionero Universal
+El Cancionero Universal es una biblioteca compartida mantenida por la comunidad de iglesias y bandas que usan SetSync.
+## Qué incluye
+- Canciones de worship en español e inglés
+- Acordes verificados por la comunidad
+- Tonalidades originales
+- BPM y compás
+## Cómo acceder
+Cancionero → pestaña "Universal" (disponible en planes Pro y Premium).
+## Buscar una canción
+Usa el buscador por nombre, artista o tonalidad. Los resultados muestran la canción con su información completa.
+## Agregar al cancionero propio
+Toca la canción → "Agregar a mi cancionero". Aparecerá en tu biblioteca personal donde puedes editarla, ajustar los acordes y agregar notas.
+## Contribuir
+Si tienes una canción bien cifrada, puedes contribuirla a la comunidad desde Cancionero → tu canción → "Compartir con comunidad".
+## Transposición
+Como cualquier canción en SetSync, las del Universal se pueden transponer a cualquier tonalidad en tiempo real durante el ensayo o el servicio.
+    `
+      },
+    ],
+    faqsHomeLbl:[
+      {q:'¿Cómo creo mi primer setlist?',a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
+      {q:'¿Cómo funciona el Monitoreo?',a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su dispositivo — recomendamos usar tablet para la mejor experiencia.'},
+      {q:'¿Puedo usar SetSync sin internet?',a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
+      {q:'¿Cómo convoco al equipo?',a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
+      {q:'¿Qué es el Cancionero Universal?',a:'Una biblioteca compartida de canciones con acordes verificados. Disponible en planes Pro y Premium. Ve a Cancionero → pestaña Universal.'},
+      {q:'¿Cómo funciona la Secuencia?',a:'En SongView → pestaña Secuencia encontrarás el waveform de la canción, los multitracks con faders individuales y el click sincronizado.'},
+      {q:'¿Qué formatos de audio acepta Referencia?',a:'MP3, AAC, WAV, M4A. Puedes subir el audio desde tu dispositivo y hacer loop de cualquier sección para ensayar.'},
+      {q:'¿Qué es la Cuenta Equipo?',a:'Un solo pago del admin que deja a todo el equipo con acceso Premium completo, automático. Más barato que sumar planes individuales apenas son 2-3 personas. Se activa en Backstage → Planes y precios.'},
+      {q:'¿Cómo agrego miembros a mi Cuenta Equipo?',a:'Backstage → Planes y precios → sección Cuenta Equipo. Se agregan por correo electrónico — si esa persona aún no tiene cuenta, queda pendiente y se vincula sola cuando se registre.'},
+      {q:'¿Qué pasa si dejo de pagar la Cuenta Equipo?',a:'Hay un período de gracia antes de que el equipo baje de plan — no se corta de inmediato. Puedes ver el estado exacto en Backstage → Planes y precios.'},
+    ],
+    heroChipsLbl:['Calendario de eventos y ensayos','Coordinación de Banda y equipos de trabajo','Notificaciones y mensajería','Setlists y Repertorio','Secuencias y monitoreo en vivo','y mucho más'],
+    featuresMktLbl:[
+      {icon:'layers',title:'Todo en una pantalla',desc:'Setlist, monitoreo y secuencias juntos — nadie más lo integra.'},
+      {icon:'globe',title:'Hecho para LatAm',desc:'Español nativo, no traducido.'},
+      {icon:'split',title:'Iglesia y Banda',desc:'Dos interfaces, un mismo motor.'},
+      {icon:'library',title:'Cancionero Universal',desc:'Banco de canciones compartido entre iglesias.'},
+      {icon:'wifi',title:'Monitoreo y mezcla personal inalámbrica WiFi',desc:'Cada músico controla su propio bus desde su dispositivo.'},
+      {icon:'bell',title:'Notificaciones al equipo por evento',desc:'Convoca y recuerda sin salir de la app.'},
+      {icon:'activity',title:'Secuencias en vivo',desc:'Click, mapa de estructura y multitracks sincronizados.'},
+      {icon:'users',title:'Gestión de equipos de trabajo, roles y líderes',desc:'Delega permisos por área sin perder el control.'},
+      {icon:'copy',title:'Múltiples archivos y variaciones por canción',desc:'Distintas versiones y arreglos sin duplicar tu cancionero.'},
+      {icon:'mic',title:'Grabaciones de ensayos',desc:'Graba y revisa el ensayo directo desde tu dispositivo.'},
+      {icon:'calendar',title:'Calendario',desc:'Todas tus fechas y ensayos en un solo lugar.'},
+    ],
+    comoFuncionaStepsLbl:[
+      {titulo:'Ingresa tu gente',desc:'Arma tu banda y equipos de trabajo o producción, delega líderes por equipo, cada uno con un rol. Sin recargar tu tiempo.',cta:{label:'Gestión de equipos',view:'backstage',sub:'equipos'}},
+      {titulo:'Ingresa tu repertorio',desc:'Importa o escribe canciones — PDF, Word, DOCX, MP3, incluso partituras por instrumento.',cta:{label:'Canciones',view:'repertorio'}},
+      {titulo:'Crea un evento',desc:'Carga el calendario con todo el detalle de tus próximas fechas y convoca a tus equipos.',cta:{label:'Crear evento',view:'backstage',sub:'evento'}},
+      {titulo:'Toca en vivo',desc:'Ve tus letras, cambia notación, auto scroll, haz anotaciones para ti o para todos, sincronizando pantallas con tu equipo.'},
+      {titulo:'Monitoreo WiFi',desc:'Conecta tu dispositivo a la mesa digital y haz tu mezcla personal. Lanza pistas multitrack, guía, click y todo lo que necesites — y mucho más con SetSync.'},
+    ],
+    notificacionesDemoLbl:[
+      {icon:'✅',color:'var(--gn)',texto:'Cony confirmó asistencia al ensayo del jueves',tiempo:'Hace 20 min',leida:false},
+      {icon:'📎',color:'#a78bfa',texto:'Daniel subió una partitura para "Gloria en Gloria"',tiempo:'Hace 2 h',leida:false},
+      {icon:'💬',color:'#e07820',texto:'Nuevo mensaje en el equipo de alabanza',tiempo:'Ayer',leida:true},
+      {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
+    ],
+    channelNamesDefaultLbl:['Voz Líder','Coro 1','Coro 2','Guitarra Ac.','Guitarra El.','Bajo','Batería','Teclado','Track/Click','Pads','Aux 1','Aux 2','Aux 3','Aux 4','Aux 5','Master'],
+    recurrentesLbl:'Recurrentes',
+    detallesLbl:'Detalles',
+    setlistSubLbl:'Elige el evento y arma el orden de canciones para él',
+    addFirstMemberLbl:'Agrega tu primer miembro →',
+    toWhomLbl:'¿A quién?',
+    orgTypeLbl:'Tipo de organización',
+    logoFormatHintLbl:'PNG o SVG · 512×512px recomendado',
+    pastorMediaHintLbl:'PPT, imágenes o PDF que el equipo de proyecciones necesita para el servicio.',
+    pastorMediaFormatsLbl:'PPT · PDF · Imágenes',
+    ensayoFileHintLbl:'PDF, Word o audio para el equipo',
+    ultraAdminTitleLbl:'Ultra Admin',
+    noAutorizadoLbl:'No autorizado.',
+    sinEquiposCreadosLbl:'Sin equipos creados todavía.',
+    cuentaEquipoMenuSubLbl:'Administra tu equipo y pagos',
+    ultraAdminMenuSubLbl:'Todos los equipos de la plataforma',
+    ultraAdminDescLbl:n => `Todos los equipos de la plataforma (${n}). Mientras no haya pasarela de pago, confirma acá manualmente cuando alguien te transfiera.`,
+    orEventLbl:'o evento',
+    notifScreenSubLbl:'Envía mensajes directos a tu equipo. Sin WhatsApp, sin emails perdidos. ',
+    asignarAEventoLbl:'Asignar a evento',
+    opcionalTagLbl:'· opcional',
     // ── Inicio: bloque de notas ──────────────────────────────────────────────
     ideasNotesLbl:  'Ideas & Notas',
     noNotesYet:     'Aún no hay notas',
@@ -353,7 +613,6 @@ export const T = {
     versePlaceholder:'Escribe el texto del versículo aquí...',
     // ── AdminView / MiSetlist / Premiere ─────────────────────────────────────
     navMonthsHint:  'Navega por los meses y revisa los próximos eventos agendados',
-    noEventsThisMonth:'Sin eventos este mes',
     updatedLbl:     'Actualizado',
     currentDateLbl: 'Fecha actual',
     eventsCreatedLbl:'Eventos creados',
@@ -513,6 +772,7 @@ export const T = {
     byBpm:          'Por BPM',
     // ── Meses ────────────────────────────────────────────────────────────────
     months: ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'],
+    weekDaysShort:['L','M','M','J','V','S','D'],
     seeFullEventDetail: 'Ver todo el detalle del evento',
     fullEventDetailSub: 'Detalle completo para este evento.',
     addSongEditSetlist: 'Agregar canción / editar setlist',
@@ -821,7 +1081,6 @@ export const T = {
     versePlaceholder:'Escribí el texto del versículo acá...',
     // ── AdminView / MiSetlist / Premiere ─────────────────────────────────────
     navMonthsHint:  'Navegá los meses y revisá los próximos eventos agendados',
-    noEventsThisMonth:'Sin eventos este mes',
     updatedLbl:     'Actualizado',
     currentDateLbl: 'Fecha actual',
     eventsCreatedLbl:'Eventos creados',
@@ -1017,7 +1276,7 @@ export const T = {
     goodEvening:   'Boa noite',
     whatToday:     'O que vamos fazer hoje?',
     pickAction:    'Escolha uma ação rápida para começar.',
-    createEvent:   'Criar data',
+    createEvent:   'Criar evento',
     createEventSub:'Novo domingo ou data especial',
     buildSetlist:   'Montar setlist',
     buildSetlistSub:'Escolha as músicas para o culto',
@@ -1048,10 +1307,10 @@ export const T = {
     autoScroll:     'Rolar automático',
     degrees:        'Graus',
     notes:          'Notas',
-    capo:           'CAPO',
-    noCapo:         'Sem capo',
+    capo:           'CAPOTRASTE',
+    noCapo:         'Sem capotraste',
     sounds:         'soa',
-    chordPos:       'Posição do capo',
+    chordPos:       'Posição do capotraste',
     edit:           'Editar',
     cancel:         'Cancelar',
     publish:        'Publicar',
@@ -1136,6 +1395,266 @@ export const T = {
     premiumPersonalFeatures:['Tudo do Pro','100 músicas no seu cancioneiro','Roster ilimitado','Multi-banda — mais de uma banda/igreja na mesma conta','Armazenamento ampliado','Exportação em PDF'],
     teamSub:        'Conta de equipe',
     teamFeaturesBase:['Premium completo para todos, incluindo o super admin','Cancioneiro, Vista de Palco, multitracks e partituras','O conjunto de recursos nunca muda entre as faixas — só o preço'],
+    faqsPlanes:[
+      {q:'Qual é a diferença entre Conta Pessoal e Conta de Equipe?',a:'A Conta Pessoal dá acesso somente a quem fez login (Lite, Pro ou Premium). A Conta de Equipe é um único pagamento do admin que dá a TODOS os membros acesso Premium completo, automaticamente — ninguém precisa pagar seu próprio plano.'},
+      {q:'Quanto custa cada plano?',a:'Tudo é mensal, sem plano anual. Conta Pessoal: Lite grátis, Pro $8, Premium $12. Conta de Equipe: 1–10 pessoas $18, 11–25 $28, 26–35 $39 (inclui marca branca), 36+ $39 mais $1 por pessoa acima de 35.'},
+      {q:'Por que escolher Conta de Equipe em vez de cada um pagar o próprio plano?',a:'Assim que você tem 2-3 pessoas que precisam do Premium, a Conta de Equipe sai mais barata do que somar planos individuais — e evita o problema de "quem paga o quê". Um único pagamento, toda a equipe com acesso completo.'},
+      {q:'Como os membros são adicionados?',a:'O admin os adiciona diretamente por e-mail nesta tela. Não é preciso código de convite nem link.'},
+      {q:'Adicionei alguém que ainda não tem conta no SetSync, o que acontece?',a:'Fica como "pendente". Assim que essa pessoa se cadastra ou faz login com esse mesmo e-mail, ela é vinculada automaticamente — não é preciso fazer mais nada.'},
+      {q:'Posso remover alguém da equipe?',a:'Sim, na mesma tela. Ao remover, essa pessoa volta ao seu plano individual (Lite, a menos que tenha um plano pago à parte).'},
+      {q:'O admin também conta como membro da equipe?',a:'Sim, ele é adicionado automaticamente ao criar a Conta de Equipe — não ocupa uma vaga separada da faixa.'},
+      {q:'Posso mudar de faixa se a equipe crescer?',a:'Sim, você ajusta nesta mesma tela sempre que precisar.'},
+      {q:'O que acontece com os membros se o pagamento falhar?',a:'Há um período de carência antes que alguém perca o plano — a equipe segue com Premium completo enquanto o admin regulariza o pagamento. Só depois que esse prazo vence é que todos os membros voltam ao seu plano individual.'},
+      {q:'Como sei se minha equipe está em período de carência?',a:'Bem aqui — o admin vê o status da equipe (Ativa / Em carência / Vencida) com o prazo, se for o caso.'},
+      {q:'Uma pessoa pode pertencer a mais de uma equipe ao mesmo tempo?',a:'Sim. Se você pertence a duas Contas de Equipe diferentes (por exemplo, toca em duas bandas), basta que uma esteja ativa para você ter Premium completo.'},
+      {q:'Sou membro de uma equipe, não o admin — posso adicionar ou remover pessoas?',a:'Não, só quem contratou a Conta de Equipe pode gerenciar membros. Você vai ver um aviso de que pertence à equipe, sem controles de administração.'},
+      {q:'A marca branca vem em todas as faixas de equipe?',a:'Não — ela vem incluída a partir da faixa de 26–35 pessoas para cima. As faixas menores (1–10 e 11–25) não a incluem.'},
+      {q:'"Limite de membros" na Conta Pessoal significa que essas pessoas têm acesso?',a:'Não — esse limite é apenas um teto do roster/lista de contatos que você pode cadastrar na sua conta (nomes, funções). Ele não dá acesso ao app para mais ninguém. Para isso, elas precisam do próprio plano individual ou fazer parte de uma Conta de Equipe.'},
+      {q:'Existe plano anual com desconto?',a:'Não, por enquanto tudo é somente mensal.'},
+    ],
+    tutorialesHelp:{
+      evento:{
+        titulo:'Como criar um evento',
+        pasos:[
+          'Digite o nome do evento. Se você repetir o mesmo título mais de 3 vezes, ele aparece como um chip sugerido em "Recorrentes" para não precisar digitar de novo.',
+          'Selecione a data, o local e o horário.',
+          'Adicione as músicas ao setlist — você pode atribuir variações ou instrumentos diferentes para cada pessoa.',
+          'Marque quais equipes ficam convocadas para esta data.',
+          'Adicione notas para a equipe.',
+          'Monte o itinerário com os horários do dia — começa com 6 linhas vazias, toque em "Editar" para preenchê-las e em "+" para adicionar mais se precisar.',
+          'Anexe um arquivo se precisar (PDF, Word ou áudio) — fica disponível para abrir com um toque a partir de Próxima Data.',
+          'Toque em "Criar evento" para publicá-lo — sua equipe vê automaticamente em Próxima Data e recebe uma notificação simples na hora.',
+        ],
+      },
+      equipos:{
+        titulo:'Como gerenciar equipes, funções e pessoas',
+        pasos:[
+          'Os membros de todas as equipes sempre aparecem como chips acima da lista — toque no avatar de qualquer um para enviar uma foto, ou no × para removê-lo da equipe.',
+          'Para adicionar uma pessoa nova: botão "Adicionar membro" acima da lista, preencha nome e e-mail (opcional).',
+          'Para criar uma equipe nova: no final da tela, digite o nome e as funções separadas por vírgula.',
+          'Toque em qualquer equipe para ver seu detalhe — lá você pode adicionar/remover membros e mudar sua função.',
+          'As funções de uma equipe são editadas no seu detalhe: digite uma nova e pressione Enter, ou toque no × para remover uma existente.',
+          'Uma pessoa pode pertencer a mais de uma equipe ao mesmo tempo — adicione pelo seletor "Adicionar membro à equipe" em cada detalhe.',
+        ],
+      },
+      notif:{
+        titulo:'Como enviar notificações',
+        pasos:[
+          'Escolha para quem é: toda a equipe, ou uma equipe específica.',
+          'Selecione o tipo de aviso: lembrete, mudança de setlist, urgente ou geral — isso define a cor e o ícone que vão aparecer.',
+          'Escreva a mensagem.',
+          'Se você também quiser que chegue por e-mail (não só dentro do app), ative essa opção antes de enviar.',
+          'Toque em "Enviar" — a equipe recebe na hora.',
+        ],
+      },
+      ensayo:{
+        titulo:'Como criar um ensaio',
+        pasos:[
+          'Opcional: atribua o ensaio a um evento existente para mantê-los vinculados.',
+          'Escolha qual setlist você vai ensaiar (dos que já foram salvos em Criar setlist).',
+          'Marque quais equipes ficam convocadas para este ensaio.',
+          'Adicione notas de foco (ex: "revisar as transições do bloco de louvor") e anexe um arquivo se precisar.',
+          'Toque em "Criar ensaio" — se já havia ensaios para o mesmo evento, você pode duplicar um existente em vez de começar do zero.',
+        ],
+      },
+      permisos:{
+        titulo:'Como delegar permissões',
+        pasos:[
+          'Selecione a pessoa da equipe que vai receber permissões de líder.',
+          'Marque as permissões específicas que ela vai ter: editar setlist, convocar equipe, enviar notificações, editar itinerário, gerenciar equipes, palavra do pastor, ou ver Backstage.',
+          'Toque em "Salvar líder" — a pessoa fica com acesso somente ao que você marcou, sem precisar da sua aprovação toda vez.',
+          'Você pode remover o acesso dela a qualquer momento na lista de "Líderes ativos", tocando no × ao lado do nome.',
+        ],
+      },
+      backstage:{
+        titulo:'O que é o Backstage',
+        pasos:[
+          'Backstage é o painel de controle da sua equipe — daqui você administra tudo o que o resto dos músicos não vê.',
+          'Criar data/setlist/ensaio: monte os eventos e o conteúdo que sua equipe vai usar.',
+          'Gestão de equipes: quem são, em qual equipe estão e qual função cumprem.',
+          'Delegar permissões: dê acesso de líder a outras pessoas para que não dependam de você para tudo.',
+          'Notificações: avise sua equipe direto pelo app.',
+          'Personalização: logotipo, tema visual e idioma da sua conta.',
+          'Cada tela tem seu próprio botão de ajuda "i" com instruções específicas.',
+        ],
+      },
+    },
+    tutoriales:[
+      {
+        slug:'monitoreo',
+        titulo:'Conexão a Monitoramento Sem Fio',
+        icon:'🎛️',
+        resumen:'Conecte o SetSync à sua mesa Behringer X32, XR18 ou Midas M32 para controlar o monitor de cada músico pelo próprio dispositivo.',
+        contenido:`
+# Conexão a Monitoramento Sem Fio
+O SetSync se conecta à sua mesa digital por WiFi, usando o protocolo OSC (Open Sound Control) por baixo — na prática, é o seu dispositivo conversando com a mesa pela mesma rede sem fio. O processo é simples: os dispositivos (tablets, notebooks ou qualquer aparelho com WiFi) precisam estar conectados à rede WiFi que a mesa gera. **Recomendamos usar um tablet para a melhor experiência de uso** — tela maior, ideal para ter o mapa de estrutura e o mixer de monitor visíveis ao mesmo tempo.
+## O que é um bus?
+Um bus de monitor é a sua própria mixagem, independente do que soa nas caixas ou no in-ear dos outros. Cada músico escolhe quanto quer ouvir de cada instrumento ou voz — mais bateria, menos voz, o que precisar — e monta essa mixagem no próprio dispositivo, sem precisar pedir nada ao técnico de som.
+## Mesas compatíveis
+- Behringer X32 / X32 Compact / X32 Rack
+- Behringer XR18 / XR16 / XR12
+- Midas M32 / M32C / MR18
+## Passos de conexão
+**1. Conectar a mesa ao WiFi**
+Conecte um roteador à porta Ethernet da mesa. A mesa vai criar uma rede ou entrar em uma já existente. Anote o IP da mesa (aparece no menu Setup → Network).
+**2. Conectar os dispositivos**
+Todos os músicos devem conectar seu dispositivo (idealmente um tablet, para melhor experiência) à mesma rede WiFi que a mesa gera.
+**3. Ativar no SetSync**
+Abra uma música → aba Monitor → digite o IP da mesa → conectar.
+**4. Atribuir bus**
+Cada músico seleciona seu bus de monitor (Bus 1, 2, 3...) e controla os níveis pela própria tela, montando sua própria mixagem.
+    `
+      },
+      {
+        slug:'secuencias',
+        titulo:'Como Rodar as Sequências',
+        icon:'▶️',
+        resumen:'Aprenda a carregar multitracks, sincronizar o click e navegar pela estrutura da música durante o ensaio ou o culto.',
+        contenido:`
+# Como Rodar as Sequências
+A aba Sequência no SongView é o seu centro de controle durante a execução de uma música com faixas.
+## O que você vai encontrar
+**Mapa de estrutura**
+A barra horizontal com as seções (Intro, V1, Refrão...) mostra exatamente onde você está. Toque em qualquer seção para pular para esse ponto.
+**Waveform geral**
+Mostra a forma de onda da música completa. Ao tocar em uma seção no mapa, esse trecho acende no waveform. Você pode arrastar o playhead para fazer seek.
+**Controles**
+- ⏮ Seção anterior
+- ▶ / ⏸ Play / Pausa do click
+- ⏭ Próxima seção
+**BPM e Fórmula de Compasso**
+Ajuste o andamento e o compasso. Mantenha pressionado − ou + para mudança rápida.
+**Multitracks**
+8 canais por camada (A e B). Cada fader controla o volume de uma faixa. Deslize o knob com o dedo para ajustar.
+## Fluxo recomendado
+1. Carregue seus arquivos de áudio na aba Referência
+2. Em Sequência, ajuste o BPM e o compasso
+3. Use o mapa de estrutura para navegar
+4. Os músicos veem a mesma posição nas suas telas
+    `
+      },
+      {
+        slug:'agregar-cancion',
+        titulo:'Como Cadastrar uma Música',
+        icon:'🎵',
+        resumen:'Adicione músicas ao cancioneiro com letra, cifras e todas as informações que sua equipe precisa.',
+        contenido:`
+# Como Cadastrar uma Música
+## Pelo Cancioneiro
+Vá em Cancioneiro → botão "+" → Nova música.
+## Dados básicos
+- **Nome**: o título da música
+- **Artista / Compositor**: quem a compôs
+- **Tom original**: a nota em que está (ex: D, Am, G)
+- **BPM**: o andamento em batidas por minuto
+- **Compasso**: 4/4, 3/4, 6/8, etc.
+## Letra e cifras
+O editor aceita o formato padrão de cifras sobre a letra:
+\`\`\`
+G                    D
+Mi orgullo me sacó del jardín
+Em              C
+Su humildad colocó el jardín en mí
+\`\`\`
+As cifras ficam na linha imediatamente acima da letra. O SetSync as detecta automaticamente.
+## Seções
+Adicione marcações de seção entre colchetes:
+\`\`\`
+[VERSO 1]
+...letra...
+[REFRÃO]
+...letra...
+\`\`\`
+## Transposição automática
+Uma vez cadastrado o tom original, o SetSync pode transpor automaticamente para qualquer outro tom, para qualquer músico.
+    `
+      },
+      {
+        slug:'cancionero-universal',
+        titulo:'Como Funciona o Cancioneiro Universal',
+        icon:'📚',
+        resumen:'Acesse milhares de músicas de louvor com cifras verificadas, compartilhadas pela comunidade SetSync.',
+        contenido:`
+# O Cancioneiro Universal
+O Cancioneiro Universal é uma biblioteca compartilhada mantida pela comunidade de igrejas e bandas que usam o SetSync.
+## O que inclui
+- Músicas de louvor em espanhol e inglês
+- Cifras verificadas pela comunidade
+- Tons originais
+- BPM e compasso
+## Como acessar
+Cancioneiro → aba "Universal" (disponível nos planos Pro e Premium).
+## Buscar uma música
+Use a busca por nome, artista ou tom. Os resultados mostram a música com todas as informações completas.
+## Adicionar ao seu cancioneiro
+Toque na música → "Adicionar ao meu cancioneiro". Ela vai aparecer na sua biblioteca pessoal, onde você pode editá-la, ajustar as cifras e adicionar notas.
+## Contribuir
+Se você tem uma música bem cifrada, pode contribuí-la para a comunidade em Cancioneiro → sua música → "Compartilhar com a comunidade".
+## Transposição
+Como qualquer música no SetSync, as do Universal podem ser transpostas para qualquer tom em tempo real durante o ensaio ou o culto.
+    `
+      },
+    ],
+    faqsHomeLbl:[
+      {q:'Como crio meu primeiro setlist?',a:'Backstage → Criar setlist. Adicione músicas, ordene-as e atribua a uma data. Sua equipe vê automaticamente em Próxima Data.'},
+      {q:'Como funciona o Monitoramento?',a:'Conecte sua mesa X32/M32/XR18 ao WiFi. Em SongView → Monitor, ative a conexão por WiFi (protocolo OSC). Cada músico controla seu próprio bus pelo próprio dispositivo — recomendamos usar um tablet para a melhor experiência.'},
+      {q:'Posso usar o SetSync sem internet?',a:'Sim, no modo offline. O conteúdo já baixado funciona sem rede. As alterações sincronizam quando você se conectar novamente.'},
+      {q:'Como convoco a equipe?',a:'Backstage → selecione o evento → Convocar equipe. Eles vão receber uma notificação por e-mail e podem confirmar presença.'},
+      {q:'O que é o Cancioneiro Universal?',a:'Uma biblioteca compartilhada de músicas com cifras verificadas. Disponível nos planos Pro e Premium. Vá em Cancioneiro → aba Universal.'},
+      {q:'Como funciona a Sequência?',a:'Em SongView → aba Sequência você encontra o waveform da música, os multitracks com faders individuais e o click sincronizado.'},
+      {q:'Quais formatos de áudio a Referência aceita?',a:'MP3, AAC, WAV, M4A. Você pode enviar o áudio do seu dispositivo e repetir em loop qualquer trecho para ensaiar.'},
+      {q:'O que é a Conta de Equipe?',a:'Um único pagamento do admin que dá a toda a equipe acesso Premium completo, automaticamente. Mais barato do que somar planos individuais assim que são 2-3 pessoas. Ativa-se em Backstage → Planos e preços.'},
+      {q:'Como adiciono membros à minha Conta de Equipe?',a:'Backstage → Planos e preços → seção Conta de Equipe. Adicione por e-mail — se essa pessoa ainda não tem conta, fica pendente e se vincula sozinha quando se cadastrar.'},
+      {q:'O que acontece se eu parar de pagar a Conta de Equipe?',a:'Há um período de carência antes que a equipe perca o plano — não é cortado na hora. Você pode ver o status exato em Backstage → Planos e preços.'},
+    ],
+    heroChipsLbl:['Calendário de eventos e ensaios','Coordenação de Banda e equipes de trabalho','Notificações e mensagens','Setlists e Repertório','Sequências e monitoramento ao vivo','e muito mais'],
+    featuresMktLbl:[
+      {icon:'layers',title:'Tudo em uma tela',desc:'Setlist, monitoramento e sequências juntos — ninguém mais integra isso.'},
+      {icon:'globe',title:'Feito para a América Latina',desc:'Nativo da região, não apenas traduzido.'},
+      {icon:'split',title:'Igreja e Banda',desc:'Duas interfaces, um mesmo motor.'},
+      {icon:'library',title:'Cancioneiro Universal',desc:'Banco de músicas compartilhado entre igrejas.'},
+      {icon:'wifi',title:'Monitoramento e mixagem pessoal sem fio via WiFi',desc:'Cada músico controla seu próprio bus pelo próprio dispositivo.'},
+      {icon:'bell',title:'Notificações para a equipe por evento',desc:'Convoque e lembre sem sair do app.'},
+      {icon:'activity',title:'Sequências ao vivo',desc:'Click, mapa de estrutura e multitracks sincronizados.'},
+      {icon:'users',title:'Gestão de equipes de trabalho, funções e líderes',desc:'Delegue permissões por área sem perder o controle.'},
+      {icon:'copy',title:'Múltiplos arquivos e variações por música',desc:'Diferentes versões e arranjos sem duplicar seu cancioneiro.'},
+      {icon:'mic',title:'Gravações de ensaios',desc:'Grave e revise o ensaio direto do seu dispositivo.'},
+      {icon:'calendar',title:'Calendário',desc:'Todas as suas datas e ensaios em um só lugar.'},
+    ],
+    comoFuncionaStepsLbl:[
+      {titulo:'Cadastre sua gente',desc:'Monte sua banda e equipes de trabalho ou produção, delegue líderes por equipe, cada um com uma função. Sem sobrecarregar seu tempo.',cta:{label:'Gestão de equipes',view:'backstage',sub:'equipos'}},
+      {titulo:'Cadastre seu repertório',desc:'Importe ou escreva músicas — PDF, Word, DOCX, MP3, até partituras por instrumento.',cta:{label:'Músicas',view:'repertorio'}},
+      {titulo:'Crie um evento',desc:'Preencha o calendário com todos os detalhes das suas próximas datas e convoque suas equipes.',cta:{label:'Criar evento',view:'backstage',sub:'evento'}},
+      {titulo:'Toque ao vivo',desc:'Veja suas letras, mude a notação, auto scroll, faça anotações para você ou para todos, com as telas sincronizadas com sua equipe.'},
+      {titulo:'Monitoramento WiFi',desc:'Conecte seu dispositivo à mesa digital e faça sua mixagem pessoal. Rode faixas multitrack, guia, click e tudo o que precisar — e muito mais com o SetSync.'},
+    ],
+    notificacionesDemoLbl:[
+      {icon:'✅',color:'var(--gn)',texto:'Cony confirmou presença no ensaio de quinta',tiempo:'Há 20 min',leida:false},
+      {icon:'📎',color:'#a78bfa',texto:'Daniel enviou uma partitura para "Gloria en Gloria"',tiempo:'Há 2 h',leida:false},
+      {icon:'💬',color:'#e07820',texto:'Nova mensagem na equipe de louvor',tiempo:'Ontem',leida:true},
+      {icon:'📅',color:'#5ecea0',texto:'O evento "Culto Domingo 12" foi criado',tiempo:'Ontem',leida:true},
+    ],
+    channelNamesDefaultLbl:['Voz Líder','Coro 1','Coro 2','Violão','Guitarra','Baixo','Bateria','Teclado','Track/Click','Pads','Aux 1','Aux 2','Aux 3','Aux 4','Aux 5','Master'],
+    recurrentesLbl:'Recorrentes',
+    detallesLbl:'Detalhes',
+    setlistSubLbl:'Escolha o evento e monte a ordem das músicas para ele',
+    addFirstMemberLbl:'Adicione seu primeiro membro →',
+    toWhomLbl:'Para quem?',
+    orgTypeLbl:'Tipo de organização',
+    logoFormatHintLbl:'PNG ou SVG · 512×512px recomendado',
+    pastorMediaHintLbl:'PPT, imagens ou PDF que a equipe de mídia precisa para o culto.',
+    pastorMediaFormatsLbl:'PPT · PDF · Imagens',
+    ensayoFileHintLbl:'PDF, Word ou áudio para a equipe',
+    ultraAdminTitleLbl:'Ultra Admin',
+    noAutorizadoLbl:'Não autorizado.',
+    sinEquiposCreadosLbl:'Nenhuma equipe criada ainda.',
+    cuentaEquipoMenuSubLbl:'Administre sua equipe e pagamentos',
+    ultraAdminMenuSubLbl:'Todas as equipes da plataforma',
+    ultraAdminDescLbl:n => `Todas as equipes da plataforma (${n}). Enquanto não houver um gateway de pagamento, confirme manualmente aqui quando alguém te transferir.`,
+    orEventLbl:'ou evento',
+    notifScreenSubLbl:'Envie mensagens diretas para sua equipe. Sem WhatsApp, sem e-mails perdidos. ',
+    asignarAEventoLbl:'Atribuir a evento',
+    opcionalTagLbl:'· opcional',
     // ── Início: bloco de notas ───────────────────────────────────────────────
     ideasNotesLbl:  'Ideias & Notas',
     noNotesYet:     'Ainda sem notas',
@@ -1277,10 +1796,10 @@ export const T = {
     orCustomNamePlaceholder:'Ou digite um nome personalizado...',
     // ── Cancioneiro — barrido i18n (títulos/autores/letras de músicas NÃO
     // são traduzidos — é conteúdo enviado pelo usuário) ──────────────────
-    subirCancionLbl:'Adicionar música',
-    subirCancionCarpetaLbl:'Adicionar música/pasta',
-    subirPartituraLbl:'Adicionar partitura',
-    subirPorDriveLbl:'Importar pelo Drive',
+    subirCancionLbl:'Enviar música',
+    subirCancionCarpetaLbl:'Enviar música/pasta',
+    subirPartituraLbl:'Enviar partitura',
+    subirPorDriveLbl:'Enviar pelo Drive',
     driveDescLbl:'Conecte uma pasta do Google Drive que contenha suas músicas e carregue todo o repertório de uma vez.',
     formatosSoportadosLbl:'Formatos suportados',
     formatoChordProDesc:'Músicas em formato ChordPro (uma por arquivo)',
@@ -1294,8 +1813,8 @@ export const T = {
     otroBtnLbl:'Outro',
     nombreSeccionPlaceholder:'Nome da seção',
     importadasCountLbl:n=>`${n} música${n===1?'':'s'} importada${n===1?'':'s'}`,
-    allMarkedPrefixLbl:'Todas ficaram marcadas como',
-    toReviewLbl:'Revisar',
+    allMarkedPrefixLbl:'Todas ficaram marcadas',
+    toReviewLbl:'Para revisar',
     allMarkedSuffixLbl:'no seu repertório',
     importResumenConAvisos:n=>` — ${n} aviso${n===1?'':'s'} pontual${n===1?'':'is'} do parser para checar.`,
     importResumenSinAvisos:', embora o parser não tenha reportado avisos.',
@@ -1349,7 +1868,6 @@ export const T = {
     versePlaceholder:'Escreva o texto do versículo aqui...',
     // ── AdminView / MiSetlist / Premiere ─────────────────────────────────────
     navMonthsHint:  'Navegue pelos meses e veja os próximos eventos agendados',
-    noEventsThisMonth:'Sem eventos este mês',
     updatedLbl:     'Atualizado',
     currentDateLbl: 'Data atual',
     eventsCreatedLbl:'Eventos criados',
@@ -1436,7 +1954,7 @@ export const T = {
       {hora:'',label:''},
     ],
     superAdminLbl:  'Super Admin',
-    teamControlPanelLbl:'Painel de controle da equipe',
+    teamControlPanelLbl:'Seu painel de controle SetSync',
     themeGrafiteLbl:  'Grafite',
     themeGrafiteSub:  'Lima · Azul',
     themeBrasaLbl:    'Brasa',
@@ -1504,6 +2022,7 @@ export const T = {
     byList:         'Por lista',
     byBpm:          'Por BPM',
     months: ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'],
+    weekDaysShort:['S','T','Q','Q','S','S','D'],
     seeFullEventDetail: 'Ver todos os detalhes do evento',
     fullEventDetailSub: 'Detalhes completos deste evento.',
     addSongEditSetlist: 'Adicionar música / editar setlist',
@@ -1671,6 +2190,266 @@ export const T = {
     premiumPersonalFeatures:['Everything in Pro','100 songs in your songbook','Unlimited roster','Multi-band — more than one band/church on the same account','Expanded storage','PDF export'],
     teamSub:        'Team account',
     teamFeaturesBase:['Full Premium for everyone, including the super admin','Songbook, Stage View, multitracks and sheet music','The feature set never changes between tiers — only the price'],
+    faqsPlanes:[
+      {q:'What\'s the difference between Personal Account and Team Account?',a:'Personal Account only gives access to the person who\'s logged in (Lite, Pro or Premium). Team Account is a single payment from the admin that gives EVERY member full Premium access, automatically — nobody needs to pay for their own plan.'},
+      {q:'How much does each plan cost?',a:'Everything is monthly, no annual plan. Personal Account: Lite free, Pro $8, Premium $12. Team Account: 1–10 people $18, 11–25 $28, 26–35 $39 (includes white label), 36+ $39 plus $1 per person over 35.'},
+      {q:'Why choose Team Account instead of everyone paying for their own plan?',a:'As soon as you have 2-3 people who need Premium, Team Account works out cheaper than adding up individual plans — and it avoids the "who pays for what" problem. One payment, the whole team with full access.'},
+      {q:'How are members added?',a:'The admin adds them directly by email from this screen. No invite code or link needed.'},
+      {q:'I added someone who doesn\'t have a SetSync account yet — what happens?',a:'They show up as "pending". As soon as that person signs up or logs in with that same email, they get linked automatically — nothing else to do.'},
+      {q:'Can I remove someone from the team?',a:'Yes, from this same screen. Once removed, that person goes back to their individual plan (Lite, unless they have a separate paid one).'},
+      {q:'Does the admin also count as a team member?',a:'Yes, they\'re added automatically when the Team Account is created — they don\'t take up a separate slot in the tier.'},
+      {q:'Can I change tiers if the team grows?',a:'Yes, you can adjust it from this same screen whenever you need to.'},
+      {q:'What happens to members if a payment fails?',a:'There\'s a grace period before anyone drops a plan — the team keeps full Premium while the admin sorts out the payment. Only once that period expires do all members go back to their individual plans.'},
+      {q:'How do I know if my team is in a grace period?',a:'Right here — the admin sees the team\'s status (Active / Grace period / Expired) with the deadline if applicable.'},
+      {q:'Can a person belong to more than one team at a time?',a:'Yes. If you belong to two different Team Accounts (for example, you play in two bands), it only takes one of them to be active for you to have full Premium.'},
+      {q:'I\'m a team member, not the admin — can I add or remove people?',a:'No, only whoever set up the Team Account can manage members. You\'ll see a notice that you belong to the team, with no admin controls.'},
+      {q:'Is white label included in every team tier?',a:'No — it\'s included from the 26–35 people tier upward. The smaller tiers (1–10 and 11–25) don\'t include it.'},
+      {q:'Does "member limit" on Personal Account mean those people have access?',a:'No — that limit is just a cap on the roster/contact list you can load into your account (names, roles). It doesn\'t give anyone else access to the app. For that, they need their own individual plan or to be part of a Team Account.'},
+      {q:'Is there a discounted annual plan?',a:'No, for now everything is monthly only.'},
+    ],
+    tutorialesHelp:{
+      evento:{
+        titulo:'How to create an event',
+        pasos:[
+          'Type the event name. If you repeat the same title more than 3 times, it shows up as a suggested chip under "Recurring" so you don\'t have to type it again.',
+          'Select the date, place and time.',
+          'Add songs to the setlist — you can assign different variations or instruments to each person.',
+          'Mark which teams are called for this date.',
+          'Add notes for the team.',
+          'Build the itinerary with the day\'s schedule — it starts with 6 empty rows, tap "Edit" to fill them in and "+" to add more if you need to.',
+          'Attach a file if you need to (PDF, Word or audio) — it\'s available to open with one tap from Next Date.',
+          'Tap "Create event" to publish it — your team sees it automatically in Next Date and gets a simple notification instantly.',
+        ],
+      },
+      equipos:{
+        titulo:'How to manage teams, roles and people',
+        pasos:[
+          'Members from every team always show up as chips above the list — tap anyone\'s avatar to upload a photo, or the × to remove them from the team.',
+          'To add a new person: tap the "Add member" button above the list, fill in name and email (optional).',
+          'To create a new team: at the bottom of the screen, type the name and the roles separated by commas.',
+          'Tap any team to see its detail — from there you can add/remove members and change their role.',
+          'A team\'s roles are edited from its detail view: type a new one and press Enter, or tap the × to remove an existing one.',
+          'A person can belong to more than one team at a time — add them from the "Add member to team" selector in each detail view.',
+        ],
+      },
+      notif:{
+        titulo:'How to send notifications',
+        pasos:[
+          'Choose who it\'s for: the whole team, or a specific team.',
+          'Select the alert type: reminder, setlist change, urgent or general — this sets the color and icon they\'ll see.',
+          'Write the message.',
+          'If you also want it to arrive by email (not just inside the app), turn on that option before sending.',
+          'Tap "Send" — the team receives it instantly.',
+        ],
+      },
+      ensayo:{
+        titulo:'How to create a rehearsal',
+        pasos:[
+          'Optional: assign the rehearsal to an existing event to keep them linked.',
+          'Choose which setlist you\'ll rehearse (from the ones you already saved in Create setlist).',
+          'Mark which teams are called to this rehearsal.',
+          'Add focus notes (e.g. "go over the transitions in the worship block") and attach a file if you need to.',
+          'Tap "Create rehearsal" — if there were already rehearsals for the same event, you can duplicate an existing one instead of starting from scratch.',
+        ],
+      },
+      permisos:{
+        titulo:'How to delegate permissions',
+        pasos:[
+          'Select the team member who\'s going to receive leader permissions.',
+          'Mark the specific permissions they\'ll have: edit setlist, call team, send notifications, edit itinerary, manage teams, Pastor\'s Word, or view Backstage.',
+          'Tap "Save leader" — that person gets access only to what you marked, without needing your approval every time.',
+          'You can remove their access at any time from the "Active leaders" list, by tapping the × next to their name.',
+        ],
+      },
+      backstage:{
+        titulo:'What Backstage is',
+        pasos:[
+          'Backstage is your team\'s control panel — from here you manage everything the rest of the musicians don\'t see.',
+          'Create date/setlist/rehearsal: build the events and content your team is going to use.',
+          'Team management: who\'s who, which team they\'re in, and what role they have.',
+          'Delegate permissions: give leader access to other people so they don\'t depend on you for everything.',
+          'Notifications: message your team directly from the app.',
+          'Personalization: your account\'s logo, visual theme and language.',
+          'Every screen has its own "i" help button with specific instructions.',
+        ],
+      },
+    },
+    tutoriales:[
+      {
+        slug:'monitoreo',
+        titulo:'Wireless Monitor Connection',
+        icon:'🎛️',
+        resumen:'Connect SetSync to your Behringer X32, XR18 or Midas M32 mixer to control each musician\'s monitor from their own device.',
+        contenido:`
+# Wireless Monitor Connection
+SetSync connects to your digital mixer over WiFi, using the OSC (Open Sound Control) protocol underneath — in practice, it's your device talking to the mixer over the same wireless network. The process is simple: devices (tablets, laptops, or any WiFi-capable gear) need to be connected to the WiFi network the mixer generates. **We recommend using a tablet for the best user experience** — a bigger screen, ideal for having the structure map and the monitor mixer visible at the same time.
+## What's a bus?
+A monitor bus is your own mix, independent from what's coming out of the speakers or everyone else's in-ears. Each musician chooses how much they want to hear of each instrument or voice — more drums, less vocals, whatever they need — and builds that mix from their own device, without having to ask the sound engineer for anything.
+## Compatible mixers
+- Behringer X32 / X32 Compact / X32 Rack
+- Behringer XR18 / XR16 / XR12
+- Midas M32 / M32C / MR18
+## Connection steps
+**1. Connect the mixer to WiFi**
+Connect a router to the mixer's Ethernet port. The mixer will create a network or join an existing one. Note the mixer's IP (it shows up in the Setup → Network menu).
+**2. Connect the devices**
+All musicians should connect their device (ideally a tablet, for the best experience) to the same WiFi network the mixer generates.
+**3. Enable it in SetSync**
+Open a song → Monitor tab → enter the mixer's IP → connect.
+**4. Assign a bus**
+Each musician selects their monitor bus (Bus 1, 2, 3...) and controls levels from their screen, building their own mix.
+    `
+      },
+      {
+        slug:'secuencias',
+        titulo:'How to Run Sequences',
+        icon:'▶️',
+        resumen:'Learn to load multitracks, sync the click and navigate the song structure during rehearsal or the service.',
+        contenido:`
+# How to Run Sequences
+The Sequence tab in SongView is your control center while playing a song with tracks.
+## What you'll find
+**Structure map**
+The horizontal bar with the sections (Intro, V1, Chorus...) shows you exactly where you are. Tap any section to jump to that point.
+**Overall waveform**
+Shows the waveform of the whole song. When you tap a section on the map, that segment lights up on the waveform. You can drag the playhead to seek.
+**Controls**
+- ⏮ Previous section
+- ▶ / ⏸ Play / Pause the click
+- ⏭ Next section
+**BPM and Time Signature**
+Adjust the tempo and time signature. Hold − or + for a quick change.
+**Multitracks**
+8 channels per layer (A and B). Each fader controls the volume of one track. Slide the knob with your finger to adjust.
+## Recommended flow
+1. Load your audio files in the Reference tab
+2. In Sequence, adjust the BPM and time signature
+3. Use the structure map to navigate
+4. Musicians see the same position on their screens
+    `
+      },
+      {
+        slug:'agregar-cancion',
+        titulo:'How to Enter a Song',
+        icon:'🎵',
+        resumen:'Add songs to the songbook with lyrics, chords and all the information your team needs.',
+        contenido:`
+# How to Enter a Song
+## From the Songbook
+Go to Songbook → "+" button → New song.
+## Basic info
+- **Name**: the song's title
+- **Artist / Author**: who wrote it
+- **Original key**: the key it's in (e.g. D, Am, G)
+- **BPM**: the tempo in beats per minute
+- **Time signature**: 4/4, 3/4, 6/8, etc.
+## Lyrics and chords
+The editor accepts the standard chords-over-lyrics format:
+\`\`\`
+G                    D
+Mi orgullo me sacó del jardín
+Em              C
+Su humildad colocó el jardín en mí
+\`\`\`
+Chords go on the line right above the lyrics. SetSync detects them automatically.
+## Sections
+Add section tags in brackets:
+\`\`\`
+[VERSE 1]
+...lyrics...
+[CHORUS]
+...lyrics...
+\`\`\`
+## Automatic transposition
+Once the original key is entered, SetSync can automatically transpose to any other key for any musician.
+    `
+      },
+      {
+        slug:'cancionero-universal',
+        titulo:'How the Universal Songbook Works',
+        icon:'📚',
+        resumen:'Access thousands of worship songs with community-verified chords, shared by the SetSync community.',
+        contenido:`
+# The Universal Songbook
+The Universal Songbook is a shared library maintained by the community of churches and bands using SetSync.
+## What it includes
+- Worship songs in Spanish and English
+- Chords verified by the community
+- Original keys
+- BPM and time signature
+## How to access it
+Songbook → "Universal" tab (available on Pro and Premium plans).
+## Searching for a song
+Use the search by name, artist or key. Results show the song with its full information.
+## Adding it to your own songbook
+Tap the song → "Add to my songbook". It'll appear in your personal library, where you can edit it, adjust the chords and add notes.
+## Contributing
+If you have a well-charted song, you can contribute it to the community from Songbook → your song → "Share with community".
+## Transposition
+Like any song in SetSync, Universal ones can be transposed to any key in real time during rehearsal or the service.
+    `
+      },
+    ],
+    faqsHomeLbl:[
+      {q:'How do I create my first setlist?',a:'Backstage → Create setlist. Add songs, order them and assign it to a date. Your team sees it automatically in Next Date.'},
+      {q:'How does Monitoring work?',a:'Connect your X32/M32/XR18 mixer to WiFi. In SongView → Monitor, enable the WiFi connection (OSC protocol). Each musician controls their own bus from their device — we recommend using a tablet for the best experience.'},
+      {q:'Can I use SetSync without internet?',a:'Yes, in offline mode. Content that\'s already downloaded works without a connection. Changes sync once you\'re back online.'},
+      {q:'How do I call the team?',a:'Backstage → select the event → Call team. They\'ll receive an email notification and can confirm attendance.'},
+      {q:'What is the Universal Songbook?',a:'A shared library of songs with verified chords. Available on Pro and Premium plans. Go to Songbook → Universal tab.'},
+      {q:'How does Sequence work?',a:'In SongView → Sequence tab you\'ll find the song\'s waveform, the multitracks with individual faders, and the synced click.'},
+      {q:'What audio formats does Reference accept?',a:'MP3, AAC, WAV, M4A. You can upload audio from your device and loop any section to rehearse.'},
+      {q:'What is Team Account?',a:'A single payment from the admin that gives the whole team full Premium access, automatically. Cheaper than adding up individual plans once you\'re 2-3 people. Activate it in Backstage → Plans and pricing.'},
+      {q:'How do I add members to my Team Account?',a:'Backstage → Plans and pricing → Team Account section. Add them by email — if that person doesn\'t have an account yet, they\'re shown as pending and get linked automatically once they sign up.'},
+      {q:'What happens if I stop paying for the Team Account?',a:'There\'s a grace period before the team drops a plan — it doesn\'t cut off right away. You can see the exact status in Backstage → Plans and pricing.'},
+    ],
+    heroChipsLbl:['Event and rehearsal calendar','Band and team coordination','Notifications and messaging','Setlists and Songbook','Live sequences and monitoring','and much more'],
+    featuresMktLbl:[
+      {icon:'layers',title:'All in one screen',desc:'Setlist, monitoring and sequences together — nobody else integrates it.'},
+      {icon:'globe',title:'Made for Latin America',desc:'Built for the region, not just translated.'},
+      {icon:'split',title:'Church and Band',desc:'Two interfaces, one engine.'},
+      {icon:'library',title:'Universal Songbook',desc:'A shared song bank between churches.'},
+      {icon:'wifi',title:'Wireless WiFi monitoring and personal mix',desc:'Each musician controls their own bus from their device.'},
+      {icon:'bell',title:'Team notifications per event',desc:'Call and remind without leaving the app.'},
+      {icon:'activity',title:'Live sequences',desc:'Synced click, structure map and multitracks.'},
+      {icon:'users',title:'Team, role and leader management',desc:'Delegate permissions by area without losing control.'},
+      {icon:'copy',title:'Multiple files and variations per song',desc:'Different versions and arrangements without duplicating your songbook.'},
+      {icon:'mic',title:'Rehearsal recordings',desc:'Record and review the rehearsal directly from your device.'},
+      {icon:'calendar',title:'Calendar',desc:'All your dates and rehearsals in one place.'},
+    ],
+    comoFuncionaStepsLbl:[
+      {titulo:'Add your people',desc:'Set up your band and work or production teams, delegate leaders per team, each with a role. Without adding to your workload.',cta:{label:'Team management',view:'backstage',sub:'equipos'}},
+      {titulo:'Add your repertoire',desc:'Import or write songs — PDF, Word, DOCX, MP3, even sheet music per instrument.',cta:{label:'Songs',view:'repertorio'}},
+      {titulo:'Create an event',desc:'Fill the calendar with all the detail of your upcoming dates and call your teams.',cta:{label:'Create event',view:'backstage',sub:'evento'}},
+      {titulo:'Play live',desc:'See your lyrics, switch notation, auto scroll, make notes for yourself or everyone, with screens synced across your team.'},
+      {titulo:'WiFi Monitoring',desc:'Connect your device to the digital mixer and build your personal mix. Launch multitrack, guide and click tracks, and everything you need — and much more with SetSync.'},
+    ],
+    notificacionesDemoLbl:[
+      {icon:'✅',color:'var(--gn)',texto:'Cony confirmed attendance for Thursday\'s rehearsal',tiempo:'20 min ago',leida:false},
+      {icon:'📎',color:'#a78bfa',texto:'Daniel uploaded sheet music for "Gloria en Gloria"',tiempo:'2h ago',leida:false},
+      {icon:'💬',color:'#e07820',texto:'New message in the worship team',tiempo:'Yesterday',leida:true},
+      {icon:'📅',color:'#5ecea0',texto:'The event "Sunday 12 Service" was created',tiempo:'Yesterday',leida:true},
+    ],
+    channelNamesDefaultLbl:['Lead Vocal','Choir 1','Choir 2','Ac. Guitar','El. Guitar','Bass','Drums','Keys','Track/Click','Pads','Aux 1','Aux 2','Aux 3','Aux 4','Aux 5','Master'],
+    recurrentesLbl:'Recurring',
+    detallesLbl:'Details',
+    setlistSubLbl:'Choose the event and build the song order for it',
+    addFirstMemberLbl:'Add your first member →',
+    toWhomLbl:'Who\'s it for?',
+    orgTypeLbl:'Organization type',
+    logoFormatHintLbl:'PNG or SVG · 512×512px recommended',
+    pastorMediaHintLbl:'PPT, images or PDF that the media team needs for the service.',
+    pastorMediaFormatsLbl:'PPT · PDF · Images',
+    ensayoFileHintLbl:'PDF, Word or audio for the team',
+    ultraAdminTitleLbl:'Ultra Admin',
+    noAutorizadoLbl:'Not authorized.',
+    sinEquiposCreadosLbl:'No teams created yet.',
+    cuentaEquipoMenuSubLbl:'Manage your team and payments',
+    ultraAdminMenuSubLbl:'All teams on the platform',
+    ultraAdminDescLbl:n => `All teams on the platform (${n}). Until there's a payment gateway, confirm manually here when someone transfers you.`,
+    orEventLbl:'or event',
+    notifScreenSubLbl:'Send messages directly to your team. No WhatsApp, no lost emails. ',
+    asignarAEventoLbl:'Assign to event',
+    opcionalTagLbl:'· optional',
     // ── Home: Notes widget ───────────────────────────────────────────────────
     ideasNotesLbl:  'Ideas & Notes',
     noNotesYet:     'No notes yet',
@@ -1751,7 +2530,7 @@ export const T = {
     monthPlaceholderLbl:'Month',
     yearLbl:        'Year',
     monthsFull: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-    pastorWordUpdatedToast:'Pastor word updated',
+    pastorWordUpdatedToast:"Pastor's Word updated",
     duplicateBtn:   'Duplicate',
     notAssignedLbl: 'Unassigned',
     // ── Backstage: create event ──────────────────────────────────────────────
@@ -1884,7 +2663,6 @@ export const T = {
     versePlaceholder:'Write the verse text here...',
     // ── AdminView / MiSetlist / Premiere ─────────────────────────────────────
     navMonthsHint:  'Browse the months and check upcoming scheduled events',
-    noEventsThisMonth:'No events this month',
     updatedLbl:     'Updated',
     currentDateLbl: 'Current date',
     eventsCreatedLbl:'Events created',
@@ -1971,7 +2749,7 @@ export const T = {
       {hora:'',label:''},
     ],
     superAdminLbl:  'Super Admin',
-    teamControlPanelLbl:'Team control panel',
+    teamControlPanelLbl:'Your SetSync control panel',
     themeGrafiteLbl:  'Grafite',
     themeGrafiteSub:  'Lime · Blue',
     themeBrasaLbl:    'Brasa',
@@ -2044,6 +2822,7 @@ export const T = {
     byBpm:          'By BPM',
     // ── Meses ────────────────────────────────────────────────────────────────
     months: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
+    weekDaysShort:['M','T','W','T','F','S','S'],
     seeFullEventDetail: 'View full event detail',
     fullEventDetailSub: 'Full detail for this event.',
     addSongEditSetlist: 'Add song / edit setlist',

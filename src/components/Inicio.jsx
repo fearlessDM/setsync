@@ -17,31 +17,8 @@ const BG_IMGS_BANDA = [
 // `cta` — destino navegable del paso. label literal del destino; `view` y
 // `sub` se pasan a onNavigate(view, sub). Los pasos sin `cta` (Toca en vivo,
 // Monitoreo WiFi) quedan sin botón a propósito: no tienen un lugar único
-// al que mandar al usuario.
-const COMO_FUNCIONA_STEPS = [
-  {titulo:'Ingresa tu gente',
-    desc:'Arma tu banda y equipos de trabajo o producción, delega líderes por equipo, cada uno con un rol. Sin recargar tu tiempo.',
-    cta:{label:'Gestión de equipos',view:'backstage',sub:'equipos'}},
-  {titulo:'Ingresa tu repertorio',
-    desc:'Importa o escribe canciones — PDF, Word, DOCX, MP3, incluso partituras por instrumento.',
-    cta:{label:'Canciones',view:'repertorio'}},
-  {titulo:'Crea un evento',
-    desc:'Carga el calendario con todo el detalle de tus próximas fechas y convoca a tus equipos.',
-    cta:{label:'Crear evento',view:'backstage',sub:'evento'}},
-  {titulo:'Toca en vivo',
-    desc:'Ve tus letras, cambia notación, auto scroll, haz anotaciones para ti o para todos, sincronizando pantallas con tu equipo.'},
-  {titulo:'Monitoreo WiFi',
-    desc:'Conecta tu dispositivo a la mesa digital y haz tu mezcla personal. Lanza pistas multitrack, guía, click y todo lo que necesites — y mucho más con SetSync.'},
-];
-
-const HERO_CHIPS = [
-  'Calendario de eventos y ensayos',
-  'Coordinación de Banda y equipos de trabajo',
-  'Notificaciones y mensajería',
-  'Setlists y Repertorio',
-  'Secuencias y monitoreo en vivo',
-  'y mucho más',
-];
+// al que mandar al usuario. Contenido en tx.comoFuncionaStepsLbl (i18n.js).
+// Chips del hero en tx.heroChipsLbl (i18n.js).
 
 // Cuenta Equipo — tramos y precios vienen ahora de planes.js (fuente única
 // de verdad, ver TRAMOS_EQUIPO). Antes vivían hardcodeados acá con el
@@ -50,19 +27,8 @@ const HERO_CHIPS = [
 // Diferenciadores de SetSync — sintetizado de los documentos de estrategia
 // (misma info del HTML que ya se había armado, versión condensada para
 // un bloque chico al final de Inicio).
-const FEATURES_MKT = [
-  {icon:'layers',   title:'Todo en una pantalla',   desc:'Setlist, monitoreo y secuencias juntos — nadie más lo integra.'},
-  {icon:'globe',    title:'Hecho para LatAm',        desc:'Español nativo, no traducido.'},
-  {icon:'split',    title:'Iglesia y Banda',         desc:'Dos interfaces, un mismo motor.'},
-  {icon:'library',  title:'Cancionero Universal',    desc:'Banco de canciones compartido entre iglesias.'},
-  {icon:'wifi',     title:'Monitoreo y mezcla personal inalámbrica WiFi', desc:'Cada músico controla su propio bus desde su dispositivo.'},
-  {icon:'bell',     title:'Notificaciones al equipo por evento', desc:'Convoca y recuerda sin salir de la app.'},
-  {icon:'activity', title:'Secuencias en vivo',      desc:'Click, mapa de estructura y multitracks sincronizados.'},
-  {icon:'users',    title:'Gestión de equipos de trabajo, roles y líderes', desc:'Delega permisos por área sin perder el control.'},
-  {icon:'copy',     title:'Múltiples archivos y variaciones por canción', desc:'Distintas versiones y arreglos sin duplicar tu cancionero.'},
-  {icon:'mic',      title:'Grabaciones de ensayos',  desc:'Graba y revisa el ensayo directo desde tu dispositivo.'},
-  {icon:'calendar', title:'Calendario',              desc:'Todas tus fechas y ensayos en un solo lugar.'},
-];
+// Contenido (título/desc) en tx.featuresMktLbl (i18n.js); los íconos SVG
+// quedan acá porque no dependen del idioma.
 const FEATURES_MKT_ICONS = {
   layers: <><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></>,
   globe:  <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></>,
@@ -89,168 +55,6 @@ const ACCESOS_RAPIDOS_ICONS = {
   music:    <><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
   plus:     <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
 };
-
-const FAQS = [
-  {q:'¿Cómo creo mi primer setlist?', a:'Backstage → Crear setlist. Agrega canciones, ordénalas y asígnalo a una fecha. Tu equipo lo ve automáticamente en Próxima Fecha.'},
-  {q:'¿Cómo funciona el Monitoreo?', a:'Conecta tu mesa X32/M32/XR18 al WiFi. En SongView → Monitor activa la conexión por WiFi (protocolo OSC). Cada músico controla su propio bus desde su dispositivo — recomendamos usar tablet para la mejor experiencia.'},
-  {q:'¿Puedo usar SetSync sin internet?', a:'Sí, en modo offline. El contenido ya descargado funciona sin red. Los cambios se sincronizan cuando vuelves a conectarte.'},
-  {q:'¿Cómo convoco al equipo?', a:'Backstage → selecciona el evento → Convocar equipo. Recibirán notificación por email y pueden confirmar asistencia.'},
-  {q:'¿Qué es el Cancionero Universal?', a:'Una biblioteca compartida de canciones con acordes verificados. Disponible en planes Pro y Premium. Ve a Cancionero → pestaña Universal.'},
-  {q:'¿Cómo funciona la Secuencia?', a:'En SongView → pestaña Secuencia encontrarás el waveform de la canción, los multitracks con faders individuales y el click sincronizado.'},
-  {q:'¿Qué formatos de audio acepta Referencia?', a:'MP3, AAC, WAV, M4A. Puedes subir el audio desde tu dispositivo y hacer loop de cualquier sección para ensayar.'},
-  {q:'¿Qué es la Cuenta Equipo?', a:'Un solo pago del admin que deja a todo el equipo con acceso Premium completo, automático. Más barato que sumar planes individuales apenas son 2-3 personas. Se activa en Backstage → Planes y precios.'},
-  {q:'¿Cómo agrego miembros a mi Cuenta Equipo?', a:'Backstage → Planes y precios → sección Cuenta Equipo. Se agregan por correo electrónico — si esa persona aún no tiene cuenta, queda pendiente y se vincula sola cuando se registre.'},
-  {q:'¿Qué pasa si dejo de pagar la Cuenta Equipo?', a:'Hay un período de gracia antes de que el equipo baje de plan — no se corta de inmediato. Puedes ver el estado exacto en Backstage → Planes y precios.'},
-];
-
-const TUTORIALES = [
-  {
-    slug:'monitoreo',
-    titulo:'Conexión a Monitoreo Inalámbrico',
-    icon:'🎛️',
-    resumen:'Conecta SetSync a tu mesa Behringer X32, XR18 o Midas M32 para controlar el monitor de cada músico desde su dispositivo.',
-    contenido:`
-# Conexión a Monitoreo Inalámbrico
-
-SetSync se conecta a tu mesa digital por WiFi, usando el protocolo OSC (Open Sound Control) por debajo — en la práctica, es tu dispositivo hablándole a la mesa por la misma red inalámbrica. El proceso es simple: los dispositivos (tablets, notebooks o cualquier equipo con WiFi) deben estar conectados a la red WiFi que genera la mesa. **Recomendamos usar tablet para la mejor experiencia de usuario** — pantalla más grande, ideal para tener el mapa de estructura y el mixer de monitor visibles a la vez.
-
-## ¿Qué es un bus?
-
-Un bus de monitor es tu propia mezcla, independiente de lo que suena en las cornetas o en el in-ear del resto. Cada músico elige cuánto quiere escuchar de cada instrumento o voz — más batería, menos voz, lo que necesite — y arma esa mezcla desde su propio dispositivo, sin tener que pedirle nada al sonidista.
-
-## Mesas compatibles
-- Behringer X32 / X32 Compact / X32 Rack
-- Behringer XR18 / XR16 / XR12
-- Midas M32 / M32C / MR18
-
-## Pasos de conexión
-
-**1. Conectar la mesa al WiFi**
-Conecta un router al puerto Ethernet de la mesa. La mesa creará una red o se unirá a la existente. Anota la IP de la mesa (aparece en el menú Setup → Network).
-
-**2. Conectar los dispositivos**
-Todos los músicos deben conectar su dispositivo (idealmente una tablet, para mejor experiencia) a la misma red WiFi que genera la mesa.
-
-**3. Activar en SetSync**
-Abre una canción → pestaña Monitor → ingresa la IP de la mesa → conectar.
-
-**4. Asignar bus**
-Cada músico selecciona su bus de monitor (Bus 1, 2, 3...) y controla los niveles desde su pantalla, armando su propia mezcla.
-    `
-  },
-  {
-    slug:'secuencias',
-    titulo:'Cómo Lanzar las Secuencias',
-    icon:'▶️',
-    resumen:'Aprende a cargar multitracks, sincronizar el click y navegar la estructura de la canción durante el ensayo o el servicio.',
-    contenido:`
-# Cómo Lanzar las Secuencias
-
-La pestaña Secuencia en SongView es tu centro de control durante la ejecución de una canción con pistas.
-
-## Qué encontrarás
-
-**Mapa de estructura**
-La barra horizontal con las secciones (Intro, V1, Coro...) te muestra exactamente dónde estás. Toca cualquier sección para saltar a ese punto.
-
-**Waveform general**
-Muestra la forma de onda de la canción completa. Al tocar una sección en el mapa, se ilumina ese segmento en el waveform. Puedes arrastrar el playhead para hacer seek.
-
-**Controles**
-- ⏮ Sección anterior
-- ▶ / ⏸ Play / Pausa del click
-- ⏭ Sección siguiente
-
-**BPM y Cifra**
-Ajusta el tempo y el compás. Mantén presionado − o + para cambio rápido.
-
-**Multitracks**
-8 canales por capa (A y B). Cada fader controla el volumen de una pista. Desliza el knob con el dedo para ajustar.
-
-## Flujo recomendado
-1. Carga tus archivos de audio en la pestaña Referencia
-2. En Secuencia, ajusta el BPM y la cifra
-3. Usa el mapa de estructura para navegar
-4. Los músicos ven la misma posición en sus pantallas
-    `
-  },
-  {
-    slug:'agregar-cancion',
-    titulo:'Cómo Ingresar una Canción',
-    icon:'🎵',
-    resumen:'Agrega canciones al cancionero con letra, acordes y toda la información necesaria para tu equipo.',
-    contenido:`
-# Cómo Ingresar una Canción
-
-## Desde el Cancionero
-Ve a Cancionero → botón "+" → Nueva canción.
-
-## Datos básicos
-- **Nombre**: el título de la canción
-- **Artista / Autor**: quién la compuso
-- **Tonalidad original**: la nota en la que está (Ej: D, Am, G)
-- **BPM**: el tempo en beats por minuto
-- **Compás**: 4/4, 3/4, 6/8, etc.
-
-## Letra y acordes
-El editor acepta el formato estándar de acordes sobre letra:
-
-\`\`\`
-G                    D
-Mi orgullo me sacó del jardín
-Em              C
-Su humildad colocó el jardín en mí
-\`\`\`
-
-Los acordes se ponen en la línea inmediatamente antes de la letra. SetSync los detecta automáticamente.
-
-## Secciones
-Agrega etiquetas de sección entre corchetes:
-\`\`\`
-[VERSO 1]
-...letra...
-
-[CORO]
-...letra...
-\`\`\`
-
-## Transposición automática
-Una vez ingresada la tonalidad original, SetSync puede transponer automáticamente a cualquier otra tonalidad para cualquier músico.
-    `
-  },
-  {
-    slug:'cancionero-universal',
-    titulo:'Cómo Funciona el Cancionero Universal',
-    icon:'📚',
-    resumen:'Accede a miles de canciones de worship con acordes verificados, compartidas por la comunidad SetSync.',
-    contenido:`
-# El Cancionero Universal
-
-El Cancionero Universal es una biblioteca compartida mantenida por la comunidad de iglesias y bandas que usan SetSync.
-
-## Qué incluye
-- Canciones de worship en español e inglés
-- Acordes verificados por la comunidad
-- Tonalidades originales
-- BPM y compás
-
-## Cómo acceder
-Cancionero → pestaña "Universal" (disponible en planes Pro y Premium).
-
-## Buscar una canción
-Usa el buscador por nombre, artista o tonalidad. Los resultados muestran la canción con su información completa.
-
-## Agregar al cancionero propio
-Toca la canción → "Agregar a mi cancionero". Aparecerá en tu biblioteca personal donde puedes editarla, ajustar los acordes y agregar notas.
-
-## Contribuir
-Si tienes una canción bien cifrada, puedes contribuirla a la comunidad desde Cancionero → tu canción → "Compartir con comunidad".
-
-## Transposición
-Como cualquier canción en SetSync, las del Universal se pueden transponer a cualquier tonalidad en tiempo real durante el ensayo o el servicio.
-    `
-  },
-];
 
 const EQ_COLORS = ['var(--gn)','var(--rd)','#a78bfa','#f59e0b','#34d399','#60a5fa'];
 
@@ -454,12 +258,8 @@ const Lbl2 = ({children}) => (
     fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{children}</div>
 );
 
-const NOTIFICACIONES_DEMO = [
-  {icon:'✅',color:'var(--gn)',texto:'Cony confirmó asistencia al ensayo del jueves',tiempo:'Hace 20 min',leida:false},
-  {icon:'📎',color:'#a78bfa',texto:'Daniel subió una partitura para "Gloria en Gloria"',tiempo:'Hace 2 h',leida:false},
-  {icon:'💬',color:'#e07820',texto:'Nuevo mensaje en el equipo de alabanza',tiempo:'Ayer',leida:true},
-  {icon:'📅',color:'#5ecea0',texto:'Se creó el evento "Culto Domingo 12"',tiempo:'Ayer',leida:true},
-];
+// Notificaciones de ejemplo (placeholder antes de tener datos reales) en
+// tx.notificacionesDemoLbl (i18n.js).
 
 // Número que corre desde 0 hasta su valor final al montar/cambiar (Resumen de Inicio)
 function AnimatedNumber({value,duration=1400}){
@@ -543,7 +343,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
   const [faqsOpen, setFaqsOpen] = useState({});
   const [chipIdx, setChipIdx] = useState(0);
   useEffect(()=>{
-    const t=setInterval(()=>setChipIdx(i=>(i+1)%HERO_CHIPS.length),2000);
+    const t=setInterval(()=>setChipIdx(i=>(i+1)%tx.heroChipsLbl.length),2000);
     return()=>clearInterval(t);
   },[]);
   // v96: "Cómo funciona" y "Por qué SetSync es el mejor" ahora arrancan
@@ -690,7 +490,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
           <Lbl>Cómo funciona</Lbl>
           <CC collapsed={collapsed}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
-            {COMO_FUNCIONA_STEPS.slice(0,4).map((s,si)=>(
+            {tx.comoFuncionaStepsLbl.slice(0,4).map((s,si)=>(
               <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'var(--s1)',
                 display:'flex',flexDirection:'column'}}>
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
@@ -716,7 +516,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               </div>
             ))}
           </div>
-          {COMO_FUNCIONA_STEPS.slice(4).map((s,si)=>(
+          {tx.comoFuncionaStepsLbl.slice(4).map((s,si)=>(
             <div key={si} style={{padding:'12px 10px',borderRadius:12,background:'rgba(var(--gn-rgb),.08)',marginTop:8}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--gn)" stroke="var(--gn)" strokeWidth="1"
@@ -773,16 +573,16 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
             <span style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',
               letterSpacing:'1.5px',fontFamily:"var(--font-body)",flex:1}}>{tx.lastNotifications}</span>
           </div>
-          {(NOTIFICACIONES_DEMO.length===0?(
+          {(tx.notificacionesDemoLbl.length===0?(
             <div style={{fontFamily:"var(--font-body)",fontSize:'var(--fs-base)',fontWeight:300,
               color:'var(--tx3)',padding:'8px 0'}}>
               {tx.noNotificationsYet}
             </div>
           ):(
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
-              {NOTIFICACIONES_DEMO.map((n,i)=>(
+              {tx.notificacionesDemoLbl.map((n,i)=>(
                 <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start',
-                  padding:'9px 0',borderBottom:i<NOTIFICACIONES_DEMO.length-1?'1px solid var(--s1)':'none'}}>
+                  padding:'9px 0',borderBottom:i<tx.notificacionesDemoLbl.length-1?'1px solid var(--s1)':'none'}}>
                   <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
                     background:`${n.color}18`,display:'flex',alignItems:'center',justifyContent:'center'}}>
                     <span style={{fontSize:'var(--fs-md)'}}>{n.icon}</span>
@@ -813,13 +613,13 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'tutoriales': return (
         <Card cols={2} i={i} key="tutoriales" collapsed={collapsed} onToggle={onToggle}>
-          <Lbl>Tutoriales</Lbl>
+          <Lbl>{tx.tutorialsLbl}</Lbl>
           <CC collapsed={collapsed}>
           {/* v93: sin sub-cabecera colapsable — al abrir el Card se ve
               directo la grilla de tutoriales. */}
           {(
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:10}}>
-              {TUTORIALES.map(tut=>(
+              {tx.tutoriales.map(tut=>(
                 <div key={tut.slug}
                   onClick={()=>setTutorialActivo(tut)}
                   style={{padding:'12px 10px',borderRadius:12,cursor:'pointer',
@@ -843,14 +643,14 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
 
       case 'faqs': return (
         <Card cols={2} i={i} key="faqs" collapsed={collapsed} onToggle={onToggle}>
-          <Lbl>Preguntas frecuentes</Lbl>
+          <Lbl>{tx.faqLbl}</Lbl>
           <CC collapsed={collapsed}>
           {/* v93: sin sub-cabecera colapsable — cada pregunta sigue siendo
               su propio acordeón, pero la lista se ve directo. */}
           {(
             <div style={{display:'flex',flexDirection:'column',gap:0,marginTop:8}}>
-              {FAQS.map((faq,i)=>(
-                <div key={i} style={{borderBottom:i<FAQS.length-1?'1px solid var(--s1)':'none'}}>
+              {tx.faqsHomeLbl.map((faq,i)=>(
+                <div key={i} style={{borderBottom:i<tx.faqsHomeLbl.length-1?'1px solid var(--s1)':'none'}}>
                   <button onClick={()=>toggleFaq(i)}
                     style={{width:'100%',background:'none',textAlign:'left',
                       padding:'10px 0',cursor:'pointer',display:'flex',alignItems:'center',
@@ -989,7 +789,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               style={{padding:'9px 16px',borderRadius:8,background:'var(--gn)',
                 fontWeight:500,color:'#000',textTransform:'uppercase',
                 letterSpacing:'.5px',fontFamily:"var(--font-body)",display:'inline-block'}}>
-              {HERO_CHIPS[chipIdx]}
+              {tx.heroChipsLbl[chipIdx]}
             </span>
           </div>
         </div>
@@ -1050,7 +850,7 @@ export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], per
               La única pantalla que un músico necesita en el escenario.
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {FEATURES_MKT.map(f=>(
+              {tx.featuresMktLbl.map(f=>(
                 <div key={f.title} style={{display:'flex',alignItems:'flex-start',gap:10}}>
                   <div style={{width:26,height:26,borderRadius:8,flexShrink:0,
                     display:'flex',alignItems:'center',justifyContent:'center',
