@@ -332,13 +332,19 @@ const CC = ({collapsed, children}) => (
   </div>
 );
 
-export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={} }) {
+export function Inicio({ mode, lang='es', userRole='superadmin', equipos=[], personas=[], eventos=[], planActivo=null, planId='lite', viaEquipo=false, orgPrincipal=null, tieneMonitoreo=false, onNavigate=()=>{}, ensayos=[], archivosDB={}, currentUser=null }) {
   const feat = getModoFeatures(mode);
   const tx = getT(lang);
   const BG_IMGS = mode==='iglesia' ? BG_IMGS_IGLESIA : BG_IMGS_BANDA;
   const [bgIdx] = useState(()=>Math.floor(Math.random()*3));
   const isAdmin = userRole==='superadmin'||userRole==='leader';
-  const nombre = 'Daniel';
+  // Nombre real de quien inició sesión — antes decía siempre 'Daniel'
+  // hardcodeado. Prioridad: nombre de perfil > primera parte del correo >
+  // fallback genérico traducido (para el caso raro de alguien que entró
+  // anónimo sin nombre, ej. por código de invitación sin completarlo).
+  const nombre = currentUser?.displayName?.trim()
+    || currentUser?.email?.split('@')[0]
+    || tx.greetingFallbackLbl;
   const [tutorialActivo, setTutorialActivo] = useState(null);
   const [faqsOpen, setFaqsOpen] = useState({});
   const [chipIdx, setChipIdx] = useState(0);

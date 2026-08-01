@@ -121,8 +121,27 @@ const ROLES_BANDA=[
 ];
 
 export default function App(){
-  const [appMode,setAppMode]=useState(null); // null | 'iglesia' | 'banda' — UNA sola decisión, para siempre
-  const [lang,setLang]=useState('es');
+  // appMode y lang se restauran de localStorage si la persona ya los
+  // eligió antes en este dispositivo — antes se reseteaban a null/'es'
+  // en cada apertura de la app, obligando a re-elegir Iglesia/Banda
+  // (y a veces el idioma) cada vez, aunque diga "UNA sola decisión,
+  // para siempre" en el comentario original. try/catch por si
+  // localStorage no está disponible (ej. navegación privada).
+  const [appMode,setAppMode]=useState(()=>{
+    try{ return window.localStorage.getItem('ss_appMode')||null; }
+    catch(err){ return null; }
+  });
+  const [lang,setLang]=useState(()=>{
+    try{ return window.localStorage.getItem('ss_lang')||'es'; }
+    catch(err){ return 'es'; }
+  });
+  useEffect(()=>{
+    if(!appMode) return;
+    try{ window.localStorage.setItem('ss_appMode',appMode); }catch(err){}
+  },[appMode]);
+  useEffect(()=>{
+    try{ window.localStorage.setItem('ss_lang',lang); }catch(err){}
+  },[lang]);
   const tx=getT(lang);
   const vx=getModoTexto(appMode,lang);
   const feat=getModoFeatures(appMode);
@@ -872,6 +891,7 @@ Tuya es la gloria, Por siempre amén.
               equipos={equipos} personas={personas} eventos={eventos} ensayos={ensayos}
               planActivo={planActivo} planId={planId} viaEquipo={viaEquipo} orgPrincipal={orgPrincipal}
               tienePremiere={tienePremiere} tieneMonitoreo={tieneMonitoreo} archivosDB={archivosDB}
+              currentUser={currentUser}
               onNavigate={goToView}/>
           )}
           {view==='fechas'&&<AdminView mode={appMode} activeSunday={activeSunday} userRole={userRole}
