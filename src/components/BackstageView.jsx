@@ -13,7 +13,8 @@ import { initials } from '../utils/music';
 import { CustomSelect, EquipoCard, EquipoDetallePanel, TimePicker } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoFeatures } from '../data/modo';
-import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, agregarMiembroOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
+import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
+import { invitarMiembroOrg } from '../firebase/mail';
 import { subirArchivo } from '../firebase/storage';
 
 export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,onGetTheme,onLangChange,eventos=[],setEventos,lang="es",equipos=[],setEquipos=()=>{},persistirEquipo=()=>{},persistirEvento=()=>{},guardarSetlistEnEvento=()=>{},online=true,setOnline=()=>{},firebaseListo=false,planId="lite",setPlanId=()=>{},planActivo=null,viaEquipo=false,orgPrincipal=null,orgsDelUsuario=[],tienePremiere=false,tieneMonitoreo=false,onNavigate=()=>{},ensayos=[],setEnsayos=()=>{},persistirEnsayo=()=>{},variacionesDB={},currentUser=null,onCerrarSesion=()=>{},navResetKey=0,deepLink=null,lideres=[],persistirLideres=()=>{},pastorData={versiculo:'',texto:'',notas:''},persistirPastor=()=>{},orgPerfil={nombre:'',tipo:'iglesia',ubicacion:''},persistirOrgPerfil=()=>{}}){
@@ -1525,12 +1526,18 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
               <input value={emailNuevoMiembro} onChange={e=>setEmailNuevoMiembro(e.target.value)}
                 placeholder="correo@ejemplo.com" type="email"
                 style={{flex:1,padding:'8px 10px',borderRadius:8,background:'var(--bg)',color:'var(--tx)',fontSize:'var(--fs-base)',fontFamily:"var(--font-body)"}}/>
-              <button onClick={()=>{
+              <button onClick={async()=>{
                   const email=emailNuevoMiembro.trim();
                   if(!email||!email.includes('@')) return;
-                  agregarMiembroOrg(orgQueAdministro.id, email);
                   setEmailNuevoMiembro('');
-                  onToast({text:'Miembro agregado',sub:email});
+                  onToast({text:'Enviando invitación…',sub:email});
+                  try{
+                    await invitarMiembroOrg(orgQueAdministro.id, email, currentUser?.displayName||currentUser?.email, currentUser?.uid, lang);
+                    setTimeout(()=>onToast({text:'Invitación enviada',sub:email}),2600);
+                  }catch(err){
+                    console.warn('[SetSync] Error enviando invitación:', err);
+                    setTimeout(()=>onToast({text:'No se pudo enviar la invitación',sub:email}),2600);
+                  }
                 }}
                 style={{padding:'8px 14px',borderRadius:8,background:'var(--ac)',color:'var(--btn-c)',fontWeight:700,fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",cursor:'pointer'}}>
                 Agregar
