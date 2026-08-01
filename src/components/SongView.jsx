@@ -274,7 +274,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <button onClick={()=>setCapoOpen(o=>!o)} style={{width:'100%',padding:'6px 0',background:capo>0?'rgba(200,169,126,.15)':'transparent',color:capo>0?'var(--ac)':'var(--tx3)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:1,borderRadius:'0 0 14px 14px',transition:'all .2s'}}>
-        <span style={{fontSize:'var(--fs-3xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',color:capo>0?svAc:svTx3}}>CAPO</span>
+        <span style={{fontSize:'var(--fs-3xs)',fontWeight:900,textTransform:'uppercase',letterSpacing:'1px',color:capo>0?svAc:svTx3}}>{tx.capo}</span>
         <span style={{fontSize:capo>0?'var(--fs-lg)':'var(--fs-base)',fontWeight:900,color:capo>0?'var(--ac)':'var(--tx3)',lineHeight:1}}>{capo>0?capo:'—'}</span>
         {capo>0&&<span style={{fontSize:'var(--fs-3xs)',color:'var(--gn)',fontWeight:700,lineHeight:1.2}}>{sonaKey}</span>}
         <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5" style={{transform:capoOpen?'rotate(180deg)':'none',transition:'transform .2s',marginTop:1}}><polyline points="6 9 12 15 18 9"/></svg>
@@ -294,7 +294,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:isOn?'var(--gn)':'var(--tx3)',fontFamily:"'Outfit',sans-serif"}}>{notaSuena}</div>
-                  {c>0&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',marginTop:1}}>suena</div>}
+                  {c>0&&<div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',marginTop:1}}>{tx.sounds}</div>}
                 </div>
               </button>
             );
@@ -347,7 +347,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             }
             setMetroOpen(o=>!o);
           }}
-            title="Metrónomo"
+            title={tx.metronomoLbl}
             style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
               background:clickActivo?'rgba(var(--gn-rgb),.15)':'var(--s1)',
               color:clickActivo?'var(--gn)':'var(--tx3)',cursor:'pointer',
@@ -363,14 +363,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 background:'rgba(10,10,20,.97)',
                 borderRadius:16,padding:14,zIndex:999,
                 boxShadow:'0 8px 32px rgba(0,0,0,.8)'}}>
-                <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>Metrónomo</div>
+                <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>{tx.metronomoLbl}</div>
                 {/* BPM +/- , solo afecta al click sintetizado — sin influencia sobre multitracks */}
                 <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
                   <button onClick={()=>{const v=Math.max(40,seqBpm-1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v,seqCifra);}}}
                     style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xl)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>−</button>
                   <div style={{flex:1,textAlign:'center'}}>
                     <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-3xl)',color:clickActivo?'var(--gn)':'var(--ac)',lineHeight:1}}>{seqBpm}</div>
-                    <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginTop:2}}>BPM</div>
+                    <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginTop:2}}>{tx.bpm}</div>
                   </div>
                   <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v,seqCifra);}}}
                     style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xl)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
@@ -384,11 +384,11 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     background:tapSeqLit?'var(--gn)':'var(--bd2)',
                     boxShadow:tapSeqLit?'0 0 8px rgba(var(--gn-rgb),.9)':'none',
                     transition:'background .08s,box-shadow .08s'}}/>
-                  <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif"}}>TAP TEMPO</span>
+                  <span style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--tx2)',fontFamily:"'Outfit',sans-serif"}}>{tx.tapTempoLbl}</span>
                 </button>
                 {/* Cifra — movida acá desde Secuencia, junto con BPM/TAP */}
                 <div style={{marginBottom:10}}>
-                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:5,textAlign:'center'}}>CIFRA</div>
+                  <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:5,textAlign:'center'}}>{tx.cifraLbl}</div>
                   <CustomSelect value={seqCifra}
                     onChange={c=>{setSeqCifra(c);if(clickActivo){stopClick();startClick(seqBpm,c);}}}
                     options={CIFRAS.map(c=>({value:c,label:c}))}
@@ -398,7 +398,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <button onClick={handleTransportePress}
                   style={{width:'100%',padding:'10px',borderRadius:10,background:clickActivo?'var(--rd)':'var(--gn)',color:'#000',cursor:'pointer',
                     fontSize:'var(--fs-base)',fontWeight:900,fontFamily:"'Outfit',sans-serif"}}>
-                  {clickActivo?'DETENER':'REPRODUCIR'}
+                  {clickActivo?tx.detenerLbl:tx.reproducirLbl}
                 </button>
               </div>
             </>,
@@ -502,7 +502,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 }
                 setAnnoOpen(o=>!o);
               }}
-              title="Anotar"
+              title={tx.anotarTitleLbl}
               style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
                 background:dibujoActivo?'rgba(var(--gn-rgb),.15)':'var(--s1)',
                 color:dibujoActivo?'var(--gn)':'var(--tx3)',cursor:'pointer'}}>
@@ -520,7 +520,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     style={{width:'100%',padding:'9px',borderRadius:10,marginBottom:12,
                       background:dibujoActivo?'var(--gn)':'var(--s1)',color:dibujoActivo?'#000':'var(--tx2)',
                       cursor:'pointer',fontWeight:900,fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
-                    {dibujoActivo?'DIBUJANDO — TOCA PARA PARAR':'ACTIVAR LÁPIZ'}
+                    {dibujoActivo?tx.dibujandoTocaParaPararLbl:tx.activarLapizLbl}
                   </button>
                   <div style={{display:'flex',gap:6,marginBottom:12}}>
                     {['pen','erase'].map(t=>(
@@ -528,7 +528,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                         style={{flex:1,padding:'7px',borderRadius:8,
                           background:annoTool===t?'rgba(200,169,126,.15)':'var(--s1)',
                           color:annoTool===t?'var(--ac)':'var(--tx3)',cursor:'pointer',fontWeight:700,fontSize:'var(--fs-sm)'}}>
-                        {t==='pen'?'Lápiz':'Borrador'}
+                        {t==='pen'?tx.lapizLbl:tx.borradorLbl}
                       </button>
                     ))}
                   </div>
@@ -542,12 +542,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     </div>
                   )}
                   <div style={{marginBottom:12}}>
-                    <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>GROSOR</div>
+                    <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>{tx.grosorLbl}</div>
                     <input type="range" min={2} max={16} value={annoSz} onChange={e=>setAnnoSz(Number(e.target.value))} style={{width:'100%'}}/>
                   </div>
                   <div style={{display:'flex',gap:6}}>
-                    <button onClick={anno.undo} style={{flex:1,padding:'7px',borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>Deshacer</button>
-                    <button onClick={anno.clear} style={{flex:1,padding:'7px',borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>Borrar todo</button>
+                    <button onClick={anno.undo} style={{flex:1,padding:'7px',borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>{tx.undoAnnotationLbl}</button>
+                    <button onClick={anno.clear} style={{flex:1,padding:'7px',borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-sm)',fontWeight:700}}>{tx.clearAllLbl}</button>
                   </div>
                 </div>
               </>,
@@ -567,14 +567,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               }
               setScrollOpen(o=>!o);
             }}
-            title="Autoscroll"
+            title={tx.autoscrollTitleLbl}
             style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
               background:autoScroll?'rgba(var(--gn-rgb),.15)':'var(--s1)',
               color:autoScroll?'var(--gn)':'var(--tx3)',cursor:'pointer'}}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="19 12 12 19 5 12"/><line x1="12" y1="5" x2="12" y2="19"/>
             </svg>
-            <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>Scroll</span>
+            <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.scrollLbl}</span>
           </button>
           {scrollOpen&&scrollPos&&createPortal(
             <>
@@ -586,9 +586,9 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   style={{width:'100%',padding:'9px',borderRadius:10,marginBottom:12,
                     background:autoScroll?'var(--gn)':'var(--s1)',color:autoScroll?'#000':'var(--tx2)',
                     cursor:'pointer',fontWeight:900,fontFamily:"'Outfit',sans-serif",fontSize:'var(--fs-sm)'}}>
-                  {autoScroll?'DETENER':'INICIAR AUTOSCROLL'}
+                  {autoScroll?tx.detenerLbl:tx.iniciarAutoscrollLbl}
                 </button>
-                <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>VELOCIDAD</div>
+                <div style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontWeight:700,marginBottom:4}}>{tx.velocidadLbl}</div>
                 <input type="range" min={RANGO_SCROLL.min} max={RANGO_SCROLL.max} step={RANGO_SCROLL.step||1} value={scrollSpeed}
                   onChange={e=>setScrollSpeed(Number(e.target.value))} style={{width:'100%'}}/>
               </div>
@@ -609,13 +609,13 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 }
                 setVivoOpen(o=>!o);
               }}
-              title="Modo En Vivo"
+              title={tx.modoEnVivoTitleLbl}
               style={{display:'flex',alignItems:'center',gap:4,padding:'4px 9px',borderRadius:8,flexShrink:0,
                 background:modoVivo.sesionActiva?'rgba(var(--rd-rgb),.15)':'var(--s1)',
                 color:modoVivo.sesionActiva?'var(--rd)':'var(--tx3)',cursor:'pointer'}}>
               <div style={{width:7,height:7,borderRadius:'50%',background:modoVivo.sesionActiva?'var(--rd)':'var(--tx3)',
                 boxShadow:modoVivo.sesionActiva?'0 0 6px var(--rd)':'none',flexShrink:0}}/>
-              <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>En Vivo</span>
+              <span style={{fontSize:'var(--fs-sm)',fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.enVivoLbl}</span>
             </button>
             {vivoOpen&&vivoPos&&createPortal(
               <>
@@ -644,7 +644,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                           </div>
                         ))}
                         {modoVivo.participantes.length===0&&(
-                          <div style={{fontSize:'var(--fs-sm)',color:'var(--tx3)',fontStyle:'italic'}}>Esperando que el equipo acepte…</div>
+                          <div style={{fontSize:'var(--fs-sm)',color:'var(--tx3)',fontStyle:'italic'}}>{tx.esperandoEquipoAceptaLbl}</div>
                         )}
                       </div>
                       <button onClick={()=>{modoVivo.finalizar();setVivoOpen(false);}}
@@ -684,7 +684,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
     <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)'}}>
       <div style={{background:'#111113',borderRadius:20,padding:'24px',maxWidth:300,width:'90%'}}>
         <div style={{fontFamily:"var(--font-display)",fontSize:'var(--fs-xl)',fontWeight:400,color:'var(--tx)',marginBottom:8}}>{tx.saveChangesLbl}</div>
-        <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>Tienes cambios sin guardar en esta canción. ¿Qué deseas hacer?</div>
+        <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"'Outfit',sans-serif",marginBottom:20,lineHeight:1.5}}>{tx.unsavedChangesDescLbl}</div>
         <div style={{display:'flex',flexDirection:'column',gap:8}}>
           <button onClick={()=>{handleSaveEdit();setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,background:'var(--gn)',color:'#fff',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:'var(--fs-lg)'}}>{tx.saveAndExitLbl}</button>
           <button onClick={()=>{setShowSavePopup(false);onClose();}} style={{padding:'11px',borderRadius:10,background:'transparent',color:'var(--tx2)',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontWeight:700,fontSize:'var(--fs-lg)'}}>{tx.exitWithoutSavingLbl}</button>
@@ -702,12 +702,12 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--ac)" strokeWidth="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
           </div>
           <div>
-            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>Vista por Bloques</div>
-            <div style={{fontSize:'var(--fs-base)',color:'var(--ac)',fontWeight:700}}>Modo Pro</div>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:400,fontSize:'var(--fs-xl)',color:'var(--tx)'}}>{tx.vistaBloquesLbl}</div>
+            <div style={{fontSize:'var(--fs-base)',color:'var(--ac)',fontWeight:700}}>{tx.modoProLbl}</div>
           </div>
         </div>
         <div style={{fontSize:'var(--fs-lg)',color:'var(--tx)',lineHeight:1.6,marginBottom:16,fontFamily:"'Outfit',sans-serif"}}>
-          Toda la canción <strong>en pantalla, sin scroll.</strong> Cada sección ocupa su propio espacio.
+          {tx.blockViewDescPrefixLbl} <strong>{tx.blockViewDescLbl}</strong> {tx.blockViewDescSuffixLbl}
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
           {[['🎯',tx.linearViewBullets[0]],['📐',tx.linearViewBullets[1]],['🗺️',tx.linearViewBullets[2]],['⚡',tx.linearViewBullets[3]]].map(([ico,txt],i)=>(
@@ -737,10 +737,10 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           if(seen){setViewMode('bloques');setAutoScroll(false);initMapaCancion();}
           else setShowModePopup(true);
         }
-      }} title="Vista por bloques" style={{padding:'4px 8px',borderRadius:7,background:viewMode==='bloques'?'var(--ac)':'transparent',color:viewMode==='bloques'?('#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      }} title={tx.vistaPorBloquesTitleLbl} style={{padding:'4px 8px',borderRadius:7,background:viewMode==='bloques'?'var(--ac)':'transparent',color:viewMode==='bloques'?('#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
       </button>
-      <button onClick={()=>{if(viewMode!=='lineal')setViewMode('lineal');}} title="Vista lineal" style={{padding:'4px 8px',borderRadius:7,background:viewMode==='lineal'?'var(--ac)':'transparent',color:viewMode==='lineal'?('#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <button onClick={()=>{if(viewMode!=='lineal')setViewMode('lineal');}} title={tx.vistaLinealTitleLbl} style={{padding:'4px 8px',borderRadius:7,background:viewMode==='lineal'?'var(--ac)':'transparent',color:viewMode==='lineal'?('#0a0a0a'):'var(--tx3)',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center'}}>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
       </button>
     </div>
@@ -1335,7 +1335,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
   // después de FADER_NAMES/faderVols/faderMutes, porque los usa — antes
   // de esas declaraciones cae en zona muerta temporal.
   const conectarMesa=async()=>{
-    if(!mesaIP.trim()){ setMesaErrorMsg('Ingresa la IP de la mesa'); return; }
+    if(!mesaIP.trim()){ setMesaErrorMsg(tx.ingresaIpMesaErrorLbl); return; }
     mesaDriverRef.current?.disconnect?.();
     mesaSubsRef.current.forEach(s=>s?.unsubscribe?.());
     mesaSubsRef.current=[];
@@ -1467,7 +1467,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             fontFamily:"var(--font-body)",
           }}>
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={canPrev?'var(--tx)':'var(--bd2)'} strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          <span style={{fontSize:'var(--fs-2xs)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>Ant</span>
+          <span style={{fontSize:'var(--fs-2xs)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>{tx.antLbl}</span>
         </button>
 
         {/* Tabs */}
@@ -1509,7 +1509,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
           }}>
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke={isLast?'var(--rd)':'var(--gn)'} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           <span style={{fontSize:'var(--fs-2xs)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'inherit'}}>
-            {isLast?'Fin':'Sig'}
+            {isLast?tx.finLbl:tx.sigLbl}
           </span>
         </button>
       </div>
@@ -1801,7 +1801,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
   const ClickPanel=()=>(
     <div>
-      <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"var(--font-body)"}}>Click · Metrónomo</div>
+      <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10,fontFamily:"var(--font-body)"}}>{tx.clickMetronomoTitleLbl}</div>
       <div style={{borderRadius:14,background:'var(--s1)',padding:'12px 14px',display:'flex',flexDirection:'column',gap:12}}>        {/* Fila 1: BPM + Play */}
         <div style={{display:'flex',alignItems:'center',gap:12}}>
           {/* BPM */}
@@ -1820,7 +1820,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   WebkitAppearance:'none',MozAppearance:'textfield',
                   lineHeight:1,display:'block'}}
               />
-              <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:700,marginTop:2}}>BPM</span>
+              <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:700,marginTop:2}}>{tx.bpm}</span>
             </div>
             <button onClick={()=>{const v=Math.min(300,seqBpm+1);setSeqBpm(v);if(clickActivo){stopClick();startClick(v);}}}
               style={{width:32,height:32,borderRadius:8,background:'var(--s1)',color:'var(--tx2)',cursor:'pointer',fontSize:'var(--fs-xl)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
@@ -1838,7 +1838,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </div>
         {/* Fila 2: Cifra como selector */}
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:700,flexShrink:0}}>CIFRA</span>
+          <span style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",fontWeight:700,flexShrink:0}}>{tx.cifraLbl}</span>
           <CustomSelect
             value={seqCifra}
             onChange={c=>{
@@ -1924,7 +1924,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   <span style={{fontSize:'var(--fs-base)',color:'var(--ac)'}}>{v.label}</span>
                 </div>
               ))}
-              <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginBottom:14,fontStyle:'italic'}}>Se abren desde Cancionero — cierra esta canción y vuelve a entrar eligiendo la variación.</div>
+              <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginBottom:14,fontStyle:'italic'}}>{tx.variacionesOpenFromSongbookLbl}</div>
             </>
           )}
 
@@ -1962,14 +1962,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               <span style={{fontSize:'var(--fs-base)',color:'var(--gn)',flex:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{carpetaActual.trackReferencia.nombre}</span>
             </button>
           ):(
-            <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>Sin track — se sube o graba desde la pestaña Referencia.</div>
+            <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",fontStyle:'italic',marginBottom:14}}>{tx.sinTrackHintLbl}</div>
           )}
 
           {/* ── Nota tipo post-it ── */}
           <div style={{fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--tx3)',textTransform:'uppercase',letterSpacing:'1px',fontFamily:"var(--font-body)",marginTop:14,marginBottom:8}}>{tx.noteLbl}</div>
           <div style={{position:'relative'}}>
             <textarea value={notaCarpeta} onChange={e=>setNotaCarpeta(e.target.value)}
-              placeholder="Ej: tocar con capo 2, pedir a Juan que suba una tercera en el coro, ojo con el cambio de compás en el puente..."
+              placeholder={tx.anotacionPlaceholderLbl}
               style={{width:'100%',minHeight:80,padding:'10px 12px',borderRadius:10,resize:'vertical',
                 background:'rgba(234,203,113,.05)',
                 color:'var(--tx)',fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",lineHeight:1.5,
@@ -2033,7 +2033,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </div>
           </button>
           <div style={{display:'flex',alignItems:'center',gap:4,height:26,width:64}}>
-            <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",flexShrink:0}}>Bus</span>
+            <span style={{fontSize:'var(--fs-2xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",flexShrink:0}}>{tx.busLbl}</span>
             <CustomSelect value={monitorBus} onChange={v=>setMonitorBus(Number(v))}
               options={[1,2,3,4].map(b=>({value:b,label:String(b)}))}
               style={{height:26,padding:'0 6px',fontSize:'var(--fs-xs)',fontWeight:900,color:'var(--gn)'}}/>
@@ -2076,7 +2076,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             )}
             <div style={{display:'flex',gap:6}}>
               <input value={mesaIP} onChange={e=>setMesaIP(e.target.value)} disabled={mesaConectada}
-                placeholder={MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente?'IP del puente (ej: 192.168.1.50:8080)':'IP de la mesa (ej: 10.10.1.1)'}
+                placeholder={MARCAS_MESA.find(m=>m.id===mesaMarca)?.puente?tx.ipPuentePlaceholderLbl:tx.ipMesaPlaceholderLbl}
                 style={{flex:1,padding:'7px 9px',borderRadius:8,background:'#111',color:'var(--tx)',fontSize:'var(--fs-sm)',fontFamily:"var(--font-body)"}}/>
               {mesaConectada?(
                 <button onClick={desconectarMesa}
@@ -2116,7 +2116,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             <div style={{padding:'10px 12px',margin:'0 8px 10px',borderRadius:10,
               background:'rgba(200,169,126,.05)'}}>
               <div style={{fontSize:'var(--fs-2xs)',fontWeight:900,color:'var(--ac)',textTransform:'uppercase',
-                letterSpacing:'1px',marginBottom:2}}>🎧 Click y Guía — solo en este dispositivo</div>
+                letterSpacing:'1px',marginBottom:2}}>{tx.clickGuiaDeviceOnlyLbl}</div>
               <div style={{fontSize:'var(--fs-3xs)',color:'var(--tx3)',marginBottom:8,lineHeight:1.4}}>
                 No ocupan canal de la mesa — cada uno los ajusta acá, en su propio dispositivo.
               </div>
@@ -2124,7 +2124,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {[pistaClick,pistaGuia].filter(Boolean).map(p=>(
                   <div key={p.i} style={{display:'flex',alignItems:'center',gap:8}}>
                     <span style={{fontSize:'var(--fs-xs)',fontWeight:700,color:'var(--tx)',width:44,flexShrink:0}}>
-                      {p.rol==='click'?'Click':'Guía'}
+                      {p.rol==='click'?tx.clickTrackShortLbl:tx.guiaTrackShortLbl}
                     </span>
                     <input type="range" min={0} max={100} value={trackVols[p.i]??80}
                       onChange={e=>setTrackVols(v=>{const n=[...v];n[p.i]=Number(e.target.value);return n;})}
@@ -2133,7 +2133,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                       style={{padding:'3px 8px',borderRadius:6,cursor:'pointer',flexShrink:0,
                         fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
                         background:trackMutes[p.i]?'#8B0000':'var(--s3)',
-                        color:trackMutes[p.i]?'#fff':'var(--tx3)'}}>MUTE</button>
+                        color:trackMutes[p.i]?'#fff':'var(--tx3)'}}>{tx.muteLbl}</button>
                   </div>
                 ))}
               </div>
@@ -2302,7 +2302,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
                   letterSpacing:'.5px',
                   boxShadow:muted?'0 0 8px rgba(255,68,68,.4)':'none',
-                }}>MUTE</button>
+                }}>{tx.muteLbl}</button>
               </div>
             );
           })}
@@ -2548,7 +2548,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 </div>
                 <div style={{textAlign:'center'}}>
                   <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx2)',fontFamily:"var(--font-body)",marginBottom:4}}>{tx.uploadReferenceAudioLbl}</div>
-                  <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.5}}>MP3, AAC, WAV · Toca para seleccionar</div>
+                  <div style={{fontSize:'calc(var(--fs-subtitle) - 1px)',color:'var(--tx2)',fontFamily:"var(--font-body)",lineHeight:1.5}}>{tx.audioFormatsHintLbl}</div>
                 </div>
               </div>
             ):(()=>{
@@ -2621,7 +2621,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                   {/* Marcador Out */}
                   {outPct!=null&&(
                     <div style={{position:'absolute',top:0,bottom:0,left:`${outPct}%`,width:2,background:'var(--rd)',zIndex:3}}>
-                      <div style={{position:'absolute',top:0,left:2,fontSize:'var(--fs-3xs)',color:'var(--rd)',fontWeight:900,fontFamily:"var(--font-body)",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>OUT</div>
+                      <div style={{position:'absolute',top:0,left:2,fontSize:'var(--fs-3xs)',color:'var(--rd)',fontWeight:900,fontFamily:"var(--font-body)",background:'rgba(8,8,9,.8)',padding:'1px 3px',borderRadius:3,whiteSpace:'nowrap'}}>{tx.outLbl}</div>
                     </div>
                   )}
                   {/* Playhead */}
@@ -2699,7 +2699,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     style={{flex:1,padding:'6px 8px',borderRadius:8,background:refLoopOut!=null?'rgba(var(--rd-rgb),.1)':'var(--s1)',
                       color:refLoopOut!=null?'var(--rd)':'var(--tx3)',cursor:'pointer',fontSize:'var(--fs-xs)',fontWeight:900,
                       fontFamily:"var(--font-body)",display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                    <span style={{fontSize:'var(--fs-2xs)',letterSpacing:'.5px'}}>OUT ■</span>
+                    <span style={{fontSize:'var(--fs-2xs)',letterSpacing:'.5px'}}>{tx.outSquareLbl}</span>
                     {refLoopOut!=null&&<span style={{opacity:.7}}>{fmt(refLoopOut)}</span>}
                   </button>
                   <button onClick={()=>{
@@ -2797,14 +2797,14 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
 
           <button onClick={guardarEnCancion}
             style={{textAlign:'left',padding:'12px 14px',borderRadius:12,background:'rgba(var(--gn-rgb),.08)',cursor:'pointer'}}>
-            <div style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',fontFamily:"var(--font-body)"}}>En la Canción</div>
+            <div style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--gn)',fontFamily:"var(--font-body)"}}>{tx.enLaCancionLbl}</div>
             <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:2,lineHeight:1.4}}>
               Queda permanente en la carpeta de esta canción.
             </div>
           </button>
 
           <div style={{padding:'12px 14px',borderRadius:12,background:'var(--s1)'}}>
-            <div style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--tx)',fontFamily:"var(--font-body)"}}>En un Ensayo</div>
+            <div style={{fontSize:'var(--fs-base)',fontWeight:900,color:'var(--tx)',fontFamily:"var(--font-body)"}}>{tx.enUnEnsayoLbl}</div>
             <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',fontFamily:"var(--font-body)",marginTop:2,marginBottom:8,lineHeight:1.4}}>
               Se autoborra 2 semanas después de la fecha del evento.
             </div>
@@ -2814,7 +2814,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
               </div>
             ):(
               <CustomSelect value={selectedEnsayoId||''} onChange={v=>setSelectedEnsayoId(v||null)}
-                placeholder="Elegir ensayo…"
+                placeholder={tx.elegirEnsayoPlaceholderLbl}
                 options={ensayosDisponibles.map(en=>({value:en.id,label:`${en.nombre}${en.setlistNombre?' · '+en.setlistNombre:''}`}))}
                 style={{width:'100%',padding:'8px 10px',fontSize:'var(--fs-sm)',marginBottom:8}}/>
             )}
@@ -3237,17 +3237,17 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                     {esReal&&(
                       <div style={{display:'flex',gap:3,width:'100%',flexShrink:0}}>
                         <button onClick={e=>{e.stopPropagation();marcarRolPista(i,'click');}}
-                          title="Marcar como Click"
+                          title={tx.marcarComoClickLbl}
                           style={{flex:1,padding:'2px 0',borderRadius:4,cursor:'pointer',
                             fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
                             background:tr.rol==='click'?'var(--ac)':'var(--s3)',
-                            color:tr.rol==='click'?'#000':'var(--tx3)'}}>CLICK</button>
+                            color:tr.rol==='click'?'#000':'var(--tx3)'}}>{tx.clickRoleLbl}</button>
                         <button onClick={e=>{e.stopPropagation();marcarRolPista(i,'guia');}}
-                          title="Marcar como Guía"
+                          title={tx.marcarComoGuiaLbl}
                           style={{flex:1,padding:'2px 0',borderRadius:4,cursor:'pointer',
                             fontSize:'var(--fs-3xs)',fontWeight:900,fontFamily:"var(--font-body)",
                             background:tr.rol==='guia'?'var(--ac)':'var(--s3)',
-                            color:tr.rol==='guia'?'#000':'var(--tx3)'}}>GUÍA</button>
+                            color:tr.rol==='guia'?'#000':'var(--tx3)'}}>{tx.guiaRoleLbl}</button>
                       </div>
                     )}
                     {/* Mute — mismo tamaño que el de Monitoreo */}
@@ -3330,7 +3330,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
               </div>
             </div>
-            <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
+            <button onClick={()=>setShowCarpeta(true)} title={tx.verCarpetaCancionAttrLbl}
               style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
                 background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
               <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
@@ -3345,7 +3345,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             </button>
             {isAdmin&&onEditInCancionero&&(
               <button onClick={()=>onEditInCancionero(songs[idx]?.name)}
-                title="Editar canción"
+                title={tx.editarCancionAttrLbl}
                 style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
                   background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
                 <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
@@ -3412,7 +3412,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'original')}
                   style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:8,cursor:'pointer',
                     background:'var(--s1)',color:svTx}}>
-                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3}}>Original (sin convertir)</div>
+                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3}}>{tx.originalSinConvertirLbl}</div>
                   <div style={{fontSize:'var(--fs-base)',color:'var(--tx3)'}}>{totalOriginalMB.toFixed(1)} MB total · sube tal cual, sin espera de conversión</div>
                 </button>
 
@@ -3420,7 +3420,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'mp3')}
                   style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:8,cursor:'pointer',
                     background:'rgba(var(--gn-rgb),.08)',color:svTx}}>
-                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3,color:'var(--gn)'}}>MP3 — recomendado</div>
+                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3,color:'var(--gn)'}}>{tx.mp3RecomendadoLbl}</div>
                   <div style={{fontSize:'var(--fs-base)',color:'var(--tx3)'}}>~{totalMp3MB.toFixed(1)} MB total ({Math.round((1-totalMp3MB/totalOriginalMB)*100)}% más liviano) · conversión casi instantánea</div>
                 </button>
 
@@ -3428,7 +3428,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
                 <button onClick={()=>procesarYSubirMultitracks(modalConversion.archivos,'opus')}
                   style={{width:'100%',textAlign:'left',padding:14,borderRadius:12,marginBottom:14,cursor:'pointer',
                     background:'var(--s1)',color:svTx}}>
-                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3}}>Opus — mejor calidad</div>
+                  <div style={{fontSize:'var(--fs-lg)',fontWeight:700,marginBottom:3}}>{tx.opusMejorCalidadLbl}</div>
                   <div style={{fontSize:'var(--fs-base)',color:'var(--tx3)'}}>~{totalMp3MB.toFixed(1)} MB total, algo mejor calidad que MP3 al mismo peso · conversión tarda {fmtSeg(duracionMaxSeg)} (dura lo mismo que el audio)</div>
                 </button>
 
@@ -3510,7 +3510,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
             {song.asignaciones&&song.asignaciones.length>0&&song.asignaciones.map((a,ai)=>(<span key={ai} style={{color:'var(--ac)',marginLeft:6,background:'rgba(200,169,126,.15)',padding:'2px 7px',borderRadius:100}}>{a.persona?`${a.variacion} → ${a.persona}`:a.variacion}</span>))}
           </div>
         </div>
-        <button onClick={()=>setShowCarpeta(true)} title="Ver carpeta de esta canción"
+        <button onClick={()=>setShowCarpeta(true)} title={tx.verCarpetaCancionAttrLbl}
           style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
             background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
           <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
@@ -3525,7 +3525,7 @@ export function SongView({songs,startIdx,onClose,theme="dark",isAdmin=false,onSa
         </button>
         {isAdmin&&onEditInCancionero&&(
           <button onClick={()=>onEditInCancionero(songs[idx]?.name)}
-            title="Editar canción"
+            title={tx.editarCancionAttrLbl}
             style={{display:'flex',flexDirection:'column',alignItems:'center',gap:1,
               background:'none',cursor:'pointer',padding:'0 4px',flexShrink:0}}>
             <div style={{width:26,height:26,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',
