@@ -1,0 +1,16 @@
+{
+  "name": "setsync-functions",
+  "description": "Cloud Functions de SetSync — hoy solo el trigger de mensajería (push FCM al crear un aviso en Firestore).",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0"
+  },
+  "private": true
+}

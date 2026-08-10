@@ -24,9 +24,10 @@ import { getPlan, featureDisponible, mensajeUpgrade } from '../data/planes';
 import { migrarSetlistsIglesia, migrarPersonasIglesia, migrarEquiposIglesia } from '../data/eventos-schema';
 import { firebaseListo } from '../firebase/config';
 import { onAuthChange, cerrarSesion } from '../firebase/auth';
+import { pedirPermisoYRegistrar } from '../firebase/messaging';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, subscribePerfilOrg, guardarPerfilOrg, vincularMembresiasPendientes, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, subscribePerfilOrg, guardarPerfilOrg, vincularMembresiasPendientes, vincularUidEnEquipos, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
 
 // ── ErrorBoundary ──────────────────────────────────────────────────────
 // Red de seguridad: si algo dentro de SongView (o cualquier hijo envuelto)
@@ -199,7 +200,20 @@ export default function App(){
     // esta persona tuviera cuenta — se vincula solo, una vez por sesión,
     // apenas el login se confirma.
     if(currentUser?.uid && currentUser?.email) vincularMembresiasPendientes(currentUser.uid, currentUser.email);
-  },[currentUser?.uid, currentUser?.email]);
+    if(currentUser?.uid && currentUser?.email && accountId) vincularUidEnEquipos(accountId, currentUser.uid, currentUser.email);
+  },[currentUser?.uid, currentUser?.email, accountId]);
+  // Pide permiso de notificaciones push automático la primera vez que
+  // hay sesión — con un pequeño delay para que no se sienta como el
+  // navegador bombardeando apenas carga la pantalla. Si el usuario ya
+  // decidió antes (permiso ya concedido o ya denegado), el navegador no
+  // vuelve a preguntar — Notification.requestPermission() es un no-op
+  // silencioso en ese caso, así que es seguro dejarlo correr en cada uid
+  // nuevo sin llevar un registro propio de "¿ya le pregunté?".
+  useEffect(()=>{
+    if(!currentUser?.uid || !accountId) return;
+    const t=setTimeout(()=>{ pedirPermisoYRegistrar(accountId, currentUser.uid); }, 2500);
+    return ()=>clearTimeout(t);
+  },[currentUser?.uid, accountId]);
   const tieneUniversal=featureDisponible('cancioneroUniversal',feat,planActivo);
   const tienePremiere=featureDisponible('premiereExclusivas',feat,planActivo);
   const tieneClick=featureDisponible('click',feat,planActivo);
@@ -931,6 +945,7 @@ Tuya es la gloria, Por siempre amén.
               userRole={userRole} onToast={showToast} lang={lang}
               currentUser={currentUser} onActualizarEvento={actualizarEvento}
               onEditarSetlist={evId=>goToView('backstage',{page:'setlist',eventoId:evId})}
+              accountId={accountId}
               equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>;
           })()}
           {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)} deepLink={deepLink&&deepLink.view==='repertorio'?deepLink:null}/>}

@@ -13,7 +13,7 @@ import { initials } from '../utils/music';
 import { CustomSelect, EquipoCard, EquipoDetallePanel, TimePicker } from './common';
 import { ItinerarioEditor, getItinerarioDefault } from './ItinerarioEditor';
 import { getModoFeatures } from '../data/modo';
-import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg } from '../firebase/firestore';
+import { crearOrg, subscribeOrgsComoAdmin, subscribeMiembrosOrg, quitarMiembroOrg, actualizarTramoOrg, cancelarOrg, esUltraAdmin, subscribeTodosLosOrgs, actualizarEstadoOrg, crearMensaje } from '../firebase/firestore';
 import { invitarMiembroOrg } from '../firebase/mail';
 import { subirArchivo } from '../firebase/storage';
 
@@ -148,6 +148,8 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
   const [notifTipo,setNotifTipo]=useState('recordatorio');
   const [notifMsg,setNotifMsg]=useState('');
   const [notifCorreo,setNotifCorreo]=useState(false);
+  const [notifSinDestino,setNotifSinDestino]=useState(null); // nombres de quienes quedarían sin recibir nada, o null
+  const [notifEnviando,setNotifEnviando]=useState(false);
   const [notifEventoId,setNotifEventoId]=useState('');
 
   // ── Crear ensayo ──
@@ -214,6 +216,24 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
     persistirLideres(next);
   };
   const personas=equipos.flatMap(eq=>(eq.miembros||[]));
+  // Resuelve notifDest (nombres de "Todo el equipo" o de equipos
+  // puntuales, como lo guarda hoy el selector de destinatarios) a la
+  // lista real de personas — sin duplicar si alguien está en más de un
+  // equipo elegido a la vez.
+  const resolverDestinatarios=(dest)=>{
+    const nombresEquipo = dest.filter(d=>d!==tx.wholeTeamLbl);
+    const incluyeTodos = dest.includes(tx.wholeTeamLbl);
+    const equiposElegidos = incluyeTodos ? equipos : equipos.filter(eq=>nombresEquipo.includes(eq.name));
+    const vistos = new Set();
+    const gente = [];
+    equiposElegidos.forEach(eq=>(eq.miembros||[]).forEach(m=>{
+      const key = m.uid || m.email || m.id;
+      if(vistos.has(key)) return;
+      vistos.add(key);
+      gente.push(m);
+    }));
+    return gente;
+  };
   // Paleta de acento (misma familia que usa el resto de la app: mint/gold/
   // rojo) para dar variedad de color a avatares sin usar gradientes —
   // determinístico por nombre, no random, así cada persona mantiene su
@@ -1008,7 +1028,7 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <div style={{fontWeight:900,fontSize:'var(--fs-emph)',color:'var(--tx)',marginBottom:12}}>{tx.toWhomLbl}</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:7}}>
           {[tx.wholeTeamLbl,...equipos.map(e=>e.name)].map(dest=>(
-            <button key={dest} onClick={()=>setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest])} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
+            <button key={dest} onClick={()=>{setNotifDest(d=>d.includes(dest)?d.filter(x=>x!==dest):[...d,dest]);setNotifSinDestino(null);}} style={{padding:'6px 12px',borderRadius:100,cursor:'pointer',fontSize:'var(--fs-base)',fontWeight:700,fontFamily:"var(--font-body)",background:notifDest.includes(dest)?'rgba(200,169,126,.1)':'var(--s1)',color:notifDest.includes(dest)?'var(--ac)':'var(--tx2)'}}>{dest}</button>
           ))}
         </div>
       </div>
@@ -1051,22 +1071,62 @@ export function BackstageView({userRole,onToast,mode,accountId=null,onSetTheme,o
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={notifCorreo?'var(--ac)':'var(--tx3)'} strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
         <span style={{fontSize:'var(--fs-md)',fontWeight:700,color:notifCorreo?'var(--ac)':'var(--tx2)',textAlign:'left',flex:1}}>{tx.alsoAddByEmailLbl}</span>
       </button>
+      {notifSinDestino&&(
+        <div style={{padding:'12px 14px',borderRadius:10,marginBottom:12,background:'rgba(var(--rd-rgb),.08)'}}>
+          <div style={{fontSize:'var(--fs-base)',fontWeight:700,color:'var(--rd)',marginBottom:4}}>
+            {notifSinDestino.length} persona{notifSinDestino.length>1?'s':''} no recibirá nada
+          </div>
+          <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.5}}>
+            {notifSinDestino.join(', ')} — sin correo ni cuenta vinculada todavía. El resto del equipo sí recibe el aviso.
+          </div>
+        </div>
+      )}
       <div style={{display:'flex',gap:9}}>
         <button className="btn btn-g" style={{flex:1}} onClick={()=>setBsView(null)}>{tx.cancel}</button>
-        <button className="btn btn-p" style={{flex:2}} onClick={()=>{
+        <button className="btn btn-p" style={{flex:2}} disabled={notifEnviando} onClick={async()=>{
           if(!notifDest.length){onToast({text:'Elige al menos un destinatario'});return;}
           if(!notifMsg.trim()){onToast({text:'Escribe un mensaje antes de enviar'});return;}
-          // ⚠ NO operativo todavía — no hay colección de mensajes en
-          // Firestore, no hay push real ni envío de correo. Solo confirma
-          // con un toast y limpia el formulario. Pendiente: diseñar
-          // accounts/{accountId}/mensajes (o similar) + integración de
-          // envío real, en una sesión dedicada.
-          onToast({text:tx.notifSentToast,sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});
-          setNotifEventoId('');
-          setBsView(null);
+
+          const gente = resolverDestinatarios(notifDest);
+          const conUid = gente.filter(m=>m.uid);
+          const conEmail = gente.filter(m=>m.email?.trim());
+          const sinNada = gente.filter(m=>!m.uid && !m.email?.trim());
+
+          if(sinNada.length && !notifSinDestino){
+            // Primer click con gente sin destino real: avisa y espera
+            // confirmación explícita antes de mandar a medias en silencio.
+            setNotifSinDestino(sinNada.map(m=>m.name));
+            return;
+          }
+          if(gente.length===0 || (conUid.length===0 && conEmail.length===0)){
+            onToast({text:'Nadie del equipo elegido puede recibir avisos todavía'});
+            return;
+          }
+
+          setNotifEnviando(true);
+          try{
+            await crearMensaje(accountId, {
+              texto: notifMsg.trim(),
+              tipo: notifTipo,
+              destinatarioUids: conUid.map(m=>m.uid),
+              destinatarioEmails: notifCorreo ? conEmail.map(m=>m.email.trim()) : [],
+              tambienCorreo: notifCorreo,
+              enviadoPor: currentUser?.uid||null,
+              eventoId: notifEventoId||null,
+              lang,
+            });
+            onToast({text:tx.notifSentToast,sub:notifCorreo?`${notifDest.join(', ')} · app y correo`:notifDest.join(', ')});
+            setNotifMsg('');setNotifDest([]);setNotifEventoId('');setNotifSinDestino(null);
+            setBsView(null);
+          }catch(err){
+            console.warn('[SetSync] Error creando mensaje:', err);
+            onToast({text:'No se pudo enviar — revisa tu conexión'});
+          }finally{
+            setNotifEnviando(false);
+          }
         }}>
           <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Enviar
+          {notifEnviando?'Enviando…':notifSinDestino?'Enviar de todas formas':'Enviar'}
         </button>
       </div>
       {helpOpen==='notif'&&<HelpModal/>}

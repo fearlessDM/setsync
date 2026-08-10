@@ -15,7 +15,7 @@
 
 import { db, firebaseListo } from './config';
 import {
-  collection, doc, setDoc, deleteDoc, onSnapshot, query, where,
+  collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs,
 } from 'firebase/firestore';
 
 // ── Identidad de cuenta — temporal hasta que exista un sistema de auth
@@ -492,6 +492,37 @@ export async function vincularMembresiasPendientes(uid, email){
   await Promise.all(snap.docs.map(d=>updateDoc(d.ref, {uid, estado:'activo'})));
 }
 
+// Vincula este uid a su propio registro dentro de equipos[].miembros[]
+// (el roster interno, distinto de orgMiembros de arriba) — necesario
+// para que los avisos/push le lleguen a la persona correcta: el roster
+// nace con solo {name,email,role}, sin uid, porque el líder lo agrega a
+// mano antes de que esa persona tenga cuenta. Se ejecuta sobre los
+// equipos de la MISMA cuenta donde el usuario ya inició sesión (mismo
+// alcance de accountId que ve el resto de la app) — el roster de
+// equipos vive embebido en cada doc de equipo (guardarEquipo reescribe
+// el array completo), no es una colección plana como orgMiembros, así
+// que acá SÍ hace falta traer los documentos completos y reescribirlos.
+export async function vincularUidEnEquipos(accountId, uid, email){
+  if(!firebaseListo || !accountId || !uid || !email) return;
+  const emailLimpio = String(email).trim().toLowerCase();
+  const ref = collection(db, 'accounts', accountId, 'equipos');
+  const snap = await getDocs(ref);
+  const { updateDoc } = await import('firebase/firestore');
+  await Promise.all(snap.docs.map(async d=>{
+    const equipo = d.data();
+    const miembros = equipo.miembros||[];
+    let cambio = false;
+    const actualizados = miembros.map(m=>{
+      if(!m.uid && (m.email||'').trim().toLowerCase()===emailLimpio){
+        cambio = true;
+        return {...m, uid};
+      }
+      return m;
+    });
+    if(cambio) await updateDoc(d.ref, {miembros: actualizados});
+  }));
+}
+
 // ── Ultra Admin (v91) — el DUEÑO de la plataforma (Danny), distinto de un
 // admin de Cuenta Equipo cualquiera (que solo administra SU propio org).
 // Mientras no exista pasarela de pago real, Danny confirma manualmente los
@@ -526,4 +557,67 @@ export function subscribeTodosLosOrgs(onChange){
 export async function cancelarOrg(orgId){
   if(!firebaseListo) return;
   await actualizarEstadoOrg(orgId, 'cancelada', null);
+}
+
+// ── Tokens de notificaciones push (FCM) ─────────────────────────────────
+// Colección aparte (NO un campo dentro de equipos[].miembros[]) porque:
+// (1) una persona puede tener el token registrado en más de un
+//     dispositivo (celular + notebook) — acá cada uno es su propio doc;
+// (2) equipos[].miembros[] vive dentro del documento completo del
+//     equipo (guardarEquipo reescribe el array entero) — refrescar un
+//     token ahí reescribiría todo el equipo en cada apertura de app;
+// (3) la Cloud Function que dispara el push necesita poder leer/filtrar
+//     tokens rápido sin descargar y recorrer todos los equipos.
+// tokenId determinístico (uid_deviceId) — mismo patrón que orgMiembros:
+// registrar el mismo dispositivo dos veces sobreescribe, no duplica.
+export async function guardarTokenPush(accountId, uid, deviceId, token){
+  if(!firebaseListo || !uid || !token) return;
+  const ref = doc(db, 'accounts', accountId, 'tokens', `${uid}_${deviceId}`);
+  await setDoc(ref, {uid, deviceId, token, actualizadoEn: Date.now()});
+}
+export async function borrarTokenPush(accountId, uid, deviceId){
+  if(!firebaseListo) return;
+  await deleteDoc(doc(db, 'accounts', accountId, 'tokens', `${uid}_${deviceId}`));
+}
+// Tokens de un conjunto de personas (uids) — usado por la Cloud Function
+// para armar la lista de destinatarios reales de un mensaje. Query 'in'
+// de Firestore tiene tope de 30 valores — si un envío convoca a más de
+// 30 personas de una vez, hay que trocear en tandas de 30 (anotado, no
+// resuelto acá porque hoy ningún equipo real se acerca a ese tamaño).
+export async function getTokensPorUids(accountId, uids){
+  if(!firebaseListo || !uids?.length) return [];
+  const ref = collection(db, 'accounts', accountId, 'tokens');
+  const snap = await getDocs(query(ref, where('uid','in',uids.slice(0,30))));
+  return snap.docs.map(d=>d.data().token);
+}
+
+// ── Mensajes / avisos al equipo ─────────────────────────────────────────
+// Reemplaza los toasts falsos de "Enviar" (Backstage → Notificaciones) y
+// "Programar" (Próx Fecha → aviso). Escribir acá es lo único que hace el
+// cliente — el envío real (push FCM + correo) lo dispara la Cloud
+// Function `onMensajeCreado` (functions/index.js) al detectar el
+// documento nuevo, nunca el cliente directo (values de service-account
+// no pueden vivir en el navegador).
+export function subscribeMensajes(accountId, onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'accounts', accountId, 'mensajes');
+  return onSnapshot(query(ref), snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})).sort((a,b)=>b.creadoEn-a.creadoEn));
+  });
+}
+export async function crearMensaje(accountId, {texto, tipo, destinatarioUids, destinatarioEmails=[], tambienCorreo=false, enviadoPor, eventoId=null, lang='es', programadoPara=null}){
+  if(!firebaseListo) return null;
+  const ref = doc(collection(db, 'accounts', accountId, 'mensajes'));
+  await setDoc(ref, {
+    texto, tipo, destinatarioUids, destinatarioEmails, tambienCorreo, enviadoPor, eventoId, lang,
+    // Sin programadoPara (o ya vencido) → se envía apenas la Cloud
+    // Function onMensajeCreado lo detecte, casi al instante. Con
+    // programadoPara en el futuro → onMensajeCreado lo deja en estado
+    // 'programado' sin hacer nada, y es el scheduler periódico
+    // (despacharMensajesProgramados, cada 15 min) el que lo dispara
+    // cuando llega la hora real.
+    programadoPara: programadoPara || null,
+    creadoEn: Date.now(), estado: 'pendiente',
+  });
+  return ref.id;
 }

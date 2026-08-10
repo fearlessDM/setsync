@@ -1,0 +1,126 @@
+rules_version = '2';
+
+// firestore.rules — SetSync
+// ═══════════════════════════════════════════════════════════════════
+// Mapa de colecciones reales (auditado contra src/firebase/*.js el
+// 2026-08-09, antes de escribir esto — no asumido de memoria):
+//
+//   accounts/{accountId}
+//     /eventos/{id}          /personas/{id}         /equipos/{id}
+//     /ensayos/{id}          /colecciones/{id}       /tokens/{uid_deviceId}
+//     /mensajes/{id}         /miembros/{uid}         (cuenta individual)
+//     /sesion/activa                                  (Modo En Vivo)
+//     /sesion/activa/participantes/{deviceId}
+//     /data/{variacionesDB|archivosDB|estructurasDB|contentDB|
+//            importDB|lideres|pastor|perfilOrg}
+//
+//   orgs/{orgId}                    — Cuenta Equipo
+//   orgMiembros/{orgId_email}       — plana, para queries por orgId
+//   invites/{codigo}                — join code de cuenta individual
+//   mail/{autoId}                   — cola de la extensión Trigger Email
+//
+// PRINCIPIO GENERAL: el dueño de una accountId (accountId === auth.uid,
+// caso normal — ver getAccountId() en firestore.js, hoy el accountId de
+// cada persona ES su propio uid) o alguien registrado en
+// accounts/{accountId}/miembros/{auth.uid} puede leer/escribir esa
+// cuenta. Cuenta Equipo (orgs) es un capa aparte con sus propias reglas,
+// gestionada solo por su adminUid o el Ultra Admin de la plataforma.
+// ═══════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Ultra Admin — dueño de la plataforma, ver
+    // PLATFORM_OWNER_UID en firestore.js. Confirmar que este uid sigue
+    // siendo el real de Danny antes de desplegar (ver nota en v91).
+    function esUltraAdmin() {
+      return request.auth != null &&
+        request.auth.uid == 'uskOltgjasMMIY8lyqFa00eXUxu2';
+    }
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    // Dueño directo de la cuenta (caso normal: accountId == su propio uid)
+    // o miembro agregado por código de invitación (accounts/{id}/miembros/{uid}).
+    function perteneceACuenta(accountId) {
+      return autenticado() && (
+        request.auth.uid == accountId ||
+        exists(/databases/$(database)/documents/accounts/$(accountId)/miembros/$(request.auth.uid))
+      );
+    }
+
+    // ── accounts/{accountId}/** ──────────────────────────────────────
+    match /accounts/{accountId} {
+      allow read, write: if perteneceACuenta(accountId) || esUltraAdmin();
+
+      match /{subcoleccion}/{docId} {
+        allow read, write: if perteneceACuenta(accountId) || esUltraAdmin();
+
+        // sesion/activa/participantes/{deviceId} — un nivel más de
+        // profundidad, mismo dueño de cuenta puede leer/escribir.
+        match /{subsubcoleccion}/{subDocId} {
+          allow read, write: if perteneceACuenta(accountId) || esUltraAdmin();
+        }
+      }
+    }
+
+    // ── Cuenta Equipo (orgs) ──────────────────────────────────────────
+    // Cualquier usuario autenticado puede LEER un org (necesario para
+    // que un invitado vea a qué se está uniendo antes de aceptar), pero
+    // solo el admin dueño (adminUid) o el Ultra Admin pueden escribir.
+    match /orgs/{orgId} {
+      allow read: if autenticado();
+      allow create: if autenticado() && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if autenticado() &&
+        (resource.data.adminUid == request.auth.uid || esUltraAdmin());
+    }
+
+    // orgMiembros/{orgId_email} — el id del doc empieza con "{orgId}_",
+    // así se puede verificar pertenencia al org sin una query dentro de
+    // la regla (Firestore Rules no soporta queries arbitrarias).
+    match /orgMiembros/{miembroId} {
+      allow read: if autenticado();
+      // Solo el admin del org referenciado en el propio documento puede
+      // agregar/quitar miembros — se valida contra el org real, nunca
+      // confiando en un campo que el cliente podría falsificar.
+      allow create, update: if autenticado() &&
+        get(/databases/$(database)/documents/orgs/$(request.resource.data.orgId)).data.adminUid == request.auth.uid;
+      allow delete: if autenticado() &&
+        get(/databases/$(database)/documents/orgs/$(resource.data.orgId)).data.adminUid == request.auth.uid;
+    }
+
+    // ── invites/{codigo} — join code de cuenta individual ─────────────
+    // Cualquier autenticado puede leer (resolver el código antes de
+    // unirse) y crear el suyo propio; nunca se borra ni reescribe desde
+    // el cliente.
+    match /invites/{codigo} {
+      allow read: if autenticado();
+      allow create: if autenticado();
+      allow update, delete: if false;
+    }
+
+    // ── mail/{autoId} — cola de la extensión Trigger Email ────────────
+    // Se ESCRIBE desde el cliente (invitarMiembroOrg en mail.js) y desde
+    // la Cloud Function (functions/index.js, vía Admin SDK — las reglas
+    // no aplican a Admin SDK, pero se documenta igual). Nunca se lee ni
+    // se borra desde el cliente — eso es trabajo exclusivo de la
+    // extensión instalada en el proyecto.
+    match /mail/{autoId} {
+      allow create: if autenticado();
+      allow read, update, delete: if false;
+    }
+
+    // ── collectionGroup('mensajes') ────────────────────────────────────
+    // La Cloud Function despacharMensajesProgramados corre con Admin SDK
+    // (ignora estas reglas por completo) — esta entrada solo cubre el
+    // caso de que algún día se quiera leer el historial de mensajes
+    // programados desde el cliente vía collectionGroup query. Sin esto,
+    // esa query específica fallaría con permission-denied aunque el
+    // usuario sea dueño legítimo de su propia cuenta.
+    match /{path=**}/mensajes/{mensajeId} {
+      allow read: if autenticado();
+    }
+  }
+}

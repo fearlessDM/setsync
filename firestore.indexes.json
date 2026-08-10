@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "mensajes",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "estado", "order": "ASCENDING"},
+        {"fieldPath": "programadoPara", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

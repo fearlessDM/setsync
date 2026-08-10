@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { SETLISTS, EVENTOS_ESPECIALES, CANCIONES } from '../data/constants';
 import { initials } from '../utils/music';
 import { CustomSelect } from './common';
+import { crearMensaje } from '../firebase/firestore';
 
 // Días/meses cortos ahora vienen de tx.weekDaysShort / tx.months (i18n.js)
 
@@ -555,7 +556,7 @@ export const generarMensaje=(fecha,sl,diasAntes)=>{
   return `Hola equipo hermoso! 🎸\n\nLes recuerdo que ${cuando} tenemos ${fecha?.nombre||'servicio'}.\n\n📋 SETLIST:\n${canciones}\n${horaLinea}\nPor favor repasa las canciones con ${diasAntes} día${diasAntes>1?'s':''} de anticipación. 🙏\n\n${animo}\n\n¡Los esperamos! Con amor, el equipo de liderazgo.`;
 };
 
-export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
+export function MiSetlistNotif({onToast,fecha,sl,lang='es',equipos=[],accountId=null,currentUser=null,eventoId=null}){
   const tx = getT(lang);
   const activeSunday=fecha; // alias interno, evita renombrar todo el resto del componente
   const [avisoActivo,setAvisoActivo]=useState(1);
@@ -573,6 +574,72 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
   const custom = avisoActivo===1?custom1:custom2;
   const setCustom = avisoActivo===1?setCustom1:setCustom2;
   const [open,setOpen]=useState(false);
+  const [programando,setProgramando]=useState(false);
+  const [sinDestinoAviso,setSinDestinoAviso]=useState(null);
+
+  // Calcula el timestamp real del envío: fecha+hora del evento, menos
+  // diasAntes días, a las 9:00am de ese día (hora fija razonable — el
+  // evento puede ser de noche, pero un aviso a medianoche no sirve).
+  // Si el evento no tiene fechaStr (legacy/especial sin fecha real), no
+  // hay forma de calcular "X días antes" — se avisa y no se deja programar.
+  const calcularProgramadoPara=()=>{
+    if(!fecha?.fechaStr) return null;
+    const [y,m,d] = fecha.fechaStr.split('-').map(Number);
+    const fechaEvento = new Date(y, m-1, d, 9, 0, 0);
+    fechaEvento.setDate(fechaEvento.getDate() - diasAntes);
+    return fechaEvento.getTime();
+  };
+
+  const enviar=async()=>{
+    if(!accountId){onToast({text:'No se pudo identificar la cuenta'});return;}
+    const programadoPara = calcularProgramadoPara();
+    if(!programadoPara){
+      onToast({text:'Este evento no tiene fecha real — no se puede programar el aviso'});
+      return;
+    }
+    const vistos = new Set();
+    const gente = [];
+    equipos.forEach(eq=>(eq.miembros||[]).forEach(m=>{
+      const key = m.uid || m.email || m.id;
+      if(vistos.has(key)) return;
+      vistos.add(key);
+      gente.push(m);
+    }));
+    const conUid = gente.filter(m=>m.uid);
+    const conEmail = gente.filter(m=>m.email?.trim());
+    const sinNada = gente.filter(m=>!m.uid && !m.email?.trim());
+
+    if(sinNada.length && !sinDestinoAviso){
+      setSinDestinoAviso(sinNada.map(m=>m.name));
+      return;
+    }
+    if(conUid.length===0 && conEmail.length===0){
+      onToast({text:'Nadie del equipo convocado puede recibir avisos todavía'});
+      return;
+    }
+
+    setProgramando(true);
+    try{
+      await crearMensaje(accountId, {
+        texto: msg, tipo: 'recordatorio',
+        destinatarioUids: conUid.map(m=>m.uid),
+        destinatarioEmails: conEmail.map(m=>m.email.trim()),
+        tambienCorreo: true,
+        enviadoPor: currentUser?.uid||null,
+        eventoId, lang,
+        programadoPara,
+      });
+      const fechaLegible = new Date(programadoPara).toLocaleDateString('es-CL',{day:'numeric',month:'long'});
+      onToast({text:tx.messageSentToast,sub:`Aviso ${avisoActivo} · se envía el ${fechaLegible}`});
+      setOpen(false);setSinDestinoAviso(null);
+    }catch(err){
+      console.warn('[SetSync] Error programando aviso:', err);
+      onToast({text:'No se pudo programar — revisa tu conexión'});
+    }finally{
+      setProgramando(false);
+    }
+  };
+
   if(!open)return(
     <div style={{marginBottom:'var(--sp-md)'}}>
       <div style={{background:'var(--s1)',borderRadius:'var(--rad-md)',padding:'var(--sp-md)'}}>
@@ -602,12 +669,12 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       </div>
       <div style={{display:'flex',gap:'var(--sp-xs)',marginBottom:'var(--sp-sm)'}}>
         {[1,2].map(n=>(
-          <button key={n} onClick={()=>setAvisoActivo(n)} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',background:avisoActivo===n?'rgba(200,169,126,.08)':'var(--s1)',color:avisoActivo===n?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:'var(--fs-md)',cursor:'pointer',fontFamily:"var(--font-body)"}}>Aviso {n}</button>
+          <button key={n} onClick={()=>{setAvisoActivo(n);setSinDestinoAviso(null);}} style={{flex:1,padding:8,borderRadius:'var(--rad-sm)',background:avisoActivo===n?'rgba(200,169,126,.08)':'var(--s1)',color:avisoActivo===n?'var(--ac)':'var(--tx3)',fontWeight:700,fontSize:'var(--fs-md)',cursor:'pointer',fontFamily:"var(--font-body)"}}>Aviso {n}</button>
         ))}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:'var(--sp-sm)'}}>
         <span style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:700,fontFamily:"var(--font-body)"}}>{tx.leadTimeLbl}</span>
-        <CustomSelect value={diasAntes} onChange={v=>{const n=Number(v);if(avisoActivo===1)setDias1(n);else setDias2(n);}}
+        <CustomSelect value={diasAntes} onChange={v=>{const n=Number(v);if(avisoActivo===1)setDias1(n);else setDias2(n);setSinDestinoAviso(null);}}
           style={{width:'auto',padding:'4px 8px',fontSize:'var(--fs-md)'}}
           options={[1,2,3,4,5,6,7].map(d=>({value:d,label:`${d} día${d>1?'s':''} antes`}))}/>
       </div>
@@ -622,13 +689,23 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
       </div>)}
       <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',fontWeight:300,marginBottom:'var(--sp-sm)',display:'flex',alignItems:'center',gap:5}}>
         <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="var(--tx3)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
-        Se envía por correo y notificación dentro de la app.
+        Se envía por correo y notificación push, el día que corresponda.
       </div>
+      {sinDestinoAviso&&(
+        <div style={{padding:'10px 12px',borderRadius:8,marginBottom:'var(--sp-sm)',background:'rgba(var(--rd-rgb),.08)'}}>
+          <div style={{fontSize:'var(--fs-subtitle)',fontWeight:700,color:'var(--rd)',marginBottom:2}}>
+            {sinDestinoAviso.length} persona{sinDestinoAviso.length>1?'s':''} no recibirá nada
+          </div>
+          <div style={{fontSize:'var(--fs-xs)',color:'var(--tx2)',lineHeight:1.5}}>
+            {sinDestinoAviso.join(', ')} — sin correo ni cuenta vinculada todavía.
+          </div>
+        </div>
+      )}
       <div style={{display:'flex',gap:'var(--sp-xs)'}}>
         <button onClick={()=>setOpen(false)} className="btn btn-g btn-sm" style={{flex:1,justifyContent:'center'}}>{tx.cancel}</button>
-        <button onClick={()=>{onToast({text:tx.messageSentToast,sub:`Aviso ${avisoActivo} · correo y notificación`});setOpen(false);}} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
+        <button onClick={enviar} disabled={programando} className="btn btn-p btn-sm" style={{flex:2,justifyContent:'center'}}>
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Programar
+          {programando?'Programando…':sinDestinoAviso?'Programar de todas formas':'Programar'}
         </button>
       </div>
     </div>
@@ -636,7 +713,7 @@ export function MiSetlistNotif({onToast,fecha,sl,lang='es'}){
 }
 
 // ── Mi Setlist ─────────────────────────────────────────────────────────────
-export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[],currentUser=null,onActualizarEvento=null,onEditarSetlist=null}){
+export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',equipos=[],personas=[],variacionesDB={},ensayos=[],currentUser=null,onActualizarEvento=null,onEditarSetlist=null,accountId=null}){
   const tx=getT(lang);
   const [eqAbierto,setEqAbierto]=useState(null);
   const [editandoEq,setEditandoEq]=useState(false); // panel abre en solo-lectura; el lápiz activa edición
@@ -1076,7 +1153,7 @@ export function MiSetlist({fecha,onOpenSong,onLive,userRole,onToast,lang='es',eq
         </div>
       )}
 
-      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl} lang={lang}/>}
+      {userRole==='superadmin'&&<MiSetlistNotif onToast={onToast} fecha={f} sl={sl} lang={lang} equipos={equiposBase} accountId={accountId} currentUser={currentUser} eventoId={f.origen==='evento'?f.id:null}/>}
 
       {/* Itinerario — v40: ahora viene del evento real (ItinerarioEditor en
           Crear evento), ya no es texto fijo inventado sin conexión */}

@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// storage.rules — SetSync
+// Todo lo que sube la app vive bajo accounts/{accountId}/... — ver
+// subirAudio/subirArchivo en src/firebase/storage.js (auditado
+// 2026-08-09). Mismo modelo de pertenencia que firestore.rules: dueño
+// directo (accountId == su uid) o miembro agregado por invitación.
+//
+// Límite de 25MB coincide con el límite ya validado del lado cliente en
+// subirArchivo() — repetido acá porque el límite del cliente es solo UX
+// (se puede saltar con devtools), esta es la barrera real.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function perteneceACuenta(accountId) {
+      return request.auth != null && (
+        request.auth.uid == accountId ||
+        firestore.exists(/databases/(default)/documents/accounts/$(accountId)/miembros/$(request.auth.uid))
+      );
+    }
+
+    match /accounts/{accountId}/{allPaths=**} {
+      allow read: if perteneceACuenta(accountId);
+      allow write: if perteneceACuenta(accountId) && request.resource.size < 25 * 1024 * 1024;
+    }
+  }
+}
