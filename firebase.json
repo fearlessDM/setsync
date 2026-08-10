@@ -4,6 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "storage": {
+    "bucket": "setsync-prod.firebasestorage.app",
     "rules": "storage.rules"
   },
   "functions": [
