@@ -27,7 +27,7 @@ import { onAuthChange, cerrarSesion } from '../firebase/auth';
 import { pedirPermisoYRegistrar } from '../firebase/messaging';
 import { Login } from './Login';
 import { usePlanEfectivo } from '../hooks/usePlanEfectivo';
-import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, subscribePerfilOrg, guardarPerfilOrg, vincularMembresiasPendientes, vincularUidEnEquipos, getAccountIdOverride, limpiarAccountIdOverride } from '../firebase/firestore';
+import { getAccountId, subscribeEventos, subscribePersonas, subscribeEquipos, guardarEvento, guardarPersona, guardarEquipo, crearInvitacion, subscribeEnsayos, guardarEnsayo, subscribeColecciones, guardarColeccion, subscribeVariacionesDB, guardarVariacionesDB, subscribeArchivosDB, guardarArchivosDB, subscribeEstructurasDB, guardarEstructurasDB, subscribeContentDB, guardarContentDB, subscribeImportDB, guardarImportDB, subscribeLideres, guardarLideres, subscribePastor, guardarPastor, subscribePerfilOrg, guardarPerfilOrg, vincularMembresiasPendientes, vincularUidEnEquipos, getAccountIdOverride, limpiarAccountIdOverride, subscribeCancioneroUniversal } from '../firebase/firestore';
 
 // ── ErrorBoundary ──────────────────────────────────────────────────────
 // Red de seguridad: si algo dentro de SongView (o cualquier hijo envuelto)
@@ -233,6 +233,12 @@ export default function App(){
     appMode==='banda'?[]:migrarEquiposIglesia(EQUIPOS_DATA) // Banda arranca sin equipos formales, se crean a mano si hace falta
   );
   const [repertorio,setRepertorio]=useState(()=>appMode==='banda'?SEED_BANDA_REPERTORIO:CANCIONES.map(c=>({...c})));
+  // Cancionero Universal (v92) — banco comunitario real en Firestore,
+  // colección global (no por cuenta). Reemplaza el array UNIVERSAL demo
+  // que vivía hardcodeado dentro de Cancionero.jsx. Nace vacío: todavía
+  // no hay contenido cargado, se siembra aparte cuando se defina qué
+  // canciones entran (ver conversación sobre licencias/dominio público).
+  const [cancioneroUniversal,setCancioneroUniversal]=useState([]);
   const [colecciones,setColecciones]=useState([]);
   const [lideres,setLideres]=useState([]);
   const [pastorData,setPastorData]=useState({versiculo:'',texto:'',notas:''});
@@ -326,6 +332,16 @@ export default function App(){
     return ()=>{ unsubEv(); unsubPe(); unsubEq(); unsubEn(); unsubCo(); unsubLi(); unsubPa(); unsubOp(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appMode, online, currentUser]);
+
+  // ── Cancionero Universal — suscripción APARTE de la de arriba: es una
+  // colección global (no accountId/{...}), no tiene lógica de "sembrar si
+  // está vacío" (nadie sube nada desde el cliente salvo el Ultra Admin),
+  // así que no necesita compartir el mismo efecto ni sus dependencias.
+  useEffect(()=>{
+    if(!firebaseListo || !online || currentUser===undefined) return;
+    const unsubCu = subscribeCancioneroUniversal(data=>{ setCancioneroUniversal(data); });
+    return ()=>{ unsubCu(); };
+  }, [online, currentUser]);
 
   const persistirPersona = (persona) => { if(firebaseListo && online) guardarPersona(accountId, persona); };
   const persistirEvento = (evento) => { if(firebaseListo && online) guardarEvento(accountId, evento); };
@@ -948,7 +964,7 @@ Tuya es la gloria, Por siempre amén.
               accountId={accountId}
               equipos={equipos} personas={personas} variacionesDB={variacionesDB} ensayos={ensayos}/>;
           })()}
-          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)} deepLink={deepLink&&deepLink.view==='repertorio'?deepLink:null}/>}
+          {view==='repertorio'&&<Cancionero mode={appMode} onOpenSong={abrirSongDesdeRepertorio} userRole={userRole} lang={lang} onToast={showToast} onSaveChords={handleSaveChords} variacionesDB={variacionesDB} setVariacionesDB={setVariacionesDB} archivosDB={archivosDB} setArchivosDB={setArchivosDB} estructurasDB={estructurasDB} setEstructurasDB={setEstructurasDB} colecciones={colecciones} setColecciones={setColecciones} persistirColeccion={persistirColeccion} contentDB={contentDB} importDB={importDB} setImportDB={setImportDB} songParaEditar={songParaEditar} onSongParaEditarConsumido={()=>setSongParaEditar(null)} deepLink={deepLink&&deepLink.view==='repertorio'?deepLink:null} cancioneroUniversal={cancioneroUniversal}/>}
           {view==='premiere'&&(tienePremiere?<PremiereView onToast={showToast} lang={lang}/>:<div style={{padding:24,textAlign:'center',color:'var(--tx3)',fontSize:'var(--fs-lg)',fontFamily:"var(--font-body)"}}>{mensajeUpgrade('premiereExclusivas',lang)}</div>)}
           {view==='monitoreo'&&<Monitoreo lang={lang} onToast={showToast}/>}
           {view==='backstage'&&<BackstageView userRole={userRole} onToast={showToast} mode={appMode}

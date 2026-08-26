@@ -12,7 +12,7 @@ import { detectarTonalidad } from '../utils/music';
 import { extraerTextoDeArchivo } from '../utils/fileExtract';
 import { parseCancionDesdeTexto } from '../utils/importParser';
 
-export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},importDB={},setImportDB=()=>{},songParaEditar=null,onSongParaEditarConsumido=()=>{},deepLink=null}){
+export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onToast=()=>{},onSaveChords=()=>{},variacionesDB={},setVariacionesDB=()=>{},archivosDB={},setArchivosDB=()=>{},estructurasDB={},setEstructurasDB=()=>{},colecciones=[],setColecciones=()=>{},persistirColeccion=()=>{},contentDB={},importDB={},setImportDB=()=>{},songParaEditar=null,onSongParaEditarConsumido=()=>{},deepLink=null,cancioneroUniversal=[]}){
   const tx=getT(lang);
   const feat=getModoFeatures(mode);
   const isAdmin=userRole==='superadmin'||userRole==='leader';
@@ -200,17 +200,15 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
   const mid=fl.filter(s=>s.bpm>=80&&s.bpm<120).sort((a,b)=>b.bpm-a.bpm);
   const slow=fl.filter(s=>s.bpm<80).sort((a,b)=>b.bpm-a.bpm);
 
-  // UNIVERSAL — demo canciones de otros equipos
-  const UNIVERSAL=[
-    {n:'10,000 RAZONES',bpm:76,key:'G',autor:'Matt Redman',equipo:'Iglesia Gracia, Stgo'},
-    {n:'ERES TODOPODEROSO',bpm:84,key:'A',autor:'Marcos Witt',equipo:'Casa de Dios, Viña'},
-    {n:'RENUÉVAME',bpm:72,key:'D',autor:'Marcos Witt',equipo:'Iglesia Uno, CL'},
-    {n:'DIGNO DE ALABANZA',bpm:90,key:'G',autor:'Luis Enrique Espinoza',equipo:'ICF Santiago'},
-    {n:'SUBLIME GRACIA',bpm:68,key:'G',autor:'John Newton',equipo:'Iglesia Vida Nueva'},
-    {n:'CUÁN GRANDE ES ÉL',bpm:64,key:'C',autor:'Stuart K. Hine',equipo:'Misión Paz, Valpo'},
-    {n:'GLORIOSO',bpm:96,key:'D',autor:'Redimi2',equipo:'Elim Church CL'},
-    {n:'SOPLANDO VIDA',bpm:82,key:'E',autor:'Marcos Brunet',equipo:'IPC Concepción'},
-  ];
+  // Cancionero Universal — YA NO es un array demo local. Viene real desde
+  // Firestore (colección global cancionero_universal), vía App.jsx →
+  // subscribeCancioneroUniversal → prop cancioneroUniversal. Se normaliza
+  // acá al mismo shape {n,key,bpm,autor,equipo} que usa SongCard/el resto
+  // de esta vista, para no tener que tocar el render de abajo.
+  const UNIVERSAL=cancioneroUniversal.map(c=>({
+    n:c.titulo, key:c.tono, bpm:c.bpm,
+    autor:c.creditos?.autor||'', equipo:c.dominioPublico?'Dominio público':(c.creditos?.editorial||''),
+  }));
 
   const Sec=({title,range,type,songs})=>!songs.length?null:(
     <div className={`bpm-sec ${type}`}>
@@ -1056,15 +1054,30 @@ export function Cancionero({mode,onOpenSong,userRole='superadmin',lang='es',onTo
             <div style={{fontSize:'var(--fs-base)',color:'var(--gn)',fontWeight:700,marginBottom:2}}>{tx.cancioneroUniversalHeadingLbl}</div>
             <div style={{fontSize:'var(--fs-subtitle)',color:'var(--tx2)',lineHeight:1.6}}>{tx.cancioneroUniversalDescLbl}</div>
           </div>
-          <div className="sg">
-            {UNIVERSAL.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase())).map((s,i)=>(
-              <div key={s.n} className="scard block-entry" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer','--i':Math.min(i,12)}}>
-                <div className="scard-n">{s.n}</div>
-                <div className="scard-s">{s.key} · {s.bpm} BPM</div>
-                <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginTop:4,fontStyle:'italic'}}>{s.equipo}</div>
+          {UNIVERSAL.length===0?(
+            <div style={{textAlign:'center',padding:'50px 20px',color:'var(--tx3)'}}>
+              <div style={{marginBottom:10,opacity:.5,display:'flex',justifyContent:'center'}}>
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
               </div>
-            ))}
-          </div>
+              <div style={{fontSize:'var(--fs-md)',fontWeight:700,color:'var(--tx2)',marginBottom:4}}>Aún no hay canciones cargadas</div>
+              <div style={{fontSize:'var(--fs-base)',fontFamily:"var(--font-body)",fontWeight:300,lineHeight:1.6,maxWidth:280,margin:'0 auto'}}>
+                El banco comunitario se está armando — vuelve pronto.
+              </div>
+            </div>
+          ):(
+            <div className="sg">
+              {UNIVERSAL.filter(s=>s.n.toLowerCase().includes(filter.toLowerCase())).map((s,i)=>(
+                <div key={s.n} className="scard block-entry" onClick={()=>onOpenSong&&onOpenSong(s.n)} style={{cursor:'pointer','--i':Math.min(i,12)}}>
+                  <div className="scard-n">{s.n}</div>
+                  <div className="scard-s">{s.key} · {s.bpm} BPM</div>
+                  <div style={{fontSize:'var(--fs-xs)',color:'var(--tx3)',marginTop:4,fontStyle:'italic'}}>{s.equipo}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -91,6 +91,17 @@ service cloud.firestore {
         get(/databases/$(database)/documents/orgs/$(resource.data.orgId)).data.adminUid == request.auth.uid;
     }
 
+    // ── cancionero_universal/{cancionId} — banco comunitario de canciones,
+    // compartido entre TODAS las cuentas Iglesia con el feature habilitado
+    // (el gating por plan se hace client-side, mismo patrón que el resto
+    // del app — ver feat.cancioneroUniversal). Lectura abierta a cualquier
+    // autenticado; escritura SOLO Ultra Admin en esta primera fase — ver
+    // nota v92 sobre eventual aporte comunitario a futuro.
+    match /cancionero_universal/{cancionId} {
+      allow read: if autenticado();
+      allow write: if esUltraAdmin();
+    }
+
     // ── invites/{codigo} — join code de cuenta individual ─────────────
     // Cualquier autenticado puede leer (resolver el código antes de
     // unirse) y crear el suyo propio; nunca se borra ni reescribe desde

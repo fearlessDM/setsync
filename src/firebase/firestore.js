@@ -537,6 +537,39 @@ export function esUltraAdmin(uid){
   return !!uid && uid === PLATFORM_OWNER_UID;
 }
 
+// ── Cancionero Universal — banco comunitario de canciones, UNA sola
+// colección global (no vive bajo accounts/{accountId}, todas las cuentas
+// Iglesia con el feature habilitado leen la misma data). Fase 1: solo el
+// Ultra Admin escribe (ver firestore.rules) — nace vacío, se carga a mano
+// canción por canción o en lote desde un script de siembra puntual.
+// Shape de cada doc:
+//   {titulo, tono, bpm, categoria, dominioPublico,
+//    creditos:{autor,editorial,anio,ccli}, contenido, creadoPor, creadoEn, actualizadoEn}
+export function subscribeCancioneroUniversal(onChange){
+  if(!firebaseListo) return noop();
+  const ref = collection(db, 'cancionero_universal');
+  return onSnapshot(ref, snap=>{
+    onChange(snap.docs.map(d=>({...d.data(), id:d.id})));
+  });
+}
+
+export async function crearCancionUniversal(datos){
+  if(!firebaseListo) return null;
+  const ref = doc(collection(db, 'cancionero_universal'));
+  await setDoc(ref, {...datos, creadoEn:Date.now(), actualizadoEn:Date.now()});
+  return ref.id;
+}
+
+export async function actualizarCancionUniversal(cancionId, datos){
+  if(!firebaseListo) return;
+  await setDoc(doc(db, 'cancionero_universal', cancionId), {...datos, actualizadoEn:Date.now()}, {merge:true});
+}
+
+export async function borrarCancionUniversal(cancionId){
+  if(!firebaseListo) return;
+  await deleteDoc(doc(db, 'cancionero_universal', cancionId));
+}
+
 // Todos los orgs de la plataforma, sin filtro — SOLO para el panel de
 // Ultra Admin. No es la barrera de seguridad (eso lo hacen las Rules):
 // si alguien sin ser el dueño llega a llamar esto, Firestore rechaza la
